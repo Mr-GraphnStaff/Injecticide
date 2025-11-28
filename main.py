@@ -55,8 +55,8 @@ def build_sender(config: TestConfig) -> Callable[[str], str]:
     def rate_limited_send(prompt: str) -> str:
         if config.delay_between_requests > 0:
             time.sleep(config.delay_between_requests)
-        return endpoint.send(prompt)
-    
+        return endpoint.send_with_rate_limit(prompt)
+
     return rate_limited_send
 
 
