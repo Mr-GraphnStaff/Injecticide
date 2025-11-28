@@ -1,0 +1,48 @@
+# Secure endpoint presets for the Injecticide web UI
+#
+# Populate this file with real API keys and endpoints in your deployment.
+# The frontend will only receive metadata (names and descriptions); API keys
+# stay on the server and are used when a preset is selected.
+
+endpoints:
+  - name: "Claude - Default"
+    description: "Standard Claude 3 endpoint for internal testing"
+    target_service: "anthropic"
+    model: "claude-3-opus-20240229"
+    api_key: "REPLACE_WITH_ANTHROPIC_KEY"
+    enabled: true
+
+  - name: "OpenAI - GPT-4o"
+    description: "OpenAI GPT-4o production deployment"
+    target_service: "openai"
+    model: "gpt-4o"
+    api_key: "REPLACE_WITH_OPENAI_KEY"
+    enabled: true
+
+  - name: "Azure OpenAI - GPT-4o"
+    description: "Azure-hosted GPT-4o deployment"
+    target_service: "azure_openai"
+    model: "gpt-4o"
+    endpoint_url: "https://your-resource.openai.azure.com"
+    api_key: "REPLACE_WITH_AZURE_KEY"
+    enabled: true
+
+payload_presets:
+  - name: "Baseline coverage"
+    description: "Standard prompt injection checks"
+    test_categories:
+      - baseline
+    custom_payloads: []
+
+  - name: "Policy and baseline"
+    description: "Combine baseline and policy violation probes"
+    test_categories:
+      - baseline
+      - policy
+    custom_payloads: []
+
+  - name: "Policy focus"
+    description: "Only policy violation scenarios"
+    test_categories:
+      - policy
+    custom_payloads: []
