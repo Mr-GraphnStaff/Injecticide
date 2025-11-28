@@ -1,0 +1,14 @@
+# Minimal requirements for Injecticide Web
+# Use this if you have dependency conflicts
+
+# Core - absolutely required
+requests>=2.31.0
+pyyaml>=6.0
+
+# Web server - absolutely required  
+fastapi>=0.104.0
+uvicorn>=0.24.0
+
+# Optional but recommended
+python-multipart>=0.0.6
+aiofiles>=23.0.0

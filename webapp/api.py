@@ -1,12 +1,11 @@
 """
-Injecticide Web Application - API Routes
+Injecticide Web Application - FastAPI Backend
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File, WebSocket
+from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -15,16 +14,18 @@ import json
 import asyncio
 import time
 from pathlib import Path
-from starlette.websockets import WebSocketDisconnect, WebSocketState
+import sys
+import os
+
+# Add parent directory to path to import Injecticide modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import core Injecticide modules
-import sys
-sys.path.append('..')
 from config import TestConfig
 from reporter import ReportGenerator
 from analyzer import analyze
 from generator import generate_payloads, policy_violation_payloads
-from endpoints import AnthropicEndpoint, OpenAIEndpoint
+from endpoints import AnthropicEndpoint, OpenAIEndpoint, AzureOpenAIEndpoint
 
 app = FastAPI(
     title="Injecticide",
@@ -42,18 +43,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory session storage (use Redis in production)
+# In-memory session storage
 test_sessions = {}
 
 # Request/Response Models
 class TestRequest(BaseModel):
-    target_service: str = Field(..., description="LLM service to test (anthropic, openai, azure_openai)")
+    target_service: str = Field(..., description="LLM service to test")
     api_key: str = Field(..., description="API key for the service")
     model: Optional[str] = Field(None, description="Model to test")
-    test_categories: List[str] = Field(default=["baseline"], description="Test categories to run")
-    custom_payloads: List[str] = Field(default=[], description="Custom payloads to test")
-    max_requests: int = Field(default=50, description="Maximum number of tests")
-    delay_between_requests: float = Field(default=0.5, description="Delay between requests in seconds")
+    test_categories: List[str] = Field(default=["baseline"])
+    custom_payloads: List[str] = Field(default=[])
+    max_requests: int = Field(default=50)
+    delay_between_requests: float = Field(default=0.5)
 
 class TestSession(BaseModel):
     session_id: str
@@ -69,7 +70,10 @@ class TestSession(BaseModel):
 @app.get("/")
 async def root():
     """Serve the web interface"""
-    return FileResponse("webapp/static/index.html")
+    static_file = Path("webapp/static/index.html")
+    if static_file.exists():
+        return FileResponse(str(static_file))
+    return {"message": "Injecticide API - Use /api/docs for documentation"}
 
 @app.post("/api/test/start", response_model=TestSession)
 async def start_test(request: TestRequest, background_tasks: BackgroundTasks):
@@ -87,7 +91,7 @@ async def start_test(request: TestRequest, background_tasks: BackgroundTasks):
         completed_at=None
     )
     
-    test_sessions[session_id] = session
+    test_sessions[session_id] = session.dict()
     
     # Run test in background
     background_tasks.add_task(run_test_session, session_id, request)
@@ -101,12 +105,12 @@ async def get_test_status(session_id: str):
     if session_id not in test_sessions:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    return test_sessions[session_id]
+    return TestSession(**test_sessions[session_id])
 
 @app.websocket("/ws/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     """WebSocket for real-time test updates"""
-
+    
     await websocket.accept()
     
     if session_id not in test_sessions:
@@ -114,20 +118,18 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         await websocket.close()
         return
     
+    # Send updates while test is running
     try:
-        # Send updates every second while test is running
-        while test_sessions[session_id].status == "running":
-            await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
+        while test_sessions[session_id]["status"] in ["pending", "running"]:
+            await websocket.send_json(test_sessions[session_id])
             await asyncio.sleep(1)
-
+        
         # Send final result
-        await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
-    except WebSocketDisconnect:
-        # Client disconnected before completion; exit gracefully
-        return
+        await websocket.send_json(test_sessions[session_id])
+    except Exception as e:
+        print(f"WebSocket error: {e}")
     finally:
-        if websocket.client_state != WebSocketState.DISCONNECTED:
-            await websocket.close()
+        await websocket.close()
 
 @app.get("/api/test/{session_id}/report")
 async def download_report(session_id: str, format: str = "html"):
@@ -138,12 +140,15 @@ async def download_report(session_id: str, format: str = "html"):
     
     session = test_sessions[session_id]
     
-    if session.status != "completed":
+    if session["status"] != "completed":
         raise HTTPException(status_code=400, detail="Test not completed")
     
     # Generate report
-    config = {"target_service": "unknown", "model": "unknown"}  # Get from session
-    generator = ReportGenerator(session.results, config)
+    config = {
+        "target_service": session.get("target_service", "unknown"),
+        "model": session.get("model", "unknown")
+    }
+    generator = ReportGenerator(session["results"], config)
     
     report = generator.generate(format=format)
     
@@ -156,29 +161,33 @@ async def download_report(session_id: str, format: str = "html"):
 
 @app.get("/api/payloads")
 async def get_available_payloads():
-    """Get list of available payload categories and examples"""
+    """Get list of available payload categories"""
+    
+    baseline = generate_payloads()
+    policy = policy_violation_payloads()
     
     return {
         "categories": {
             "baseline": {
                 "name": "Baseline Injections",
                 "description": "Standard prompt injection tests",
-                "count": len(generate_payloads()),
-                "examples": generate_payloads()[:3]
+                "count": len(baseline),
+                "examples": baseline[:3] if baseline else []
             },
             "policy": {
-                "name": "Policy Violations",
+                "name": "Policy Violations", 
                 "description": "Tests for policy enforcement",
-                "count": len(policy_violation_payloads()),
-                "examples": policy_violation_payloads()[:3]
+                "count": len(policy),
+                "examples": policy[:3] if policy else []
             }
         }
     }
 
 @app.post("/api/analyze")
-async def analyze_response(text: str):
-    """Analyze a text response for injection indicators"""
+async def analyze_response(payload: Dict[str, str]):
+    """Analyze text for injection indicators"""
     
+    text = payload.get("text", "")
     flags = analyze(text)
     return {
         "text": text,
@@ -191,7 +200,9 @@ async def run_test_session(session_id: str, request: TestRequest):
     """Run the actual test session"""
     
     session = test_sessions[session_id]
-    session.status = "running"
+    session["status"] = "running"
+    session["target_service"] = request.target_service
+    session["model"] = request.model
     
     try:
         # Build endpoint
@@ -204,6 +215,13 @@ async def run_test_session(session_id: str, request: TestRequest):
             endpoint = OpenAIEndpoint(
                 api_key=request.api_key,
                 model=request.model or "gpt-4"
+            )
+        elif request.target_service == "azure_openai":
+            # Azure needs endpoint URL - should be passed in request
+            endpoint = AzureOpenAIEndpoint(
+                api_key=request.api_key,
+                endpoint_url=getattr(request, 'endpoint_url', 'https://your-resource.openai.azure.com'),
+                deployment_name=request.model or "gpt-4"
             )
         else:
             raise ValueError(f"Unsupported service: {request.target_service}")
@@ -218,16 +236,18 @@ async def run_test_session(session_id: str, request: TestRequest):
         for custom in request.custom_payloads:
             payloads.append((custom, "custom"))
         
-        session.total_tests = min(len(payloads), request.max_requests)
+        session["total_tests"] = min(len(payloads), request.max_requests)
         
         # Run tests
+        results = []
         for i, (payload, category) in enumerate(payloads[:request.max_requests]):
             if request.delay_between_requests > 0:
                 await asyncio.sleep(request.delay_between_requests)
             
             try:
-                response = await asyncio.to_thread(
-                    endpoint.send_with_rate_limit, payload
+                # Run synchronously in thread pool to avoid blocking
+                response = await asyncio.get_event_loop().run_in_executor(
+                    None, endpoint.send, payload
                 )
                 flags = analyze(response)
                 
@@ -240,39 +260,48 @@ async def run_test_session(session_id: str, request: TestRequest):
                     "timestamp": datetime.now().isoformat()
                 }
                 
-                session.results.append(result)
-                session.progress = i + 1
+                results.append(result)
+                session["results"] = results
+                session["progress"] = i + 1
                 
             except Exception as e:
-                session.results.append({
+                results.append({
                     "payload": payload,
                     "category": category,
                     "error": str(e),
                     "flags": {},
                     "detected": False
                 })
+                session["results"] = results
+                session["progress"] = i + 1
         
         # Generate summary
-        total = len(session.results)
-        detections = sum(1 for r in session.results if r.get("detected"))
+        total = len(results)
+        detections = sum(1 for r in results if r.get("detected"))
         
-        session.summary = {
+        session["summary"] = {
             "total_tests": total,
             "vulnerabilities_detected": detections,
             "detection_rate": f"{(detections/total*100):.1f}%" if total > 0 else "0%",
-            "categories_tested": list(set(r["category"] for r in session.results))
+            "categories_tested": list(set(r["category"] for r in results))
         }
         
-        session.status = "completed"
-        session.completed_at = datetime.now()
+        session["status"] = "completed"
+        session["completed_at"] = datetime.now()
         
     except Exception as e:
-        session.status = "failed"
-        session.summary = {"error": str(e)}
+        session["status"] = "failed"
+        session["summary"] = {"error": str(e)}
+        print(f"Test session error: {e}")
 
 # Serve static files
-app.mount("/static", StaticFiles(directory="webapp/static"), name="static")
+static_path = Path("webapp/static")
+if static_path.exists():
+    app.mount("/static", StaticFiles(directory="webapp/static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn
+    print("Starting Injecticide Web Server...")
+    print("Web UI: http://localhost:8000")
+    print("API Docs: http://localhost:8000/api/docs")
     uvicorn.run(app, host="0.0.0.0", port=8000)

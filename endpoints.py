@@ -66,3 +66,89 @@ class AnthropicEndpoint(Endpoint):
 
         # Fallback to a string representation to avoid analyzer crashes.
         return str(data)
+
+
+@dataclass
+class OpenAIEndpoint(Endpoint):
+    """OpenAI API client for GPT models."""
+    
+    api_key: str
+    model: str = "gpt-4"
+    api_url: str = "https://api.openai.com/v1/chat/completions"
+    max_tokens: int = 512
+    
+    def send(self, prompt: str) -> str:
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": self.max_tokens,
+            "temperature": 0
+        }
+        
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
+        }
+        
+        response = requests.post(
+            self.api_url,
+            json=payload,
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        data = response.json()
+        
+        # Extract text from OpenAI response format
+        if "choices" in data and len(data["choices"]) > 0:
+            choice = data["choices"][0]
+            if "message" in choice and "content" in choice["message"]:
+                return choice["message"]["content"]
+        
+        return str(data)
+
+
+@dataclass 
+class AzureOpenAIEndpoint(Endpoint):
+    """Azure OpenAI API client."""
+    
+    api_key: str
+    endpoint_url: str  # e.g., https://your-resource.openai.azure.com
+    deployment_name: str  # Your deployment name
+    api_version: str = "2023-05-15"
+    max_tokens: int = 512
+    
+    def send(self, prompt: str) -> str:
+        url = f"{self.endpoint_url}/openai/deployments/{self.deployment_name}/chat/completions?api-version={self.api_version}"
+        
+        payload = {
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": self.max_tokens,
+            "temperature": 0
+        }
+        
+        headers = {
+            "Content-Type": "application/json",
+            "api-key": self.api_key
+        }
+        
+        response = requests.post(
+            url,
+            json=payload,
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+        data = response.json()
+        
+        # Extract text from Azure OpenAI response
+        if "choices" in data and len(data["choices"]) > 0:
+            choice = data["choices"][0]
+            if "message" in choice and "content" in choice["message"]:
+                return choice["message"]["content"]
+        
+        return str(data)
