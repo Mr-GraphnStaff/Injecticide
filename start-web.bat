@@ -33,11 +33,13 @@ echo ==========================================
 echo Starting Injecticide Web Platform...
 echo ==========================================
 echo.
-echo Web UI:   http://localhost:8000
-echo API Docs: http://localhost:8000/api/docs
+set HOST=127.0.0.1
+if not "%INJECTICIDE_HOST%"=="" set HOST=%INJECTICIDE_HOST%
+echo Web UI:   http://%HOST%:8000
+echo API Docs: http://%HOST%:8000/api/docs
 echo.
 echo Press Ctrl+C to stop the server
 echo ==========================================
 echo.
 
-python -m uvicorn webapp.api:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn webapp.api:app --host %HOST% --port 8000 --reload
