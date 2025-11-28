@@ -15,6 +15,7 @@ import json
 import asyncio
 import time
 from pathlib import Path
+from starlette.websockets import WebSocketDisconnect, WebSocketState
 
 # Import core Injecticide modules
 import sys
@@ -105,7 +106,7 @@ async def get_test_status(session_id: str):
 @app.websocket("/ws/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     """WebSocket for real-time test updates"""
-    
+
     await websocket.accept()
     
     if session_id not in test_sessions:
@@ -113,14 +114,20 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         await websocket.close()
         return
     
-    # Send updates every second while test is running
-    while test_sessions[session_id].status == "running":
-        await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
-        await asyncio.sleep(1)
+    try:
+        # Send updates every second while test is running
+        while test_sessions[session_id].status == "running":
+            await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
+            await asyncio.sleep(1)
 
-    # Send final result
-    await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
-    await websocket.close()
+        # Send final result
+        await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
+    except WebSocketDisconnect:
+        # Client disconnected before completion; exit gracefully
+        return
+    finally:
+        if websocket.client_state != WebSocketState.DISCONNECTED:
+            await websocket.close()
 
 @app.get("/api/test/{session_id}/report")
 async def download_report(session_id: str, format: str = "html"):
