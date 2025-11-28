@@ -131,13 +131,13 @@ def main():
         epilog="""
 Examples:
   # Run with config file
-  python main_enhanced.py --config configs/anthropic.yaml
-  
+  python main.py --config configs/anthropic.yaml
+
   # Quick test against OpenAI
-  python main_enhanced.py --service openai --api-key sk-... --mode baseline
-  
+  python main.py --service openai --api-key sk-... --mode baseline
+
   # Generate HTML report
-  python main_enhanced.py --config configs/test.yaml --output report.html --format html
+  python main.py --config configs/test.yaml --output report.html --format html
         """
     )
     
