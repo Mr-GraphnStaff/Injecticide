@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File, W
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -114,11 +115,11 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     
     # Send updates every second while test is running
     while test_sessions[session_id].status == "running":
-        await websocket.send_json(test_sessions[session_id].dict())
+        await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
         await asyncio.sleep(1)
-    
+
     # Send final result
-    await websocket.send_json(test_sessions[session_id].dict())
+    await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
     await websocket.close()
 
 @app.get("/api/test/{session_id}/report")
