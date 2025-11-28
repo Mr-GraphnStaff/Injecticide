@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -101,8 +102,8 @@ async def start_test(request: TestRequest, background_tasks: BackgroundTasks):
         created_at=datetime.now(),
         completed_at=None
     )
-    
-    test_sessions[session_id] = session.dict()
+
+    test_sessions[session_id] = jsonable_encoder(session)
     
     # Run test in background
     background_tasks.add_task(run_test_session, session_id, request)
@@ -266,7 +267,7 @@ async def run_test_session(session_id: str, request: TestRequest):
             # Azure needs endpoint URL - should be passed in request
             endpoint = AzureOpenAIEndpoint(
                 api_key=api_key,
-                endpoint_url=endpoint_url or 'https://your-resource.openai.azure.com',
+                endpoint=endpoint_url or "https://your-resource.openai.azure.com",
                 deployment_name=model or "gpt-4"
             )
         else:
@@ -333,7 +334,7 @@ async def run_test_session(session_id: str, request: TestRequest):
         }
         
         session["status"] = "completed"
-        session["completed_at"] = datetime.now()
+        session["completed_at"] = datetime.now().isoformat()
         
     except Exception as e:
         session["status"] = "failed"
