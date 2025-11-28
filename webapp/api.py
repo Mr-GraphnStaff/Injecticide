@@ -219,7 +219,9 @@ async def run_test_session(session_id: str, request: TestRequest):
                 await asyncio.sleep(request.delay_between_requests)
             
             try:
-                response = endpoint.send(payload)
+                response = await asyncio.to_thread(
+                    endpoint.send_with_rate_limit, payload
+                )
                 flags = analyze(response)
                 
                 result = {

@@ -37,14 +37,15 @@ class AnthropicEndpoint(Endpoint):
             "x-api-key": self.api_key,
             "anthropic-version": "2023-06-01",
         }
-        
-        response = requests.post(
-            self.api_url,
-            json=payload,
-            headers=headers,
-            timeout=30,
+
+        response = self._send_request(
+            lambda: requests.post(
+                self.api_url,
+                json=payload,
+                headers=headers,
+                timeout=30,
+            )
         )
-        response.raise_for_status()
         data = response.json()
         
         # Extract text content
