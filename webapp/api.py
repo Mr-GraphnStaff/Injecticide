@@ -26,6 +26,12 @@ from reporter import ReportGenerator
 from analyzer import analyze
 from generator import generate_payloads, policy_violation_payloads
 from endpoints import AnthropicEndpoint, OpenAIEndpoint, AzureOpenAIEndpoint
+from webapp.config_loader import (
+    get_endpoint_options,
+    get_payload_presets,
+    resolve_endpoint,
+    resolve_payload_preset,
+)
 
 app = FastAPI(
     title="Injecticide",
@@ -49,8 +55,11 @@ test_sessions = {}
 # Request/Response Models
 class TestRequest(BaseModel):
     target_service: str = Field(..., description="LLM service to test")
-    api_key: str = Field(..., description="API key for the service")
+    api_key: Optional[str] = Field(None, description="API key for the service")
     model: Optional[str] = Field(None, description="Model to test")
+    endpoint_url: Optional[str] = Field(None, description="Custom endpoint URL for Azure OpenAI")
+    endpoint_name: Optional[str] = Field(None, description="Saved endpoint configuration name")
+    payload_preset: Optional[str] = Field(None, description="Preset payload selection")
     test_categories: List[str] = Field(default=["baseline"])
     custom_payloads: List[str] = Field(default=[])
     max_requests: int = Field(default=50)
@@ -65,6 +74,8 @@ class TestSession(BaseModel):
     summary: Optional[Dict[str, Any]]
     created_at: datetime
     completed_at: Optional[datetime]
+    endpoint_name: Optional[str] = None
+    payload_preset: Optional[str] = None
 
 # API Routes
 @app.get("/")
@@ -159,6 +170,16 @@ async def download_report(session_id: str, format: str = "html"):
     else:
         return {"content": report, "format": format}
 
+
+@app.get("/api/config/options")
+async def get_ui_options():
+    """Provide endpoint and payload preset options for the frontend."""
+
+    return {
+        "endpoints": get_endpoint_options(),
+        "payload_presets": get_payload_presets(),
+    }
+
 @app.get("/api/payloads")
 async def get_available_payloads():
     """Get list of available payload categories"""
@@ -198,42 +219,67 @@ async def analyze_response(payload: Dict[str, str]):
 # Background task to run tests
 async def run_test_session(session_id: str, request: TestRequest):
     """Run the actual test session"""
-    
+
     session = test_sessions[session_id]
     session["status"] = "running"
     session["target_service"] = request.target_service
     session["model"] = request.model
-    
+    session["endpoint_name"] = request.endpoint_name
+    session["payload_preset"] = request.payload_preset
+
     try:
+        selected_endpoint = resolve_endpoint(request.endpoint_name)
+        target_service = selected_endpoint.get("target_service", request.target_service) if selected_endpoint else request.target_service
+        api_key = request.api_key or (selected_endpoint.get("api_key") if selected_endpoint else None)
+        model = request.model or (selected_endpoint.get("model") if selected_endpoint else None)
+        endpoint_url = request.endpoint_url or (selected_endpoint.get("endpoint_url") if selected_endpoint else None)
+
+        if not api_key:
+            raise ValueError("No API key provided for the selected endpoint")
+
+        session["target_service"] = target_service
+        session["model"] = model
+        session["endpoint_name"] = request.endpoint_name
+
+        payload_preset = resolve_payload_preset(request.payload_preset)
+        test_categories = request.test_categories
+        custom_payloads = list(request.custom_payloads)
+
+        if payload_preset:
+            if payload_preset.get("test_categories"):
+                test_categories = payload_preset["test_categories"]
+            if payload_preset.get("custom_payloads"):
+                custom_payloads = payload_preset["custom_payloads"] + custom_payloads
+
         # Build endpoint
-        if request.target_service == "anthropic":
+        if target_service == "anthropic":
             endpoint = AnthropicEndpoint(
-                api_key=request.api_key,
-                model=request.model or "claude-3-opus-20240229"
+                api_key=api_key,
+                model=model or "claude-3-opus-20240229"
             )
-        elif request.target_service == "openai":
+        elif target_service == "openai":
             endpoint = OpenAIEndpoint(
-                api_key=request.api_key,
-                model=request.model or "gpt-4"
+                api_key=api_key,
+                model=model or "gpt-4"
             )
-        elif request.target_service == "azure_openai":
+        elif target_service == "azure_openai":
             # Azure needs endpoint URL - should be passed in request
             endpoint = AzureOpenAIEndpoint(
-                api_key=request.api_key,
-                endpoint_url=getattr(request, 'endpoint_url', 'https://your-resource.openai.azure.com'),
-                deployment_name=request.model or "gpt-4"
+                api_key=api_key,
+                endpoint_url=endpoint_url or 'https://your-resource.openai.azure.com',
+                deployment_name=model or "gpt-4"
             )
         else:
-            raise ValueError(f"Unsupported service: {request.target_service}")
-        
+            raise ValueError(f"Unsupported service: {target_service}")
+
         # Gather payloads
         payloads = []
-        if "baseline" in request.test_categories:
+        if "baseline" in test_categories:
             payloads.extend([(p, "baseline") for p in generate_payloads()])
-        if "policy" in request.test_categories:
+        if "policy" in test_categories:
             payloads.extend([(p, "policy") for p in policy_violation_payloads()])
-        
-        for custom in request.custom_payloads:
+
+        for custom in custom_payloads:
             payloads.append((custom, "custom"))
         
         session["total_tests"] = min(len(payloads), request.max_requests)

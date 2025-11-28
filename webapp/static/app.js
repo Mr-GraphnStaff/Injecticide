@@ -5,24 +5,81 @@ function App() {
         target_service: 'anthropic',
         api_key: '',
         model: '',
+        endpoint_url: '',
+        endpoint_name: '',
+        payload_preset: '',
         test_categories: ['baseline'],
         custom_payloads: [],
         max_requests: 50,
         delay_between_requests: 0.5
     });
-    
+
     const [session, setSession] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
     const [results, setResults] = useState([]);
     const [ws, setWs] = useState(null);
     const [customPayload, setCustomPayload] = useState('');
+    const [endpointOptions, setEndpointOptions] = useState([]);
+    const [payloadPresets, setPayloadPresets] = useState([]);
+    const [optionsError, setOptionsError] = useState('');
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const response = await fetch('/api/config/options');
+                if (!response.ok) {
+                    throw new Error('Failed to load saved configuration');
+                }
+
+                const data = await response.json();
+                setEndpointOptions(data.endpoints || []);
+                setPayloadPresets(data.payload_presets || []);
+            } catch (error) {
+                console.error('Config options error:', error);
+                setOptionsError('Could not load saved endpoints or payload presets');
+            }
+        };
+
+        fetchOptions();
+    }, []);
+
+    const applyEndpointSelection = (name) => {
+        const selected = endpointOptions.find((option) => option.name === name);
+
+        setTestConfig({
+            ...testConfig,
+            endpoint_name: name,
+            target_service: selected?.target_service || testConfig.target_service,
+            model: selected?.model || '',
+            endpoint_url: selected?.endpoint_url || '',
+            api_key: name ? '' : testConfig.api_key,
+        });
+    };
+
+    const applyPayloadPreset = (name) => {
+        const preset = payloadPresets.find((item) => item.name === name);
+
+        setTestConfig({
+            ...testConfig,
+            payload_preset: name,
+            test_categories: preset?.test_categories?.length ? preset.test_categories : ['baseline'],
+            custom_payloads: preset?.custom_payloads || [],
+        });
+    };
+
+    const selectedEndpoint = endpointOptions.find((option) => option.name === testConfig.endpoint_name);
+    const selectedPreset = payloadPresets.find((option) => option.name === testConfig.payload_preset);
+    const shouldShowEndpointUrl = (selectedEndpoint?.target_service || testConfig.target_service) === 'azure_openai';
     
     const startTest = async () => {
-        if (!testConfig.api_key) {
-            alert('Please enter an API key');
+        const selectedEndpoint = endpointOptions.find((option) => option.name === testConfig.endpoint_name);
+        const hasStoredKey = selectedEndpoint?.has_api_key;
+
+        if (!testConfig.api_key && !hasStoredKey) {
+            alert('Please enter an API key or select a configured endpoint with credentials');
             return;
         }
-        
+
         setIsRunning(true);
         setResults([]);
         
@@ -80,7 +137,8 @@ function App() {
     const addCustomPayload = () => {
         if (customPayload.trim()) {
             setTestConfig({
-                ...testConfig, 
+                ...testConfig,
+                payload_preset: '',
                 custom_payloads: [...testConfig.custom_payloads, customPayload]
             });
             setCustomPayload('');
@@ -90,6 +148,7 @@ function App() {
     const removeCustomPayload = (index) => {
         setTestConfig({
             ...testConfig,
+            payload_preset: '',
             custom_payloads: testConfig.custom_payloads.filter((_, i) => i !== index)
         });
     };
@@ -137,6 +196,34 @@ function App() {
                             </h2>
                             
                             <div className="space-y-4">
+                                {/* Saved Endpoint */}
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-300">
+                                        <i className="fas fa-bookmark mr-1 text-blue-400"></i>Saved Endpoint
+                                    </label>
+                                    <select
+                                        className="w-full bg-gray-900/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-red-500 focus:outline-none transition"
+                                        value={testConfig.endpoint_name}
+                                        onChange={(e) => applyEndpointSelection(e.target.value)}
+                                        disabled={isRunning}
+                                    >
+                                        <option value="">Manual configuration</option>
+                                        {endpointOptions.map((option) => (
+                                            <option key={option.name} value={option.name}>
+                                                {option.name} {option.description ? `- ${option.description}` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {optionsError && (
+                                        <p className="text-xs text-yellow-400 mt-1">{optionsError}</p>
+                                    )}
+                                    {selectedEndpoint && (
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            {selectedEndpoint.description || 'Using server-stored credentials.'}
+                                        </p>
+                                    )}
+                                </div>
+
                                 {/* Target Service */}
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-gray-300">
@@ -159,7 +246,7 @@ function App() {
                                     <label className="block text-sm font-medium mb-2 text-gray-300">
                                         <i className="fas fa-key mr-1 text-yellow-400"></i>API Key
                                     </label>
-                                    <input 
+                                    <input
                                         type="password"
                                         className="w-full bg-gray-900/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-red-500 focus:outline-none transition"
                                         placeholder="sk-..."
@@ -167,6 +254,11 @@ function App() {
                                         onChange={(e) => setTestConfig({...testConfig, api_key: e.target.value})}
                                         disabled={isRunning}
                                     />
+                                    {selectedEndpoint && (
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            API key is stored on the server for this preset; override here if needed.
+                                        </p>
+                                    )}
                                 </div>
                                 
                                 {/* Model */}
@@ -174,7 +266,7 @@ function App() {
                                     <label className="block text-sm font-medium mb-2 text-gray-300">
                                         <i className="fas fa-brain mr-1 text-purple-400"></i>Model (optional)
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         className="w-full bg-gray-900/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-red-500 focus:outline-none transition"
                                         placeholder="Default model"
@@ -183,23 +275,59 @@ function App() {
                                         disabled={isRunning}
                                     />
                                 </div>
+
+                                {shouldShowEndpointUrl && (
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2 text-gray-300">
+                                            <i className="fas fa-link mr-1 text-blue-400"></i>Azure Endpoint URL
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-gray-900/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-red-500 focus:outline-none transition"
+                                            placeholder="https://your-resource.openai.azure.com"
+                                            value={testConfig.endpoint_url}
+                                            onChange={(e) => setTestConfig({...testConfig, endpoint_url: e.target.value})}
+                                            disabled={isRunning}
+                                        />
+                                    </div>
+                                )}
                                 
                                 {/* Test Categories */}
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-gray-300">
                                         <i className="fas fa-vial mr-1 text-green-400"></i>Test Categories
                                     </label>
+                                    <div className="flex gap-2 mb-2">
+                                        <select
+                                            className="flex-1 bg-gray-900/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-red-500 focus:outline-none text-sm"
+                                            value={testConfig.payload_preset}
+                                            onChange={(e) => applyPayloadPreset(e.target.value)}
+                                            disabled={isRunning}
+                                        >
+                                            <option value="">Custom selection</option>
+                                            {payloadPresets.map((preset) => (
+                                                <option key={preset.name} value={preset.name}>
+                                                    {preset.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {selectedPreset && (
+                                            <span className="text-xs text-gray-400 self-center">
+                                                {selectedPreset.description || 'Preset loaded from secure config'}
+                                            </span>
+                                        )}
+                                    </div>
                                     <div className="space-y-2">
                                         <label className="flex items-center p-2 bg-gray-900/30 rounded hover:bg-gray-900/50 transition cursor-pointer">
-                                            <input 
+                                            <input
                                                 type="checkbox"
                                                 className="mr-3 w-4 h-4 text-red-600 rounded focus:ring-red-500"
                                                 checked={testConfig.test_categories.includes('baseline')}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setTestConfig({...testConfig, test_categories: [...testConfig.test_categories, 'baseline']});
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                        setTestConfig({...testConfig, payload_preset: '', test_categories: [...testConfig.test_categories, 'baseline']});
                                                     } else {
-                                                        setTestConfig({...testConfig, test_categories: testConfig.test_categories.filter(c => c !== 'baseline')});
+                                                        setTestConfig({...testConfig, payload_preset: '', test_categories: testConfig.test_categories.filter(c => c !== 'baseline')});
                                                     }
                                                 }}
                                                 disabled={isRunning}
@@ -216,9 +344,9 @@ function App() {
                                                 checked={testConfig.test_categories.includes('policy')}
                                                 onChange={(e) => {
                                                     if (e.target.checked) {
-                                                        setTestConfig({...testConfig, test_categories: [...testConfig.test_categories, 'policy']});
+                                                        setTestConfig({...testConfig, payload_preset: '', test_categories: [...testConfig.test_categories, 'policy']});
                                                     } else {
-                                                        setTestConfig({...testConfig, test_categories: testConfig.test_categories.filter(c => c !== 'policy')});
+                                                        setTestConfig({...testConfig, payload_preset: '', test_categories: testConfig.test_categories.filter(c => c !== 'policy')});
                                                     }
                                                 }}
                                                 disabled={isRunning}
