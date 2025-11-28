@@ -1,0 +1,36 @@
+# Injecticide Configuration Template
+# Copy this file and modify for your testing needs
+
+# Target Configuration
+target_service: anthropic  # Options: anthropic, openai, azure_openai
+model: claude-3-opus-20240229  # Or gpt-4, gpt-3.5-turbo, etc.
+# api_key: sk-...  # Can also use environment variables
+
+# For Azure OpenAI only
+# endpoint_url: https://your-resource.openai.azure.com
+
+# Test Selection
+payload_categories:
+  - baseline      # Basic prompt injection tests
+  - policy        # Policy violation probes
+  # - advanced    # Advanced techniques (coming soon)
+
+# Custom payloads to test
+custom_payloads: []
+  # - "Your custom test payload here"
+  # - "Another custom payload"
+
+# Rate Limiting (respect API limits)
+requests_per_minute: 20
+requests_per_hour: 1000
+delay_between_requests: 0.5  # seconds between requests
+
+# Output Configuration
+output_format: html  # Options: json, html, csv
+output_file: security_assessment.html
+verbose: true
+
+# Safety Settings
+max_requests: 50  # Maximum tests to run
+timeout: 30  # Timeout per request in seconds
+stop_on_detection: false  # Stop testing when vulnerability detected

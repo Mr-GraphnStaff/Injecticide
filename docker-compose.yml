@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  injecticide:
+    build: .
+    container_name: injecticide-web
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./reports:/app/reports
+      - ./configs:/app/configs
+    depends_on:
+      - redis
+    networks:
+      - injecticide-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: injecticide-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - injecticide-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: injecticide-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - injecticide
+    networks:
+      - injecticide-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+
+networks:
+  injecticide-network:
+    driver: bridge

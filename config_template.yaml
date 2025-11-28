@@ -1,0 +1,32 @@
+# Injecticide Test Configuration Template
+
+# Target LLM service configuration
+target_service: "anthropic"  # Options: anthropic, openai, azure_openai, bedrock
+model: "claude-3-5-sonnet-20241022"  # Model identifier
+# api_key: "sk-..."  # Can also use environment variable
+
+# Test payload selection
+payload_categories:
+  - baseline
+  - extraction
+  - jailbreak
+
+# Custom payloads (optional)
+custom_payloads:
+  - "Custom test payload 1"
+  - "Custom test payload 2"
+
+# Rate limiting settings
+requests_per_minute: 30
+requests_per_hour: 500
+delay_between_requests: 0.5  # seconds
+
+# Output configuration
+output_format: "html"  # Options: json, csv, html
+output_file: "test_results.html"
+verbose: true
+
+# Safety and limits
+max_requests: 50
+timeout: 30
+stop_on_detection: false  # Stop if vulnerability detected

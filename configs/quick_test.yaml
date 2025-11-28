@@ -1,0 +1,22 @@
+# Quick baseline security check
+
+target_service: "openai"
+model: "gpt-4-turbo-preview"
+
+# Just test baseline vulnerabilities
+payload_categories:
+  - baseline
+
+# Aggressive rate limiting for quick test
+requests_per_minute: 60
+delay_between_requests: 0.5
+
+# Simple JSON output
+output_format: "json"
+output_file: "quick_test.json"
+verbose: false
+
+# Limited scope
+max_requests: 20
+timeout: 30
+stop_on_detection: true  # Stop at first detection

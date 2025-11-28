@@ -1,0 +1,67 @@
+name: Injecticide Security Testing
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      target_service:
+        description: 'Target LLM service'
+        required: true
+        default: 'anthropic'
+        type: choice
+        options:
+          - anthropic
+          - openai
+          - azure_openai
+      model:
+        description: 'Model to test'
+        required: false
+        default: ''
+
+jobs:
+  security-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run security tests
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      run: |
+        python main.py \
+          --service ${{ github.event.inputs.target_service || 'anthropic' }} \
+          --categories baseline extraction jailbreak \
+          --format html \
+          --output report.html \
+          --max-requests 50
+    
+    - name: Upload test report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report-${{ github.run_number }}
+        path: report.html
+    
+    - name: Check for vulnerabilities
+      run: |
+        python -c "
+        import json
+        import sys
+        # Check if any vulnerabilities were detected
+        # You would parse the report here
+        # sys.exit(1) if vulnerabilities found
+        "
