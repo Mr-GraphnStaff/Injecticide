@@ -26,7 +26,7 @@ from config import TestConfig
 from reporter import ReportGenerator
 from analyzer import analyze
 from generator import generate_payloads, policy_violation_payloads
-from endpoints import AnthropicEndpoint, OpenAIEndpoint, AzureOpenAIEndpoint
+from endpoints_new import AnthropicEndpoint, OpenAIEndpoint, AzureOpenAIEndpoint
 from webapp.config_loader import (
     get_endpoint_options,
     get_payload_presets,
