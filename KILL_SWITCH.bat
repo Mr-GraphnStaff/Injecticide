@@ -1,64 +1,53 @@
 @echo off
 echo ==========================================
-echo   INJECTICIDE - EMERGENCY KILL SWITCH
+echo   INJECTICIDE - GRACEFUL SHUTDOWN HELPER
 echo ==========================================
 echo.
-echo This will forcefully terminate ALL Python processes
-echo and unlock any files that are stuck.
+echo 1) Use the "Close App" button in the web UI whenever possible.
+echo 2) This helper will try a graceful shutdown before doing anything else.
 echo.
 echo Press Ctrl+C to cancel, or
 pause
 
+set SHUTDOWN_URL=http://localhost:8080/api/app/close
+
 echo.
-echo [1] Killing all Python processes...
+echo [1] Requesting graceful shutdown from the running server...
+powershell -Command "try { Invoke-WebRequest -Method POST -Uri '%SHUTDOWN_URL%' -ErrorAction Stop ^| Out-Null; Start-Sleep -Seconds 2; exit 0 } catch { exit 1 }"
+if %ERRORLEVEL%==0 (
+    echo.
+    echo Graceful shutdown requested. If the window stays open, close it manually.
+    goto END
+)
+
+echo.
+echo [2] Graceful shutdown failed or server not running. Performing final cleanup...
 taskkill /F /IM python.exe 2>nul
 taskkill /F /IM pythonw.exe 2>nul
 taskkill /F /IM py.exe 2>nul
-
-echo [2] Killing any uvicorn processes...
 taskkill /F /IM uvicorn.exe 2>nul
-
-echo [3] Killing any node processes (if React dev server)...
 taskkill /F /IM node.exe 2>nul
 
-echo [4] Waiting for processes to fully terminate...
+echo.
+echo [3] Waiting for processes to fully terminate...
 timeout /t 3 /nobreak >nul
 
-echo [5] Checking for remaining Python processes...
 echo.
+echo [4] Checking for remaining Python processes...
 tasklist | findstr /I python
 if %ERRORLEVEL% == 0 (
-    echo.
-    echo WARNING: Some Python processes still running!
-    echo Attempting aggressive termination...
-    
-    REM Get all Python PIDs and kill them
+    echo Additional Python processes detected. Attempting final termination...
     for /f "tokens=2" %%i in ('tasklist ^| findstr /I python') do (
-        echo Killing PID %%i
         taskkill /F /PID %%i 2>nul
     )
 ) else (
     echo No Python processes found - GOOD!
 )
 
-echo.
-echo [6] Testing file access...
-echo. > P:\Injecticide\test_unlock.tmp 2>nul
-if exist P:\Injecticide\test_unlock.tmp (
-    del P:\Injecticide\test_unlock.tmp
-    echo Files appear to be unlocked - SUCCESS!
-) else (
-    echo WARNING: Files may still be locked!
-)
-
+:END
 echo.
 echo ==========================================
 echo   CLEANUP COMPLETE
 echo ==========================================
-echo.
-echo You should now be able to:
-echo - Edit all files
-echo - Run git commands
-echo - Start the web server fresh
 echo.
 pause

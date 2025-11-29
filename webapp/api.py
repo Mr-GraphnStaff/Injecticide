@@ -13,16 +13,15 @@ from datetime import datetime
 import uuid
 import json
 import asyncio
-import time
 from pathlib import Path
 import sys
 import os
+import signal
 
 # Add parent directory to path to import Injecticide modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import core Injecticide modules
-from config import TestConfig
 from reporter import ReportGenerator
 from analyzer import analyze
 from generator import generate_payloads, policy_violation_payloads
@@ -216,6 +215,22 @@ async def analyze_response(payload: Dict[str, str]):
         "flags": flags,
         "detected": any(flags.values())
     }
+
+
+async def _shutdown_server():
+    """Request a graceful shutdown of the running Uvicorn server."""
+
+    # Give the response a chance to flush before stopping the process
+    await asyncio.sleep(0.1)
+    os.kill(os.getpid(), signal.SIGINT)
+
+
+@app.post("/api/app/close")
+async def close_application():
+    """Schedule a graceful shutdown so the frontend can stop the app safely."""
+
+    asyncio.create_task(_shutdown_server())
+    return {"status": "shutting_down"}
 
 # Background task to run tests
 async def run_test_session(session_id: str, request: TestRequest):

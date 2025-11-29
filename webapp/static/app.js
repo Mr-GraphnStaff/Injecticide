@@ -16,6 +16,7 @@ function App() {
 
     const [session, setSession] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
+    const [isShuttingDown, setIsShuttingDown] = useState(false);
     const [results, setResults] = useState([]);
     const [ws, setWs] = useState(null);
     const [customPayload, setCustomPayload] = useState('');
@@ -70,6 +71,7 @@ function App() {
     const selectedEndpoint = endpointOptions.find((option) => option.name === testConfig.endpoint_name);
     const selectedPreset = payloadPresets.find((option) => option.name === testConfig.payload_preset);
     const shouldShowEndpointUrl = (selectedEndpoint?.target_service || testConfig.target_service) === 'azure_openai';
+    const disableControls = isRunning || isShuttingDown;
     
     const startTest = async () => {
         const selectedEndpoint = endpointOptions.find((option) => option.name === testConfig.endpoint_name);
@@ -120,13 +122,43 @@ function App() {
             setIsRunning(false);
         }
     };
-    
+
     const stopTest = () => {
         if (ws) {
             ws.close();
             setWs(null);
         }
         setIsRunning(false);
+    };
+
+    const closeApp = async () => {
+        if (isShuttingDown) {
+            return;
+        }
+
+        setIsShuttingDown(true);
+
+        try {
+            if (ws) {
+                ws.close();
+                setWs(null);
+            }
+            setIsRunning(false);
+
+            const response = await fetch('/api/app/close', {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to request shutdown');
+            }
+
+            alert('Shutting down Injecticide. This window may close once the server stops.');
+        } catch (error) {
+            console.error('Failed to close app:', error);
+            alert('Could not close the app: ' + error.message);
+            setIsShuttingDown(false);
+        }
     };
     
     const downloadReport = (format) => {
@@ -181,6 +213,14 @@ function App() {
                             <span className="text-gray-400">
                                 <i className="fas fa-lock mr-2"></i>Enterprise Grade Security Testing
                             </span>
+                            <button
+                                onClick={closeApp}
+                                disabled={isShuttingDown}
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition border border-red-600/70 bg-red-800/80 hover:bg-red-700/80 ${isShuttingDown ? 'opacity-60 cursor-not-allowed' : ''}`}
+                            >
+                                <i className="fas fa-power-off mr-2"></i>
+                                {isShuttingDown ? 'Closing…' : 'Close App'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -205,7 +245,7 @@ function App() {
                                         className="w-full bg-gray-900/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-red-500 focus:outline-none transition"
                                         value={testConfig.endpoint_name}
                                         onChange={(e) => applyEndpointSelection(e.target.value)}
-                                        disabled={isRunning}
+                                        disabled={disableControls}
                                     >
                                         <option value="">Manual configuration</option>
                                         {endpointOptions.map((option) => (
@@ -233,7 +273,7 @@ function App() {
                                         className="w-full bg-gray-900/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:border-red-500 focus:outline-none transition"
                                         value={testConfig.target_service}
                                         onChange={(e) => setTestConfig({...testConfig, target_service: e.target.value})}
-                                        disabled={isRunning}
+                                        disabled={disableControls}
                                     >
                                         <option value="anthropic">🤖 Anthropic (Claude)</option>
                                         <option value="openai">🧠 OpenAI (GPT)</option>
@@ -252,7 +292,7 @@ function App() {
                                         placeholder="sk-..."
                                         value={testConfig.api_key}
                                         onChange={(e) => setTestConfig({...testConfig, api_key: e.target.value})}
-                                        disabled={isRunning}
+                                        disabled={disableControls}
                                     />
                                     {selectedEndpoint && (
                                         <p className="text-xs text-gray-400 mt-1">
@@ -272,7 +312,7 @@ function App() {
                                         placeholder="Default model"
                                         value={testConfig.model}
                                         onChange={(e) => setTestConfig({...testConfig, model: e.target.value})}
-                                        disabled={isRunning}
+                                        disabled={disableControls}
                                     />
                                 </div>
 
@@ -287,7 +327,7 @@ function App() {
                                             placeholder="https://your-resource.openai.azure.com"
                                             value={testConfig.endpoint_url}
                                             onChange={(e) => setTestConfig({...testConfig, endpoint_url: e.target.value})}
-                                            disabled={isRunning}
+                                            disabled={disableControls}
                                         />
                                     </div>
                                 )}
@@ -302,7 +342,7 @@ function App() {
                                             className="flex-1 bg-gray-900/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-red-500 focus:outline-none text-sm"
                                             value={testConfig.payload_preset}
                                             onChange={(e) => applyPayloadPreset(e.target.value)}
-                                            disabled={isRunning}
+                                            disabled={disableControls}
                                         >
                                             <option value="">Custom selection</option>
                                             {payloadPresets.map((preset) => (
@@ -330,7 +370,7 @@ function App() {
                                                         setTestConfig({...testConfig, payload_preset: '', test_categories: testConfig.test_categories.filter(c => c !== 'baseline')});
                                                     }
                                                 }}
-                                                disabled={isRunning}
+                                                disabled={disableControls}
                                             />
                                             <div>
                                                 <div className="font-medium">Baseline Injections</div>
@@ -349,7 +389,7 @@ function App() {
                                                         setTestConfig({...testConfig, payload_preset: '', test_categories: testConfig.test_categories.filter(c => c !== 'policy')});
                                                     }
                                                 }}
-                                                disabled={isRunning}
+                                                disabled={disableControls}
                                             />
                                             <div>
                                                 <div className="font-medium">Policy Violations</div>
@@ -372,11 +412,11 @@ function App() {
                                             value={customPayload}
                                             onChange={(e) => setCustomPayload(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && addCustomPayload()}
-                                            disabled={isRunning}
+                                            disabled={disableControls}
                                         />
                                         <button 
                                             onClick={addCustomPayload}
-                                            disabled={isRunning}
+                                            disabled={disableControls}
                                             className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition disabled:opacity-50"
                                         >
                                             <i className="fas fa-plus"></i>
@@ -389,7 +429,7 @@ function App() {
                                                     <span className="truncate mr-2">{payload}</span>
                                                     <button 
                                                         onClick={() => removeCustomPayload(idx)}
-                                                        disabled={isRunning}
+                                                        disabled={disableControls}
                                                         className="text-red-400 hover:text-red-300"
                                                     >
                                                         <i className="fas fa-times"></i>
@@ -411,7 +451,7 @@ function App() {
                                                 className="w-full bg-gray-900/50 border border-gray-600 rounded px-3 py-1 text-white text-sm focus:border-red-500 focus:outline-none"
                                                 value={testConfig.max_requests}
                                                 onChange={(e) => setTestConfig({...testConfig, max_requests: parseInt(e.target.value)})}
-                                                disabled={isRunning}
+                                                disabled={disableControls}
                                             />
                                         </div>
                                         <div>
@@ -422,7 +462,7 @@ function App() {
                                                 className="w-full bg-gray-900/50 border border-gray-600 rounded px-3 py-1 text-white text-sm focus:border-red-500 focus:outline-none"
                                                 value={testConfig.delay_between_requests}
                                                 onChange={(e) => setTestConfig({...testConfig, delay_between_requests: parseFloat(e.target.value)})}
-                                                disabled={isRunning}
+                                                disabled={disableControls}
                                             />
                                         </div>
                                     </div>
@@ -431,16 +471,18 @@ function App() {
                                 {/* Action Buttons */}
                                 <div className="pt-4 space-y-2">
                                     {!isRunning ? (
-                                        <button 
+                                        <button
                                             onClick={startTest}
-                                            className="w-full py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg font-bold transition transform hover:scale-105 shadow-lg"
+                                            disabled={isShuttingDown}
+                                            className={`w-full py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg font-bold transition transform hover:scale-105 shadow-lg ${isShuttingDown ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             <i className="fas fa-rocket mr-2"></i>Launch Attack
                                         </button>
                                     ) : (
-                                        <button 
+                                        <button
                                             onClick={stopTest}
-                                            className="w-full py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-bold transition"
+                                            disabled={isShuttingDown}
+                                            className={`w-full py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-bold transition ${isShuttingDown ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             <i className="fas fa-stop mr-2"></i>Stop Test
                                         </button>
