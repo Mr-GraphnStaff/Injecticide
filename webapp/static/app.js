@@ -73,6 +73,25 @@ function App() {
     const shouldShowEndpointUrl = (selectedEndpoint?.target_service || testConfig.target_service) === 'azure_openai';
     const disableControls = isRunning || isShuttingDown;
     
+    const getPreparedTestConfig = () => {
+        const maxRequestsValue = Number(testConfig.max_requests);
+        const delayValue = Number(testConfig.delay_between_requests);
+
+        if (!Number.isInteger(maxRequestsValue) || maxRequestsValue <= 0) {
+            throw new Error('Please enter a valid positive integer for Max Requests.');
+        }
+
+        if (!Number.isFinite(delayValue) || delayValue < 0) {
+            throw new Error('Please enter a valid non-negative number for Delay.');
+        }
+
+        return {
+            ...testConfig,
+            max_requests: maxRequestsValue,
+            delay_between_requests: delayValue,
+        };
+    };
+
     const startTest = async () => {
         const selectedEndpoint = endpointOptions.find((option) => option.name === testConfig.endpoint_name);
         const hasStoredKey = selectedEndpoint?.has_api_key;
@@ -82,16 +101,31 @@ function App() {
             return;
         }
 
+        let preparedConfig;
+
+        try {
+            preparedConfig = getPreparedTestConfig();
+        } catch (error) {
+            alert(error.message);
+            return;
+        }
+
         setIsRunning(true);
         setResults([]);
-        
+
         try {
             const response = await fetch('/api/test/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(testConfig)
+                body: JSON.stringify(preparedConfig)
             });
-            
+
+            if (!response.ok) {
+                const errorDetails = await response.json().catch(() => ({}));
+                const detailMessage = errorDetails?.detail ? JSON.stringify(errorDetails.detail) : response.statusText;
+                throw new Error(detailMessage || 'Request was rejected by the server');
+            }
+
             const data = await response.json();
             setSession(data);
             
@@ -176,13 +210,43 @@ function App() {
             setCustomPayload('');
         }
     };
-    
+
     const removeCustomPayload = (index) => {
         setTestConfig({
             ...testConfig,
             payload_preset: '',
             custom_payloads: testConfig.custom_payloads.filter((_, i) => i !== index)
         });
+    };
+
+    const handleMaxRequestsChange = (event) => {
+        const value = event.target.value;
+
+        if (value === '') {
+            setTestConfig({...testConfig, max_requests: ''});
+            return;
+        }
+
+        const parsed = Number(value);
+
+        if (!Number.isNaN(parsed)) {
+            setTestConfig({...testConfig, max_requests: parsed});
+        }
+    };
+
+    const handleDelayChange = (event) => {
+        const value = event.target.value;
+
+        if (value === '') {
+            setTestConfig({...testConfig, delay_between_requests: ''});
+            return;
+        }
+
+        const parsed = Number(value);
+
+        if (!Number.isNaN(parsed)) {
+            setTestConfig({...testConfig, delay_between_requests: parsed});
+        }
     };
     
     return (
@@ -446,22 +510,22 @@ function App() {
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <label className="block text-xs mb-1 text-gray-400">Max Requests</label>
-                                            <input 
+                                            <input
                                                 type="number"
                                                 className="w-full bg-gray-900/50 border border-gray-600 rounded px-3 py-1 text-white text-sm focus:border-red-500 focus:outline-none"
                                                 value={testConfig.max_requests}
-                                                onChange={(e) => setTestConfig({...testConfig, max_requests: parseInt(e.target.value)})}
+                                                onChange={handleMaxRequestsChange}
                                                 disabled={disableControls}
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-xs mb-1 text-gray-400">Delay (sec)</label>
-                                            <input 
+                                            <input
                                                 type="number"
                                                 step="0.1"
                                                 className="w-full bg-gray-900/50 border border-gray-600 rounded px-3 py-1 text-white text-sm focus:border-red-500 focus:outline-none"
                                                 value={testConfig.delay_between_requests}
-                                                onChange={(e) => setTestConfig({...testConfig, delay_between_requests: parseFloat(e.target.value)})}
+                                                onChange={handleDelayChange}
                                                 disabled={disableControls}
                                             />
                                         </div>

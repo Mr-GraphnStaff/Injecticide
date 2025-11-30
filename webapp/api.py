@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictInt
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import uuid
@@ -62,14 +62,15 @@ class TestRequest(BaseModel):
     payload_preset: Optional[str] = Field(None, description="Preset payload selection")
     test_categories: List[str] = Field(default=["baseline"])
     custom_payloads: List[str] = Field(default=[])
-    max_requests: int = Field(default=50)
-    delay_between_requests: float = Field(default=0.5)
+    max_requests: StrictInt = Field(..., gt=0, description="Maximum number of payloads to execute")
+    delay_between_requests: float = Field(default=0.5, ge=0)
 
 class TestSession(BaseModel):
     session_id: str
     status: str  # pending, running, completed, failed
     progress: int
     total_tests: int
+    max_requests: int
     results: List[Dict[str, Any]]
     summary: Optional[Dict[str, Any]]
     created_at: datetime
@@ -96,6 +97,7 @@ async def start_test(request: TestRequest, background_tasks: BackgroundTasks):
         status="pending",
         progress=0,
         total_tests=0,
+        max_requests=request.max_requests,
         results=[],
         summary=None,
         created_at=datetime.now(),
@@ -106,6 +108,8 @@ async def start_test(request: TestRequest, background_tasks: BackgroundTasks):
     
     # Run test in background
     background_tasks.add_task(run_test_session, session_id, request)
+
+    print(f"[Session {session_id}] Starting with max_requests={request.max_requests}")
     
     return session
 
@@ -297,12 +301,18 @@ async def run_test_session(session_id: str, request: TestRequest):
 
         for custom in custom_payloads:
             payloads.append((custom, "custom"))
-        
-        session["total_tests"] = min(len(payloads), request.max_requests)
-        
+
+        enforced_max_requests = request.max_requests
+        session["max_requests"] = enforced_max_requests
+        print(
+            f"[Session {session_id}] Enforcing max_requests={enforced_max_requests} across {len(payloads)} payloads"
+        )
+
+        session["total_tests"] = min(len(payloads), enforced_max_requests)
+
         # Run tests
         results = []
-        for i, (payload, category) in enumerate(payloads[:request.max_requests]):
+        for i, (payload, category) in enumerate(payloads[:enforced_max_requests]):
             if request.delay_between_requests > 0:
                 await asyncio.sleep(request.delay_between_requests)
             
