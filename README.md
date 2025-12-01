@@ -99,6 +99,65 @@ python main.py \
   --output report.html
 ```
 
+
+
+## 🌐 Production Deployment (Caddy + Cloudflare Tunnel)
+
+Injecticide ships with a production-ready HTTPS stack that keeps Uvicorn internal while Caddy handles TLS, HTTP/2, HTTP/3, compression, and hardened headers.
+
+**Architecture**
+
+```
+Uvicorn (127.0.0.1:8000, internal only)
+→ Caddy reverse proxy (0.0.0.0:8443, TLS termination)
+→ Cloudflare Tunnel (HTTPS)
+→ End user
+```
+
+### Prepare certificates
+
+Cloudflare Origin Certificates must be mounted into `/deploy/certs` at runtime:
+
+- `/deploy/certs/origin.pem`
+- `/deploy/certs/origin.key`
+
+See `deploy/certs/README.md` for mount guidance. Do **not** commit actual certificates.
+
+### Build the production image
+
+```
+docker build -f deploy/Dockerfile.prod -t injecticide:prod .
+```
+
+### Run behind Caddy with TLS
+
+```
+docker run -d \
+  -p 8443:8443 \
+  -v /path/to/origin.pem:/deploy/certs/origin.pem \
+  -v /path/to/origin.key:/deploy/certs/origin.key \
+  injecticide:prod
+```
+
+The container starts Uvicorn on `127.0.0.1:8000` and Caddy on `:8443`. Static assets are served directly from `/app/webapp/static` with caching and Brotli/gzip enabled.
+
+### Cloudflare Tunnel example
+
+```
+ingress:
+  - hostname: injecticide.example.com
+    service: https://localhost:8443
+    originRequest:
+      noTLSVerify: false
+  - service: http_status:404
+```
+
+Set the Cloudflare domain SSL mode to **Full (Strict)**. Cloudflare should connect to the container on port 8443.
+
+### Local production entrypoint
+
+For production parity without changing existing developer workflows, a new `start-prod.sh` script delegates to `deploy/start.sh` to launch Uvicorn (background) and Caddy (foreground). Development scripts and the `uvicorn webapp.api:app --reload` workflow remain unchanged.
+
 ### Command Line Options
 
 ```

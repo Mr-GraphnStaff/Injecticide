@@ -1,0 +1,41 @@
+{
+    # Global options
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+:8443 {
+    tls /deploy/certs/origin.pem /deploy/certs/origin.key {
+        protocols tls1.2 tls1.3
+        ciphers TLS_AES_128_GCM_SHA256 TLS_AES_256_GCM_SHA384 TLS_CHACHA20_POLY1305_SHA256 ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-RSA-AES256-GCM-SHA384
+        curves x25519 secp256r1
+    }
+
+    encode gzip zstd
+
+    @dynamic not path /static/*
+    header @dynamic {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "no-referrer"
+        Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+        X-XSS-Protection "0"
+        Cache-Control "no-store"
+    }
+
+    @static path /static/*
+    handle @static {
+        root * /app/webapp/static
+        file_server
+        header Cache-Control "public, max-age=31536000, immutable"
+    }
+
+    handle {
+        reverse_proxy http://127.0.0.1:8000 {
+            header_up X-Forwarded-Proto https
+            header_up Host {host}
+        }
+    }
+}

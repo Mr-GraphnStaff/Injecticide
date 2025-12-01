@@ -33,6 +33,9 @@ from webapp.config_loader import (
     resolve_payload_preset,
 )
 
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
 app = FastAPI(
     title="Injecticide",
     description="LLM Security Testing Platform",
@@ -82,7 +85,7 @@ class TestSession(BaseModel):
 @app.get("/")
 async def root():
     """Serve the web interface"""
-    static_file = Path("webapp/static/index.html")
+    static_file = STATIC_DIR / "index.html"
     if static_file.exists():
         return FileResponse(str(static_file))
     return {"message": "Injecticide API - Use /api/docs for documentation"}
@@ -367,9 +370,8 @@ async def run_test_session(session_id: str, request: TestRequest):
         print(f"Test session error: {e}")
 
 # Serve static files
-static_path = Path("webapp/static")
-if static_path.exists():
-    app.mount("/static", StaticFiles(directory="webapp/static"), name="static")
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 if __name__ == "__main__":
     import uvicorn
