@@ -1,0 +1,38 @@
+# Builder stage for Python dependencies
+FROM python:3.11-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN pip install --upgrade pip \
+    && pip install --prefix /install --no-cache-dir -r requirements.txt
+
+# Runtime stage with Caddy and application code
+FROM python:3.11-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/install/bin:${PATH}"
+
+WORKDIR /app
+
+# Install Caddy
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
+    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | tee /etc/apt/trusted.gpg.d/caddy-stable.asc \
+    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends caddy \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /install /install
+COPY . /app
+
+RUN chmod +x /deploy/start.sh /start-prod.sh
+
+EXPOSE 8443
+
+ENTRYPOINT ["/start-prod.sh"]
