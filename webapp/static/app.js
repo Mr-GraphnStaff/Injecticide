@@ -1,6 +1,6 @@
 const { useState, useEffect, useRef } = React;
 
-function App() {
+function App({ onBack }) {
     const [testConfig, setTestConfig] = useState({
         target_service: 'anthropic',
         api_key: '',
@@ -259,24 +259,32 @@ function App() {
             </div>
             
             {/* Header */}
-            <header className="relative bg-black/50 backdrop-blur-sm shadow-2xl border-b border-red-600/50">
+            <header className="relative bg-gradient-to-r from-black/70 via-gray-900/70 to-black/70 backdrop-blur-sm shadow-2xl border-b border-red-600/50">
                 <div className="container mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div className="flex items-center space-x-4">
-                            <div className="relative">
-                                <i className="fas fa-shield-virus text-red-500 text-4xl pulse-red"></i>
-                            </div>
+                            <img src="/images/logo.png" alt="DAF-TECH logo" className="h-12 w-12 rounded-lg shadow-lg" />
                             <div>
-                                <h1 className="text-4xl font-bold">
-                                    <span className="text-red-500 bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-700">Inject</span>
-                                    <span className="text-white">icide</span>
+                                <h1 className="text-3xl md:text-4xl font-bold flex items-center space-x-2">
+                                    <span className="text-white drop-shadow">Injecticide</span>
+                                    <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 bg-red-900/40 border border-red-700/40 px-2 py-1 rounded-md">DAF-TECH</span>
                                 </h1>
-                                <p className="text-sm text-gray-400">LLM Security Testing Platform v2.0</p>
+                                <p className="text-sm text-gray-300">Enterprise LLM Security Testing Platform</p>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-gray-400">
-                                <i className="fas fa-lock mr-2"></i>Enterprise Grade Security Testing
+                        <div className="flex items-center space-x-3">
+                            {onBack && (
+                                <button
+                                    onClick={onBack}
+                                    className="px-4 py-2 rounded-lg text-sm font-semibold transition border border-gray-600/70 bg-gray-800/70 hover:bg-gray-700/80 text-gray-200"
+                                >
+                                    <i className="fas fa-arrow-left mr-2"></i>
+                                    Back to Overview
+                                </button>
+                            )}
+                            <span className="hidden sm:inline-flex items-center text-gray-300 text-sm bg-gray-800/60 border border-gray-700/60 px-3 py-2 rounded-lg shadow-lg">
+                                <i className="fas fa-shield-alt text-red-400 mr-2"></i>
+                                Enterprise Grade Security Testing
                             </span>
                             <button
                                 onClick={closeApp}
@@ -730,5 +738,15 @@ function App() {
     );
 }
 
+function Root() {
+    const [page, setPage] = useState('home');
+
+    if (page === 'home') {
+        return <Home onLaunch={() => setPage('console')} />;
+    }
+
+    return <App onBack={() => setPage('home')} />;
+}
+
 // Render the app
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<Root />, document.getElementById('root'));
