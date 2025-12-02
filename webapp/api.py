@@ -35,6 +35,8 @@ from webapp.config_loader import (
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
+DIST_DIR = STATIC_DIR / "dist"
+INDEX_FILE = DIST_DIR / "index.html"
 
 app = FastAPI(
     title="Injecticide",
@@ -82,33 +84,33 @@ class TestSession(BaseModel):
     payload_preset: Optional[str] = None
 
 # API Routes
+def serve_spa_fallback(message: str):
+    """Return the built SPA index or a fallback message."""
+
+    if INDEX_FILE.exists():
+        return FileResponse(str(INDEX_FILE))
+    return JSONResponse({"message": message})
+
+
 @app.get("/")
 async def root():
     """Serve the web interface"""
-    static_file = STATIC_DIR / "index.html"
-    if static_file.exists():
-        return FileResponse(str(static_file))
-    return {"message": "Injecticide API - Use /api/docs for documentation"}
+
+    return serve_spa_fallback("Injecticide API - Use /api/docs for documentation")
 
 
 @app.get("/console")
 async def console_page():
     """Serve the console route for the SPA router."""
 
-    static_file = STATIC_DIR / "index.html"
-    if static_file.exists():
-        return FileResponse(str(static_file))
-    return {"message": "Console UI unavailable"}
+    return serve_spa_fallback("Console UI unavailable")
 
 
 @app.get("/results/{run_id}")
 async def results_page(run_id: str):
     """Serve the results route for client-side rendering."""
 
-    static_file = STATIC_DIR / "index.html"
-    if static_file.exists():
-        return FileResponse(str(static_file))
-    return {"message": f"Results page unavailable for {run_id}"}
+    return serve_spa_fallback(f"Results page unavailable for {run_id}")
 
 @app.post("/api/test/start", response_model=TestSession)
 async def start_test(request: TestRequest, background_tasks: BackgroundTasks):
@@ -389,11 +391,9 @@ async def run_test_session(session_id: str, request: TestRequest):
         session["summary"] = {"error": str(e)}
         print(f"Test session error: {e}")
 
-# Serve static files and branding assets
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-    app.mount("/images", StaticFiles(directory=str(STATIC_DIR / "images")), name="images")
-    app.mount("/icons", StaticFiles(directory=str(STATIC_DIR / "icons")), name="icons")
+# Serve compiled SPA assets
+if DIST_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(DIST_DIR)), name="static")
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,8 +1,8 @@
-const { useEffect, useState } = React;
+import { useEffect, useState } from 'react';
 
-type TestFlagMap = Record<string, boolean>;
+export type TestFlagMap = Record<string, boolean>;
 
-type TestResult = {
+export type TestResult = {
     payload: string;
     category: string;
     flags: TestFlagMap;
@@ -12,7 +12,7 @@ type TestResult = {
     error?: string;
 };
 
-type TestRunSummary = {
+export type TestRunSummary = {
     total_tests?: number;
     vulnerabilities_detected?: number;
     detection_rate?: string;
@@ -20,7 +20,7 @@ type TestRunSummary = {
     error?: string;
 };
 
-type TestRun = {
+export type TestRun = {
     session_id: string;
     status: string;
     progress: number;
@@ -32,7 +32,7 @@ type TestRun = {
     max_requests?: number;
 };
 
-type UseTestRunState = {
+export type UseTestRunState = {
     run: TestRun | null;
     loading: boolean;
     error: string;
@@ -44,7 +44,12 @@ const defaultState: Pick<UseTestRunState, 'loading' | 'error'> = {
     error: '',
 };
 
-async function fetchRun(runId: string, setRun: (value: TestRun | null) => void, setError: (value: string) => void, setLoading: (value: boolean) => void) {
+async function fetchRun(
+    runId: string,
+    setRun: (value: TestRun | null) => void,
+    setError: (value: string) => void,
+    setLoading: (value: boolean) => void
+) {
     try {
         setLoading(true);
         const response = await fetch(`/api/test/${runId}`);
@@ -62,7 +67,7 @@ async function fetchRun(runId: string, setRun: (value: TestRun | null) => void, 
     }
 }
 
-function useTestRun(runId: string): UseTestRunState {
+export function useTestRun(runId: string): UseTestRunState {
     const [run, setRun] = useState<TestRun | null>(null);
     const [loading, setLoading] = useState(defaultState.loading);
     const [error, setError] = useState(defaultState.error);
@@ -82,6 +87,4 @@ function useTestRun(runId: string): UseTestRunState {
     return { run, loading, error, refetch };
 }
 
-// @ts-ignore make available globally for inline modules
-window.useTestRun = useTestRun;
-window.TestRunTypes = { useTestRun };
+export default useTestRun;

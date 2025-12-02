@@ -8,5 +8,16 @@ __pycache__/
 env/
 venv/
 
+# Node and frontend build artifacts
+node_modules/
+webapp/frontend/node_modules/
+webapp/frontend/dist/
+
+# Exclude bundled binary assets from source control
+webapp/frontend/public/icons/
+webapp/frontend/public/images/
+webapp/static/icons/
+webapp/static/images/
+
 # VS Code
 .vscode/

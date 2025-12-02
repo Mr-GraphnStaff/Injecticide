@@ -1,4 +1,11 @@
 # Injecticide Dockerfile optimized for FastAPI deployment
+FROM node:18 AS frontend-build
+WORKDIR /app/frontend
+COPY webapp/frontend/package*.json ./
+RUN npm install
+COPY webapp/frontend .
+RUN npm run build
+
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -17,6 +24,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source
 COPY . .
+
+# Copy compiled frontend assets
+COPY --from=frontend-build /app/frontend/dist /app/static/dist
 
 # Expose the FastAPI port
 EXPOSE 8000

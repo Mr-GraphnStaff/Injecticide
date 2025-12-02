@@ -12,6 +12,7 @@ services:
     volumes:
       - ./reports:/app/reports
       - ./configs:/app/configs
+      - static-dist:/app/static/dist
     depends_on:
       - redis
     networks:
@@ -38,6 +39,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
+      - static-dist:/usr/share/nginx/html/static:ro
     depends_on:
       - injecticide
     networks:
@@ -46,6 +48,7 @@ services:
 
 volumes:
   redis-data:
+  static-dist:
 
 networks:
   injecticide-network:
