@@ -130,7 +130,8 @@ function App() {
             setSession(data);
             
             // Connect WebSocket for live updates
-            const websocket = new WebSocket(`ws://${window.location.host}/ws/${data.session_id}`);
+            const websocketProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            const websocket = new WebSocket(`${websocketProtocol}://${window.location.host}/ws/${data.session_id}`);
             
             websocket.onmessage = (event) => {
                 const update = JSON.parse(event.data);
