@@ -90,6 +90,26 @@ async def root():
         return FileResponse(str(static_file))
     return {"message": "Injecticide API - Use /api/docs for documentation"}
 
+
+@app.get("/console")
+async def console_page():
+    """Serve the console route for the SPA router."""
+
+    static_file = STATIC_DIR / "index.html"
+    if static_file.exists():
+        return FileResponse(str(static_file))
+    return {"message": "Console UI unavailable"}
+
+
+@app.get("/results/{run_id}")
+async def results_page(run_id: str):
+    """Serve the results route for client-side rendering."""
+
+    static_file = STATIC_DIR / "index.html"
+    if static_file.exists():
+        return FileResponse(str(static_file))
+    return {"message": f"Results page unavailable for {run_id}"}
+
 @app.post("/api/test/start", response_model=TestSession)
 async def start_test(request: TestRequest, background_tasks: BackgroundTasks):
     """Start a new security test session"""
