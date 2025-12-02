@@ -369,9 +369,11 @@ async def run_test_session(session_id: str, request: TestRequest):
         session["summary"] = {"error": str(e)}
         print(f"Test session error: {e}")
 
-# Serve static files
+# Serve static files and branding assets
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    app.mount("/images", StaticFiles(directory=str(STATIC_DIR / "images")), name="images")
+    app.mount("/icons", StaticFiles(directory=str(STATIC_DIR / "icons")), name="icons")
 
 if __name__ == "__main__":
     import uvicorn
