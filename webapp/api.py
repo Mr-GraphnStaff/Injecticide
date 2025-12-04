@@ -24,7 +24,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import core Injecticide modules
 from reporter import ReportGenerator
 from analyzer import analyze
-from generator import generate_payloads, policy_violation_payloads
+from generator import policy_violation_payloads
+from payloads import get_all_payloads
 from endpoints_new import AnthropicEndpoint, OpenAIEndpoint, AzureOpenAIEndpoint
 from webapp.config_loader import (
     get_endpoint_options,
@@ -35,6 +36,41 @@ from webapp.config_loader import (
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
+
+PAYLOAD_CATEGORY_METADATA = {
+    "baseline": {
+        "name": "Baseline Injections",
+        "description": "Standard prompt injection tests",
+    },
+    "policy": {
+        "name": "Policy Violations",
+        "description": "Safety guardrail tests",
+    },
+    "extraction": {
+        "name": "Data Extraction",
+        "description": "Attempts to exfiltrate hidden or prior context",
+    },
+    "jailbreak": {
+        "name": "Jailbreaks",
+        "description": "Prompts that attempt to bypass core instructions",
+    },
+    "encoding": {
+        "name": "Encoding & Obfuscation",
+        "description": "Attacks that use encoding tricks to avoid filters",
+    },
+    "context": {
+        "name": "Context Manipulation",
+        "description": "Efforts to reorder, override, or poison conversation flow",
+    },
+    "roleplay": {
+        "name": "Roleplay Attacks",
+        "description": "Persona and scenario-based jailbreak prompts",
+    },
+    "insurance_us_ca": {
+        "name": "Insurance (US/CA)",
+        "description": "Industry-specific prompts for insurance workflows",
+    },
+}
 
 app = FastAPI(
     title="Injecticide",
@@ -190,26 +226,24 @@ async def get_ui_options():
 @app.get("/api/payloads")
 async def get_available_payloads():
     """Get list of available payload categories"""
-    
-    baseline = generate_payloads()
-    policy = policy_violation_payloads()
-    
-    return {
-        "categories": {
-            "baseline": {
-                "name": "Baseline Injections",
-                "description": "Standard prompt injection tests",
-                "count": len(baseline),
-                "examples": baseline[:3] if baseline else []
-            },
-            "policy": {
-                "name": "Policy Violations", 
-                "description": "Tests for policy enforcement",
-                "count": len(policy),
-                "examples": policy[:3] if policy else []
-            }
+
+    def _format_category(category_id: str, payloads: List[str]):
+        meta = PAYLOAD_CATEGORY_METADATA.get(category_id, {})
+        return {
+            "id": category_id,
+            "name": meta.get("name", category_id.replace("_", " ").title()),
+            "description": meta.get("description", "Payload collection"),
+            "count": len(payloads),
+            "examples": payloads[:3] if payloads else [],
         }
-    }
+
+    categories = []
+    payload_registry = get_all_payloads()
+
+    for category_id, payloads in payload_registry.items():
+        categories.append(_format_category(category_id, payloads))
+
+    return {"categories": categories}
 
 @app.post("/api/analyze")
 async def analyze_response(payload: Dict[str, str]):
@@ -238,6 +272,29 @@ async def close_application():
 
     asyncio.create_task(_shutdown_server())
     return {"status": "shutting_down"}
+
+
+def _build_payloads_for_categories(selected_categories: List[str], custom_payloads: List[str]):
+    payload_registry = get_all_payloads()
+    payloads = []
+
+    for category in selected_categories:
+        available_payloads = payload_registry.get(category)
+
+        if not available_payloads and category == "policy":
+            available_payloads = policy_violation_payloads()
+
+        if not available_payloads:
+            print(f"[Payloads] Skipping unknown category: {category}")
+            continue
+
+        payloads.extend([(payload, category) for payload in available_payloads])
+
+    for custom in custom_payloads:
+        payloads.append((custom, "custom"))
+
+    return payloads
+
 
 # Background task to run tests
 async def run_test_session(session_id: str, request: TestRequest):
@@ -274,6 +331,9 @@ async def run_test_session(session_id: str, request: TestRequest):
             if payload_preset.get("custom_payloads"):
                 custom_payloads = payload_preset["custom_payloads"] + custom_payloads
 
+        if not test_categories:
+            raise ValueError("No test categories selected for execution")
+
         # Build endpoint
         if target_service == "anthropic":
             endpoint = AnthropicEndpoint(
@@ -296,14 +356,8 @@ async def run_test_session(session_id: str, request: TestRequest):
             raise ValueError(f"Unsupported service: {target_service}")
 
         # Gather payloads
-        payloads = []
-        if "baseline" in test_categories:
-            payloads.extend([(p, "baseline") for p in generate_payloads()])
-        if "policy" in test_categories:
-            payloads.extend([(p, "policy") for p in policy_violation_payloads()])
-
-        for custom in custom_payloads:
-            payloads.append((custom, "custom"))
+        unique_categories = list(dict.fromkeys(test_categories))
+        payloads = _build_payloads_for_categories(unique_categories, custom_payloads)
 
         enforced_max_requests = request.max_requests
         session["max_requests"] = enforced_max_requests

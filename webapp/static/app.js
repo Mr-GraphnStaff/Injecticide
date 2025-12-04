@@ -22,7 +22,9 @@ function App({ onBack }) {
     const [customPayload, setCustomPayload] = useState('');
     const [endpointOptions, setEndpointOptions] = useState([]);
     const [payloadPresets, setPayloadPresets] = useState([]);
+    const [payloadCategories, setPayloadCategories] = useState([]);
     const [optionsError, setOptionsError] = useState('');
+    const [payloadCategoriesError, setPayloadCategoriesError] = useState('');
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -44,27 +46,93 @@ function App({ onBack }) {
         fetchOptions();
     }, []);
 
+    useEffect(() => {
+        const fetchPayloadCategories = async () => {
+            try {
+                const response = await fetch('/api/payloads');
+                if (!response.ok) {
+                    throw new Error('Failed to load payload categories');
+                }
+
+                const data = await response.json();
+                const categories = data.categories || [];
+                setPayloadCategories(categories);
+
+                if (categories.length === 0) {
+                    return;
+                }
+
+                setTestConfig((current) => {
+                    const availableIds = new Set(categories.map((category) => category.id));
+                    const validSelections = (current.test_categories || []).filter((category) => availableIds.has(category));
+
+                    if (validSelections.length > 0) {
+                        return { ...current, test_categories: validSelections };
+                    }
+
+                    return { ...current, test_categories: [categories[0].id] };
+                });
+            } catch (error) {
+                console.error('Payload category error:', error);
+                setPayloadCategoriesError('Could not load payload categories');
+            }
+        };
+
+        fetchPayloadCategories();
+    }, []);
+
     const applyEndpointSelection = (name) => {
         const selected = endpointOptions.find((option) => option.name === name);
 
-        setTestConfig({
-            ...testConfig,
+        setTestConfig((current) => ({
+            ...current,
             endpoint_name: name,
-            target_service: selected?.target_service || testConfig.target_service,
+            target_service: selected?.target_service || current.target_service,
             model: selected?.model || '',
             endpoint_url: selected?.endpoint_url || '',
-            api_key: name ? '' : testConfig.api_key,
-        });
+            api_key: name ? '' : current.api_key,
+        }));
+    };
+
+    const filterToAvailableCategories = (categories) => {
+        if (!payloadCategories.length) {
+            return categories || [];
+        }
+
+        const allowedCategories = new Set(payloadCategories.map((category) => category.id));
+        const filtered = (categories || []).filter((category) => allowedCategories.has(category));
+
+        if (filtered.length > 0) {
+            return filtered;
+        }
+
+        return payloadCategories.length ? [payloadCategories[0].id] : [];
     };
 
     const applyPayloadPreset = (name) => {
         const preset = payloadPresets.find((item) => item.name === name);
 
-        setTestConfig({
-            ...testConfig,
-            payload_preset: name,
-            test_categories: preset?.test_categories?.length ? preset.test_categories : ['baseline'],
-            custom_payloads: preset?.custom_payloads || [],
+        setTestConfig((current) => {
+            const presetCategories = preset?.test_categories?.length ? preset.test_categories : ['baseline'];
+            const validatedCategories = filterToAvailableCategories(presetCategories);
+
+            return {
+                ...current,
+                payload_preset: name,
+                test_categories: validatedCategories.length ? validatedCategories : current.test_categories,
+                custom_payloads: preset?.custom_payloads || [],
+            };
+        });
+    };
+
+    const toggleCategorySelection = (categoryId) => {
+        setTestConfig((current) => {
+            const hasCategory = current.test_categories.includes(categoryId);
+            const updatedCategories = hasCategory
+                ? current.test_categories.filter((category) => category !== categoryId)
+                : [...current.test_categories, categoryId];
+
+            return { ...current, payload_preset: '', test_categories: updatedCategories };
         });
     };
 
@@ -85,8 +153,11 @@ function App({ onBack }) {
             throw new Error('Please enter a valid non-negative number for Delay.');
         }
 
+        const validatedCategories = filterToAvailableCategories(testConfig.test_categories);
+
         return {
             ...testConfig,
+            test_categories: validatedCategories,
             max_requests: maxRequestsValue,
             delay_between_requests: delayValue,
         };
@@ -107,6 +178,11 @@ function App({ onBack }) {
             preparedConfig = getPreparedTestConfig();
         } catch (error) {
             alert(error.message);
+            return;
+        }
+
+        if (!preparedConfig.test_categories || preparedConfig.test_categories.length === 0) {
+            alert('Select at least one payload category to run.');
             return;
         }
 
@@ -424,55 +500,51 @@ function App({ onBack }) {
                                                 </option>
                                             ))}
                                         </select>
-                                        {selectedPreset && (
-                                            <span className="text-xs text-gray-400 self-center">
-                                                {selectedPreset.description || 'Preset loaded from secure config'}
-                                            </span>
+                                    {selectedPreset && (
+                                        <span className="text-xs text-gray-400 self-center">
+                                            {selectedPreset.description || 'Preset loaded from secure config'}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    {payloadCategoriesError && (
+                                        <p className="text-xs text-yellow-400">{payloadCategoriesError}</p>
+                                    )}
+                                    <div className="space-y-2">
+                                        {payloadCategories.length === 0 ? (
+                                            <div className="p-3 bg-gray-900/30 rounded text-sm text-gray-400 border border-gray-700/50">
+                                                No payload categories are available.
+                                            </div>
+                                        ) : (
+                                            payloadCategories.map((category) => (
+                                                <label
+                                                    key={category.id}
+                                                    className="flex items-center p-2 bg-gray-900/30 rounded hover:bg-gray-900/50 transition cursor-pointer"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        className="mr-3 w-4 h-4 text-red-600 rounded focus:ring-red-500"
+                                                        checked={testConfig.test_categories.includes(category.id)}
+                                                        onChange={() => toggleCategorySelection(category.id)}
+                                                        disabled={disableControls}
+                                                    />
+                                                    <div>
+                                                        <div className="font-medium flex items-center gap-2">
+                                                            <span>{category.name}</span>
+                                                            <span className="text-[10px] text-gray-500 bg-gray-800 px-2 py-0.5 rounded-full">
+                                                                {category.count} payloads
+                                                            </span>
+                                                        </div>
+                                                        <div className="text-xs text-gray-400">{category.description}</div>
+                                                    </div>
+                                                </label>
+                                            ))
                                         )}
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center p-2 bg-gray-900/30 rounded hover:bg-gray-900/50 transition cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                className="mr-3 w-4 h-4 text-red-600 rounded focus:ring-red-500"
-                                                checked={testConfig.test_categories.includes('baseline')}
-                                                    onChange={(e) => {
-                                                        if (e.target.checked) {
-                                                        setTestConfig({...testConfig, payload_preset: '', test_categories: [...testConfig.test_categories, 'baseline']});
-                                                    } else {
-                                                        setTestConfig({...testConfig, payload_preset: '', test_categories: testConfig.test_categories.filter(c => c !== 'baseline')});
-                                                    }
-                                                }}
-                                                disabled={disableControls}
-                                            />
-                                            <div>
-                                                <div className="font-medium">Baseline Injections</div>
-                                                <div className="text-xs text-gray-400">Standard prompt injection tests</div>
-                                            </div>
-                                        </label>
-                                        <label className="flex items-center p-2 bg-gray-900/30 rounded hover:bg-gray-900/50 transition cursor-pointer">
-                                            <input 
-                                                type="checkbox"
-                                                className="mr-3 w-4 h-4 text-red-600 rounded focus:ring-red-500"
-                                                checked={testConfig.test_categories.includes('policy')}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setTestConfig({...testConfig, payload_preset: '', test_categories: [...testConfig.test_categories, 'policy']});
-                                                    } else {
-                                                        setTestConfig({...testConfig, payload_preset: '', test_categories: testConfig.test_categories.filter(c => c !== 'policy')});
-                                                    }
-                                                }}
-                                                disabled={disableControls}
-                                            />
-                                            <div>
-                                                <div className="font-medium">Policy Violations</div>
-                                                <div className="text-xs text-gray-400">Safety guardrail tests</div>
-                                            </div>
-                                        </label>
-                                    </div>
                                 </div>
-                                
-                                {/* Custom Payloads */}
+                            </div>
+
+                            {/* Custom Payloads */}
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-gray-300">
                                         <i className="fas fa-code mr-1 text-blue-400"></i>Custom Payloads
