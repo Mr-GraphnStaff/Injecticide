@@ -25,6 +25,10 @@ function App({ onBack }) {
     const [payloadCategories, setPayloadCategories] = useState([]);
     const [optionsError, setOptionsError] = useState('');
     const [payloadCategoriesError, setPayloadCategoriesError] = useState('');
+    const [skillFile, setSkillFile] = useState(null);
+    const [skillScanResult, setSkillScanResult] = useState(null);
+    const [skillScanError, setSkillScanError] = useState('');
+    const [isScanningSkill, setIsScanningSkill] = useState(false);
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -325,6 +329,51 @@ function App({ onBack }) {
             setTestConfig({...testConfig, delay_between_requests: parsed});
         }
     };
+
+    const resetSkillScanState = () => {
+        setSkillScanResult(null);
+        setSkillScanError('');
+    };
+
+    const handleSkillFileChange = (event) => {
+        const file = event.target.files?.[0] || null;
+        setSkillFile(file);
+        resetSkillScanState();
+    };
+
+    const scanSkillFile = async () => {
+        if (!skillFile) {
+            setSkillScanError('Select a .skill or .zip file to scan.');
+            return;
+        }
+
+        resetSkillScanState();
+        setIsScanningSkill(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', skillFile);
+
+            const response = await fetch('/api/skills/scan', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorDetails = await response.json().catch(() => ({}));
+                const detailMessage = errorDetails?.detail || response.statusText;
+                throw new Error(detailMessage || 'Scan failed');
+            }
+
+            const data = await response.json();
+            setSkillScanResult(data);
+        } catch (error) {
+            console.error('Skill scan failed:', error);
+            setSkillScanError(error.message || 'Scan failed');
+        } finally {
+            setIsScanningSkill(false);
+        }
+    };
     
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
@@ -544,7 +593,7 @@ function App({ onBack }) {
                                 </div>
                             </div>
 
-                            {/* Custom Payloads */}
+                                {/* Custom Payloads */}
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-gray-300">
                                         <i className="fas fa-code mr-1 text-blue-400"></i>Custom Payloads
@@ -584,7 +633,86 @@ function App({ onBack }) {
                                         </div>
                                     )}
                                 </div>
-                                
+
+                                {/* Claude Skill Upload */}
+                                <div className="border-t border-gray-700 pt-4">
+                                    <h3 className="text-sm font-medium mb-3 text-gray-400">Claude Skill Upload</h3>
+                                    <div className="space-y-3">
+                                        <label className="block text-sm font-medium text-gray-300">
+                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload .skill or .zip
+                                        </label>
+                                        <input
+                                            type="file"
+                                            accept=".skill,.zip"
+                                            className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600"
+                                            onChange={handleSkillFileChange}
+                                            disabled={disableControls || isScanningSkill}
+                                        />
+                                        <button
+                                            onClick={scanSkillFile}
+                                            disabled={disableControls || isScanningSkill || !skillFile}
+                                            className={`w-full py-2 rounded-lg text-sm font-semibold transition border border-blue-600/60 bg-blue-700/70 hover:bg-blue-600/80 ${disableControls || isScanningSkill || !skillFile ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                        >
+                                            <i className={`fas ${isScanningSkill ? 'fa-spinner fa-spin' : 'fa-shield-alt'} mr-2`}></i>
+                                            {isScanningSkill ? 'Scanning…' : 'Scan Skill Bundle'}
+                                        </button>
+                                        {skillScanError && (
+                                            <p className="text-xs text-yellow-400">{skillScanError}</p>
+                                        )}
+                                        {skillScanResult && (
+                                            <div className="bg-gray-900/40 border border-gray-700/60 rounded-lg p-3 text-xs text-gray-300 space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-semibold text-gray-200">{skillScanResult.filename}</span>
+                                                    <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
+                                                        {skillScanResult.summary.total_findings > 0 ? 'Findings' : 'Clean'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
+                                                    <span>Total files: {skillScanResult.summary.total_files}</span>
+                                                    <span>Flagged: {skillScanResult.summary.flagged_files}</span>
+                                                    <span>Findings: {skillScanResult.summary.total_findings}</span>
+                                                </div>
+                                                {skillScanResult.warnings?.length > 0 && (
+                                                    <ul className="list-disc list-inside text-yellow-400">
+                                                        {skillScanResult.warnings.map((warning, idx) => (
+                                                            <li key={idx}>{warning}</li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                                <div className="space-y-2 max-h-40 overflow-y-auto">
+                                                    {skillScanResult.files.map((item, idx) => (
+                                                        <div key={idx} className="border border-gray-800/70 rounded-md p-2">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-gray-200 truncate">{item.path}</span>
+                                                                {item.skipped ? (
+                                                                    <span className="text-[10px] text-gray-500">Skipped</span>
+                                                                ) : item.findings.length > 0 ? (
+                                                                    <span className="text-[10px] text-red-300">{item.findings.length} findings</span>
+                                                                ) : (
+                                                                    <span className="text-[10px] text-green-300">No findings</span>
+                                                                )}
+                                                            </div>
+                                                            {item.reason && (
+                                                                <p className="text-[10px] text-gray-500">{item.reason}</p>
+                                                            )}
+                                                            {item.findings.length > 0 && (
+                                                                <ul className="mt-1 space-y-1 text-[11px] text-gray-400">
+                                                                    {item.findings.map((finding, findingIdx) => (
+                                                                        <li key={findingIdx}>
+                                                                            <span className="text-gray-200">{finding.id}</span>
+                                                                            {' '}({finding.severity}) - {finding.description}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
                                 {/* Advanced Settings */}
                                 <div className="border-t border-gray-700 pt-4">
                                     <h3 className="text-sm font-medium mb-3 text-gray-400">Advanced Settings</h3>
