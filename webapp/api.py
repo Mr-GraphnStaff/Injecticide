@@ -2,7 +2,7 @@
 Injecticide Web Application - FastAPI Backend
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket
+from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
@@ -17,6 +17,7 @@ from pathlib import Path
 import sys
 import os
 import signal
+import zipfile
 
 # Add parent directory to path to import Injecticide modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -33,6 +34,7 @@ from webapp.config_loader import (
     resolve_endpoint,
     resolve_payload_preset,
 )
+from webapp.skill_scanner import scan_upload
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -256,6 +258,27 @@ async def analyze_response(payload: Dict[str, str]):
         "flags": flags,
         "detected": any(flags.values())
     }
+
+
+@app.post("/api/skills/scan")
+async def scan_skill_file(file: UploadFile = File(...)):
+    """Scan a Claude .skill or .zip bundle for risky prompts/code."""
+
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Missing filename")
+
+    if not file.filename.lower().endswith((".skill", ".zip")):
+        raise HTTPException(status_code=400, detail="Only .skill or .zip files are supported")
+
+    try:
+        data = await file.read()
+        result = scan_upload(data, file.filename)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except zipfile.BadZipFile as exc:
+        raise HTTPException(status_code=400, detail="Invalid zip archive") from exc
+
+    return result
 
 
 async def _shutdown_server():
