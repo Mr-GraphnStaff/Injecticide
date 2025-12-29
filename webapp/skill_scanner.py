@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import os
 import re
 import zipfile
 from typing import Dict, List, Tuple
@@ -134,14 +135,35 @@ def _scan_file_bytes(path: str, data: bytes) -> Dict[str, object]:
         return entry
 
     text = data.decode("utf-8", errors="replace")
-    entry["findings"] = _scan_text(text)
+    entry["findings"] = _scan_text(text, path)
     return entry
 
 
-def _scan_text(text: str) -> List[Dict[str, object]]:
+def _scan_text(text: str, path: str) -> List[Dict[str, object]]:
     findings = []
+    _, extension = os.path.splitext(path.lower())
+    prompt_text = text if extension in (".md", ".markdown") else _strip_fenced_code_blocks(text)
 
-    for pattern in (*PROMPT_PATTERNS, *CODE_PATTERNS):
+    for pattern in PROMPT_PATTERNS:
+        regex = re.compile(pattern["regex"], re.IGNORECASE)
+        matches = regex.findall(prompt_text)
+
+        if not matches:
+            continue
+
+        normalized_matches = [match if isinstance(match, str) else " ".join(match) for match in matches]
+        findings.append(
+            {
+                "id": pattern["id"],
+                "category": pattern["category"],
+                "severity": pattern["severity"],
+                "description": pattern["description"],
+                "count": len(matches),
+                "samples": normalized_matches[:3],
+            }
+        )
+
+    for pattern in CODE_PATTERNS:
         regex = re.compile(pattern["regex"], re.IGNORECASE)
         matches = regex.findall(text)
 
@@ -195,3 +217,7 @@ def _is_probably_text(data: bytes) -> bool:
     sample = data[:4096]
     printable = sum(1 for byte in sample if 32 <= byte <= 126 or byte in (9, 10, 13))
     return printable / len(sample) >= 0.7
+
+
+def _strip_fenced_code_blocks(text: str) -> str:
+    return re.sub(r"```.*?```", "", text, flags=re.DOTALL)
