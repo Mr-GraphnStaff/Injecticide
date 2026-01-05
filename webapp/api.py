@@ -73,6 +73,18 @@ app.add_middleware(
 test_sessions = {}
 
 # ----------------------------
+# CONFIG OPTIONS ENDPOINT
+# ----------------------------
+@app.get("/api/config/options")
+async def get_config_options():
+    """Provide saved endpoint and payload preset options for the UI."""
+
+    return {
+        "endpoints": get_endpoint_options(),
+        "payload_presets": get_payload_presets(),
+    }
+
+# ----------------------------
 # RESTORED ENDPOINT (THE FIX)
 # ----------------------------
 @app.get("/api/payloads")
