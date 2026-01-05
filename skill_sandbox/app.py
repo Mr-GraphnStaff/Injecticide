@@ -9,7 +9,7 @@ from typing import Dict, Iterable, List, Tuple
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
-from skill_sandbox.scan_rules import compile_patterns
+from scan_rules import compile_patterns
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
@@ -49,10 +49,10 @@ async def scan_skill(file: UploadFile = File(...)) -> Dict[str, object]:
         result = scan_upload(upload_bytes, file.filename)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except zipfile.BadZipFile as exc:
-        raise HTTPException(status_code=400, detail="Invalid zip archive") from exc
-    except tarfile.TarError as exc:
-        raise HTTPException(status_code=400, detail="Invalid tar archive") from exc
+    except zipfile.BadZipFile:
+        raise HTTPException(status_code=400, detail="Invalid zip archive")
+    except tarfile.TarError:
+        raise HTTPException(status_code=400, detail="Invalid tar archive")
 
     return result
 
@@ -81,6 +81,7 @@ def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str) -> Dict
             raise ValueError("Unsupported archive type.")
 
         results = _scan_extracted_files(extracted)
+
     return _assemble_result(filename, archive_type, results, warnings)
 
 
@@ -89,11 +90,7 @@ def _scan_single_file(upload_bytes: bytes, filename: str) -> Dict[str, object]:
     return _assemble_result(filename, "skill", results, [])
 
 
-def _safe_extract_zip(
-    upload_bytes: bytes,
-    root: Path,
-    warnings: List[str],
-) -> List[Tuple[str, Path]]:
+def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> List[Tuple[str, Path]]:
     extracted: List[Tuple[str, Path]] = []
     total_uncompressed = 0
 
@@ -135,11 +132,7 @@ def _safe_extract_zip(
     return extracted
 
 
-def _safe_extract_tar(
-    upload_bytes: bytes,
-    root: Path,
-    warnings: List[str],
-) -> List[Tuple[str, Path]]:
+def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str]) -> List[Tuple[str, Path]]:
     extracted: List[Tuple[str, Path]] = []
     total_uncompressed = 0
 
@@ -234,7 +227,7 @@ def _scan_text(text: str) -> List[Dict[str, object]]:
         if not matches:
             continue
 
-        normalized_matches = [match if isinstance(match, str) else " ".join(match) for match in matches]
+        normalized = [m if isinstance(m, str) else " ".join(m) for m in matches]
         findings.append(
             {
                 "id": pattern["id"],
@@ -242,7 +235,7 @@ def _scan_text(text: str) -> List[Dict[str, object]]:
                 "severity": pattern["severity"],
                 "description": pattern["description"],
                 "count": len(matches),
-                "samples": normalized_matches[:3],
+                "samples": normalized[:3],
             }
         )
 
@@ -275,10 +268,7 @@ def _sanitize_member_name(name: str) -> str | None:
     normalized = name.replace("\\", "/")
     path = PurePosixPath(normalized)
 
-    if path.is_absolute():
-        return None
-
-    if ".." in path.parts:
+    if path.is_absolute() or ".." in path.parts:
         return None
 
     cleaned = "/".join(part for part in path.parts if part not in ("", "."))
@@ -306,23 +296,20 @@ def _zipinfo_is_symlink(info: zipfile.ZipInfo) -> bool:
 
 def _copy_limited(source, target, limit: int) -> None:
     remaining = limit
-    while True:
+    while remaining > 0:
         chunk = source.read(min(1024 * 1024, remaining))
         if not chunk:
             break
         target.write(chunk)
         remaining -= len(chunk)
-        if remaining == 0:
-            break
 
 
 def _is_probably_text(data: bytes) -> bool:
     if not data:
         return True
-
     if b"\x00" in data:
         return False
 
     sample = data[:4096]
-    printable = sum(1 for byte in sample if 32 <= byte <= 126 or byte in (9, 10, 13))
+    printable = sum(1 for b in sample if 32 <= b <= 126 or b in (9, 10, 13))
     return printable / len(sample) >= 0.7
