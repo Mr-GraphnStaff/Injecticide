@@ -2,7 +2,7 @@
 
 from typing import List
 
-from payloads import BASELINE_PAYLOADS, POLICY_VIOLATION_PAYLOADS
+from payloads import BASELINE_PAYLOADS, POLICY_VIOLATION_PAYLOADS, ESF_PAYLOADS
 
 
 def generate_payloads() -> List[str]:
@@ -15,3 +15,9 @@ def policy_violation_payloads() -> List[str]:
     """Return payloads that probe for policy-violation enforcement."""
 
     return list(POLICY_VIOLATION_PAYLOADS)
+
+
+def esf_payloads() -> List[str]:
+    """Return payloads that probe epistemic stress handling."""
+
+    return list(ESF_PAYLOADS)

@@ -16,6 +16,7 @@ Injecticide is a comprehensive prompt injection stress-testing toolkit designed 
   - Encoding/obfuscation attacks
   - Context manipulation
   - Role-playing exploits
+  - Epistemic stress probes (ESF)
 - **Professional Reporting**: Generate HTML, JSON, or CSV security assessment reports
 - **Rate Limiting**: Respect API limits with configurable rate limiting
 - **Configuration Management**: YAML/JSON configuration files for reproducible testing
