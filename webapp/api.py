@@ -72,30 +72,32 @@ app.add_middleware(
 
 test_sessions = {}
 
-class TestRequest(BaseModel):
-    target_service: str
-    api_key: Optional[str]
-    model: Optional[str]
-    endpoint_url: Optional[str]
-    endpoint_name: Optional[str]
-    payload_preset: Optional[str]
-    test_categories: List[str] = Field(default=["baseline"])
-    custom_payloads: List[str] = Field(default=[])
-    max_requests: StrictInt = Field(..., gt=0)
-    delay_between_requests: float = Field(default=0.5, ge=0)
+# ----------------------------
+# RESTORED ENDPOINT (THE FIX)
+# ----------------------------
+@app.get("/api/payloads")
+async def get_available_payloads():
+    """Get list of available payload categories"""
 
-class TestSession(BaseModel):
-    session_id: str
-    status: str
-    progress: int
-    total_tests: int
-    max_requests: int
-    results: List[Dict[str, Any]]
-    summary: Optional[Dict[str, Any]]
-    created_at: datetime
-    completed_at: Optional[datetime]
-    endpoint_name: Optional[str] = None
-    payload_preset: Optional[str] = None
+    def _format_category(category_id: str, payloads: List[str]):
+        meta = PAYLOAD_CATEGORY_METADATA.get(category_id, {})
+        return {
+            "id": category_id,
+            "name": meta.get("name", category_id.replace("_", " ").title()),
+            "description": meta.get("description", "Payload collection"),
+            "count": len(payloads),
+            "examples": payloads[:3] if payloads else [],
+        }
+
+    categories = []
+    payload_registry = get_all_payloads()
+
+    for category_id, payloads in payload_registry.items():
+        categories.append(_format_category(category_id, payloads))
+
+    return {"categories": categories}
+
+# ----------------------------
 
 @app.get("/")
 async def root():
