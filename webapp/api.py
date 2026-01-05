@@ -18,6 +18,7 @@ import sys
 import os
 import signal
 import zipfile
+import requests
 
 # Add parent directory to path to import Injecticide modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,7 +35,7 @@ from webapp.config_loader import (
     resolve_endpoint,
     resolve_payload_preset,
 )
-from webapp.skill_scanner import scan_upload
+from webapp.skill_scanner import scan_upload, MAX_UPLOAD_BYTES
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -271,14 +272,49 @@ async def scan_skill_file(file: UploadFile = File(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="Missing filename")
 
-    if not file.filename.lower().endswith((".skill", ".zip")):
-        raise HTTPException(status_code=400, detail="Only .skill or .zip files are supported")
+    sandbox_url = os.getenv("SKILL_SANDBOX_URL")
+    sandbox_extensions = (".skill", ".zip", ".tar", ".tar.gz", ".tgz")
+    local_extensions = (".skill", ".zip")
+    allowed_extensions = sandbox_extensions if sandbox_url else local_extensions
+
+    if not file.filename.lower().endswith(allowed_extensions):
+        detail = "Only .skill or .zip files are supported"
+        if sandbox_url:
+            detail = "Only .skill, .zip, .tar, .tar.gz, or .tgz files are supported"
+        raise HTTPException(status_code=400, detail=detail)
 
     try:
         data = await file.read()
-        result = scan_upload(data, file.filename)
+        if len(data) > MAX_UPLOAD_BYTES:
+            raise ValueError("Upload exceeds size limit.")
+
+        if sandbox_url:
+            response = requests.post(
+                f"{sandbox_url.rstrip('/')}/scan",
+                files={
+                    "file": (
+                        file.filename,
+                        data,
+                        file.content_type or "application/octet-stream",
+                    )
+                },
+                timeout=(5, 30),
+            )
+            if response.status_code >= 400:
+                detail = "Skill sandbox error"
+                try:
+                    detail = response.json().get("detail", detail)
+                except ValueError:
+                    if response.text:
+                        detail = response.text
+                raise HTTPException(status_code=response.status_code, detail=detail)
+            result = response.json()
+        else:
+            result = scan_upload(data, file.filename)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except requests.RequestException as exc:
+        raise HTTPException(status_code=502, detail="Skill sandbox unavailable") from exc
     except zipfile.BadZipFile as exc:
         raise HTTPException(status_code=400, detail="Invalid zip archive") from exc
 
