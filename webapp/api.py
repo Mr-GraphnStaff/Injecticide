@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException, WebSocket, UploadFile, File
 from fastapi.websockets import WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field, StrictInt
 from typing import Optional, List, Dict, Any
@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analyzer import analyze
 from generator import policy_violation_payloads
 from payloads import get_all_payloads
+from reporter import ReportGenerator
 from endpoints_new import AnthropicEndpoint, OpenAIEndpoint, AzureOpenAIEndpoint
 from webapp.config_loader import (
     get_endpoint_options,
@@ -323,6 +324,35 @@ async def session_updates(websocket: WebSocket, session_id: str):
         logger.info("WebSocket disconnected for session %s", session_id)
     finally:
         session_connections.get(session_id, set()).discard(websocket)
+
+
+@app.get("/api/test/{session_id}/report")
+async def get_report(session_id: str, format: str = "html"):
+    session = test_sessions.get(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Test session not found")
+
+    report_config = {
+        "target_service": session.get("config", {}).get("target_service"),
+        "model": session.get("config", {}).get("model"),
+        "payload_categories": session.get("config", {}).get("test_categories", []),
+    }
+
+    generator = ReportGenerator(session.get("results", []), report_config)
+    try:
+        content = generator.generate(format)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Unsupported report format")
+
+    media_type = {
+        "html": "text/html",
+        "json": "application/json",
+        "csv": "text/csv",
+    }[format]
+
+    filename = f"injecticide-report-{session_id}.{format}"
+    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+    return Response(content=content, media_type=media_type, headers=headers)
 
 
 @app.get("/")
