@@ -72,6 +72,10 @@ PAYLOAD_CATEGORY_METADATA = {
         "name": "Insurance (US/CA)",
         "description": "Industry-specific prompts for insurance workflows",
     },
+    "esf": {
+        "name": "Epistemic Stress Framework (ESF)",
+        "description": "Probes that test uncertainty handling, contradiction resolution, and epistemic integrity",
+    },
 }
 
 app = FastAPI(

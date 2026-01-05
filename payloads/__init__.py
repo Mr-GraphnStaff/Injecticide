@@ -8,6 +8,7 @@ from .context import CONTEXT_MANIPULATION_PAYLOADS
 from .role import ROLE_PLAY_PAYLOADS
 from .insurance import INSURANCE_SECTOR_PAYLOADS
 from .policy import POLICY_VIOLATION_PAYLOADS
+from .esf import ESF_PAYLOADS
 
 def get_all_payloads():
     """Return all available payload categories."""
@@ -20,6 +21,7 @@ def get_all_payloads():
         "roleplay": ROLE_PLAY_PAYLOADS,
         "insurance_us_ca": INSURANCE_SECTOR_PAYLOADS,
         "policy": POLICY_VIOLATION_PAYLOADS,
+        "esf": ESF_PAYLOADS,
     }
 
 __all__ = [
@@ -31,5 +33,6 @@ __all__ = [
     "ROLE_PLAY_PAYLOADS",
     "INSURANCE_SECTOR_PAYLOADS",
     "POLICY_VIOLATION_PAYLOADS",
+    "ESF_PAYLOADS",
     "get_all_payloads",
 ]

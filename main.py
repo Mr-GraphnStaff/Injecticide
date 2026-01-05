@@ -17,7 +17,7 @@ from endpoints import (
     OpenAIEndpoint,
     AzureOpenAIEndpoint,
 )
-from generator import generate_payloads, policy_violation_payloads
+from generator import generate_payloads, policy_violation_payloads, esf_payloads
 
 
 def build_sender(config: TestConfig) -> Callable[[str], str]:
@@ -72,6 +72,9 @@ def run_test_suite(config: TestConfig) -> List[Dict[str, Any]]:
 
     if "policy" in config.payload_categories:
         payloads.extend([(p, "policy") for p in policy_violation_payloads()])
+
+    if "esf" in config.payload_categories:
+        payloads.extend([(p, "esf") for p in esf_payloads()])
 
     for custom in config.custom_payloads:
         payloads.append((custom, "custom"))
