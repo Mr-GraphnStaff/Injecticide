@@ -9,6 +9,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - REDIS_URL=redis://redis:6379
+      - SKILL_SANDBOX_URL=http://skill_sandbox:9001
     volumes:
       - ./reports:/app/reports
       - ./configs:/app/configs
@@ -16,6 +17,24 @@ services:
       - redis
     networks:
       - injecticide-network
+      - skill-sandbox-net
+    restart: unless-stopped
+
+  skill_sandbox:
+    build:
+      context: ./skill_sandbox
+    container_name: injecticide-skill-sandbox
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 256m
+    networks:
+      - skill-sandbox-net
     restart: unless-stopped
 
   redis:
@@ -50,3 +69,5 @@ volumes:
 networks:
   injecticide-network:
     driver: bridge
+  skill-sandbox-net:
+    internal: true
