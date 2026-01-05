@@ -1,0 +1,15 @@
+[33mcommit 0c4c3f516d74405788e10daf8b16f64a393d2050[m
+Author: Mr-GraphnStaff <94571470+Mr-GraphnStaff@users.noreply.github.com>
+Date:   Mon Jan 5 13:23:38 2026 -0600
+
+    Add skill sandbox service for skill scanning (#24)
+
+ docker-compose.yml                     |  21 [32m+++[m
+ skill_sandbox/Dockerfile               |  15 [32m++[m
+ skill_sandbox/__init__.py              |   1 [32m+[m
+ skill_sandbox/app.py                   | 328 [32m+++++++++++++++++++++++++++++++++[m
+ skill_sandbox/requirements.txt         |   3 [32m+[m
+ skill_sandbox/scan_rules.py            | 132 [32m+++++++++++++[m
+ tests/test_skill_sandbox_extraction.py |  90 [32m+++++++++[m
+ webapp/api.py                          |  44 [32m++++[m[31m-[m
+ 8 files changed, 630 insertions(+), 4 deletions(-)
