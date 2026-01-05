@@ -2,29 +2,30 @@
 Injecticide Web Application - FastAPI Backend
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, UploadFile, File
+from fastapi import FastAPI, HTTPException, WebSocket, UploadFile, File
+from fastapi.websockets import WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field, StrictInt
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import uuid
-import json
 import asyncio
+import time
 from pathlib import Path
 import sys
 import os
 import signal
 import zipfile
 import requests
+import logging
 
 # Add parent directory to path to import Injecticide modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import core Injecticide modules
-from reporter import ReportGenerator
 from analyzer import analyze
 from generator import policy_violation_payloads
 from payloads import get_all_payloads
@@ -62,6 +63,13 @@ app = FastAPI(
     docs_url="/api/docs",
 )
 
+logger = logging.getLogger("injecticide.webapp")
+if not logger.handlers:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -71,6 +79,158 @@ app.add_middleware(
 )
 
 test_sessions = {}
+session_connections = {}
+
+
+class TestStartRequest(BaseModel):
+    target_service: str = Field(..., min_length=1)
+    api_key: Optional[str] = None
+    model: Optional[str] = None
+    endpoint_url: Optional[str] = None
+    endpoint_name: Optional[str] = None
+    payload_preset: Optional[str] = None
+    test_categories: List[str] = Field(default_factory=list)
+    custom_payloads: List[str] = Field(default_factory=list)
+    max_requests: StrictInt = Field(default=50, gt=0)
+    delay_between_requests: float = Field(default=0.0, ge=0.0)
+
+
+def _resolve_test_config(request: TestStartRequest) -> Dict[str, Any]:
+    endpoint_config = resolve_endpoint(request.endpoint_name)
+    preset_config = resolve_payload_preset(request.payload_preset)
+
+    config = request.model_dump()
+
+    if endpoint_config:
+        config["target_service"] = endpoint_config.get("target_service") or config["target_service"]
+        config["model"] = endpoint_config.get("model") or config.get("model")
+        config["endpoint_url"] = endpoint_config.get("endpoint_url") or config.get("endpoint_url")
+        config["api_key"] = config.get("api_key") or endpoint_config.get("api_key")
+
+    if preset_config:
+        preset_categories = preset_config.get("test_categories") or []
+        preset_custom = preset_config.get("custom_payloads") or []
+        if preset_categories:
+            config["test_categories"] = preset_categories
+        if preset_custom:
+            config["custom_payloads"] = preset_custom + config.get("custom_payloads", [])
+
+    if not config.get("api_key"):
+        raise HTTPException(status_code=400, detail="API key required for selected endpoint")
+
+    if not config.get("test_categories"):
+        raise HTTPException(status_code=400, detail="At least one payload category is required")
+
+    return config
+
+
+def _build_sender(config: Dict[str, Any]):
+    service = config["target_service"]
+    api_key = config["api_key"]
+    model = config.get("model") or ""
+    endpoint_url = config.get("endpoint_url") or ""
+
+    if service == "anthropic":
+        endpoint = AnthropicEndpoint(api_key=api_key, model=model or "claude-3-opus-20240229")
+    elif service == "openai":
+        endpoint = OpenAIEndpoint(api_key=api_key, model=model or "gpt-4")
+    elif service == "azure_openai":
+        if not endpoint_url:
+            raise HTTPException(status_code=400, detail="Azure OpenAI requires an endpoint URL")
+        endpoint = AzureOpenAIEndpoint(
+            api_key=api_key,
+            endpoint_url=endpoint_url,
+            deployment_name=model,
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported service: {service}")
+
+    delay = config.get("delay_between_requests", 0)
+
+    def send(payload: str) -> str:
+        if delay:
+            time.sleep(delay)
+        return endpoint.send(payload)
+
+    return send
+
+
+async def _broadcast_session_update(session_id: str) -> None:
+    session = test_sessions.get(session_id)
+    if not session:
+        return
+    payload = jsonable_encoder(session)
+    connections = list(session_connections.get(session_id, set()))
+    for websocket in connections:
+        try:
+            await websocket.send_json(payload)
+        except Exception as exc:
+            logger.warning("WebSocket send failed for session %s: %s", session_id, exc)
+            session_connections.get(session_id, set()).discard(websocket)
+
+
+async def _run_test_session(session_id: str, config: Dict[str, Any]) -> None:
+    session = test_sessions[session_id]
+    session["status"] = "running"
+    session["started_at"] = datetime.utcnow().isoformat()
+    await _broadcast_session_update(session_id)
+
+    logger.info(
+        "Session %s starting: service=%s categories=%s max_requests=%s",
+        session_id,
+        config.get("target_service"),
+        config.get("test_categories"),
+        config.get("max_requests"),
+    )
+
+    try:
+        send_fn = _build_sender(config)
+        payloads = _build_payloads_for_categories(
+            config.get("test_categories", []),
+            config.get("custom_payloads", []),
+        )
+
+        session["total_payloads"] = len(payloads)
+
+        for index, (payload, category) in enumerate(payloads):
+            if index >= config.get("max_requests", len(payloads)):
+                logger.info("Session %s reached max requests", session_id)
+                break
+
+            try:
+                response = send_fn(payload)
+                flags = analyze(response)
+                result = {
+                    "payload": payload,
+                    "category": category,
+                    "flags": flags,
+                    "response_length": len(str(response)),
+                    "detected": any(flags.values()),
+                }
+            except Exception as exc:
+                logger.exception("Session %s payload failed", session_id)
+                result = {
+                    "payload": payload,
+                    "category": category,
+                    "flags": {},
+                    "detected": False,
+                    "error": str(exc),
+                }
+
+            session["results"].append(result)
+            session["completed_payloads"] = len(session["results"])
+            await _broadcast_session_update(session_id)
+
+    except Exception as exc:
+        logger.exception("Session %s failed to execute", session_id)
+        session["status"] = "failed"
+        session["error"] = str(exc)
+    else:
+        session["status"] = "completed"
+    finally:
+        session["completed_at"] = datetime.utcnow().isoformat()
+        await _broadcast_session_update(session_id)
+        logger.info("Session %s finished with status %s", session_id, session["status"])
 
 # ----------------------------
 # CONFIG OPTIONS ENDPOINT
@@ -110,6 +270,60 @@ async def get_available_payloads():
     return {"categories": categories}
 
 # ----------------------------
+
+@app.post("/api/test/start")
+async def start_test(request: TestStartRequest):
+    """Start a test session and return its session data."""
+
+    config = _resolve_test_config(request)
+    session_id = str(uuid.uuid4())
+
+    session = {
+        "session_id": session_id,
+        "status": "queued",
+        "created_at": datetime.utcnow().isoformat(),
+        "completed_at": None,
+        "started_at": None,
+        "total_payloads": 0,
+        "completed_payloads": 0,
+        "results": [],
+        "config": {
+            "target_service": config.get("target_service"),
+            "model": config.get("model"),
+            "endpoint_name": config.get("endpoint_name"),
+            "payload_preset": config.get("payload_preset"),
+            "test_categories": config.get("test_categories"),
+            "custom_payloads": config.get("custom_payloads"),
+            "max_requests": config.get("max_requests"),
+            "delay_between_requests": config.get("delay_between_requests"),
+        },
+    }
+
+    test_sessions[session_id] = session
+    session_connections.setdefault(session_id, set())
+
+    logger.info("Session %s queued", session_id)
+    asyncio.create_task(_run_test_session(session_id, config))
+    return session
+
+
+@app.websocket("/ws/{session_id}")
+async def session_updates(websocket: WebSocket, session_id: str):
+    await websocket.accept()
+    session_connections.setdefault(session_id, set()).add(websocket)
+    logger.info("WebSocket connected for session %s", session_id)
+
+    if session_id in test_sessions:
+        await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        logger.info("WebSocket disconnected for session %s", session_id)
+    finally:
+        session_connections.get(session_id, set()).discard(websocket)
+
 
 @app.get("/")
 async def root():
