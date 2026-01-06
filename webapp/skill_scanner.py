@@ -7,6 +7,8 @@ import re
 import zipfile
 from typing import Dict, List, Tuple
 
+from skill_sandbox.behavior_analysis import analyze_behavior
+
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_ZIP_FILES = 200
 MAX_ZIP_TOTAL_BYTES = 25 * 1024 * 1024
@@ -88,6 +90,7 @@ def scan_upload(upload_bytes: bytes, filename: str) -> Dict[str, object]:
 
 def _scan_zip_bundle(upload_bytes: bytes, filename: str) -> Dict[str, object]:
     results = []
+    text_pairs: List[Tuple[str, str | None]] = []
     warnings = []
     total_uncompressed = 0
 
@@ -109,17 +112,20 @@ def _scan_zip_bundle(upload_bytes: bytes, filename: str) -> Dict[str, object]:
             with archive.open(info) as handle:
                 data = handle.read()
 
-            results.append(_scan_file_bytes(info.filename, data))
+            entry, text = _scan_file_bytes(info.filename, data)
+            results.append(entry)
+            text_pairs.append((info.filename, text))
 
-    return _assemble_result(filename, "zip", results, warnings)
+    return _assemble_result(filename, "zip", results, warnings, _build_text_sources(text_pairs))
 
 
 def _scan_single_skill(upload_bytes: bytes, filename: str) -> Dict[str, object]:
-    results = [_scan_file_bytes(filename, upload_bytes)]
-    return _assemble_result(filename, "skill", results, [])
+    entry, text = _scan_file_bytes(filename, upload_bytes)
+    results = [entry]
+    return _assemble_result(filename, "skill", results, [], _build_text_sources([(filename, text)]))
 
 
-def _scan_file_bytes(path: str, data: bytes) -> Dict[str, object]:
+def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | None]:
     entry = {
         "path": path,
         "size": len(data),
@@ -131,11 +137,11 @@ def _scan_file_bytes(path: str, data: bytes) -> Dict[str, object]:
     if not _is_probably_text(data):
         entry["skipped"] = True
         entry["reason"] = "Binary or non-text content"
-        return entry
+        return entry, None
 
     text = data.decode("utf-8", errors="replace")
     entry["findings"] = _scan_text(text)
-    return entry
+    return entry, text
 
 
 def _scan_text(text: str) -> List[Dict[str, object]]:
@@ -168,9 +174,11 @@ def _assemble_result(
     file_type: str,
     results: List[Dict[str, object]],
     warnings: List[str],
+    text_sources: List[Dict[str, str]],
 ) -> Dict[str, object]:
     flagged_files = sum(1 for item in results if item["findings"])
     total_findings = sum(len(item["findings"]) for item in results)
+    behavior_report = analyze_behavior(text_sources)
 
     return {
         "filename": filename,
@@ -182,6 +190,7 @@ def _assemble_result(
         },
         "warnings": warnings,
         "files": results,
+        **behavior_report,
     }
 
 
@@ -195,3 +204,11 @@ def _is_probably_text(data: bytes) -> bool:
     sample = data[:4096]
     printable = sum(1 for byte in sample if 32 <= byte <= 126 or byte in (9, 10, 13))
     return printable / len(sample) >= 0.7
+
+
+def _build_text_sources(text_pairs: List[Tuple[str, str | None]]) -> List[Dict[str, str]]:
+    sources = []
+    for path, text in text_pairs:
+        if text:
+            sources.append({"path": path, "text": text})
+    return sources
