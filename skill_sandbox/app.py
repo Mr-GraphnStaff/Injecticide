@@ -9,7 +9,8 @@ from typing import Dict, Iterable, List, Tuple
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
-from scan_rules import compile_patterns
+from .behavior_analysis import analyze_behavior
+from .scan_rules import compile_patterns
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
@@ -80,14 +81,16 @@ def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str) -> Dict
         else:
             raise ValueError("Unsupported archive type.")
 
-        results = _scan_extracted_files(extracted)
+        results, text_sources = _scan_extracted_files(extracted)
 
-    return _assemble_result(filename, archive_type, results, warnings)
+    return _assemble_result(filename, archive_type, results, warnings, text_sources)
 
 
 def _scan_single_file(upload_bytes: bytes, filename: str) -> Dict[str, object]:
-    results = [_scan_file_bytes(filename, upload_bytes)]
-    return _assemble_result(filename, "skill", results, [])
+    entry, text = _scan_file_bytes(filename, upload_bytes)
+    results = [entry]
+    text_sources = _build_text_sources([(filename, text)])
+    return _assemble_result(filename, "skill", results, [], text_sources)
 
 
 def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> List[Tuple[str, Path]]:
@@ -179,13 +182,16 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
     return extracted
 
 
-def _scan_extracted_files(files: Iterable[Tuple[str, Path]]) -> List[Dict[str, object]]:
+def _scan_extracted_files(files: Iterable[Tuple[str, Path]]) -> Tuple[List[Dict[str, object]], List[Dict[str, str]]]:
     results = []
+    text_pairs: List[Tuple[str, str | None]] = []
     sorted_files = sorted(files, key=_priority_key)
     for rel_path, path in sorted_files:
         data = path.read_bytes()
-        results.append(_scan_file_bytes(rel_path, data))
-    return results
+        entry, text = _scan_file_bytes(rel_path, data)
+        results.append(entry)
+        text_pairs.append((rel_path, text))
+    return results, _build_text_sources(text_pairs)
 
 
 def _priority_key(item: Tuple[str, Path]) -> Tuple[int, str]:
@@ -200,7 +206,7 @@ def _priority_key(item: Tuple[str, Path]) -> Tuple[int, str]:
     return (2, rel_path.lower())
 
 
-def _scan_file_bytes(path: str, data: bytes) -> Dict[str, object]:
+def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | None]:
     entry = {
         "path": path,
         "size": len(data),
@@ -212,11 +218,11 @@ def _scan_file_bytes(path: str, data: bytes) -> Dict[str, object]:
     if not _is_probably_text(data):
         entry["skipped"] = True
         entry["reason"] = "Binary or non-text content"
-        return entry
+        return entry, None
 
     text = data.decode("utf-8", errors="replace")
     entry["findings"] = _scan_text(text)
-    return entry
+    return entry, text
 
 
 def _scan_text(text: str) -> List[Dict[str, object]]:
@@ -247,9 +253,11 @@ def _assemble_result(
     file_type: str,
     results: List[Dict[str, object]],
     warnings: List[str],
+    text_sources: List[Dict[str, str]],
 ) -> Dict[str, object]:
     flagged_files = sum(1 for item in results if item["findings"])
     total_findings = sum(len(item["findings"]) for item in results)
+    behavior_report = analyze_behavior(text_sources)
 
     return {
         "filename": filename,
@@ -261,6 +269,7 @@ def _assemble_result(
         },
         "warnings": warnings,
         "files": results,
+        **behavior_report,
     }
 
 
@@ -313,3 +322,11 @@ def _is_probably_text(data: bytes) -> bool:
     sample = data[:4096]
     printable = sum(1 for b in sample if 32 <= b <= 126 or b in (9, 10, 13))
     return printable / len(sample) >= 0.7
+
+
+def _build_text_sources(text_pairs: Iterable[Tuple[str, str | None]]) -> List[Dict[str, str]]:
+    sources = []
+    for path, text in text_pairs:
+        if text:
+            sources.append({"path": path, "text": text})
+    return sources
