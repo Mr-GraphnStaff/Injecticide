@@ -9,8 +9,12 @@ from typing import Dict, Iterable, List, Tuple
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
-from .behavior_analysis import analyze_behavior
-from .scan_rules import compile_patterns
+if __package__:
+    from .behavior_analysis import analyze_behavior
+    from .scan_rules import compile_patterns
+else:
+    from behavior_analysis import analyze_behavior
+    from scan_rules import compile_patterns
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
