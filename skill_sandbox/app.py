@@ -248,6 +248,10 @@ def _scan_text(path: str, text: str) -> List[Dict[str, object]]:
                 "category": pattern["category"],
                 "severity": pattern["severity"],
                 "description": pattern["description"],
+                "finding_category": pattern.get("finding_category", "signal"),
+                "subject": pattern.get("subject", "unknown"),
+                "action_state": pattern.get("action_state", "present"),
+                "disposition": pattern.get("disposition", _default_disposition(pattern["severity"])),
                 "count": len(matches),
                 "samples": matches[:3],
                 "status": pattern.get("status", "unknown"),
@@ -364,3 +368,13 @@ def _iter_scan_units(path: str, text: str) -> List[str]:
     if path.lower().endswith(".csv"):
         return [line for line in text.splitlines() if line.strip()]
     return [text]
+
+
+def _default_disposition(severity: str) -> str:
+    if severity == "high":
+        return "block"
+    if severity == "medium":
+        return "require_approval"
+    if severity == "low":
+        return "warn"
+    return "info"

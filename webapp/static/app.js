@@ -768,6 +768,9 @@ function App({ onBack }) {
                                                                         <li key={findingIdx}>
                                                                             <span className="text-gray-200">{finding.id}</span>
                                                                             {' '}({finding.severity}) - {finding.description}
+                                                                            <div className="text-[10px] text-gray-500">
+                                                                                {finding.finding_category} / {finding.subject} / {finding.action_state} / {finding.disposition}
+                                                                            </div>
                                                                         </li>
                                                                     ))}
                                                                 </ul>
