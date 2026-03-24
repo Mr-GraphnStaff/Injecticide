@@ -207,6 +207,9 @@ def _classify_block(block: str) -> Tuple[str, str]:
     if risky_reasons:
         return "risky", " ".join(risky_reasons[:2])
 
+    if ENTERPRISE_REGEX.search(block) and READ_ONLY_REGEX.search(block):
+        return "good", "Read-only enterprise analysis without execution or modification instructions."
+
     if ENTERPRISE_REGEX.search(block) and VAGUE_ACTION_REGEX.search(block):
         return "unknown", "Mentions enterprise system access without enforceable integration details."
 

@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY app.py /app/app.py
 COPY behavior_analysis.py /app/behavior_analysis.py
 COPY scan_rules.py /app/scan_rules.py
+COPY rules /app/rules
 
 USER appuser
 
