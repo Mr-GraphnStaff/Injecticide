@@ -28,6 +28,26 @@ def test_jira_governance_fixture_has_no_findings():
     assert result["risk_classification"]["recommendation"] == "allow_with_warnings"
 
 
+def test_security_architect_fixture_has_only_informational_sensitive_topic():
+    result = _scan_fixture(FIXTURES_DIR / "clean" / "security_architect.skill")
+
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+
+    assert "secret_exfiltration" not in finding_ids
+    assert "sensitive_topic" in finding_ids
+
+
+def test_token_saver_fixture_has_no_secret_exfiltration():
+    result = _scan_fixture(FIXTURES_DIR / "clean" / "token_saver.skill")
+
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+
+    assert "secret_exfiltration" not in finding_ids
+    assert "sensitive_topic" not in finding_ids
+
+
 def test_borderline_enterprise_audit_fixture_is_unknown_not_flagged():
     result = _scan_fixture(FIXTURES_DIR / "borderline" / "enterprise_audit_helper.skill")
 

@@ -50,13 +50,41 @@
       "id": "secret_exfiltration",
       "category": "prompt",
       "severity": "medium",
-      "description": "Requests secrets, tokens, or keys in prompt text.",
+      "description": "Requests or attempts to reveal secrets, credentials, or access tokens.",
+      "status": "verified",
+      "match_mode": "all",
+      "patterns": [
+        "\\b(show|reveal|dump|print|return|expose|fetch|read|display|output|extract|leak)\\b",
+        "\\b(api\\s*key|access\\s+token|bearer\\s+token|password|credential|secret|access\\s+key|private\\s+key|ssh\\s+key|pem)\\b"
+      ],
+      "exclude_patterns": [
+        "\\btoken\\s+saver\\b",
+        "\\bwasted\\s+tokens\\b",
+        "\\btoken\\s+budget\\b",
+        "\\btoken\\s+lifecycle\\b",
+        "\\bcredential\\s+exposure\\b"
+      ],
+      "sources": [
+        {
+          "name": "OWASP Top 10 for LLM Applications",
+          "ref": "LLM02 Sensitive Information Disclosure",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ]
+    },
+    {
+      "id": "sensitive_topic",
+      "category": "context",
+      "severity": "info",
+      "description": "Discusses secrets, tokens, or credentials as a topic without requesting disclosure.",
       "status": "verified",
       "match_mode": "any",
       "patterns": [
-        "\\b(api\\s*key|secret|token|password|credential|access\\s+key|private\\s+key|ssh|pem)\\b"
+        "\\b(api\\s*key|access\\s+token|bearer\\s+token|token\\s+lifecycle|credential\\s+exposure|credentials?|secrets?|private\\s+key|ssh\\s+key|pem)\\b"
       ],
-      "exclude_patterns": [],
+      "exclude_patterns": [
+        "\\b(show|reveal|dump|print|return|expose|fetch|read|display|output|extract|leak)\\b.{0,40}\\b(api\\s*key|access\\s+token|bearer\\s+token|password|credential|secret|access\\s+key|private\\s+key|ssh\\s+key|pem)\\b"
+      ],
       "sources": [
         {
           "name": "OWASP Top 10 for LLM Applications",
