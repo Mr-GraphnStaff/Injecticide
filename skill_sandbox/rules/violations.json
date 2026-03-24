@@ -278,7 +278,7 @@
       "status": "verified",
       "match_mode": "any",
       "patterns": [
-        "\\b(private\\s+key|ssh|pem)\\b"
+        "\\b(private\\s+key|ssh\\s+key|\\.pem\\b|pem\\s+file)\\b"
       ],
       "exclude_patterns": [],
       "sources": [

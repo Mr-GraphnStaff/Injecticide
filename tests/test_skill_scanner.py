@@ -61,3 +61,23 @@ This skill applies to Jira work item management and audit trails only.
     finding_ids = {finding["id"] for finding in findings}
 
     assert "tool_escape" not in finding_ids
+
+
+def test_catalog_csv_does_not_trigger_cross_row_secret_or_tool_findings():
+    payload = b"""Service,Category,Summary
+Secrets Store,Developer Platform / Security,"Encrypted secret management; store API keys, tokens, and credentials reusable across Workers in an account"
+Workers AI,AI / Developer Platform,"Serverless GPU inference; run open-source ML models via API"
+Spectrum,Network Security / Performance,"DDoS protection and acceleration for TCP applications including SSH"
+"""
+
+    result = scan_upload(payload, "services-catalog.csv")
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+
+    assert "secret_exfiltration" not in finding_ids
+    assert "tool_escape" not in finding_ids
+    assert "sensitive_keywords" not in finding_ids
+    assert "sensitive_topic" in finding_ids
+    assert result["summary"]["flagged_files"] == 0
+    assert result["summary"]["total_findings"] == 0
+    assert result["summary"]["info_findings"] >= 1

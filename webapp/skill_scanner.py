@@ -80,15 +80,18 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         return entry, None
 
     text = data.decode("utf-8", errors="replace")
-    entry["findings"] = _scan_text(text)
+    entry["findings"] = _scan_text(path, text)
     return entry, text
 
 
-def _scan_text(text: str) -> List[Dict[str, object]]:
+def _scan_text(path: str, text: str) -> List[Dict[str, object]]:
     findings = []
+    scan_units = _iter_scan_units(path, text)
 
     for pattern in PATTERNS:
-        matches = find_rule_matches(pattern, text)
+        matches = []
+        for unit in scan_units:
+            matches.extend(find_rule_matches(pattern, unit))
         if not matches:
             continue
 
@@ -115,8 +118,23 @@ def _assemble_result(
     warnings: List[str],
     text_sources: List[Dict[str, str]],
 ) -> Dict[str, object]:
-    flagged_files = sum(1 for item in results if item["findings"])
-    total_findings = sum(len(item["findings"]) for item in results)
+    flagged_files = sum(
+        1
+        for item in results
+        if any(finding.get("severity") != "info" for finding in item["findings"])
+    )
+    total_findings = sum(
+        1
+        for item in results
+        for finding in item["findings"]
+        if finding.get("severity") != "info"
+    )
+    info_findings = sum(
+        1
+        for item in results
+        for finding in item["findings"]
+        if finding.get("severity") == "info"
+    )
     behavior_report = analyze_behavior(text_sources)
 
     return {
@@ -126,6 +144,7 @@ def _assemble_result(
             "total_files": len(results),
             "flagged_files": flagged_files,
             "total_findings": total_findings,
+            "info_findings": info_findings,
         },
         "warnings": warnings,
         "files": results,
@@ -151,3 +170,9 @@ def _build_text_sources(text_pairs: List[Tuple[str, str | None]]) -> List[Dict[s
         if text:
             sources.append({"path": path, "text": text})
     return sources
+
+
+def _iter_scan_units(path: str, text: str) -> List[str]:
+    if path.lower().endswith(".csv"):
+        return [line for line in text.splitlines() if line.strip()]
+    return [text]
