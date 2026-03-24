@@ -364,7 +364,7 @@ function App({ onBack }) {
 
     const scanSkillFile = async () => {
         if (!skillFile) {
-            setSkillScanError('Select a .skill or .zip file to scan.');
+            setSkillScanError('Select a SKILL.md, .skill, or .zip file to scan.');
             return;
         }
 
@@ -660,11 +660,11 @@ function App({ onBack }) {
                                     <h3 className="text-sm font-medium mb-3 text-gray-400">Claude Skill Upload</h3>
                                     <div className="space-y-3">
                                         <label className="block text-sm font-medium text-gray-300">
-                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload .skill or .zip
+                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload SKILL.md, .skill, or .zip
                                         </label>
                                         <input
                                             type="file"
-                                            accept=".skill,.zip"
+                                            accept=".md,.skill,.zip"
                                             className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600"
                                             onChange={handleSkillFileChange}
                                             disabled={disableControls || isScanningSkill}
@@ -675,7 +675,7 @@ function App({ onBack }) {
                                             className={`w-full py-2 rounded-lg text-sm font-semibold transition border border-blue-600/60 bg-blue-700/70 hover:bg-blue-600/80 ${disableControls || isScanningSkill || !skillFile ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             <i className={`fas ${isScanningSkill ? 'fa-spinner fa-spin' : 'fa-shield-alt'} mr-2`}></i>
-                                            {isScanningSkill ? 'Scanning…' : 'Scan Skill Bundle'}
+                                            {isScanningSkill ? 'Scanning…' : 'Scan Skill File/Bundle'}
                                         </button>
                                         {skillScanError && (
                                             <p className="text-xs text-yellow-400">{skillScanError}</p>
