@@ -68,3 +68,43 @@ def test_bad_red_team_fixture_triggers_expected_findings():
     assert "system_exfiltration" in finding_ids
     assert "tool_escape" in finding_ids
     assert "subprocess_spawn" in finding_ids
+
+
+def test_bad_autonomous_authoritative_write_fixture_triggers_expected_findings():
+    result = _scan_fixture(FIXTURES_DIR / "bad" / "autonomous_authoritative_write.skill")
+
+    assert result["summary"]["flagged_files"] == 1
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+
+    assert "autonomous_authoritative_write" in finding_ids
+
+
+def test_bad_bulk_enterprise_modification_fixture_triggers_expected_findings():
+    result = _scan_fixture(FIXTURES_DIR / "bad" / "bulk_enterprise_modification.skill")
+
+    assert result["summary"]["flagged_files"] == 1
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+
+    assert "bulk_enterprise_modification" in finding_ids
+
+
+def test_bad_workflow_manipulation_fixture_triggers_expected_findings():
+    result = _scan_fixture(FIXTURES_DIR / "bad" / "workflow_manipulation.skill")
+
+    assert result["summary"]["flagged_files"] == 1
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+
+    assert "workflow_manipulation" in finding_ids
+
+
+def test_bad_cross_system_automation_fixture_triggers_expected_findings():
+    result = _scan_fixture(FIXTURES_DIR / "bad" / "cross_system_automation.skill")
+
+    assert result["summary"]["flagged_files"] == 1
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+
+    assert "cross_system_automation" in finding_ids

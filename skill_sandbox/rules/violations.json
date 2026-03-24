@@ -118,6 +118,104 @@
       ]
     },
     {
+      "id": "autonomous_authoritative_write",
+      "category": "enterprise",
+      "severity": "high",
+      "description": "Claims or instructs autonomous write actions against authoritative enterprise systems.",
+      "status": "verified",
+      "match_mode": "all",
+      "patterns": [
+        "\\b(jira|confluence|servicenow|github|gitlab|salesforce|sharepoint)\\b",
+        "\\b(create|update|modify|delete|transition|comment|worklog|write\\s+operation|write\\s+capability|write\\s+access)\\b",
+        "\\b(autonom(?:ous|ously)|when\\s+triggered|trigger\\s+phrase|without\\s+human\\s+review|will\\s+create|will\\s+modify|single\\s+operation|run\\s+kill\\s+chain\\s+test|execute\\s+kill\\s+chain\\s+demonstration)\\b",
+        "\\b(systems?\\s+of\\s+record|authoritative\\s+systems?|authoritative\\s+data)\\b"
+      ],
+      "exclude_patterns": [
+        "\\balways\\s+confirm\\b.{0,80}\\b(before|prior\\s+to)\\b.{0,80}\\b(create|update|modify|delete|transition|comment|worklog)\\b",
+        "\\bdraft\\b.{0,80}\\b(issue|ticket|comment)\\b"
+      ],
+      "sources": [
+        {
+          "name": "MITRE ATLAS",
+          "ref": "Authorized capability misuse / enterprise action abuse",
+          "url": "https://atlas.mitre.org/"
+        }
+      ]
+    },
+    {
+      "id": "bulk_enterprise_modification",
+      "category": "enterprise",
+      "severity": "high",
+      "description": "Describes bulk or repeated modifications to enterprise systems through AI-driven automation.",
+      "status": "verified",
+      "match_mode": "all",
+      "patterns": [
+        "\\b(jira|confluence|servicenow|github|gitlab|salesforce|sharepoint)\\b",
+        "\\b(create|update|modify|delete|transition|comment|worklog|close|reassign)\\b",
+        "\\b(batch|bulk|multiple|all\\s+issues|every\\s+issue|entire\\s+project|across\\s+all|mass\\s+update)\\b",
+        "\\b(autonom(?:ous|ously)|automatic(?:ally)?|when\\s+triggered|without\\s+human\\s+review|single\\s+command)\\b"
+      ],
+      "exclude_patterns": [
+        "\\bdo\\s+not\\s+modify\\b",
+        "\\bread[- ]only\\b"
+      ],
+      "sources": [
+        {
+          "name": "MITRE ATLAS",
+          "ref": "Authorized capability misuse / enterprise action abuse",
+          "url": "https://atlas.mitre.org/"
+        }
+      ]
+    },
+    {
+      "id": "workflow_manipulation",
+      "category": "enterprise",
+      "severity": "high",
+      "description": "Describes AI-controlled workflow or lifecycle manipulation in enterprise systems.",
+      "status": "verified",
+      "match_mode": "all",
+      "patterns": [
+        "\\b(jira|servicenow|github|gitlab|confluence)\\b",
+        "\\b(transition|workflow|status\\s+change|move\\s+to\\s+done|reopen|close\\s+ticket|change\\s+assignee|add\\s+watchers?|approve|merge)\\b",
+        "\\b(autonom(?:ous|ously)|automatic(?:ally)?|when\\s+triggered|without\\s+human\\s+review|on\\s+request)\\b"
+      ],
+      "exclude_patterns": [
+        "\\bconfirm(?:ation)?\\s+required\\b",
+        "\\bdo\\s+not\\s+modify\\b"
+      ],
+      "sources": [
+        {
+          "name": "MITRE ATLAS",
+          "ref": "Workflow manipulation / enterprise action abuse",
+          "url": "https://atlas.mitre.org/"
+        }
+      ]
+    },
+    {
+      "id": "cross_system_automation",
+      "category": "enterprise",
+      "severity": "high",
+      "description": "Describes autonomous syncing or write propagation across multiple enterprise systems.",
+      "status": "verified",
+      "match_mode": "all",
+      "patterns": [
+        "\\b(jira|confluence|servicenow|github|gitlab|salesforce|sharepoint)\\b.{0,120}\\b(jira|confluence|servicenow|github|gitlab|salesforce|sharepoint)\\b",
+        "\\b(sync|synchronize|mirror|propagate|copy|write\\s+back|push\\s+updates|create\\s+records\\s+in\\s+both|cross-system)\\b",
+        "\\b(autonom(?:ous|ously)|automatic(?:ally)?|when\\s+triggered|without\\s+human\\s+review)\\b"
+      ],
+      "exclude_patterns": [
+        "\\bread[- ]only\\b",
+        "\\bsummarize\\b.{0,80}\\bdo\\s+not\\s+modify\\b"
+      ],
+      "sources": [
+        {
+          "name": "MITRE ATLAS",
+          "ref": "Cross-system enterprise action abuse",
+          "url": "https://atlas.mitre.org/"
+        }
+      ]
+    },
+    {
       "id": "dynamic_exec",
       "category": "code",
       "severity": "high",
