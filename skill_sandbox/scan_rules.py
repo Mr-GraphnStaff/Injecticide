@@ -1,132 +1,83 @@
 from __future__ import annotations
 
+import json
 import re
-from typing import Dict, Tuple
+from functools import lru_cache
+from pathlib import Path
+from typing import Dict, List, Tuple
 
-PROMPT_PATTERNS: Tuple[Dict[str, str], ...] = (
-    {
-        "id": "prompt_override",
-        "category": "prompt",
-        "severity": "high",
-        "description": "Attempts to override or ignore higher-priority instructions.",
-        "regex": r"\b(ignore|override|bypass)\s+(previous|prior|above|system|developer)\b",
-    },
-    {
-        "id": "system_exfiltration",
-        "category": "prompt",
-        "severity": "high",
-        "description": "Requests or leaks system/developer messages or hidden prompts.",
-        "regex": r"\b(system|developer)\s+(prompt|message|instructions)\b|\breveal\s+the\s+system\s+prompt\b",
-    },
-    {
-        "id": "secret_exfiltration",
-        "category": "prompt",
-        "severity": "medium",
-        "description": "Requests secrets, tokens, or keys in prompt text.",
-        "regex": r"\b(api\s*key|secret|token|password|credential|access\s+key|private\s+key|ssh|pem)\b",
-    },
-    {
-        "id": "tool_escape",
-        "category": "prompt",
-        "severity": "medium",
-        "description": "Attempts to execute or escape to external tools or files.",
-        "regex": r"\b(run|execute|shell|terminal|powershell|bash|cmd\.exe)\b",
-    },
-)
 
-CODE_PATTERNS: Tuple[Dict[str, str], ...] = (
-    {
-        "id": "dynamic_exec",
-        "category": "code",
-        "severity": "high",
-        "description": "Dynamic code execution helpers detected.",
-        "regex": r"\b(exec|eval|compile)\s*\(",
-    },
-    {
-        "id": "subprocess_spawn",
-        "category": "code",
-        "severity": "medium",
-        "description": "Process execution via subprocess or os.system.",
-        "regex": r"\b(subprocess\.run|subprocess\.Popen|os\.system)\b",
-    },
-    {
-        "id": "network_calls",
-        "category": "code",
-        "severity": "medium",
-        "description": "Network or HTTP request usage detected.",
-        "regex": r"\b(requests\.|urllib\.|httpx\.|socket\.)\b",
-    },
-    {
-        "id": "filesystem_access",
-        "category": "code",
-        "severity": "low",
-        "description": "File system access or environment reads detected.",
-        "regex": r"\b(open\(|pathlib\.|os\.environ|os\.listdir)\b",
-    },
-)
+RULE_CATALOG_PATH = Path(__file__).resolve().parent / "rules" / "violations.json"
 
-URL_FETCH_PATTERNS: Tuple[Dict[str, str], ...] = (
-    {
-        "id": "url_fetch",
-        "category": "code",
-        "severity": "medium",
-        "description": "Remote fetch or download helpers detected.",
-        "regex": r"\b(curl|wget|Invoke-WebRequest|fetch\s*\(|requests\.get\s*\()\b",
-    },
-)
 
-OBFUSCATION_PATTERNS: Tuple[Dict[str, str], ...] = (
-    {
-        "id": "base64_usage",
-        "category": "obfuscation",
-        "severity": "medium",
-        "description": "Base64 helpers or long encoded blobs detected.",
-        "regex": r"\bbase64\b|[A-Za-z0-9+/]{80,}={0,2}",
-    },
-)
+@lru_cache(maxsize=1)
+def load_rule_catalog() -> Dict[str, object]:
+    """Load the local structured rule catalog used for skill scanning."""
 
-FILE_OP_PATTERNS: Tuple[Dict[str, str], ...] = (
-    {
-        "id": "dangerous_file_ops",
-        "category": "code",
-        "severity": "medium",
-        "description": "Potentially destructive file system operations detected.",
-        "regex": r"\b(rm\s+-rf|del\s+/f\s+/s|Remove-Item\s+-Recurse|shutil\.rmtree|chmod\s+[0-7]{3,4})\b",
-    },
-    {
-        "id": "home_write",
-        "category": "code",
-        "severity": "low",
-        "description": "Writes to home directories or user profiles detected.",
-        "regex": r"\b(/home/|~\/|C:\\\\Users\\\\|\\.ssh/)\b",
-    },
-)
-
-SENSITIVE_PATTERNS: Tuple[Dict[str, str], ...] = (
-    {
-        "id": "sensitive_keywords",
-        "category": "prompt",
-        "severity": "medium",
-        "description": "Sensitive keywords or credential references detected.",
-        "regex": r"\b(private\s+key|ssh|pem)\b",
-    },
-)
+    with RULE_CATALOG_PATH.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
 
 
 def compile_patterns() -> Tuple[Dict[str, object], ...]:
-    compiled = []
-    for pattern in (
-        *PROMPT_PATTERNS,
-        *CODE_PATTERNS,
-        *URL_FETCH_PATTERNS,
-        *OBFUSCATION_PATTERNS,
-        *FILE_OP_PATTERNS,
-        *SENSITIVE_PATTERNS,
-    ):
+    """Compile the local rule catalog into regex-backed matcher definitions."""
+
+    catalog = load_rule_catalog()
+    compiled: List[Dict[str, object]] = []
+
+    for rule in catalog.get("rules", []):
         compiled.append(
             {
-                **pattern,
-                "compiled": re.compile(pattern["regex"], re.IGNORECASE),
+                **rule,
+                "compiled_patterns": tuple(
+                    re.compile(pattern, re.IGNORECASE)
+                    for pattern in rule.get("patterns", [])
+                ),
+                "compiled_excludes": tuple(
+                    re.compile(pattern, re.IGNORECASE)
+                    for pattern in rule.get("exclude_patterns", [])
+                ),
             }
         )
+
     return tuple(compiled)
+
+
+def find_rule_matches(rule: Dict[str, object], text: str) -> List[str]:
+    """Return normalized match samples when a compiled rule applies."""
+
+    if any(pattern.search(text) for pattern in rule.get("compiled_excludes", ())):
+        return []
+
+    compiled_patterns = rule.get("compiled_patterns", ())
+    if not compiled_patterns:
+        return []
+
+    mode = rule.get("match_mode", "any")
+
+    if mode == "all":
+        grouped_matches: List[str] = []
+        for pattern in compiled_patterns:
+            matches = _normalize_matches(pattern.findall(text))
+            if not matches:
+                return []
+            grouped_matches.extend(matches[:1])
+        return grouped_matches[:3]
+
+    positive_matches: List[str] = []
+    for pattern in compiled_patterns:
+        positive_matches.extend(_normalize_matches(pattern.findall(text)))
+
+    return positive_matches[:3]
+
+
+def _normalize_matches(matches: List[object]) -> List[str]:
+    normalized: List[str] = []
+    for match in matches:
+        if isinstance(match, tuple):
+            text = " ".join(str(item) for item in match if item)
+        else:
+            text = str(match)
+        text = re.sub(r"\s+", " ", text).strip()
+        if text:
+            normalized.append(text)
+    return normalized

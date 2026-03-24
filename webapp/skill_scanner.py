@@ -3,78 +3,18 @@
 from __future__ import annotations
 
 import io
-import re
 import zipfile
 from typing import Dict, List, Tuple
 
 from skill_sandbox.behavior_analysis import analyze_behavior
+from skill_sandbox.scan_rules import compile_patterns, find_rule_matches
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_ZIP_FILES = 200
 MAX_ZIP_TOTAL_BYTES = 25 * 1024 * 1024
 MAX_FILE_BYTES = 5 * 1024 * 1024
 
-PROMPT_PATTERNS: Tuple[Dict[str, str], ...] = (
-    {
-        "id": "prompt_override",
-        "category": "prompt",
-        "severity": "high",
-        "description": "Attempts to override or ignore higher-priority instructions.",
-        "regex": r"\b(ignore|override|bypass)\s+(previous|prior|above|system|developer)\b",
-    },
-    {
-        "id": "system_exfiltration",
-        "category": "prompt",
-        "severity": "high",
-        "description": "Requests or leaks system/developer messages or hidden prompts.",
-        "regex": r"\b(system|developer)\s+(prompt|message|instructions)\b|\breveal\s+the\s+system\s+prompt\b",
-    },
-    {
-        "id": "secret_exfiltration",
-        "category": "prompt",
-        "severity": "medium",
-        "description": "Requests secrets, tokens, or keys in prompt text.",
-        "regex": r"\b(api\s*key|secret|token|password|credential|access\s+key)\b",
-    },
-    {
-        "id": "tool_escape",
-        "category": "prompt",
-        "severity": "medium",
-        "description": "Attempts to execute or escape to external tools or files.",
-        "regex": r"\b(run|execute|shell|terminal|powershell|bash|cmd\.exe)\b",
-    },
-)
-
-CODE_PATTERNS: Tuple[Dict[str, str], ...] = (
-    {
-        "id": "dynamic_exec",
-        "category": "code",
-        "severity": "high",
-        "description": "Dynamic code execution helpers detected.",
-        "regex": r"\b(exec|eval|compile)\s*\(",
-    },
-    {
-        "id": "subprocess_spawn",
-        "category": "code",
-        "severity": "medium",
-        "description": "Process execution via subprocess or os.system.",
-        "regex": r"\b(subprocess\.run|subprocess\.Popen|os\.system)\b",
-    },
-    {
-        "id": "network_calls",
-        "category": "code",
-        "severity": "medium",
-        "description": "Network or HTTP request usage detected.",
-        "regex": r"\b(requests\.|urllib\.|httpx\.|socket\.)\b",
-    },
-    {
-        "id": "filesystem_access",
-        "category": "code",
-        "severity": "low",
-        "description": "File system access or environment reads detected.",
-        "regex": r"\b(open\(|pathlib\.|os\.environ|os\.listdir)\b",
-    },
-)
+PATTERNS = compile_patterns()
 
 
 def scan_upload(upload_bytes: bytes, filename: str) -> Dict[str, object]:
@@ -147,14 +87,11 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
 def _scan_text(text: str) -> List[Dict[str, object]]:
     findings = []
 
-    for pattern in (*PROMPT_PATTERNS, *CODE_PATTERNS):
-        regex = re.compile(pattern["regex"], re.IGNORECASE)
-        matches = regex.findall(text)
-
+    for pattern in PATTERNS:
+        matches = find_rule_matches(pattern, text)
         if not matches:
             continue
 
-        normalized_matches = [match if isinstance(match, str) else " ".join(match) for match in matches]
         findings.append(
             {
                 "id": pattern["id"],
@@ -162,7 +99,9 @@ def _scan_text(text: str) -> List[Dict[str, object]]:
                 "severity": pattern["severity"],
                 "description": pattern["description"],
                 "count": len(matches),
-                "samples": normalized_matches[:3],
+                "samples": matches[:3],
+                "status": pattern.get("status", "unknown"),
+                "sources": pattern.get("sources", []),
             }
         )
 

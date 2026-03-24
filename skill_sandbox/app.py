@@ -11,10 +11,10 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 
 if __package__:
     from .behavior_analysis import analyze_behavior
-    from .scan_rules import compile_patterns
+    from .scan_rules import compile_patterns, find_rule_matches
 else:
     from behavior_analysis import analyze_behavior
-    from scan_rules import compile_patterns
+    from scan_rules import compile_patterns, find_rule_matches
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
@@ -233,11 +233,10 @@ def _scan_text(text: str) -> List[Dict[str, object]]:
     findings = []
 
     for pattern in PATTERNS:
-        matches = pattern["compiled"].findall(text)
+        matches = find_rule_matches(pattern, text)
         if not matches:
             continue
 
-        normalized = [m if isinstance(m, str) else " ".join(m) for m in matches]
         findings.append(
             {
                 "id": pattern["id"],
@@ -245,7 +244,9 @@ def _scan_text(text: str) -> List[Dict[str, object]]:
                 "severity": pattern["severity"],
                 "description": pattern["description"],
                 "count": len(matches),
-                "samples": normalized[:3],
+                "samples": matches[:3],
+                "status": pattern.get("status", "unknown"),
+                "sources": pattern.get("sources", []),
             }
         )
 

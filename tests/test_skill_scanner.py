@@ -1,6 +1,7 @@
 import io
 import zipfile
 
+from skill_sandbox.scan_rules import load_rule_catalog
 from webapp.skill_scanner import scan_upload
 
 
@@ -36,3 +37,27 @@ def test_scan_zip_handles_multiple_files():
     bad_findings = files["bad.skill"]["findings"]
     finding_ids = {finding["id"] for finding in bad_findings}
     assert "subprocess_spawn" in finding_ids
+
+
+def test_rule_catalog_has_source_metadata():
+    catalog = load_rule_catalog()
+
+    assert catalog["catalog_version"]
+    tool_rule = next(rule for rule in catalog["rules"] if rule["id"] == "tool_escape")
+    assert tool_rule["sources"], "Rule catalog entries should keep source metadata"
+
+
+def test_jira_governance_skill_language_does_not_trigger_tool_escape():
+    payload = b"""
+Truth over ceremony. Execution over bullshit.
+
+Execute with discipline.
+
+This skill applies to Jira work item management and audit trails only.
+"""
+
+    result = scan_upload(payload, "jira.skill")
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+
+    assert "tool_escape" not in finding_ids
