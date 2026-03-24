@@ -7,6 +7,26 @@ from typing import Dict, List, Any, Optional
 import html
 
 
+def build_summary(test_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Build aggregate statistics for a list of test results."""
+
+    total = len(test_results)
+    detections = sum(1 for result in test_results if any(result.get("flags", {}).values()))
+
+    flag_counts: Dict[str, int] = {}
+    for result in test_results:
+        for flag, value in result.get("flags", {}).items():
+            if value:
+                flag_counts[flag] = flag_counts.get(flag, 0) + 1
+
+    return {
+        "total_tests": total,
+        "vulnerabilities_detected": detections,
+        "detection_rate": f"{(detections / total * 100):.1f}%" if total > 0 else "0.0%",
+        "flag_counts": flag_counts,
+    }
+
+
 class ReportGenerator:
     """Generate professional security assessment reports."""
     
@@ -47,21 +67,7 @@ class ReportGenerator:
     
     def _generate_summary(self) -> Dict[str, Any]:
         """Generate test summary statistics."""
-        total = len(self.results)
-        detections = sum(1 for r in self.results if any(r.get("flags", {}).values()))
-        
-        flag_counts = {}
-        for result in self.results:
-            for flag, value in result.get("flags", {}).items():
-                if value:
-                    flag_counts[flag] = flag_counts.get(flag, 0) + 1
-        
-        return {
-            "total_tests": total,
-            "vulnerabilities_detected": detections,
-            "detection_rate": f"{(detections/total*100):.1f}%" if total > 0 else "0%",
-            "flag_counts": flag_counts,
-        }
+        return build_summary(self.results)
     
     def _generate_html(self) -> str:
         """Generate HTML format report."""

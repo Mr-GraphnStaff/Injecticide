@@ -27,10 +27,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import core Injecticide modules
 from analyzer import analyze
-from generator import policy_violation_payloads
+from endpoints import create_endpoint
+from generator import build_payload_suite
 from payloads import get_all_payloads
-from reporter import ReportGenerator
-from endpoints_new import AnthropicEndpoint, OpenAIEndpoint, AzureOpenAIEndpoint
+from reporter import ReportGenerator, build_summary
 from webapp.config_loader import (
     get_endpoint_options,
     get_payload_presets,
@@ -94,6 +94,8 @@ class TestStartRequest(BaseModel):
     custom_payloads: List[str] = Field(default_factory=list)
     max_requests: StrictInt = Field(default=50, gt=0)
     delay_between_requests: float = Field(default=0.0, ge=0.0)
+    requests_per_minute: StrictInt = Field(default=60, gt=0)
+    requests_per_hour: StrictInt = Field(default=1000, gt=0)
 
 
 def _resolve_test_config(request: TestStartRequest) -> Dict[str, Any]:
@@ -126,41 +128,43 @@ def _resolve_test_config(request: TestStartRequest) -> Dict[str, Any]:
 
 
 def _build_sender(config: Dict[str, Any]):
-    service = config["target_service"]
-    api_key = config["api_key"]
-    model = config.get("model") or ""
-    endpoint_url = config.get("endpoint_url") or ""
-
-    if service == "anthropic":
-        endpoint = AnthropicEndpoint(api_key=api_key, model=model or "claude-3-opus-20240229")
-    elif service == "openai":
-        endpoint = OpenAIEndpoint(api_key=api_key, model=model or "gpt-4")
-    elif service == "azure_openai":
-        if not endpoint_url:
-            raise HTTPException(status_code=400, detail="Azure OpenAI requires an endpoint URL")
-        endpoint = AzureOpenAIEndpoint(
-            api_key=api_key,
-            endpoint_url=endpoint_url,
-            deployment_name=model,
+    try:
+        endpoint = create_endpoint(
+            config["target_service"],
+            api_key=config["api_key"],
+            model=config.get("model"),
+            endpoint_url=config.get("endpoint_url"),
+            requests_per_minute=config.get("requests_per_minute", 60),
+            requests_per_hour=config.get("requests_per_hour", 1000),
         )
-    else:
-        raise HTTPException(status_code=400, detail=f"Unsupported service: {service}")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     delay = config.get("delay_between_requests", 0)
 
     def send(payload: str) -> str:
         if delay:
             time.sleep(delay)
-        return endpoint.send(payload)
+        return endpoint.send_with_rate_limit(payload)
 
     return send
+
+
+def _session_view(session: Dict[str, Any]) -> Dict[str, Any]:
+    view = dict(session)
+    results = list(session.get("results", []))
+    view["results"] = results
+    view["total_tests"] = session.get("total_payloads", 0)
+    view["progress"] = session.get("completed_payloads", 0)
+    view["summary"] = build_summary(results)
+    return view
 
 
 async def _broadcast_session_update(session_id: str) -> None:
     session = test_sessions.get(session_id)
     if not session:
         return
-    payload = jsonable_encoder(session)
+    payload = jsonable_encoder(_session_view(session))
     connections = list(session_connections.get(session_id, set()))
     for websocket in connections:
         try:
@@ -186,7 +190,7 @@ async def _run_test_session(session_id: str, config: Dict[str, Any]) -> None:
 
     try:
         send_fn = _build_sender(config)
-        payloads = _build_payloads_for_categories(
+        payloads = build_payload_suite(
             config.get("test_categories", []),
             config.get("custom_payloads", []),
         )
@@ -194,6 +198,11 @@ async def _run_test_session(session_id: str, config: Dict[str, Any]) -> None:
         session["total_payloads"] = len(payloads)
 
         for index, (payload, category) in enumerate(payloads):
+            if session.get("cancel_requested"):
+                logger.info("Session %s cancellation requested", session_id)
+                session["status"] = "cancelled"
+                break
+
             if index >= config.get("max_requests", len(payloads)):
                 logger.info("Session %s reached max requests", session_id)
                 break
@@ -227,7 +236,8 @@ async def _run_test_session(session_id: str, config: Dict[str, Any]) -> None:
         session["status"] = "failed"
         session["error"] = str(exc)
     else:
-        session["status"] = "completed"
+        if session.get("status") != "cancelled":
+            session["status"] = "completed"
     finally:
         session["completed_at"] = datetime.utcnow().isoformat()
         await _broadcast_session_update(session_id)
@@ -282,6 +292,7 @@ async def start_test(request: TestStartRequest):
     session = {
         "session_id": session_id,
         "status": "queued",
+        "cancel_requested": False,
         "created_at": datetime.utcnow().isoformat(),
         "completed_at": None,
         "started_at": None,
@@ -297,6 +308,8 @@ async def start_test(request: TestStartRequest):
             "custom_payloads": config.get("custom_payloads"),
             "max_requests": config.get("max_requests"),
             "delay_between_requests": config.get("delay_between_requests"),
+            "requests_per_minute": config.get("requests_per_minute"),
+            "requests_per_hour": config.get("requests_per_hour"),
         },
     }
 
@@ -305,7 +318,7 @@ async def start_test(request: TestStartRequest):
 
     logger.info("Session %s queued", session_id)
     asyncio.create_task(_run_test_session(session_id, config))
-    return session
+    return _session_view(session)
 
 
 @app.websocket("/ws/{session_id}")
@@ -315,7 +328,7 @@ async def session_updates(websocket: WebSocket, session_id: str):
     logger.info("WebSocket connected for session %s", session_id)
 
     if session_id in test_sessions:
-        await websocket.send_json(jsonable_encoder(test_sessions[session_id]))
+        await websocket.send_json(jsonable_encoder(_session_view(test_sessions[session_id])))
 
     try:
         while True:
@@ -353,6 +366,21 @@ async def get_report(session_id: str, format: str = "html"):
     filename = f"injecticide-report-{session_id}.{format}"
     headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
     return Response(content=content, media_type=media_type, headers=headers)
+
+
+@app.post("/api/test/{session_id}/cancel")
+async def cancel_test(session_id: str):
+    session = test_sessions.get(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Test session not found")
+
+    if session["status"] in {"completed", "failed", "cancelled"}:
+        return _session_view(session)
+
+    session["cancel_requested"] = True
+    session["status"] = "cancelling"
+    await _broadcast_session_update(session_id)
+    return _session_view(session)
 
 
 @app.get("/")
@@ -397,17 +425,6 @@ async def scan_skill_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Invalid zip archive")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-
-def _build_payloads_for_categories(categories, custom):
-    payloads = []
-    registry = get_all_payloads()
-
-    for cat in categories:
-        items = registry.get(cat) or (policy_violation_payloads() if cat == "policy" else [])
-        payloads.extend([(p, cat) for p in items])
-
-    payloads.extend([(c, "custom") for c in custom])
-    return payloads
 
 async def _shutdown_server():
     await asyncio.sleep(0.1)

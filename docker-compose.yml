@@ -8,13 +8,10 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
-      - REDIS_URL=redis://redis:6379
       - SKILL_SANDBOX_URL=http://skill_sandbox:9001
     volumes:
       - ./reports:/app/reports
       - ./configs:/app/configs
-    depends_on:
-      - redis
     networks:
       - injecticide-network
       - skill-sandbox-net
@@ -37,17 +34,6 @@ services:
       - skill-sandbox-net
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    container_name: injecticide-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    networks:
-      - injecticide-network
-    restart: unless-stopped
-
   nginx:
     image: nginx:alpine
     container_name: injecticide-nginx
@@ -62,9 +48,6 @@ services:
     networks:
       - injecticide-network
     restart: unless-stopped
-
-volumes:
-  redis-data:
 
 networks:
   injecticide-network:

@@ -1,7 +1,7 @@
 # Injecticide Test Configuration Template
 
 # Target LLM service configuration
-target_service: "anthropic"  # Options: anthropic, openai, azure_openai, bedrock
+target_service: "anthropic"  # Options: anthropic, openai, azure_openai
 model: "claude-3-5-sonnet-20241022"  # Model identifier
 # api_key: "sk-..."  # Can also use environment variable
 

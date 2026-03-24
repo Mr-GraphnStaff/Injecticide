@@ -3,12 +3,12 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-Injecticide is a comprehensive prompt injection stress-testing toolkit designed for enterprise-grade security assessment of Large Language Model (LLM) endpoints. It generates sophisticated attack payloads, executes them against configurable API targets, and produces professional security assessment reports.
+Injecticide is a prompt and skill-injection stress-testing toolkit for assessing Large Language Model (LLM) endpoints. It generates traceable payloads, executes them against configurable API targets, and produces security assessment reports.
 
 ## 🚀 Features
 
 ### Core Capabilities
-- **Multi-Provider Support**: Test against Anthropic (Claude), OpenAI (GPT), Azure OpenAI, AWS Bedrock, Google Vertex AI, and more
+- **Multi-Provider Support**: Test against Anthropic (Claude), OpenAI (GPT), and Azure OpenAI
 - **Advanced Payload Categories**: 
   - Baseline injection attempts
   - Data extraction probes
@@ -20,7 +20,7 @@ Injecticide is a comprehensive prompt injection stress-testing toolkit designed 
 - **Professional Reporting**: Generate HTML, JSON, or CSV security assessment reports
 - **Rate Limiting**: Respect API limits with configurable rate limiting
 - **Configuration Management**: YAML/JSON configuration files for reproducible testing
-- **CI/CD Integration**: GitHub Actions workflow for automated security testing
+- **Web UI and Skill Sandbox**: Browser-based test runner and archive-safe skill scanning
 
 ### Enhanced for Enterprise
 - **Custom Payloads**: Add organization-specific test cases

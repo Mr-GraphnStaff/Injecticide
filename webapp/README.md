@@ -53,7 +53,7 @@ python run_web.py
 2. Select test categories (Baseline, Policy Violations)
 3. Optionally add custom payloads
 4. Click "Launch Attack" to start testing
-5. Watch real-time results appear
+5. Watch real-time results appear, including progress and summary statistics
 6. Download professional security report when complete
 
 ## Secure presets
@@ -86,7 +86,7 @@ Injecticide/
 │   └── static/
 │       ├── index.html  # React frontend
 │       └── app.js      # React components
-├── endpoints.py        # LLM API clients
+├── endpoints/         # LLM API clients
 ├── analyzer.py         # Response analysis
 ├── generator.py        # Payload generation
 ├── reporter.py         # Report generation

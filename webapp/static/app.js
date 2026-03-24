@@ -11,7 +11,9 @@ function App({ onBack }) {
         test_categories: ['baseline'],
         custom_payloads: [],
         max_requests: 50,
-        delay_between_requests: 0.5
+        delay_between_requests: 0.5,
+        requests_per_minute: 60,
+        requests_per_hour: 1000
     });
 
     const [session, setSession] = useState(null);
@@ -148,6 +150,8 @@ function App({ onBack }) {
     const getPreparedTestConfig = () => {
         const maxRequestsValue = Number(testConfig.max_requests);
         const delayValue = Number(testConfig.delay_between_requests);
+        const requestsPerMinuteValue = Number(testConfig.requests_per_minute);
+        const requestsPerHourValue = Number(testConfig.requests_per_hour);
 
         if (!Number.isInteger(maxRequestsValue) || maxRequestsValue <= 0) {
             throw new Error('Please enter a valid positive integer for Max Requests.');
@@ -157,6 +161,14 @@ function App({ onBack }) {
             throw new Error('Please enter a valid non-negative number for Delay.');
         }
 
+        if (!Number.isInteger(requestsPerMinuteValue) || requestsPerMinuteValue <= 0) {
+            throw new Error('Please enter a valid positive integer for requests per minute.');
+        }
+
+        if (!Number.isInteger(requestsPerHourValue) || requestsPerHourValue <= 0) {
+            throw new Error('Please enter a valid positive integer for requests per hour.');
+        }
+
         const validatedCategories = filterToAvailableCategories(testConfig.test_categories);
 
         return {
@@ -164,6 +176,8 @@ function App({ onBack }) {
             test_categories: validatedCategories,
             max_requests: maxRequestsValue,
             delay_between_requests: delayValue,
+            requests_per_minute: requestsPerMinuteValue,
+            requests_per_hour: requestsPerHourValue,
         };
     };
 
@@ -208,6 +222,7 @@ function App({ onBack }) {
 
             const data = await response.json();
             setSession(data);
+            setResults(data.results || []);
             
             // Connect WebSocket for live updates
             const websocketProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -218,7 +233,7 @@ function App({ onBack }) {
                 setSession(update);
                 setResults(update.results || []);
                 
-                if (update.status === 'completed' || update.status === 'failed') {
+                if (update.status === 'completed' || update.status === 'failed' || update.status === 'cancelled') {
                     setIsRunning(false);
                     websocket.close();
                 }
@@ -243,6 +258,12 @@ function App({ onBack }) {
             ws.close();
             setWs(null);
         }
+
+        if (session?.session_id) {
+            fetch(`/api/test/${session.session_id}/cancel`, { method: 'POST' })
+                .catch((error) => console.error('Failed to cancel test:', error));
+        }
+
         setIsRunning(false);
     };
 
@@ -738,6 +759,26 @@ function App({ onBack }) {
                                                 disabled={disableControls}
                                             />
                                         </div>
+                                        <div>
+                                            <label className="block text-xs mb-1 text-gray-400">Req / Minute</label>
+                                            <input
+                                                type="number"
+                                                className="w-full bg-gray-900/50 border border-gray-600 rounded px-3 py-1 text-white text-sm focus:border-red-500 focus:outline-none"
+                                                value={testConfig.requests_per_minute}
+                                                onChange={(e) => setTestConfig({...testConfig, requests_per_minute: Number(e.target.value)})}
+                                                disabled={disableControls}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs mb-1 text-gray-400">Req / Hour</label>
+                                            <input
+                                                type="number"
+                                                className="w-full bg-gray-900/50 border border-gray-600 rounded px-3 py-1 text-white text-sm focus:border-red-500 focus:outline-none"
+                                                value={testConfig.requests_per_hour}
+                                                onChange={(e) => setTestConfig({...testConfig, requests_per_hour: Number(e.target.value)})}
+                                                disabled={disableControls}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -806,7 +847,7 @@ function App({ onBack }) {
                                     <div className="w-full bg-gray-900/50 rounded-full h-3 overflow-hidden">
                                         <div 
                                             className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500 relative"
-                                            style={{ width: `${(session.progress / session.total_tests) * 100}%` }}
+                                            style={{ width: `${session.total_tests ? (session.progress / session.total_tests) * 100 : 0}%` }}
                                         >
                                             <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
                                         </div>

@@ -6,18 +6,13 @@ import argparse
 import os
 import sys
 import time
-from pathlib import Path
 from typing import Callable, List, Dict, Any
 
 from analyzer import analyze
 from config import TestConfig
+from endpoints import create_endpoint
+from generator import build_payload_suite
 from reporter import ReportGenerator
-from endpoints import (
-    AnthropicEndpoint,
-    OpenAIEndpoint,
-    AzureOpenAIEndpoint,
-)
-from generator import generate_payloads, policy_violation_payloads, esf_payloads
 
 
 def build_sender(config: TestConfig) -> Callable[[str], str]:
@@ -29,26 +24,14 @@ def build_sender(config: TestConfig) -> Callable[[str], str]:
     if not api_key:
         raise ValueError(f"API key required for {service}")
 
-    if service == "anthropic":
-        endpoint = AnthropicEndpoint(
-            api_key=api_key,
-            model=config.model or "claude-3-opus-20240229",
-        )
-    elif service == "openai":
-        endpoint = OpenAIEndpoint(
-            api_key=api_key,
-            model=config.model or "gpt-4",
-        )
-    elif service == "azure_openai":
-        if not config.endpoint_url:
-            raise ValueError("Azure OpenAI requires endpoint_url in config")
-        endpoint = AzureOpenAIEndpoint(
-            api_key=api_key,
-            endpoint=config.endpoint_url,
-            deployment_name=config.model,
-        )
-    else:
-        raise ValueError(f"Unsupported service: {service}")
+    endpoint = create_endpoint(
+        service,
+        api_key=api_key,
+        model=config.model,
+        endpoint_url=config.endpoint_url,
+        requests_per_minute=config.requests_per_minute,
+        requests_per_hour=config.requests_per_hour,
+    )
 
     def rate_limited_send(prompt: str) -> str:
         if config.delay_between_requests > 0:
@@ -65,19 +48,7 @@ def run_test_suite(config: TestConfig) -> List[Dict[str, Any]]:
     results = []
     request_count = 0
 
-    payloads = []
-
-    if "baseline" in config.payload_categories:
-        payloads.extend([(p, "baseline") for p in generate_payloads()])
-
-    if "policy" in config.payload_categories:
-        payloads.extend([(p, "policy") for p in policy_violation_payloads()])
-
-    if "esf" in config.payload_categories:
-        payloads.extend([(p, "esf") for p in esf_payloads()])
-
-    for custom in config.custom_payloads:
-        payloads.append((custom, "custom"))
+    payloads = build_payload_suite(config.payload_categories, config.custom_payloads)
 
     for payload, category in payloads:
         if request_count >= config.max_requests:
@@ -119,6 +90,48 @@ def run_test_suite(config: TestConfig) -> List[Dict[str, Any]]:
     return results
 
 
+def apply_cli_overrides(config: TestConfig, args: argparse.Namespace) -> TestConfig:
+    """Apply CLI overrides without clobbering config file values by default."""
+
+    if args.service:
+        config.target_service = args.service
+    if args.api_key:
+        config.api_key = args.api_key
+    if args.model:
+        config.model = args.model
+    if args.delay is not None:
+        config.delay_between_requests = args.delay
+    if args.max_requests is not None:
+        config.max_requests = args.max_requests
+    if args.verbose:
+        config.verbose = True
+    if args.format is not None:
+        config.output_format = args.format
+    if args.output:
+        config.output_file = args.output
+
+    if args.categories:
+        config.payload_categories = args.categories
+    elif args.mode:
+        config.payload_categories = (
+            ["baseline"] if args.mode == "baseline" else
+            ["policy"] if args.mode == "policy" else
+            [
+                "baseline",
+                "policy",
+                "extraction",
+                "jailbreak",
+                "encoding",
+                "context",
+                "roleplay",
+                "insurance_us_ca",
+                "esf",
+            ]
+        )
+
+    return config
+
+
 def main():
     """Main entry point."""
 
@@ -136,7 +149,7 @@ def main():
     parser.add_argument(
         "--mode",
         choices=["baseline", "policy", "all"],
-        default="baseline",
+        default=None,
         help="Legacy mode selector (overridden by --categories)"
     )
 
@@ -148,45 +161,19 @@ def main():
 
     # Output
     parser.add_argument("--output")
-    parser.add_argument("--format", choices=["json", "html", "csv"], default="json")
+    parser.add_argument("--format", choices=["json", "html", "csv"], default=None)
     parser.add_argument("--verbose", action="store_true")
 
     # Safety
-    parser.add_argument("--max-requests", type=int, default=100)
-    parser.add_argument("--delay", type=float, default=0)
+    parser.add_argument("--max-requests", type=int, default=None)
+    parser.add_argument("--delay", type=float, default=None)
 
     args = parser.parse_args()
 
     # Load config
     config = TestConfig.from_file(args.config) if args.config else TestConfig()
 
-    # Overrides
-    if args.service:
-        config.target_service = args.service
-    if args.api_key:
-        config.api_key = args.api_key
-    if args.model:
-        config.model = args.model
-    if args.delay:
-        config.delay_between_requests = args.delay
-    if args.max_requests:
-        config.max_requests = args.max_requests
-    if args.verbose:
-        config.verbose = True
-    if args.format:
-        config.output_format = args.format
-    if args.output:
-        config.output_file = args.output
-
-    # Category resolution (explicit beats legacy)
-    if args.categories:
-        config.payload_categories = args.categories
-    else:
-        config.payload_categories = (
-            ["baseline"] if args.mode == "baseline" else
-            ["policy"] if args.mode == "policy" else
-            ["baseline", "policy"]
-        )
+    config = apply_cli_overrides(config, args)
 
     # Validate API key
     if not config.api_key and not os.environ.get(f"{config.target_service.upper()}_API_KEY"):
