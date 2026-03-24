@@ -7,6 +7,7 @@ import zipfile
 from typing import Dict, List, Tuple
 
 from skill_sandbox.behavior_analysis import analyze_behavior
+from skill_sandbox.governance import build_governance_profile
 from skill_sandbox.scan_rules import compile_patterns, find_rule_matches
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
@@ -136,6 +137,7 @@ def _assemble_result(
         if finding.get("severity") == "info"
     )
     behavior_report = analyze_behavior(text_sources)
+    governance_profile = build_governance_profile(results, behavior_report)
 
     return {
         "filename": filename,
@@ -149,6 +151,7 @@ def _assemble_result(
         "warnings": warnings,
         "files": results,
         **behavior_report,
+        "governance_profile": governance_profile,
     }
 
 

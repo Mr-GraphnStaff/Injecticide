@@ -37,7 +37,18 @@ AUTO_OPEN_REGEX = re.compile(
 )
 UX_MANIPULATION_REGEX = re.compile(r"\b(rickroll|prank|surprise|autoplay|pop[- ]?up|fullscreen)\b", re.IGNORECASE)
 PERSISTENCE_REGEX = re.compile(r"\b(persist|persistent|store|cache|remember|stateful|session)\b", re.IGNORECASE)
-CREDENTIAL_REGEX = re.compile(r"\b(api\s*key|token|credential|password|secret|oauth)\b", re.IGNORECASE)
+CREDENTIAL_ACTION_REGEX = re.compile(
+    r"\b(provide|enter|supply|use|using|set|store|save|load|configure|authenticate|connect|register|rotate|inject|pass|write|read|fetch|return|reveal|display|show)\b",
+    re.IGNORECASE,
+)
+CREDENTIAL_TARGET_REGEX = re.compile(
+    r"\b(api\s*key|access\s+token|bearer\s+token|oauth|password|credential|secret|private\s+key|ssh\s+key|pem)\b",
+    re.IGNORECASE,
+)
+CREDENTIAL_EXCLUDES_REGEX = re.compile(
+    r"\b(token\s+saver|wasted\s+tokens|token\s+budget|token\s+lifecycle|credential\s+exposure|key\s+management)\b",
+    re.IGNORECASE,
+)
 
 ENTERPRISE_SERVICES = (
     "jira",
@@ -107,7 +118,7 @@ def _infer_capabilities(text: str) -> Tuple[List[str], List[str], List[str], boo
         "auto_open": bool(AUTO_OPEN_REGEX.search(text)),
         "ux_manipulation": bool(UX_MANIPULATION_REGEX.search(text)),
         "persistence": bool(PERSISTENCE_REGEX.search(text)),
-        "credentials": bool(CREDENTIAL_REGEX.search(text)),
+        "credentials": _detect_credential_handling(text),
         "enterprise_access": bool(ENTERPRISE_REGEX.search(text)),
     }
 
@@ -179,7 +190,13 @@ def _classify_instructions(
         any_bad = True
     if any_bad:
         overall_risk = "high"
-    elif any_risky or any_unknown or capability_flags.get("external_embed") or capability_flags.get("auto_open"):
+    elif (
+        any_risky
+        or capability_flags.get("external_embed")
+        or capability_flags.get("auto_open")
+        or capability_flags.get("ux_manipulation")
+        or (any_unknown and capability_flags.get("enterprise_access"))
+    ):
         overall_risk = "medium"
     else:
         overall_risk = "low"
@@ -189,7 +206,7 @@ def _classify_instructions(
 
 
 def _classify_block(block: str) -> Tuple[str, str]:
-    if CREDENTIAL_REGEX.search(block):
+    if _detect_credential_handling(block):
         return "bad", "Handles credentials or secrets."
 
     risky_reasons = []
@@ -274,3 +291,10 @@ def _unique_preserve_order(items: Iterable[str]) -> List[str]:
 
 def _clean_sentence(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
+
+
+def _detect_credential_handling(text: str) -> bool:
+    if CREDENTIAL_EXCLUDES_REGEX.search(text):
+        return False
+
+    return bool(CREDENTIAL_ACTION_REGEX.search(text) and CREDENTIAL_TARGET_REGEX.search(text))

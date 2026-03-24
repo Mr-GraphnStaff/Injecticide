@@ -24,6 +24,7 @@ def test_scan_markdown_skill_detects_prompt_override():
     result = scan_upload(data, "SKILL.md")
 
     assert result["file_type"] == "skill"
+    assert "governance_profile" in result
     findings = result["files"][0]["findings"]
     finding_ids = {finding["id"] for finding in findings}
     assert "prompt_override" in finding_ids
@@ -91,3 +92,20 @@ Spectrum,Network Security / Performance,"DDoS protection and acceleration for TC
     assert result["summary"]["flagged_files"] == 0
     assert result["summary"]["total_findings"] == 0
     assert result["summary"]["info_findings"] >= 1
+
+
+def test_token_budget_language_does_not_become_credential_handling():
+    payload = b"""
+---
+name: token-saver
+description: Reduce wasted tokens in all responses.
+---
+
+Every token you output should serve the user.
+Reduce wasted tokens by avoiding filler and unnecessary formatting.
+"""
+
+    result = scan_upload(payload, "token-saver.skill")
+
+    assert result["risk_classification"]["overall_risk"] == "low"
+    assert result["governance_profile"]["policy_capabilities"] == ["read_only"]

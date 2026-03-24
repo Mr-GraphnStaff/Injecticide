@@ -693,6 +693,52 @@ function App({ onBack }) {
                                                     <span>Flagged: {skillScanResult.summary.flagged_files}</span>
                                                     <span>Findings: {skillScanResult.summary.total_findings}</span>
                                                 </div>
+                                                {skillScanResult.governance_profile && (
+                                                    <div className="rounded-md border border-gray-800/80 bg-black/20 p-2 space-y-2">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <span className="text-[10px] uppercase tracking-wide text-gray-500">Governance</span>
+                                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${
+                                                                skillScanResult.governance_profile.brokered_tokens.decision === 'block_by_default'
+                                                                    ? 'bg-red-600/40 text-red-200'
+                                                                    : skillScanResult.governance_profile.brokered_tokens.decision === 'require_admin_approval'
+                                                                        ? 'bg-yellow-600/30 text-yellow-200'
+                                                                        : 'bg-green-600/30 text-green-200'
+                                                            }`}>
+                                                                Brokered: {skillScanResult.governance_profile.brokered_tokens.decision.replaceAll('_', ' ')}
+                                                            </span>
+                                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${
+                                                                skillScanResult.governance_profile.customer_managed_keys.decision === 'block_by_default'
+                                                                    ? 'bg-red-600/40 text-red-200'
+                                                                    : skillScanResult.governance_profile.customer_managed_keys.decision === 'require_admin_approval'
+                                                                        ? 'bg-yellow-600/30 text-yellow-200'
+                                                                        : 'bg-blue-600/30 text-blue-200'
+                                                            }`}>
+                                                                BYO: {skillScanResult.governance_profile.customer_managed_keys.decision.replaceAll('_', ' ')}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
+                                                            <span>Tier: {skillScanResult.governance_profile.execution_tier}</span>
+                                                            <span>Sandbox: {skillScanResult.governance_profile.sandbox_required ? 'required' : 'not required'}</span>
+                                                            <span>Approval: {skillScanResult.governance_profile.approval_required ? 'required' : 'not required'}</span>
+                                                        </div>
+                                                        {skillScanResult.governance_profile.policy_capabilities?.length > 0 && (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {skillScanResult.governance_profile.policy_capabilities.map((capability, capabilityIdx) => (
+                                                                    <span key={capabilityIdx} className="px-2 py-1 rounded bg-gray-800/80 text-[10px] text-gray-300">
+                                                                        {capability}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {skillScanResult.governance_profile.decision_reasons?.length > 0 && (
+                                                            <ul className="list-disc list-inside text-[11px] text-gray-400">
+                                                                {skillScanResult.governance_profile.decision_reasons.map((reason, idx) => (
+                                                                    <li key={idx}>{reason}</li>
+                                                                ))}
+                                                            </ul>
+                                                        )}
+                                                    </div>
+                                                )}
                                                 {skillScanResult.warnings?.length > 0 && (
                                                     <ul className="list-disc list-inside text-yellow-400">
                                                         {skillScanResult.warnings.map((warning, idx) => (

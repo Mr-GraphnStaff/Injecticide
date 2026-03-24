@@ -11,9 +11,11 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 
 if __package__:
     from .behavior_analysis import analyze_behavior
+    from .governance import build_governance_profile
     from .scan_rules import compile_patterns, find_rule_matches
 else:
     from behavior_analysis import analyze_behavior
+    from governance import build_governance_profile
     from scan_rules import compile_patterns, find_rule_matches
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
@@ -281,6 +283,7 @@ def _assemble_result(
         if finding.get("severity") == "info"
     )
     behavior_report = analyze_behavior(text_sources)
+    governance_profile = build_governance_profile(results, behavior_report)
 
     return {
         "filename": filename,
@@ -294,6 +297,7 @@ def _assemble_result(
         "warnings": warnings,
         "files": results,
         **behavior_report,
+        "governance_profile": governance_profile,
     }
 
 
