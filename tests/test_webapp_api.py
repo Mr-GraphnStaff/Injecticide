@@ -6,7 +6,7 @@ import pytest
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
 
-from webapp.api import _session_view, cancel_test, test_sessions
+from webapp.api import _session_view, cancel_test, get_build_info, test_sessions
 
 
 def test_session_view_includes_progress_total_tests_and_summary():
@@ -49,3 +49,11 @@ async def test_cancel_test_marks_session_for_cancellation():
     assert response["status"] == "cancelling"
     assert response["progress"] == 1
     assert response["total_tests"] == 3
+
+
+def test_get_build_info_includes_display_version():
+    build = get_build_info()
+
+    assert build["app_version"]
+    assert build["display_version"]
+    assert "git_commit" in build

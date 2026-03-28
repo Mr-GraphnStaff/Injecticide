@@ -15,12 +15,15 @@ import uuid
 import asyncio
 import time
 from pathlib import Path
+import subprocess
 import sys
 import os
 import signal
 import zipfile
 import requests
 import logging
+import tomllib
+from functools import lru_cache
 
 # Add parent directory to path to import Injecticide modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -41,6 +44,7 @@ from webapp.skill_scanner import scan_upload, MAX_UPLOAD_BYTES
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
+PROJECT_ROOT = BASE_DIR.parent
 
 PAYLOAD_CATEGORY_METADATA = {
     "baseline": {"name": "Baseline Injections", "description": "Standard prompt injection tests"},
@@ -78,6 +82,41 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@lru_cache(maxsize=1)
+def get_build_info() -> Dict[str, str]:
+    package_version = "unknown"
+    pyproject_path = PROJECT_ROOT / "pyproject.toml"
+    if pyproject_path.exists():
+        with pyproject_path.open("rb") as handle:
+            package_version = tomllib.load(handle).get("project", {}).get("version", "unknown")
+
+    git_commit = "unknown"
+    git_dirty = False
+    try:
+        git_commit = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=PROJECT_ROOT,
+            text=True,
+        ).strip()
+        git_dirty = bool(
+            subprocess.check_output(
+                ["git", "status", "--porcelain"],
+                cwd=PROJECT_ROOT,
+                text=True,
+            ).strip()
+        )
+    except Exception:
+        pass
+
+    return {
+        "app_version": app.version,
+        "package_version": package_version,
+        "git_commit": git_commit,
+        "git_dirty": git_dirty,
+        "display_version": f"{app.version} ({git_commit})" if git_commit != "unknown" else app.version,
+    }
 
 test_sessions = {}
 session_connections = {}
@@ -254,6 +293,13 @@ async def get_config_options():
         "endpoints": get_endpoint_options(),
         "payload_presets": get_payload_presets(),
     }
+
+
+@app.get("/api/app/version")
+async def get_app_version():
+    """Return visible build/version info for the UI."""
+
+    return get_build_info()
 
 # ----------------------------
 # RESTORED ENDPOINT (THE FIX)

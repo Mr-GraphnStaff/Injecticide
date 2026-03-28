@@ -1,6 +1,20 @@
 const { useState, useEffect, useRef } = React;
 
-function App({ onBack }) {
+function summarizeFileFindings(findings) {
+    const actionable = findings.filter((finding) => finding.is_actionable !== false);
+    const documentedPatterns = findings.filter((finding) => finding.display_kind === 'documented_pattern');
+    const informationalSignals = findings.filter(
+        (finding) => finding.display_kind === 'informational_signal'
+    );
+
+    return {
+        actionableCount: actionable.length,
+        documentedPatternCount: documentedPatterns.length,
+        informationalSignalCount: informationalSignals.length,
+    };
+}
+
+function App({ onBack, buildInfo }) {
     const [testConfig, setTestConfig] = useState({
         target_service: 'anthropic',
         api_key: '',
@@ -415,7 +429,16 @@ function App({ onBack }) {
                                     <span className="text-white drop-shadow">Injecticide</span>
                                     <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 bg-red-900/40 border border-red-700/40 px-2 py-1 rounded-md">DAF-TECH</span>
                                 </h1>
-                                <p className="text-sm text-gray-300">Enterprise LLM Security Testing Platform</p>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <p className="text-sm text-gray-300">Enterprise LLM Security Testing Platform</p>
+                                    {buildInfo && (
+                                        <span className="inline-flex items-center text-[11px] text-gray-300 bg-gray-800/70 border border-gray-700/60 px-2 py-1 rounded-md shadow-lg">
+                                            <i className="fas fa-code-branch text-red-400 mr-2"></i>
+                                            {buildInfo.display_version}
+                                            {buildInfo.git_dirty && <span className="ml-2 text-yellow-300">dirty</span>}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         <div className="flex items-center space-x-3">
@@ -749,16 +772,34 @@ function App({ onBack }) {
                                                 <div className="space-y-2 max-h-40 overflow-y-auto">
                                                     {skillScanResult.files.map((item, idx) => (
                                                         <div key={idx} className="border border-gray-800/70 rounded-md p-2">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-gray-200 truncate">{item.path}</span>
-                                                                {item.skipped ? (
-                                                                    <span className="text-[10px] text-gray-500">Skipped</span>
-                                                                ) : item.findings.length > 0 ? (
-                                                                    <span className="text-[10px] text-red-300">{item.findings.length} findings</span>
-                                                                ) : (
-                                                                    <span className="text-[10px] text-green-300">No findings</span>
-                                                                )}
-                                                            </div>
+                                                            {(() => {
+                                                                const summary = summarizeFileFindings(item.findings || []);
+                                                                return (
+                                                                    <>
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-gray-200 truncate">{item.path}</span>
+                                                                            {item.skipped ? (
+                                                                                <span className="text-[10px] text-gray-500">Skipped</span>
+                                                                            ) : summary.actionableCount > 0 ? (
+                                                                                <span className="text-[10px] text-red-300">{summary.actionableCount} actionable findings</span>
+                                                                            ) : summary.documentedPatternCount > 0 ? (
+                                                                                <span className="text-[10px] text-blue-300">{summary.documentedPatternCount} documented patterns</span>
+                                                                            ) : summary.informationalSignalCount > 0 ? (
+                                                                                <span className="text-[10px] text-yellow-300">{summary.informationalSignalCount} informational signals</span>
+                                                                            ) : (
+                                                                                <span className="text-[10px] text-green-300">No actionable findings</span>
+                                                                            )}
+                                                                        </div>
+                                                                        {!item.skipped && (summary.documentedPatternCount > 0 || summary.informationalSignalCount > 0) && summary.actionableCount === 0 && (
+                                                                            <p className="text-[10px] text-gray-500 mt-1">
+                                                                                {summary.documentedPatternCount > 0
+                                                                                    ? 'Reference or audit content documenting risky patterns; not treated as executable behavior.'
+                                                                                    : 'Informational context only; no blocking behavior detected.'}
+                                                                            </p>
+                                                                        )}
+                                                                    </>
+                                                                );
+                                                            })()}
                                                             {item.reason && (
                                                                 <p className="text-[10px] text-gray-500">{item.reason}</p>
                                                             )}
@@ -771,6 +812,16 @@ function App({ onBack }) {
                                                                             <div className="text-[10px] text-gray-500">
                                                                                 {finding.finding_category} / {finding.subject} / {finding.action_state} / {finding.disposition}
                                                                             </div>
+                                                                            {finding.display_kind === 'documented_pattern' && (
+                                                                                <div className="text-[10px] text-blue-300">
+                                                                                    Documented pattern in reference or audit content
+                                                                                </div>
+                                                                            )}
+                                                                            {finding.display_kind === 'informational_signal' && (
+                                                                                <div className="text-[10px] text-yellow-300">
+                                                                                    Informational context only
+                                                                                </div>
+                                                                            )}
                                                                         </li>
                                                                     ))}
                                                                 </ul>
@@ -1030,12 +1081,30 @@ function App({ onBack }) {
 
 function Root() {
     const [page, setPage] = useState('home');
+    const [buildInfo, setBuildInfo] = useState(null);
+
+    useEffect(() => {
+        const fetchBuildInfo = async () => {
+            try {
+                const response = await fetch('/api/app/version');
+                if (!response.ok) {
+                    throw new Error('Failed to load build info');
+                }
+                const data = await response.json();
+                setBuildInfo(data);
+            } catch (error) {
+                console.error('Build info error:', error);
+            }
+        };
+
+        fetchBuildInfo();
+    }, []);
 
     if (page === 'home') {
-        return <Home onLaunch={() => setPage('console')} />;
+        return <Home onLaunch={() => setPage('console')} buildInfo={buildInfo} />;
     }
 
-    return <App onBack={() => setPage('home')} />;
+    return <App onBack={() => setPage('home')} buildInfo={buildInfo} />;
 }
 
 // Render the app

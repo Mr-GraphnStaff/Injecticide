@@ -100,6 +100,9 @@ def build_finding(
         action_state = "documented"
         disposition = "info"
 
+    is_actionable = severity != "info"
+    display_kind = _display_kind(artifact_role, severity)
+
     return {
         "id": rule["id"],
         "category": rule["category"],
@@ -114,6 +117,8 @@ def build_finding(
         "status": rule.get("status", "unknown"),
         "sources": rule.get("sources", []),
         "artifact_role": artifact_role,
+        "is_actionable": is_actionable,
+        "display_kind": display_kind,
     }
 
 
@@ -154,3 +159,11 @@ def _default_disposition(severity: str) -> str:
     if severity == "low":
         return "warn"
     return "info"
+
+
+def _display_kind(artifact_role: str, severity: str) -> str:
+    if severity == "info" and artifact_role in {"reference_template", "audit_policy"}:
+        return "documented_pattern"
+    if severity == "info":
+        return "informational_signal"
+    return "actionable_finding"

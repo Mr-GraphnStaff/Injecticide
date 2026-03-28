@@ -1,4 +1,4 @@
-function Home({ onLaunch }) {
+function Home({ onLaunch, buildInfo }) {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -15,7 +15,16 @@ function Home({ onLaunch }) {
                                 <span className="text-white drop-shadow-lg">Injecticide</span>
                                 <span className="text-xs font-semibold uppercase tracking-widest text-gray-300 bg-red-900/50 border border-red-700/50 px-2 py-1 rounded-md">DAF-TECH</span>
                             </h1>
-                            <p className="text-gray-300 text-base">Enterprise LLM Security Testing Platform</p>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <p className="text-gray-300 text-base">Enterprise LLM Security Testing Platform</p>
+                                {buildInfo && (
+                                    <span className="inline-flex items-center text-[11px] text-gray-300 bg-gray-800/70 border border-gray-700/60 px-2 py-1 rounded-md shadow-lg">
+                                        <i className="fas fa-code-branch text-red-400 mr-2"></i>
+                                        {buildInfo.display_version}
+                                        {buildInfo.git_dirty && <span className="ml-2 text-yellow-300">dirty</span>}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center space-x-3">
