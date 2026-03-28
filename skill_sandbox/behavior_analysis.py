@@ -310,9 +310,9 @@ def _select_capability_sources(text_sources: Iterable[Dict[str, str]]) -> List[D
     non_template_sources = [
         source
         for source in sources
-        if source.get("artifact_role") not in {"reference_template", "audit_policy"}
+        if source.get("artifact_role") == "reference"
     ]
     if non_template_sources:
         return non_template_sources
 
-    return sources
+    return []

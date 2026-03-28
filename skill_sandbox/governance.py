@@ -48,7 +48,7 @@ def build_governance_profile(
     scan_results: Iterable[Dict[str, object]],
     behavior_report: Dict[str, object],
 ) -> Dict[str, object]:
-    findings = _collect_findings(scan_results)
+    findings = _collect_actionable_findings(scan_results)
     finding_ids = {finding["id"] for finding in findings}
     required_capabilities = set(
         behavior_report.get("behavioral_summary", {}).get("required_capabilities", [])
@@ -108,10 +108,14 @@ def build_governance_profile(
     }
 
 
-def _collect_findings(scan_results: Iterable[Dict[str, object]]) -> List[Dict[str, object]]:
+def _collect_actionable_findings(scan_results: Iterable[Dict[str, object]]) -> List[Dict[str, object]]:
     findings: List[Dict[str, object]] = []
     for item in scan_results:
-        findings.extend(item.get("findings", []))
+        findings.extend(
+            finding
+            for finding in item.get("findings", [])
+            if finding.get("is_actionable", finding.get("severity") != "info")
+        )
     return findings
 
 

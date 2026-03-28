@@ -15,7 +15,6 @@ import uuid
 import asyncio
 import time
 from pathlib import Path
-import subprocess
 import sys
 import os
 import signal
@@ -95,18 +94,7 @@ def get_build_info() -> Dict[str, str]:
     git_commit = "unknown"
     git_dirty = False
     try:
-        git_commit = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=PROJECT_ROOT,
-            text=True,
-        ).strip()
-        git_dirty = bool(
-            subprocess.check_output(
-                ["git", "status", "--porcelain"],
-                cwd=PROJECT_ROOT,
-                text=True,
-            ).strip()
-        )
+        git_commit = _read_git_commit(PROJECT_ROOT)
     except Exception:
         pass
 
@@ -120,6 +108,22 @@ def get_build_info() -> Dict[str, str]:
         "asset_version": asset_version,
         "display_version": f"{app.version} ({git_commit})" if git_commit != "unknown" else app.version,
     }
+
+
+def _read_git_commit(project_root: Path) -> str:
+    git_dir = project_root / ".git"
+    head_path = git_dir / "HEAD"
+    if not head_path.exists():
+        return "unknown"
+
+    head = head_path.read_text(encoding="utf-8").strip()
+    if head.startswith("ref: "):
+        ref_path = git_dir / head[5:]
+        if ref_path.exists():
+            return ref_path.read_text(encoding="utf-8").strip()[:7]
+        return "unknown"
+
+    return head[:7]
 
 
 def _get_asset_version() -> str:

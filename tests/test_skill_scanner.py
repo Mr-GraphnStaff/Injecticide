@@ -228,6 +228,12 @@ Unknown example: https://mcp.shadowvendor.example/v1/sse
     assert result["summary"]["flagged_files"] == 0
     assert result["summary"]["total_findings"] == 0
     assert result["summary"]["info_findings"] >= 1
+    assert result["risk_classification"]["overall_risk"] == "low"
+    assert result["risk_classification"]["recommendation"] == "allow"
+    assert result["governance_profile"]["execution_tier"] == "read_only"
+    assert result["governance_profile"]["brokered_tokens"]["decision"] == "allow"
+    assert result["governance_profile"]["customer_managed_keys"]["decision"] == "allow"
+    assert result["governance_profile"]["policy_capabilities"] == ["read_only"]
     skill_file = next(item for item in result["files"] if item["path"] == "SKILL.md")
     assert skill_file["artifact_role"] == "audit_policy"
     assert all(finding["display_kind"] == "documented_pattern" for finding in skill_file["findings"])
