@@ -57,3 +57,4 @@ def test_get_build_info_includes_display_version():
     assert build["app_version"]
     assert build["display_version"]
     assert "git_commit" in build
+    assert build["asset_version"]

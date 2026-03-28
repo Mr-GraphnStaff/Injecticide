@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException, WebSocket, UploadFile, File
 from fastapi.websockets import WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field, StrictInt
 from typing import Optional, List, Dict, Any
@@ -110,13 +110,28 @@ def get_build_info() -> Dict[str, str]:
     except Exception:
         pass
 
+    asset_version = _get_asset_version()
+
     return {
         "app_version": app.version,
         "package_version": package_version,
         "git_commit": git_commit,
         "git_dirty": git_dirty,
+        "asset_version": asset_version,
         "display_version": f"{app.version} ({git_commit})" if git_commit != "unknown" else app.version,
     }
+
+
+def _get_asset_version() -> str:
+    asset_paths = [
+        STATIC_DIR / "index.html",
+        STATIC_DIR / "app.js",
+        STATIC_DIR / "pages" / "Home.jsx",
+    ]
+    mtimes = [int(path.stat().st_mtime) for path in asset_paths if path.exists()]
+    if not mtimes:
+        return app.version
+    return str(max(mtimes))
 
 test_sessions = {}
 session_connections = {}
@@ -433,7 +448,12 @@ async def cancel_test(session_id: str):
 async def root():
     static_file = STATIC_DIR / "index.html"
     if static_file.exists():
-        return FileResponse(str(static_file))
+        build_info = get_build_info()
+        asset_version = build_info.get("asset_version", app.version)
+        html = static_file.read_text(encoding="utf-8")
+        html = html.replace("/static/pages/Home.jsx", f"/static/pages/Home.jsx?v={asset_version}")
+        html = html.replace("/static/app.js", f"/static/app.js?v={asset_version}")
+        return HTMLResponse(content=html, headers={"Cache-Control": "no-store"})
     return {"message": "Injecticide API"}
 
 @app.post("/api/skills/scan")
