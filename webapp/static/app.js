@@ -14,6 +14,116 @@ function summarizeFileFindings(findings) {
     };
 }
 
+function slugifyFilename(name) {
+    return (name || 'skill-scan')
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+}
+
+function formatSkillScanMarkdown(scanResult, buildInfo) {
+    const lines = [];
+    const generatedAt = new Date().toISOString();
+    const summary = scanResult.summary || {};
+    const governance = scanResult.governance_profile || {};
+    const risk = scanResult.risk_classification || {};
+
+    lines.push(`# Skill Scan Report: ${scanResult.filename}`);
+    lines.push('');
+    lines.push(`- Generated: ${generatedAt}`);
+    lines.push(`- File type: ${scanResult.file_type}`);
+    if (buildInfo?.display_version) {
+        lines.push(`- Build: ${buildInfo.display_version}`);
+    }
+    lines.push(`- Total files: ${summary.total_files ?? 0}`);
+    lines.push(`- Flagged files: ${summary.flagged_files ?? 0}`);
+    lines.push(`- Actionable findings: ${summary.total_findings ?? 0}`);
+    lines.push(`- Informational findings: ${summary.info_findings ?? 0}`);
+    lines.push('');
+
+    lines.push('## Risk Classification');
+    lines.push('');
+    lines.push(`- Overall risk: ${risk.overall_risk || 'unknown'}`);
+    lines.push(`- Recommendation: ${risk.recommendation || 'unknown'}`);
+    lines.push('');
+
+    lines.push('## Governance');
+    lines.push('');
+    lines.push(`- Brokered: ${governance.brokered_tokens?.decision || 'unknown'}`);
+    lines.push(`- BYO: ${governance.customer_managed_keys?.decision || 'unknown'}`);
+    lines.push(`- Tier: ${governance.execution_tier || 'unknown'}`);
+    lines.push(`- Sandbox required: ${governance.sandbox_required ? 'yes' : 'no'}`);
+    lines.push(`- Approval required: ${governance.approval_required ? 'yes' : 'no'}`);
+    if (governance.policy_capabilities?.length) {
+        lines.push(`- Policy capabilities: ${governance.policy_capabilities.join(', ')}`);
+    }
+    lines.push('');
+
+    if (governance.decision_reasons?.length) {
+        lines.push('### Governance Reasons');
+        lines.push('');
+        governance.decision_reasons.forEach((reason) => lines.push(`- ${reason}`));
+        lines.push('');
+    }
+
+    if (scanResult.warnings?.length) {
+        lines.push('## Warnings');
+        lines.push('');
+        scanResult.warnings.forEach((warning) => lines.push(`- ${warning}`));
+        lines.push('');
+    }
+
+    lines.push('## Files');
+    lines.push('');
+
+    (scanResult.files || []).forEach((item) => {
+        const fileSummary = summarizeFileFindings(item.findings || []);
+        lines.push(`### ${item.path}`);
+        lines.push('');
+        lines.push(`- Artifact role: ${item.artifact_role || 'active'}`);
+        lines.push(`- Size: ${item.size ?? 0} bytes`);
+        if (item.skipped) {
+            lines.push(`- Status: skipped`);
+            if (item.reason) {
+                lines.push(`- Reason: ${item.reason}`);
+            }
+            lines.push('');
+            return;
+        }
+
+        lines.push(`- Actionable findings: ${fileSummary.actionableCount}`);
+        lines.push(`- Documented patterns: ${fileSummary.documentedPatternCount}`);
+        lines.push(`- Informational signals: ${fileSummary.informationalSignalCount}`);
+        if (item.reason) {
+            lines.push(`- Note: ${item.reason}`);
+        }
+        lines.push('');
+
+        if (!item.findings?.length) {
+            lines.push('No findings.');
+            lines.push('');
+            return;
+        }
+
+        item.findings.forEach((finding) => {
+            lines.push(`- **${finding.id}** (${finding.severity})`);
+            lines.push(`  - Description: ${finding.description}`);
+            lines.push(`  - Kind: ${finding.display_kind || 'actionable_finding'}`);
+            lines.push(`  - Category: ${finding.finding_category || finding.category || 'signal'}`);
+            lines.push(`  - Subject: ${finding.subject || 'unknown'}`);
+            lines.push(`  - Action state: ${finding.action_state || 'present'}`);
+            lines.push(`  - Disposition: ${finding.disposition || 'unknown'}`);
+            if (finding.samples?.length) {
+                lines.push(`  - Samples: ${finding.samples.join(' | ')}`);
+            }
+        });
+        lines.push('');
+    });
+
+    return lines.join('\n');
+}
+
 function App({ onBack, buildInfo }) {
     const [testConfig, setTestConfig] = useState({
         target_service: 'anthropic',
@@ -409,6 +519,24 @@ function App({ onBack, buildInfo }) {
             setIsScanningSkill(false);
         }
     };
+
+    const downloadSkillScanMarkdown = () => {
+        if (!skillScanResult) {
+            return;
+        }
+
+        const markdown = formatSkillScanMarkdown(skillScanResult, buildInfo);
+        const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const baseName = slugifyFilename(skillScanResult.filename || 'skill-scan');
+        link.href = url;
+        link.download = `${baseName}-scan-report.md`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    };
     
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
@@ -707,9 +835,18 @@ function App({ onBack, buildInfo }) {
                                             <div className="bg-gray-900/40 border border-gray-700/60 rounded-lg p-3 text-xs text-gray-300 space-y-2">
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-semibold text-gray-200">{skillScanResult.filename}</span>
-                                                    <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
-                                                        {skillScanResult.summary.total_findings > 0 ? 'Findings' : 'Clean'}
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={downloadSkillScanMarkdown}
+                                                            className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wide bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700/70 text-gray-200 transition"
+                                                        >
+                                                            <i className="fas fa-file-arrow-down mr-1"></i>
+                                                            Export MD
+                                                        </button>
+                                                        <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
+                                                            {skillScanResult.summary.total_findings > 0 ? 'Findings' : 'Clean'}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
                                                     <span>Total files: {skillScanResult.summary.total_files}</span>
