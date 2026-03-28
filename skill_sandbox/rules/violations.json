@@ -252,6 +252,158 @@
       ]
     },
     {
+      "id": "runtime_dependency_install",
+      "category": "code",
+      "severity": "high",
+      "description": "Installs packages or dependencies at runtime.",
+      "finding_category": "execution_intent",
+      "subject": "runtime_dependency_install",
+      "action_state": "instructed",
+      "disposition": "block",
+      "status": "verified",
+      "match_mode": "any",
+      "patterns": [
+        "\\b(pip|pip3|npm|yarn|gem|cargo)\\s+(install|add)\\b",
+        "\\bpython\\s+-m\\s+pip\\s+install\\b",
+        "\\bapt(?:-get)?\\s+install\\b"
+      ],
+      "exclude_patterns": [],
+      "sources": [
+        {
+          "name": "OWASP GenAI Security Project",
+          "ref": "LLM05 Supply Chain Vulnerabilities",
+          "url": "https://genai.owasp.org/llm05/"
+        }
+      ]
+    },
+    {
+      "id": "self_modifying_skill",
+      "category": "code",
+      "severity": "high",
+      "description": "Writes back to skill files or skill directories after execution.",
+      "finding_category": "execution_intent",
+      "subject": "skill_self_modification",
+      "action_state": "instructed",
+      "disposition": "block",
+      "status": "verified",
+      "match_mode": "any",
+      "patterns": [
+        "open\\s*\\(\\s*[\"']SKILL\\.md[\"']\\s*,\\s*[\"'](?:w|a|r\\+)\\b",
+        "\\b/mnt/skills/\\b",
+        "\\b(after\\s+completing|post-execution|then\\s+modify|update\\s+the\\s+skill)\\b"
+      ],
+      "exclude_patterns": [],
+      "sources": [
+        {
+          "name": "Anthropic Claude Code Security",
+          "ref": "Filesystem isolation and write boundaries",
+          "url": "https://docs.anthropic.com/s/claude-code-security"
+        },
+        {
+          "name": "Anthropic Engineering",
+          "ref": "Claude Code sandboxing",
+          "url": "https://www.anthropic.com/engineering/claude-code-sandboxing"
+        }
+      ]
+    },
+    {
+      "id": "unicode_deception",
+      "category": "obfuscation",
+      "severity": "high",
+      "description": "Unicode control or invisible characters that can manipulate text rendering.",
+      "finding_category": "obfuscation_signal",
+      "subject": "unicode_control_chars",
+      "action_state": "present",
+      "disposition": "block",
+      "status": "verified",
+      "match_mode": "any",
+      "patterns": [
+        "[\\u202A-\\u202E\\u2066-\\u2069\\u200B-\\u200D\\uFEFF]"
+      ],
+      "exclude_patterns": [],
+      "sources": [
+        {
+          "name": "OWASP GenAI Security Project",
+          "ref": "LLM05 Supply Chain Vulnerabilities",
+          "url": "https://genai.owasp.org/llm05/"
+        }
+      ]
+    },
+    {
+      "id": "dynamic_import_construction",
+      "category": "obfuscation",
+      "severity": "high",
+      "description": "Dynamic import or indirection patterns designed to evade static review.",
+      "finding_category": "obfuscation_signal",
+      "subject": "dynamic_imports",
+      "action_state": "used",
+      "disposition": "block",
+      "status": "verified",
+      "match_mode": "any",
+      "patterns": [
+        "__import__\\s*\\(\\s*[\"'][^\"']+[\"']\\s*\\+\\s*[\"'][^\"']+[\"']",
+        "getattr\\s*\\(\\s*__builtins__\\s*,",
+        "importlib\\.import_module\\s*\\(\\s*[A-Za-z_][A-Za-z0-9_]*\\s*\\)",
+        "globals\\s*\\(\\s*\\)\\s*\\[",
+        "locals\\s*\\(\\s*\\)\\s*\\["
+      ],
+      "exclude_patterns": [],
+      "sources": [
+        {
+          "name": "OWASP GenAI Security Project",
+          "ref": "LLM05 Supply Chain Vulnerabilities",
+          "url": "https://genai.owasp.org/llm05/"
+        }
+      ]
+    },
+    {
+      "id": "insecure_mcp_transport",
+      "category": "enterprise",
+      "severity": "high",
+      "description": "MCP server references use insecure transport.",
+      "finding_category": "connector_risk",
+      "subject": "mcp_transport",
+      "action_state": "configured",
+      "disposition": "block",
+      "status": "verified",
+      "match_mode": "any",
+      "patterns": [],
+      "exclude_patterns": [],
+      "sources": [
+        {
+          "name": "Model Context Protocol",
+          "ref": "Authorization security requirements",
+          "url": "https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization"
+        }
+      ]
+    },
+    {
+      "id": "unverified_mcp_server",
+      "category": "enterprise",
+      "severity": "medium",
+      "description": "MCP server references do not match a known trusted host.",
+      "finding_category": "connector_risk",
+      "subject": "mcp_server_trust",
+      "action_state": "configured",
+      "disposition": "require_approval",
+      "status": "verified",
+      "match_mode": "any",
+      "patterns": [],
+      "exclude_patterns": [],
+      "sources": [
+        {
+          "name": "MCP Registry",
+          "ref": "Official centralized metadata repository",
+          "url": "https://modelcontextprotocol.io/registry/about"
+        },
+        {
+          "name": "Model Context Protocol",
+          "ref": "Authorization security requirements",
+          "url": "https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization"
+        }
+      ]
+    },
+    {
       "id": "dynamic_exec",
       "category": "code",
       "severity": "high",

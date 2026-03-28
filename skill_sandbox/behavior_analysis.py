@@ -70,11 +70,12 @@ READ_ONLY_REGEX = re.compile(r"\b(read[- ]only|view|summarize|analyze|extract)\b
 
 def analyze_behavior(text_sources: Iterable[Dict[str, str]]) -> Dict[str, object]:
     sources = list(text_sources)
-    combined_text = "\n\n".join(source["text"] for source in sources if source.get("text"))
-
     declared_purpose = _extract_declared_purpose(sources)
+    capability_sources = _select_capability_sources(sources)
+    combined_text = "\n\n".join(source["text"] for source in capability_sources if source.get("text"))
+
     behaviors, capabilities, dependencies, ux_manipulation, capability_flags = _infer_capabilities(combined_text)
-    instruction_risks, overall_risk, recommendation = _classify_instructions(sources, capability_flags)
+    instruction_risks, overall_risk, recommendation = _classify_instructions(capability_sources, capability_flags)
     inconsistencies = _find_inconsistencies(declared_purpose, capability_flags)
 
     return {
@@ -298,3 +299,20 @@ def _detect_credential_handling(text: str) -> bool:
         return False
 
     return bool(CREDENTIAL_ACTION_REGEX.search(text) and CREDENTIAL_TARGET_REGEX.search(text))
+
+
+def _select_capability_sources(text_sources: Iterable[Dict[str, str]]) -> List[Dict[str, str]]:
+    sources = list(text_sources)
+    active_sources = [source for source in sources if source.get("artifact_role") == "active"]
+    if active_sources:
+        return active_sources
+
+    non_template_sources = [
+        source
+        for source in sources
+        if source.get("artifact_role") not in {"reference_template", "audit_policy"}
+    ]
+    if non_template_sources:
+        return non_template_sources
+
+    return sources

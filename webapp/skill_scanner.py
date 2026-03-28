@@ -7,6 +7,7 @@ import zipfile
 from typing import Dict, List, Tuple
 
 from skill_sandbox.behavior_analysis import analyze_behavior
+from skill_sandbox.finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
 from skill_sandbox.governance import build_governance_profile
 from skill_sandbox.scan_rules import compile_patterns, find_rule_matches
 
@@ -55,7 +56,7 @@ def _scan_zip_bundle(upload_bytes: bytes, filename: str) -> Dict[str, object]:
 
             entry, text = _scan_file_bytes(info.filename, data)
             results.append(entry)
-            text_pairs.append((info.filename, text))
+            text_pairs.append((info.filename, text, entry["artifact_role"]))
 
     return _assemble_result(filename, "zip", results, warnings, _build_text_sources(text_pairs))
 
@@ -63,7 +64,7 @@ def _scan_zip_bundle(upload_bytes: bytes, filename: str) -> Dict[str, object]:
 def _scan_single_skill(upload_bytes: bytes, filename: str) -> Dict[str, object]:
     entry, text = _scan_file_bytes(filename, upload_bytes)
     results = [entry]
-    return _assemble_result(filename, "skill", results, [], _build_text_sources([(filename, text)]))
+    return _assemble_result(filename, "skill", results, [], _build_text_sources([(filename, text, entry["artifact_role"])]))
 
 
 def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | None]:
@@ -72,6 +73,7 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         "size": len(data),
         "skipped": False,
         "reason": "",
+        "artifact_role": "active",
         "findings": [],
     }
 
@@ -81,11 +83,12 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         return entry, None
 
     text = data.decode("utf-8", errors="replace")
-    entry["findings"] = _scan_text(path, text)
+    entry["artifact_role"] = classify_artifact_role(path, text)
+    entry["findings"] = _scan_text(path, text, entry["artifact_role"])
     return entry, text
 
 
-def _scan_text(path: str, text: str) -> List[Dict[str, object]]:
+def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
     findings = []
     scan_units = _iter_scan_units(path, text)
 
@@ -96,23 +99,9 @@ def _scan_text(path: str, text: str) -> List[Dict[str, object]]:
         if not matches:
             continue
 
-        findings.append(
-            {
-                "id": pattern["id"],
-                "category": pattern["category"],
-                "severity": pattern["severity"],
-                "description": pattern["description"],
-                "finding_category": pattern.get("finding_category", "signal"),
-                "subject": pattern.get("subject", "unknown"),
-                "action_state": pattern.get("action_state", "present"),
-                "disposition": pattern.get("disposition", _default_disposition(pattern["severity"])),
-                "count": len(matches),
-                "samples": matches[:3],
-                "status": pattern.get("status", "unknown"),
-                "sources": pattern.get("sources", []),
-            }
-        )
+        findings.append(build_finding(pattern, matches, artifact_role))
 
+    findings.extend(detect_special_findings(path, text, artifact_role))
     return findings
 
 
@@ -171,25 +160,22 @@ def _is_probably_text(data: bytes) -> bool:
     return printable / len(sample) >= 0.7
 
 
-def _build_text_sources(text_pairs: List[Tuple[str, str | None]]) -> List[Dict[str, str]]:
+def _build_text_sources(text_pairs: List[Tuple[str, str | None, str]]) -> List[Dict[str, str]]:
     sources = []
-    for path, text in text_pairs:
+    for path, text, artifact_role in text_pairs:
         if text:
-            sources.append({"path": path, "text": text})
+            sources.append({"path": path, "text": text, "artifact_role": artifact_role})
     return sources
 
 
 def _iter_scan_units(path: str, text: str) -> List[str]:
-    if path.lower().endswith(".csv"):
+    lower_path = path.lower()
+    if lower_path.endswith(".csv"):
         return [line for line in text.splitlines() if line.strip()]
+    if lower_path.endswith((".md", ".skill", ".txt")):
+        units = [
+            " ".join(line.strip() for line in block.splitlines() if line.strip())
+            for block in text.split("\n\n")
+        ]
+        return [unit for unit in units if unit]
     return [text]
-
-
-def _default_disposition(severity: str) -> str:
-    if severity == "high":
-        return "block"
-    if severity == "medium":
-        return "require_approval"
-    if severity == "low":
-        return "warn"
-    return "info"

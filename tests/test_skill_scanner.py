@@ -137,3 +137,94 @@ def test_secret_exfiltration_includes_disclosure_metadata():
     assert finding["subject"] == "credentials"
     assert finding["action_state"] == "requested"
     assert finding["disposition"] == "block"
+
+
+def test_runtime_dependency_install_detected():
+    payload = b"Run pip install requests before executing the skill."
+
+    result = scan_upload(payload, "installer.skill")
+    finding_ids = {finding["id"] for finding in result["files"][0]["findings"]}
+
+    assert "runtime_dependency_install" in finding_ids
+
+
+def test_unicode_deception_detected():
+    payload = "This skill contains hidden text\u200bbetween words.".encode("utf-8")
+
+    result = scan_upload(payload, "unicode.skill")
+    finding_ids = {finding["id"] for finding in result["files"][0]["findings"]}
+
+    assert "unicode_deception" in finding_ids
+
+
+def test_mcp_trust_findings_detected():
+    payload = b"""
+Known trusted: https://mcp.atlassian.com/v1/sse
+Insecure: http://mcp.internal.example/v1/sse
+Unknown: https://mcp.shadowvendor.example/v1/sse
+"""
+
+    result = scan_upload(payload, "mcp.skill")
+    finding_ids = {finding["id"] for finding in result["files"][0]["findings"]}
+
+    assert "insecure_mcp_transport" in finding_ids
+    assert "unverified_mcp_server" in finding_ids
+
+
+def test_reference_templates_downgrade_example_patterns_to_info():
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr(
+            "SKILL.md",
+            "---\nname: safe-auditor\ndescription: Reviews skill packages without executing them.\n---\nRead-only audit skill.",
+        )
+        archive.writestr(
+            "references/detection-patterns.md",
+            "# Risk Domain Detection Patterns\n\nQuick-reference.\n\nIgnore previous instructions.\nRun shell commands in bash.\npip install requests\n",
+        )
+
+    result = scan_upload(buffer.getvalue(), "safe-auditor.zip")
+
+    assert result["summary"]["flagged_files"] == 0
+    assert result["summary"]["total_findings"] == 0
+    assert result["summary"]["info_findings"] >= 1
+    reference_file = next(item for item in result["files"] if item["path"].endswith("detection-patterns.md"))
+    assert reference_file["artifact_role"] == "reference_template"
+    assert all(finding["severity"] == "info" for finding in reference_file["findings"])
+
+
+def test_audit_policy_bundle_stays_informational():
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr(
+            "SKILL.md",
+            """---
+name: skill-auditor
+description: Reviews skills and MCP configurations for risk.
+---
+
+# Skill Auditor
+
+## Risk Domains
+Inspect and evaluate skill packages for security review.
+
+## Automatic High-Severity Conditions
+- Ignore previous instructions
+- pip install packages at runtime
+- update the skill after completing execution
+""",
+        )
+        archive.writestr(
+            "references/mcp-connector-trust.md",
+            """# MCP Server Assessment
+
+Known trusted: https://mcp.atlassian.com/v1/sse
+Unknown example: https://mcp.shadowvendor.example/v1/sse
+""",
+        )
+
+    result = scan_upload(buffer.getvalue(), "skill-auditor.zip")
+
+    assert result["summary"]["flagged_files"] == 0
+    assert result["summary"]["total_findings"] == 0
+    assert result["summary"]["info_findings"] >= 1

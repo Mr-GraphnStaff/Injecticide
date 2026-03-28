@@ -11,10 +11,12 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 
 if __package__:
     from .behavior_analysis import analyze_behavior
+    from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from .governance import build_governance_profile
     from .scan_rules import compile_patterns, find_rule_matches
 else:
     from behavior_analysis import analyze_behavior
+    from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from governance import build_governance_profile
     from scan_rules import compile_patterns, find_rule_matches
 
@@ -95,7 +97,7 @@ def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str) -> Dict
 def _scan_single_file(upload_bytes: bytes, filename: str) -> Dict[str, object]:
     entry, text = _scan_file_bytes(filename, upload_bytes)
     results = [entry]
-    text_sources = _build_text_sources([(filename, text)])
+    text_sources = _build_text_sources([(filename, text, entry["artifact_role"])])
     return _assemble_result(filename, "skill", results, [], text_sources)
 
 
@@ -190,13 +192,13 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
 
 def _scan_extracted_files(files: Iterable[Tuple[str, Path]]) -> Tuple[List[Dict[str, object]], List[Dict[str, str]]]:
     results = []
-    text_pairs: List[Tuple[str, str | None]] = []
+    text_pairs: List[Tuple[str, str | None, str]] = []
     sorted_files = sorted(files, key=_priority_key)
     for rel_path, path in sorted_files:
         data = path.read_bytes()
         entry, text = _scan_file_bytes(rel_path, data)
         results.append(entry)
-        text_pairs.append((rel_path, text))
+        text_pairs.append((rel_path, text, entry["artifact_role"]))
     return results, _build_text_sources(text_pairs)
 
 
@@ -218,6 +220,7 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         "size": len(data),
         "skipped": False,
         "reason": "",
+        "artifact_role": "active",
         "findings": [],
     }
 
@@ -227,11 +230,12 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         return entry, None
 
     text = data.decode("utf-8", errors="replace")
-    entry["findings"] = _scan_text(path, text)
+    entry["artifact_role"] = classify_artifact_role(path, text)
+    entry["findings"] = _scan_text(path, text, entry["artifact_role"])
     return entry, text
 
 
-def _scan_text(path: str, text: str) -> List[Dict[str, object]]:
+def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
     findings = []
     scan_units = _iter_scan_units(path, text)
 
@@ -242,23 +246,9 @@ def _scan_text(path: str, text: str) -> List[Dict[str, object]]:
         if not matches:
             continue
 
-        findings.append(
-            {
-                "id": pattern["id"],
-                "category": pattern["category"],
-                "severity": pattern["severity"],
-                "description": pattern["description"],
-                "finding_category": pattern.get("finding_category", "signal"),
-                "subject": pattern.get("subject", "unknown"),
-                "action_state": pattern.get("action_state", "present"),
-                "disposition": pattern.get("disposition", _default_disposition(pattern["severity"])),
-                "count": len(matches),
-                "samples": matches[:3],
-                "status": pattern.get("status", "unknown"),
-                "sources": pattern.get("sources", []),
-            }
-        )
+        findings.append(build_finding(pattern, matches, artifact_role))
 
+    findings.extend(detect_special_findings(path, text, artifact_role))
     return findings
 
 
@@ -356,25 +346,22 @@ def _is_probably_text(data: bytes) -> bool:
     return printable / len(sample) >= 0.7
 
 
-def _build_text_sources(text_pairs: Iterable[Tuple[str, str | None]]) -> List[Dict[str, str]]:
+def _build_text_sources(text_pairs: Iterable[Tuple[str, str | None, str]]) -> List[Dict[str, str]]:
     sources = []
-    for path, text in text_pairs:
+    for path, text, artifact_role in text_pairs:
         if text:
-            sources.append({"path": path, "text": text})
+            sources.append({"path": path, "text": text, "artifact_role": artifact_role})
     return sources
 
 
 def _iter_scan_units(path: str, text: str) -> List[str]:
-    if path.lower().endswith(".csv"):
+    lower_path = path.lower()
+    if lower_path.endswith(".csv"):
         return [line for line in text.splitlines() if line.strip()]
+    if lower_path.endswith((".md", ".skill", ".txt")):
+        units = [
+            " ".join(line.strip() for line in block.splitlines() if line.strip())
+            for block in text.split("\n\n")
+        ]
+        return [unit for unit in units if unit]
     return [text]
-
-
-def _default_disposition(severity: str) -> str:
-    if severity == "high":
-        return "block"
-    if severity == "medium":
-        return "require_approval"
-    if severity == "low":
-        return "warn"
-    return "info"
