@@ -16,6 +16,7 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_ZIP_FILES = 200
 MAX_ZIP_TOTAL_BYTES = 25 * 1024 * 1024
 MAX_FILE_BYTES = 5 * 1024 * 1024
+MAX_REFERENCE_SQLITE_BYTES = 64 * 1024 * 1024
 
 PATTERNS = compile_patterns()
 
@@ -44,7 +45,7 @@ def _scan_zip_bundle(upload_bytes: bytes, filename: str) -> Dict[str, object]:
             raise ValueError("Zip archive contains too many files.")
 
         for info in members:
-            if info.file_size > MAX_FILE_BYTES:
+            if info.file_size > _max_scannable_file_bytes(info.filename):
                 warnings.append(f"Skipped {info.filename}: file too large.")
                 continue
 
@@ -66,6 +67,17 @@ def _scan_single_skill(upload_bytes: bytes, filename: str) -> Dict[str, object]:
     entry, text = _scan_file_bytes(filename, upload_bytes)
     results = [entry]
     return _assemble_result(filename, "skill", results, [], _build_text_sources([(filename, text, entry["artifact_role"])]))
+
+
+def _max_scannable_file_bytes(path: str) -> int:
+    if _is_reference_sqlite(path):
+        return MAX_REFERENCE_SQLITE_BYTES
+    return MAX_FILE_BYTES
+
+
+def _is_reference_sqlite(path: str) -> bool:
+    normalized = path.replace("\\", "/").lower()
+    return normalized.endswith(".db") and "/references/" in f"/{normalized}"
 
 
 def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | None]:

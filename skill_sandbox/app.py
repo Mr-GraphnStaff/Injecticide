@@ -28,6 +28,7 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_ARCHIVE_FILES = 200
 MAX_ARCHIVE_TOTAL_BYTES = 25 * 1024 * 1024
 MAX_FILE_BYTES = 5 * 1024 * 1024
+MAX_REFERENCE_SQLITE_BYTES = 64 * 1024 * 1024
 
 PRIORITY_FILENAMES = (
     "skill.md",
@@ -103,6 +104,17 @@ def _scan_single_file(upload_bytes: bytes, filename: str) -> Dict[str, object]:
     return _assemble_result(filename, "skill", results, [], text_sources)
 
 
+def _max_scannable_file_bytes(path: str) -> int:
+    if _is_reference_sqlite(path):
+        return MAX_REFERENCE_SQLITE_BYTES
+    return MAX_FILE_BYTES
+
+
+def _is_reference_sqlite(path: str) -> bool:
+    normalized = path.replace("\\", "/").lower()
+    return normalized.endswith(".db") and "/references/" in f"/{normalized}"
+
+
 def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> List[Tuple[str, Path]]:
     extracted: List[Tuple[str, Path]] = []
     total_uncompressed = 0
@@ -118,7 +130,7 @@ def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
             if total_uncompressed > MAX_ARCHIVE_TOTAL_BYTES:
                 raise ValueError("Zip archive exceeds uncompressed size limit.")
 
-            if info.file_size > MAX_FILE_BYTES:
+            if info.file_size > _max_scannable_file_bytes(info.filename):
                 warnings.append(f"Skipped {info.filename}: file too large.")
                 continue
 
@@ -138,7 +150,7 @@ def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
 
             destination.parent.mkdir(parents=True, exist_ok=True)
             with archive.open(info) as source, open(destination, "wb") as target:
-                _copy_limited(source, target, MAX_FILE_BYTES)
+                _copy_limited(source, target, _max_scannable_file_bytes(info.filename))
 
             extracted.append((safe_name, destination))
 
@@ -160,7 +172,7 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
             if total_uncompressed > MAX_ARCHIVE_TOTAL_BYTES:
                 raise ValueError("Tar archive exceeds uncompressed size limit.")
 
-            if member.size > MAX_FILE_BYTES:
+            if member.size > _max_scannable_file_bytes(member.name):
                 warnings.append(f"Skipped {member.name}: file too large.")
                 continue
 
@@ -185,7 +197,7 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
 
             destination.parent.mkdir(parents=True, exist_ok=True)
             with source, open(destination, "wb") as target:
-                _copy_limited(source, target, MAX_FILE_BYTES)
+                _copy_limited(source, target, _max_scannable_file_bytes(member.name))
 
             extracted.append((safe_name, destination))
 

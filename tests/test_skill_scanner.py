@@ -2,6 +2,7 @@ import io
 import sqlite3
 import tempfile
 import zipfile
+from pathlib import Path
 
 from skill_sandbox.scan_rules import load_rule_catalog
 from webapp.skill_scanner import scan_upload
@@ -76,6 +77,28 @@ def _build_sqlite_bytes(rows):
         os.unlink(db_path)
 
 
+def _build_large_sqlite_bytes():
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as handle:
+        db_path = handle.name
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.execute("CREATE TABLE records (email TEXT, note TEXT)")
+        large_note = "X" * 8192
+        rows = [(f"user{idx}@hubinternational.com", large_note) for idx in range(900)]
+        conn.executemany("INSERT INTO records (email, note) VALUES (?, ?)", rows)
+        conn.commit()
+        conn.close()
+
+        data = Path(db_path).read_bytes()
+        assert len(data) > 5 * 1024 * 1024
+        return data
+    finally:
+        import os
+
+        os.unlink(db_path)
+
+
 def test_scan_non_sqlite_binary_reference_db_is_skipped_cleanly():
     payload = b"\x00\x01\x02\x03" + b"X" * 256
 
@@ -111,6 +134,22 @@ def test_scan_sqlite_reference_db_detects_pii_and_phi():
     assert "phi_patient_record" in finding_ids
     assert "regulated_data" in result["governance_profile"]["policy_capabilities"]
     assert result["governance_profile"]["approval_required"] is True
+
+
+def test_scan_large_reference_sqlite_db_is_not_skipped():
+    payload = _build_large_sqlite_bytes()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("wtf-is-this/SKILL.md", "# Lookup skill")
+        archive.writestr("wtf-is-this/references/hub_users.db", payload)
+
+    result = scan_upload(buffer.getvalue(), "wtf-is-this.skill")
+
+    db_entry = next(item for item in result["files"] if item["path"].endswith("hub_users.db"))
+    assert db_entry["skipped"] is False
+    assert db_entry["reason"] == "Scanned SQLite database content."
+    finding_ids = {finding["id"] for finding in db_entry["findings"]}
+    assert "pii_email_address" in finding_ids
 
 
 def test_rule_catalog_has_source_metadata():

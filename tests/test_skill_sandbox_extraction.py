@@ -1,6 +1,9 @@
 import io
+import sqlite3
 import tarfile
+import tempfile
 import zipfile
+from pathlib import Path
 
 import pytest
 
@@ -21,6 +24,28 @@ def _build_tar(members):
         for member, data in members:
             archive.addfile(member, io.BytesIO(data) if data is not None else None)
     return buffer.getvalue()
+
+
+def _build_large_sqlite_bytes():
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as handle:
+        db_path = handle.name
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.execute("CREATE TABLE records (email TEXT, note TEXT)")
+        large_note = "X" * 8192
+        rows = [(f"user{idx}@hubinternational.com", large_note) for idx in range(900)]
+        conn.executemany("INSERT INTO records (email, note) VALUES (?, ?)", rows)
+        conn.commit()
+        conn.close()
+
+        data = Path(db_path).read_bytes()
+        assert len(data) > sandbox_app.MAX_FILE_BYTES
+        return data
+    finally:
+        import os
+
+        os.unlink(db_path)
 
 
 def test_zip_traversal_skipped_with_warning():
@@ -88,3 +113,20 @@ def test_tar_traversal_and_links_skipped():
     assert any("invalid path" in warning for warning in result["warnings"])
     assert any("link entries" in warning for warning in result["warnings"])
     assert result["summary"]["total_files"] == 1
+
+
+def test_large_reference_sqlite_not_skipped():
+    payload = _build_large_sqlite_bytes()
+    result = sandbox_app.scan_upload(
+        _build_zip(
+            [
+                (zipfile.ZipInfo("SKILL.md"), "# Skill"),
+                (zipfile.ZipInfo("references/hub_users.db"), payload),
+            ]
+        ),
+        "bundle.zip",
+    )
+
+    db_entry = next(item for item in result["files"] if item["path"].endswith("hub_users.db"))
+    assert db_entry["skipped"] is False
+    assert db_entry["reason"] == "Scanned SQLite database content."
