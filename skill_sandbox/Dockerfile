@@ -8,10 +8,12 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY app.py /app/app.py
+COPY artifact_text.py /app/artifact_text.py
 COPY behavior_analysis.py /app/behavior_analysis.py
 COPY finding_enrichment.py /app/finding_enrichment.py
 COPY governance.py /app/governance.py
 COPY scan_rules.py /app/scan_rules.py
+COPY sensitive_data.py /app/sensitive_data.py
 COPY rules /app/rules
 
 USER appuser
