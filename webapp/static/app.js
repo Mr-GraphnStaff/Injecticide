@@ -1,5 +1,19 @@
 const { useState, useEffect, useRef } = React;
 
+const FREE_EMAIL_DOMAINS = new Set([
+    'gmail.com',
+    'yahoo.com',
+    'hotmail.com',
+    'outlook.com',
+    'icloud.com',
+    'aol.com',
+    'proton.me',
+    'protonmail.com',
+]);
+
+const SECURITY_CATEGORIES = new Set(['prompt', 'code', 'enterprise', 'obfuscation']);
+const REGULATED_FINDING_PREFIXES = ['pii_', 'phi_'];
+
 function summarizeFileFindings(findings) {
     const actionable = findings.filter((finding) => finding.is_actionable !== false);
     const documentedPatterns = findings.filter((finding) => finding.display_kind === 'documented_pattern');
@@ -14,6 +28,216 @@ function summarizeFileFindings(findings) {
     };
 }
 
+function classifyReviewClass(finding, artifactRole = 'active') {
+    if (finding.display_kind === 'documented_pattern') {
+        return 'documented_pattern';
+    }
+
+    if (finding.display_kind === 'informational_signal' || finding.severity === 'info') {
+        return 'informational';
+    }
+
+    if (
+        SECURITY_CATEGORIES.has(finding.category) ||
+        ['execution_intent', 'execution_primitive', 'connector_risk', 'policy_override', 'disclosure_request'].includes(finding.finding_category)
+    ) {
+        return 'security_risk';
+    }
+
+    if (REGULATED_FINDING_PREFIXES.some((prefix) => String(finding.id || '').startsWith(prefix))) {
+        if (finding.id === 'pii_email_address') {
+            const emailDomains = extractEmailDomains(finding.samples || []);
+            if (artifactRole === 'reference' && emailDomains.length === 1 && !FREE_EMAIL_DOMAINS.has(emailDomains[0])) {
+                return 'expected_internal';
+            }
+        }
+
+        if (finding.id === 'pii_phone_number' && artifactRole === 'reference') {
+            return 'expected_internal';
+        }
+
+        return 'sensitive_data';
+    }
+
+    return finding.is_actionable === false ? 'informational' : 'review';
+}
+
+function extractEmailDomains(samples) {
+    const domains = new Set();
+    (samples || []).forEach((sample) => {
+        const matches = String(sample).match(/[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,})/gi) || [];
+        matches.forEach((email) => {
+            const domain = email.split('@')[1]?.toLowerCase();
+            if (domain) {
+                domains.add(domain);
+            }
+        });
+    });
+    return Array.from(domains);
+}
+
+function classifyFindingLabel(reviewClass) {
+    switch (reviewClass) {
+        case 'security_risk':
+            return 'Security Risk';
+        case 'sensitive_data':
+            return 'Sensitive Data';
+        case 'expected_internal':
+            return 'Expected/Internal';
+        case 'documented_pattern':
+            return 'Documented Pattern';
+        case 'informational':
+            return 'Informational';
+        default:
+            return 'Needs Review';
+    }
+}
+
+function findingPillClass(reviewClass) {
+    switch (reviewClass) {
+        case 'security_risk':
+            return 'bg-red-600/40 text-red-200';
+        case 'sensitive_data':
+            return 'bg-yellow-600/30 text-yellow-200';
+        case 'expected_internal':
+            return 'bg-blue-600/30 text-blue-200';
+        case 'documented_pattern':
+            return 'bg-indigo-600/30 text-indigo-200';
+        case 'informational':
+            return 'bg-gray-700/70 text-gray-300';
+        default:
+            return 'bg-gray-700/70 text-gray-200';
+    }
+}
+
+function summarizeReviewClasses(scanResult) {
+    const summary = {
+        security_risk: 0,
+        sensitive_data: 0,
+        expected_internal: 0,
+        documented_pattern: 0,
+        informational: 0,
+        review: 0,
+    };
+
+    (scanResult.files || []).forEach((item) => {
+        (item.findings || []).forEach((finding) => {
+            const reviewClass = classifyReviewClass(finding, item.artifact_role || 'active');
+            summary[reviewClass] = (summary[reviewClass] || 0) + 1;
+        });
+    });
+
+    return summary;
+}
+
+function summarizeAssessment(scanResult) {
+    const reviewSummary = summarizeReviewClasses(scanResult);
+
+    if (reviewSummary.security_risk > 0) {
+        return {
+            tone: 'high',
+            title: 'Security risks need review',
+            body: 'The scan found execution, prompt, connector, or policy risks that should be reviewed before use.',
+        };
+    }
+
+    if (reviewSummary.sensitive_data > 0) {
+        return {
+            tone: 'medium',
+            title: 'Sensitive data detected',
+            body: 'The scan found regulated or personal data that may be legitimate content, but it should be reviewed in context.',
+        };
+    }
+
+    if (reviewSummary.expected_internal > 0) {
+        return {
+            tone: 'low',
+            title: 'Expected internal contact data detected',
+            body: 'The scan found business contact data that appears consistent with a reference directory or internal bundle.',
+        };
+    }
+
+    if ((scanResult.summary?.info_findings || 0) > 0) {
+        return {
+            tone: 'low',
+            title: 'Informational context only',
+            body: 'The scan found reference or informational patterns, but no blocking behavior.',
+        };
+    }
+
+    return {
+        tone: 'clean',
+        title: 'No review findings',
+        body: 'The scan did not find security risks or regulated data patterns that require follow-up.',
+    };
+}
+
+function assessmentClass(tone) {
+    switch (tone) {
+        case 'high':
+            return 'border-red-700/70 bg-red-950/30 text-red-100';
+        case 'medium':
+            return 'border-yellow-700/70 bg-yellow-950/20 text-yellow-100';
+        case 'low':
+            return 'border-blue-700/70 bg-blue-950/20 text-blue-100';
+        default:
+            return 'border-green-700/50 bg-green-950/20 text-green-100';
+    }
+}
+
+function topConcerns(scanResult, limit = 3) {
+    const concerns = [];
+
+    (scanResult.files || []).forEach((item) => {
+        (item.findings || []).forEach((finding) => {
+            const reviewClass = classifyReviewClass(finding, item.artifact_role || 'active');
+            if (reviewClass === 'documented_pattern' || reviewClass === 'informational') {
+                return;
+            }
+
+            concerns.push({
+                path: item.path,
+                finding,
+                reviewClass,
+            });
+        });
+    });
+
+    const priority = {
+        security_risk: 0,
+        sensitive_data: 1,
+        review: 2,
+        expected_internal: 3,
+    };
+    const severityRank = { high: 0, medium: 1, low: 2, info: 3 };
+
+    return concerns
+        .sort((left, right) => {
+            const classDelta = (priority[left.reviewClass] ?? 4) - (priority[right.reviewClass] ?? 4);
+            if (classDelta !== 0) {
+                return classDelta;
+            }
+            return (severityRank[left.finding.severity] ?? 4) - (severityRank[right.finding.severity] ?? 4);
+        })
+        .slice(0, limit);
+}
+
+function filterFindings(findings, artifactRole, filter) {
+    return (findings || []).filter((finding) => {
+        const reviewClass = classifyReviewClass(finding, artifactRole);
+        switch (filter) {
+            case 'security':
+                return reviewClass === 'security_risk';
+            case 'sensitive':
+                return reviewClass === 'sensitive_data';
+            case 'expected':
+                return reviewClass === 'expected_internal';
+            default:
+                return true;
+        }
+    });
+}
+
 function slugifyFilename(name) {
     return (name || 'skill-scan')
         .toLowerCase()
@@ -22,12 +246,15 @@ function slugifyFilename(name) {
         .replace(/^-|-$/g, '');
 }
 
-function formatSkillScanMarkdown(scanResult, buildInfo) {
+function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary') {
     const lines = [];
     const generatedAt = new Date().toISOString();
     const summary = scanResult.summary || {};
     const governance = scanResult.governance_profile || {};
     const risk = scanResult.risk_classification || {};
+    const reviewSummary = summarizeReviewClasses(scanResult);
+    const assessment = summarizeAssessment(scanResult);
+    const concerns = topConcerns(scanResult);
 
     lines.push(`# Skill Scan Report: ${scanResult.filename}`);
     lines.push('');
@@ -38,9 +265,32 @@ function formatSkillScanMarkdown(scanResult, buildInfo) {
     }
     lines.push(`- Total files: ${summary.total_files ?? 0}`);
     lines.push(`- Flagged files: ${summary.flagged_files ?? 0}`);
-    lines.push(`- Actionable findings: ${summary.total_findings ?? 0}`);
+    lines.push(`- Review findings: ${summary.total_findings ?? 0}`);
     lines.push(`- Informational findings: ${summary.info_findings ?? 0}`);
     lines.push('');
+
+    lines.push('## Assessment');
+    lines.push('');
+    lines.push(`- Headline: ${assessment.title}`);
+    lines.push(`- Summary: ${assessment.body}`);
+    lines.push('');
+
+    lines.push('## Review Buckets');
+    lines.push('');
+    lines.push(`- Security risks: ${reviewSummary.security_risk}`);
+    lines.push(`- Sensitive data: ${reviewSummary.sensitive_data}`);
+    lines.push(`- Expected/internal: ${reviewSummary.expected_internal}`);
+    lines.push(`- Informational only: ${reviewSummary.informational + reviewSummary.documented_pattern}`);
+    lines.push('');
+
+    if (concerns.length > 0) {
+        lines.push('## Top Concerns');
+        lines.push('');
+        concerns.forEach((concern) => {
+            lines.push(`- ${classifyFindingLabel(concern.reviewClass)}: ${concern.finding.id} in ${concern.path}`);
+        });
+        lines.push('');
+    }
 
     lines.push('## Risk Classification');
     lines.push('');
@@ -74,11 +324,16 @@ function formatSkillScanMarkdown(scanResult, buildInfo) {
         lines.push('');
     }
 
+    if (reportDepth !== 'detailed') {
+        return lines.join('\n');
+    }
+
     lines.push('## Files');
     lines.push('');
 
     (scanResult.files || []).forEach((item) => {
         const fileSummary = summarizeFileFindings(item.findings || []);
+        const visibleFindings = filterFindings(item.findings || [], item.artifact_role || 'active', 'all');
         lines.push(`### ${item.path}`);
         lines.push('');
         lines.push(`- Artifact role: ${item.artifact_role || 'active'}`);
@@ -92,7 +347,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo) {
             return;
         }
 
-        lines.push(`- Actionable findings: ${fileSummary.actionableCount}`);
+        lines.push(`- Review findings: ${fileSummary.actionableCount}`);
         lines.push(`- Documented patterns: ${fileSummary.documentedPatternCount}`);
         lines.push(`- Informational signals: ${fileSummary.informationalSignalCount}`);
         if (item.reason) {
@@ -100,14 +355,16 @@ function formatSkillScanMarkdown(scanResult, buildInfo) {
         }
         lines.push('');
 
-        if (!item.findings?.length) {
+        if (!visibleFindings.length) {
             lines.push('No findings.');
             lines.push('');
             return;
         }
 
-        item.findings.forEach((finding) => {
+        visibleFindings.forEach((finding) => {
+            const reviewClass = classifyReviewClass(finding, item.artifact_role || 'active');
             lines.push(`- **${finding.id}** (${finding.severity})`);
+            lines.push(`  - Review class: ${classifyFindingLabel(reviewClass)}`);
             lines.push(`  - Description: ${finding.description}`);
             lines.push(`  - Kind: ${finding.display_kind || 'actionable_finding'}`);
             lines.push(`  - Category: ${finding.finding_category || finding.category || 'signal'}`);
@@ -155,6 +412,8 @@ function App({ onBack, buildInfo }) {
     const [skillScanResult, setSkillScanResult] = useState(null);
     const [skillScanError, setSkillScanError] = useState('');
     const [isScanningSkill, setIsScanningSkill] = useState(false);
+    const [skillReportDepth, setSkillReportDepth] = useState('summary');
+    const [skillFindingFilter, setSkillFindingFilter] = useState('all');
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -478,6 +737,8 @@ function App({ onBack, buildInfo }) {
     const resetSkillScanState = () => {
         setSkillScanResult(null);
         setSkillScanError('');
+        setSkillReportDepth('summary');
+        setSkillFindingFilter('all');
     };
 
     const handleSkillFileChange = (event) => {
@@ -525,13 +786,13 @@ function App({ onBack, buildInfo }) {
             return;
         }
 
-        const markdown = formatSkillScanMarkdown(skillScanResult, buildInfo);
+        const markdown = formatSkillScanMarkdown(skillScanResult, buildInfo, skillReportDepth);
         const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         const baseName = slugifyFilename(skillScanResult.filename || 'skill-scan');
         link.href = url;
-        link.download = `${baseName}-scan-report.md`;
+        link.download = `${baseName}-scan-report-${skillReportDepth}.md`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -832,25 +1093,85 @@ function App({ onBack, buildInfo }) {
                                         )}
                                         {skillScanResult && (
                                             <div className="bg-gray-900/40 border border-gray-700/60 rounded-lg p-3 text-xs text-gray-300 space-y-2">
+                                                {(() => {
+                                                    const assessment = summarizeAssessment(skillScanResult);
+                                                    const reviewSummary = summarizeReviewClasses(skillScanResult);
+                                                    const concerns = topConcerns(skillScanResult);
+                                                    return (
+                                                        <>
+                                                            <div className={`rounded-md border px-3 py-2 ${assessmentClass(assessment.tone)}`}>
+                                                                <div className="text-sm font-semibold">{assessment.title}</div>
+                                                                <p className="mt-1 text-[11px] opacity-90">{assessment.body}</p>
+                                                                <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
+                                                                    <span>Security risks: {reviewSummary.security_risk}</span>
+                                                                    <span>Sensitive data: {reviewSummary.sensitive_data}</span>
+                                                                    <span>Expected/internal: {reviewSummary.expected_internal}</span>
+                                                                </div>
+                                                            </div>
+                                                            {concerns.length > 0 && (
+                                                                <div className="rounded-md border border-gray-800/80 bg-black/20 p-2">
+                                                                    <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">Top Concerns</div>
+                                                                    <ul className="space-y-1 text-[11px] text-gray-300">
+                                                                        {concerns.map((concern, concernIdx) => (
+                                                                            <li key={concernIdx}>
+                                                                                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] mr-2 ${findingPillClass(concern.reviewClass)}`}>
+                                                                                    {classifyFindingLabel(concern.reviewClass)}
+                                                                                </span>
+                                                                                {concern.finding.id} in {concern.path}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-semibold text-gray-200">{skillScanResult.filename}</span>
                                                     <div className="flex items-center gap-2">
+                                                        <div className="flex rounded-md overflow-hidden border border-gray-700/70">
+                                                            {['summary', 'detailed'].map((mode) => (
+                                                                <button
+                                                                    key={mode}
+                                                                    onClick={() => setSkillReportDepth(mode)}
+                                                                    className={`px-2 py-1 text-[10px] uppercase tracking-wide transition ${skillReportDepth === mode ? 'bg-blue-700/80 text-white' : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80'}`}
+                                                                >
+                                                                    {mode}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                         <button
                                                             onClick={downloadSkillScanMarkdown}
                                                             className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wide bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700/70 text-gray-200 transition"
                                                         >
                                                             <i className="fas fa-file-arrow-down mr-1"></i>
-                                                            Export MD
+                                                            Export {skillReportDepth === 'summary' ? 'Summary' : 'Detailed'}
                                                         </button>
                                                         <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
-                                                            {skillScanResult.summary.total_findings > 0 ? 'Findings' : 'Clean'}
+                                                            {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
                                                     <span>Total files: {skillScanResult.summary.total_files}</span>
                                                     <span>Flagged: {skillScanResult.summary.flagged_files}</span>
-                                                    <span>Findings: {skillScanResult.summary.total_findings}</span>
+                                                    <span>Review findings: {skillScanResult.summary.total_findings}</span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {[
+                                                        ['all', 'All'],
+                                                        ['security', 'Security Risks'],
+                                                        ['sensitive', 'Sensitive Data'],
+                                                        ['expected', 'Expected/Internal'],
+                                                    ].map(([filterId, label]) => (
+                                                        <button
+                                                            key={filterId}
+                                                            onClick={() => setSkillFindingFilter(filterId)}
+                                                            className={`px-2 py-1 rounded-md text-[10px] uppercase tracking-wide border transition ${skillFindingFilter === filterId ? 'bg-blue-700/80 border-blue-600/60 text-white' : 'bg-gray-800/70 border-gray-700/70 text-gray-300 hover:bg-gray-700/80'}`}
+                                                        >
+                                                            {label}
+                                                        </button>
+                                                    ))}
                                                 </div>
                                                 {skillScanResult.governance_profile && (
                                                     <div className="rounded-md border border-gray-800/80 bg-black/20 p-2 space-y-2">
@@ -909,7 +1230,12 @@ function App({ onBack, buildInfo }) {
                                                     {skillScanResult.files.map((item, idx) => (
                                                         <div key={idx} className="border border-gray-800/70 rounded-md p-2">
                                                             {(() => {
-                                                                const summary = summarizeFileFindings(item.findings || []);
+                                                                const visibleFindings = filterFindings(
+                                                                    item.findings || [],
+                                                                    item.artifact_role || 'active',
+                                                                    skillFindingFilter
+                                                                );
+                                                                const summary = summarizeFileFindings(visibleFindings);
                                                                 return (
                                                                     <>
                                                                         <div className="flex items-center justify-between">
@@ -917,13 +1243,13 @@ function App({ onBack, buildInfo }) {
                                                                             {item.skipped ? (
                                                                                 <span className="text-[10px] text-gray-500">Skipped</span>
                                                                             ) : summary.actionableCount > 0 ? (
-                                                                                <span className="text-[10px] text-red-300">{summary.actionableCount} actionable findings</span>
+                                                                                <span className="text-[10px] text-red-300">{summary.actionableCount} review findings</span>
                                                                             ) : summary.documentedPatternCount > 0 ? (
                                                                                 <span className="text-[10px] text-blue-300">{summary.documentedPatternCount} documented patterns</span>
                                                                             ) : summary.informationalSignalCount > 0 ? (
                                                                                 <span className="text-[10px] text-yellow-300">{summary.informationalSignalCount} informational signals</span>
                                                                             ) : (
-                                                                                <span className="text-[10px] text-green-300">No actionable findings</span>
+                                                                                <span className="text-[10px] text-green-300">No matching findings</span>
                                                                             )}
                                                                         </div>
                                                                         {!item.skipped && (summary.documentedPatternCount > 0 || summary.informationalSignalCount > 0) && summary.actionableCount === 0 && (
@@ -939,15 +1265,27 @@ function App({ onBack, buildInfo }) {
                                                             {item.reason && (
                                                                 <p className="text-[10px] text-gray-500">{item.reason}</p>
                                                             )}
-                                                            {item.findings.length > 0 && (
+                                                            {filterFindings(item.findings || [], item.artifact_role || 'active', skillFindingFilter).length > 0 && (
                                                                 <ul className="mt-1 space-y-1 text-[11px] text-gray-400">
-                                                                    {item.findings.map((finding, findingIdx) => (
+                                                                    {filterFindings(item.findings || [], item.artifact_role || 'active', skillFindingFilter).map((finding, findingIdx) => {
+                                                                        const reviewClass = classifyReviewClass(finding, item.artifact_role || 'active');
+                                                                        return (
                                                                         <li key={findingIdx}>
-                                                                            <span className="text-gray-200">{finding.id}</span>
+                                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                                <span className="text-gray-200">{finding.id}</span>
+                                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${findingPillClass(reviewClass)}`}>
+                                                                                    {classifyFindingLabel(reviewClass)}
+                                                                                </span>
+                                                                            </div>
                                                                             {' '}({finding.severity}) - {finding.description}
                                                                             <div className="text-[10px] text-gray-500">
                                                                                 {finding.finding_category} / {finding.subject} / {finding.action_state} / {finding.disposition}
                                                                             </div>
+                                                                            {finding.samples?.length > 0 && skillReportDepth === 'detailed' && (
+                                                                                <div className="text-[10px] text-gray-500">
+                                                                                    Samples: {finding.samples.join(' | ')}
+                                                                                </div>
+                                                                            )}
                                                                             {finding.display_kind === 'documented_pattern' && (
                                                                                 <div className="text-[10px] text-blue-300">
                                                                                     Documented pattern in reference or audit content
@@ -959,7 +1297,8 @@ function App({ onBack, buildInfo }) {
                                                                                 </div>
                                                                             )}
                                                                         </li>
-                                                                    ))}
+                                                                    );
+                                                                    })}
                                                                 </ul>
                                                             )}
                                                         </div>
