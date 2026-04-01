@@ -211,6 +211,23 @@ def test_scan_large_reference_pptx_is_not_skipped():
     assert "pii_phone_number" in finding_ids
 
 
+def test_scan_large_asset_pptx_is_not_skipped():
+    payload = _build_large_pptx_bytes()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("hub-ppt-template/SKILL.md", "# Presentation skill")
+        archive.writestr("hub-ppt-template/assets/template.pptx", payload)
+
+    result = scan_upload(buffer.getvalue(), "hub-ppt-template.skill")
+
+    pptx_entry = next(item for item in result["files"] if item["path"].endswith("template.pptx"))
+    assert pptx_entry["skipped"] is False
+    assert pptx_entry["reason"] == "Scanned Office document content."
+    finding_ids = {finding["id"] for finding in pptx_entry["findings"]}
+    assert "pii_email_address" in finding_ids
+    assert "pii_phone_number" in finding_ids
+
+
 def test_rule_catalog_has_source_metadata():
     catalog = load_rule_catalog()
 

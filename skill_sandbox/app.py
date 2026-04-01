@@ -28,7 +28,8 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_ARCHIVE_FILES = 200
 MAX_ARCHIVE_TOTAL_BYTES = 25 * 1024 * 1024
 MAX_FILE_BYTES = 5 * 1024 * 1024
-MAX_REFERENCE_ARTIFACT_BYTES = 64 * 1024 * 1024
+MAX_LARGE_ARTIFACT_BYTES = 64 * 1024 * 1024
+LARGE_ASSET_EXTENSIONS = (".pptx", ".docx", ".xlsx")
 
 PRIORITY_FILENAMES = (
     "skill.md",
@@ -105,14 +106,17 @@ def _scan_single_file(upload_bytes: bytes, filename: str) -> Dict[str, object]:
 
 
 def _max_scannable_file_bytes(path: str) -> int:
-    if _is_reference_artifact(path):
-        return MAX_REFERENCE_ARTIFACT_BYTES
+    if _is_large_scannable_artifact(path):
+        return MAX_LARGE_ARTIFACT_BYTES
     return MAX_FILE_BYTES
 
 
-def _is_reference_artifact(path: str) -> bool:
+def _is_large_scannable_artifact(path: str) -> bool:
     normalized = path.replace("\\", "/").lower()
-    return "/references/" in f"/{normalized}"
+    anchored = f"/{normalized}"
+    if "/references/" in anchored:
+        return True
+    return "/assets/" in anchored and normalized.endswith(LARGE_ASSET_EXTENSIONS)
 
 
 def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> List[Tuple[str, Path]]:

@@ -185,3 +185,20 @@ def test_large_reference_pptx_not_skipped():
     pptx_entry = next(item for item in result["files"] if item["path"].endswith("template.pptx"))
     assert pptx_entry["skipped"] is False
     assert pptx_entry["reason"] == "Scanned Office document content."
+
+
+def test_large_asset_pptx_not_skipped():
+    payload = _build_large_pptx_bytes()
+    result = sandbox_app.scan_upload(
+        _build_zip(
+            [
+                (zipfile.ZipInfo("SKILL.md"), "# Skill"),
+                (zipfile.ZipInfo("assets/template.pptx"), payload),
+            ]
+        ),
+        "bundle.zip",
+    )
+
+    pptx_entry = next(item for item in result["files"] if item["path"].endswith("template.pptx"))
+    assert pptx_entry["skipped"] is False
+    assert pptx_entry["reason"] == "Scanned Office document content."
