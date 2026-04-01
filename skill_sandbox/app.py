@@ -28,7 +28,7 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_ARCHIVE_FILES = 200
 MAX_ARCHIVE_TOTAL_BYTES = 25 * 1024 * 1024
 MAX_FILE_BYTES = 5 * 1024 * 1024
-MAX_REFERENCE_SQLITE_BYTES = 64 * 1024 * 1024
+MAX_REFERENCE_ARTIFACT_BYTES = 64 * 1024 * 1024
 
 PRIORITY_FILENAMES = (
     "skill.md",
@@ -105,14 +105,14 @@ def _scan_single_file(upload_bytes: bytes, filename: str) -> Dict[str, object]:
 
 
 def _max_scannable_file_bytes(path: str) -> int:
-    if _is_reference_sqlite(path):
-        return MAX_REFERENCE_SQLITE_BYTES
+    if _is_reference_artifact(path):
+        return MAX_REFERENCE_ARTIFACT_BYTES
     return MAX_FILE_BYTES
 
 
-def _is_reference_sqlite(path: str) -> bool:
+def _is_reference_artifact(path: str) -> bool:
     normalized = path.replace("\\", "/").lower()
-    return normalized.endswith(".db") and "/references/" in f"/{normalized}"
+    return "/references/" in f"/{normalized}"
 
 
 def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> List[Tuple[str, Path]]:

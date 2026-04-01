@@ -48,6 +48,44 @@ def _build_large_sqlite_bytes():
         os.unlink(db_path)
 
 
+def _build_large_pptx_bytes():
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_STORED) as archive:
+        archive.writestr(
+            "[Content_Types].xml",
+            """<?xml version="1.0" encoding="UTF-8"?>
+            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+              <Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>
+              <Override PartName="/ppt/slides/slide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>
+            </Types>""",
+        )
+        archive.writestr(
+            "ppt/presentation.xml",
+            """<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>""",
+        )
+        archive.writestr(
+            "ppt/slides/slide1.xml",
+            """<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+                      xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+                 <p:cSld>
+                   <p:spTree>
+                     <p:sp>
+                       <p:txBody>
+                         <a:p><a:r><a:t>Template owner: Grady.Morrison@hubinternational.com</a:t></a:r></a:p>
+                         <a:p><a:r><a:t>Phone: +1 (312) 555-0123</a:t></a:r></a:p>
+                       </p:txBody>
+                     </p:sp>
+                   </p:spTree>
+                 </p:cSld>
+               </p:sld>""",
+        )
+        archive.writestr("ppt/media/padding.bin", b"X" * (6 * 1024 * 1024))
+
+    data = buffer.getvalue()
+    assert len(data) > sandbox_app.MAX_FILE_BYTES
+    return data
+
+
 def test_zip_traversal_skipped_with_warning():
     info = zipfile.ZipInfo("../../etc/passwd")
     payload = _build_zip([(info, "root:x:0:0")])
@@ -130,3 +168,20 @@ def test_large_reference_sqlite_not_skipped():
     db_entry = next(item for item in result["files"] if item["path"].endswith("hub_users.db"))
     assert db_entry["skipped"] is False
     assert db_entry["reason"] == "Scanned SQLite database content."
+
+
+def test_large_reference_pptx_not_skipped():
+    payload = _build_large_pptx_bytes()
+    result = sandbox_app.scan_upload(
+        _build_zip(
+            [
+                (zipfile.ZipInfo("SKILL.md"), "# Skill"),
+                (zipfile.ZipInfo("references/template.pptx"), payload),
+            ]
+        ),
+        "bundle.zip",
+    )
+
+    pptx_entry = next(item for item in result["files"] if item["path"].endswith("template.pptx"))
+    assert pptx_entry["skipped"] is False
+    assert pptx_entry["reason"] == "Scanned Office document content."
