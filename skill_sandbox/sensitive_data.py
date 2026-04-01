@@ -111,13 +111,14 @@ SENSITIVE_DATA_RULES = (
 )
 
 MEDICAL_CONTEXT_REGEX = re.compile(
-    r"\b(patient|diagnosis|treatment|medication|prescription|provider|hospital|clinic|lab\s+result|medical|health|claim)\b",
+    r"\b(patient|diagnosis|treatment|medication|prescription|provider|hospital|clinic|lab\s+result|medical(?:\s+record)?|therapy|clinical)\b",
     re.IGNORECASE,
 )
-IDENTIFIER_CONTEXT_REGEX = re.compile(
-    r"\b(?:dob|date\s+of\s+birth|birth\s+date|mrn|medical\s+record\s+number|ssn|social\s+security|member\s+id|policy\s+number|patient\s+id)\b",
-    re.IGNORECASE,
-)
+PHI_STRONG_RULE_IDS = {
+    "pii_ssn",
+    "pii_date_of_birth",
+    "phi_medical_record_number",
+}
 
 
 def detect_sensitive_data_findings(
@@ -135,10 +136,7 @@ def detect_sensitive_data_findings(
         findings.append(build_finding(rule, matches, artifact_role))
         matched_rule_ids.add(rule["id"])
 
-    if MEDICAL_CONTEXT_REGEX.search(text) and (
-        IDENTIFIER_CONTEXT_REGEX.search(text)
-        or matched_rule_ids.intersection({"pii_email_address", "pii_phone_number", "pii_date_of_birth", "pii_ssn", "phi_medical_record_number"})
-    ):
+    if MEDICAL_CONTEXT_REGEX.search(text) and matched_rule_ids.intersection(PHI_STRONG_RULE_IDS):
         findings.append(
             build_finding(
                 {

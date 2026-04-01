@@ -8,6 +8,7 @@ from typing import Dict, List, Tuple
 
 from skill_sandbox.artifact_text import extract_scannable_text
 from skill_sandbox.behavior_analysis import analyze_behavior
+from skill_sandbox.contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
 from skill_sandbox.finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
 from skill_sandbox.governance import build_governance_profile
 from skill_sandbox.scan_rules import compile_patterns, find_rule_matches
@@ -111,6 +112,8 @@ def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, objec
     scan_units = _iter_scan_units(path, text)
 
     for pattern in PATTERNS:
+        if pattern["id"] in CONTEXTUAL_RULE_IDS:
+            continue
         matches = []
         for unit in scan_units:
             matches.extend(find_rule_matches(pattern, unit))
@@ -119,6 +122,7 @@ def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, objec
 
         findings.append(build_finding(pattern, matches, artifact_role))
 
+    findings.extend(detect_contextual_findings(path, text, artifact_role, build_finding))
     findings.extend(detect_special_findings(path, text, artifact_role))
     return findings
 
