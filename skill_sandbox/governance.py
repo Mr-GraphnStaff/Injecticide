@@ -43,6 +43,15 @@ SENSITIVE_HANDLING_RULES = {
     "sensitive_keywords",
 }
 
+REGULATED_DATA_RULES = {
+    "pii_email_address",
+    "pii_phone_number",
+    "pii_ssn",
+    "pii_date_of_birth",
+    "phi_medical_record_number",
+    "phi_patient_record",
+}
+
 
 def build_governance_profile(
     scan_results: Iterable[Dict[str, object]],
@@ -62,6 +71,7 @@ def build_governance_profile(
         sandbox_required
         or "enterprise_access" in policy_capabilities
         or "credential_handling" in policy_capabilities
+        or "regulated_data" in policy_capabilities
         or finding_ids.intersection(ENTERPRISE_WRITE_RULES)
     )
 
@@ -131,6 +141,8 @@ def _infer_policy_capabilities(finding_ids: set[str], required_capabilities: set
         policy_capabilities.add("network")
     if "credential_handling" in required_capabilities or finding_ids.intersection(SENSITIVE_HANDLING_RULES):
         policy_capabilities.add("credential_handling")
+    if finding_ids.intersection(REGULATED_DATA_RULES):
+        policy_capabilities.add("regulated_data")
     if "enterprise_access" in required_capabilities or finding_ids.intersection(ENTERPRISE_WRITE_RULES):
         policy_capabilities.add("enterprise_access")
     if finding_ids.intersection(CODE_EXECUTION_RULES):
@@ -153,7 +165,7 @@ def _execution_tier(
         return "blocked"
     if sandbox_required:
         return "sandboxed"
-    if policy_capabilities.intersection({"enterprise_access", "credential_handling"}):
+    if policy_capabilities.intersection({"enterprise_access", "credential_handling", "regulated_data"}):
         return "governed"
     return "read_only"
 
@@ -171,7 +183,7 @@ def _route_decision(
             "reason": "Detected high-risk prompt, credential, or enterprise action behavior.",
         }
 
-    if mode == "brokered" and policy_capabilities.intersection({"credential_handling", "enterprise_access"}):
+    if mode == "brokered" and policy_capabilities.intersection({"credential_handling", "enterprise_access", "regulated_data"}):
         return {
             "decision": "require_admin_approval",
             "reason": "Brokered execution against enterprise or credential-sensitive flows should stay under admin review.",
@@ -213,6 +225,8 @@ def _build_decision_reasons(
         reasons.append("Artifact describes autonomous or workflow-changing writes to enterprise systems.")
     if "credential_handling" in policy_capabilities:
         reasons.append("Skill handles secrets, credentials, or key material.")
+    if "regulated_data" in policy_capabilities:
+        reasons.append("Artifact contains PII, PHI, or other regulated personal data patterns.")
     if sandbox_required:
         reasons.append("Execution requires sandboxing because the artifact implies code, file, network, or persistence side effects.")
     if approval_required and not blocked:
@@ -243,6 +257,8 @@ def _recommended_controls(
         controls.append("Restrict to least-privilege enterprise scopes and preserve audit provenance.")
     if "credential_handling" in policy_capabilities:
         controls.append("Disallow raw secret disclosure and prefer brokered or ephemeral credentials.")
+    if "regulated_data" in policy_capabilities:
+        controls.append("Treat embedded personal data as regulated content and require human review before distribution or execution.")
     if finding_ids.intersection(ENTERPRISE_WRITE_RULES):
         controls.append("Limit to draft-only or read-only modes unless an enterprise admin explicitly authorizes writes.")
     if not controls:

@@ -488,7 +488,7 @@ function App({ onBack, buildInfo }) {
 
     const scanSkillFile = async () => {
         if (!skillFile) {
-            setSkillScanError('Select a SKILL.md, .skill, or .zip file to scan.');
+            setSkillScanError('Select a skill file, reference file, or archive to scan.');
             return;
         }
 
@@ -815,7 +815,6 @@ function App({ onBack, buildInfo }) {
                                         </label>
                                         <input
                                             type="file"
-                                            accept=".md,.skill,.zip"
                                             className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600"
                                             onChange={handleSkillFileChange}
                                             disabled={disableControls || isScanningSkill}

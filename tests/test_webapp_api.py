@@ -1,12 +1,39 @@
 import pathlib
+import sqlite3
 import sys
+import tempfile
 
 import pytest
+from fastapi.testclient import TestClient
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
 
-from webapp.api import _session_view, cancel_test, get_build_info, test_sessions
+from webapp.api import _session_view, app, cancel_test, get_build_info, test_sessions
+
+
+def _build_sqlite_bytes():
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as handle:
+        db_path = handle.name
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.execute(
+            "CREATE TABLE records (email TEXT, ssn TEXT, dob TEXT, mrn TEXT, diagnosis TEXT)"
+        )
+        conn.execute(
+            "INSERT INTO records (email, ssn, dob, mrn, diagnosis) VALUES (?, ?, ?, ?, ?)",
+            ("jane.doe@hospital.org", "123-45-6789", "1984-04-12", "MRN-778899", "diabetes"),
+        )
+        conn.commit()
+        conn.close()
+
+        with open(db_path, "rb") as handle:
+            return handle.read()
+    finally:
+        import os
+
+        os.unlink(db_path)
 
 
 def test_session_view_includes_progress_total_tests_and_summary():
@@ -58,3 +85,46 @@ def test_get_build_info_includes_display_version():
     assert build["display_version"]
     assert "git_commit" in build
     assert build["asset_version"]
+
+
+def test_scan_api_allows_binary_reference_db_upload():
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/skills/scan",
+        files={
+            "file": (
+                "hub-commercial-lines/references/hub_commercial_lines.db",
+                b"SQLite format 3\x00" + b"X" * 256,
+                "application/octet-stream",
+            )
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["summary"]["total_files"] == 1
+    assert payload["files"][0]["skipped"] is True
+    assert payload["files"][0]["reason"] == "Binary or non-text content"
+
+
+def test_scan_api_detects_sqlite_pii_phi():
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/skills/scan",
+        files={
+            "file": (
+                "hub-commercial-lines/references/hub_commercial_lines.db",
+                _build_sqlite_bytes(),
+                "application/octet-stream",
+            )
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    finding_ids = {finding["id"] for finding in payload["files"][0]["findings"]}
+    assert "pii_email_address" in finding_ids
+    assert "pii_ssn" in finding_ids
+    assert "phi_patient_record" in finding_ids

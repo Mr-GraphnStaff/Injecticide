@@ -7,8 +7,10 @@ from urllib.parse import urlparse
 
 if __package__:
     from .scan_rules import load_rule_catalog
+    from .sensitive_data import detect_sensitive_data_findings
 else:
     from scan_rules import load_rule_catalog
+    from sensitive_data import detect_sensitive_data_findings
 
 
 REFERENCE_TEMPLATE_RULE_IDS = {
@@ -33,6 +35,12 @@ REFERENCE_TEMPLATE_RULE_IDS = {
     "dynamic_import_construction",
     "insecure_mcp_transport",
     "unverified_mcp_server",
+    "pii_email_address",
+    "pii_phone_number",
+    "pii_ssn",
+    "pii_date_of_birth",
+    "phi_medical_record_number",
+    "phi_patient_record",
 }
 
 REFERENCE_TEMPLATE_MARKERS = (
@@ -59,10 +67,10 @@ TRUSTED_MCP_SUFFIXES = (
 )
 
 
-def classify_artifact_role(path: str, text: str) -> str:
+def classify_artifact_role(path: str, text: str | None = None) -> str:
     normalized_path = path.replace("\\", "/").lower()
     filename = Path(normalized_path).name
-    text_lower = text.lower()
+    text_lower = (text or "").lower()
     is_reference = "/references/" in f"/{normalized_path}" or filename.startswith("reference")
     is_template_like = any(marker in text_lower for marker in REFERENCE_TEMPLATE_MARKERS)
     is_audit_policy = (
@@ -141,6 +149,7 @@ def detect_special_findings(path: str, text: str, artifact_role: str) -> List[Di
 
         findings.append(build_finding(catalog["unverified_mcp_server"], [url], artifact_role))
 
+    findings.extend(detect_sensitive_data_findings(text, artifact_role, build_finding))
     return findings
 
 

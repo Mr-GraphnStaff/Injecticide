@@ -466,12 +466,6 @@ async def scan_skill_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Missing filename")
 
     sandbox_url = os.getenv("SKILL_SANDBOX_URL")
-    sandbox_exts = (".skill", ".zip", ".md", ".tar", ".tar.gz", ".tgz")
-    local_exts = (".skill", ".zip", ".md")
-    allowed = sandbox_exts if sandbox_url else local_exts
-
-    if not file.filename.lower().endswith(allowed):
-        raise HTTPException(status_code=400, detail="Unsupported file type")
 
     try:
         data = await file.read()

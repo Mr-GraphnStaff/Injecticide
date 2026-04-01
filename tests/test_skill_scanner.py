@@ -1,4 +1,6 @@
 import io
+import sqlite3
+import tempfile
 import zipfile
 
 from skill_sandbox.scan_rules import load_rule_catalog
@@ -48,6 +50,67 @@ def test_scan_zip_handles_multiple_files():
     bad_findings = files["bad.skill"]["findings"]
     finding_ids = {finding["id"] for finding in bad_findings}
     assert "subprocess_spawn" in finding_ids
+
+
+def _build_sqlite_bytes(rows):
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as handle:
+        db_path = handle.name
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.execute(
+            "CREATE TABLE records (name TEXT, email TEXT, ssn TEXT, dob TEXT, mrn TEXT, diagnosis TEXT)"
+        )
+        conn.executemany(
+            "INSERT INTO records (name, email, ssn, dob, mrn, diagnosis) VALUES (?, ?, ?, ?, ?, ?)",
+            rows,
+        )
+        conn.commit()
+        conn.close()
+
+        with open(db_path, "rb") as handle:
+            return handle.read()
+    finally:
+        import os
+
+        os.unlink(db_path)
+
+
+def test_scan_non_sqlite_binary_reference_db_is_skipped_cleanly():
+    payload = b"\x00\x01\x02\x03" + b"X" * 256
+
+    result = scan_upload(payload, "hub-commercial-lines/references/hub_commercial_lines.db")
+
+    assert result["file_type"] == "skill"
+    assert result["summary"]["total_files"] == 1
+    file_entry = result["files"][0]
+    assert file_entry["path"] == "hub-commercial-lines/references/hub_commercial_lines.db"
+    assert file_entry["skipped"] is True
+    assert file_entry["reason"] == "Binary or non-text content"
+    assert file_entry["artifact_role"] == "reference"
+
+
+def test_scan_sqlite_reference_db_detects_pii_and_phi():
+    payload = _build_sqlite_bytes(
+        [
+            ("Jane Doe", "jane.doe@hospital.org", "123-45-6789", "1984-04-12", "MRN-778899", "diabetes"),
+        ]
+    )
+
+    result = scan_upload(payload, "hub-commercial-lines/references/hub_commercial_lines.db")
+
+    assert result["summary"]["flagged_files"] == 1
+    file_entry = result["files"][0]
+    assert file_entry["skipped"] is False
+    assert file_entry["reason"] == "Scanned SQLite database content."
+    assert file_entry["artifact_role"] == "reference"
+    finding_ids = {finding["id"] for finding in file_entry["findings"]}
+    assert "pii_email_address" in finding_ids
+    assert "pii_ssn" in finding_ids
+    assert "phi_medical_record_number" in finding_ids
+    assert "phi_patient_record" in finding_ids
+    assert "regulated_data" in result["governance_profile"]["policy_capabilities"]
+    assert result["governance_profile"]["approval_required"] is True
 
 
 def test_rule_catalog_has_source_metadata():
@@ -237,3 +300,25 @@ Unknown example: https://mcp.shadowvendor.example/v1/sse
     skill_file = next(item for item in result["files"] if item["path"] == "SKILL.md")
     assert skill_file["artifact_role"] == "audit_policy"
     assert all(finding["display_kind"] == "documented_pattern" for finding in skill_file["findings"])
+
+
+def test_reference_templates_downgrade_sensitive_data_examples_to_info():
+    payload = b"""
+# PII Review Template
+
+Quick-reference.
+
+SSN: 123-45-6789
+DOB: 01/15/1988
+MRN: A123456
+Contact: jane.doe@hospital.org
+"""
+
+    result = scan_upload(payload, "references/pii-patterns.md")
+
+    findings = result["files"][0]["findings"]
+    finding_ids = {finding["id"] for finding in findings}
+    assert "pii_ssn" in finding_ids
+    assert "pii_date_of_birth" in finding_ids
+    assert "phi_medical_record_number" in finding_ids
+    assert all(finding["severity"] == "info" for finding in findings)

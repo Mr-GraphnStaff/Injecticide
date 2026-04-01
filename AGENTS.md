@@ -186,11 +186,13 @@ But each must follow exactly the same interface.
 
 Codex (or any automated assistant) must:
 
-never commit directly
+avoid direct commits for high-risk or unclear changes
 
-always output patch files or PR-ready diffs for human review
+prefer local verification before commit or push
 
-never change LICENSE or AGENT.md
+ask the human before commits that touch LICENSE, AGENTS.md, GitHub workflows, deployment, secrets, auth, or destructive migrations
+
+low-risk, well-scoped code changes may be committed and pushed directly after tests pass and impact is understood
 
 never modify GitHub workflows without explicit human request
 

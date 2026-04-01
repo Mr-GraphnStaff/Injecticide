@@ -10,11 +10,13 @@ from typing import Dict, Iterable, List, Tuple
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
 if __package__:
+    from .artifact_text import extract_scannable_text
     from .behavior_analysis import analyze_behavior
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from .governance import build_governance_profile
     from .scan_rules import compile_patterns, find_rule_matches
 else:
+    from artifact_text import extract_scannable_text
     from behavior_analysis import analyze_behavior
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from governance import build_governance_profile
@@ -220,16 +222,17 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         "size": len(data),
         "skipped": False,
         "reason": "",
-        "artifact_role": "active",
+        "artifact_role": classify_artifact_role(path),
         "findings": [],
     }
 
-    if not _is_probably_text(data):
+    text, reason = extract_scannable_text(data)
+    if text is None:
         entry["skipped"] = True
-        entry["reason"] = "Binary or non-text content"
+        entry["reason"] = reason
         return entry, None
 
-    text = data.decode("utf-8", errors="replace")
+    entry["reason"] = reason
     entry["artifact_role"] = classify_artifact_role(path, text)
     entry["findings"] = _scan_text(path, text, entry["artifact_role"])
     return entry, text
@@ -333,19 +336,6 @@ def _copy_limited(source, target, limit: int) -> None:
             break
         target.write(chunk)
         remaining -= len(chunk)
-
-
-def _is_probably_text(data: bytes) -> bool:
-    if not data:
-        return True
-    if b"\x00" in data:
-        return False
-
-    sample = data[:4096]
-    printable = sum(1 for b in sample if 32 <= b <= 126 or b in (9, 10, 13))
-    return printable / len(sample) >= 0.7
-
-
 def _build_text_sources(text_pairs: Iterable[Tuple[str, str | None, str]]) -> List[Dict[str, str]]:
     sources = []
     for path, text, artifact_role in text_pairs:

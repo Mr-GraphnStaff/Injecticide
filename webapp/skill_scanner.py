@@ -6,6 +6,7 @@ import io
 import zipfile
 from typing import Dict, List, Tuple
 
+from skill_sandbox.artifact_text import extract_scannable_text
 from skill_sandbox.behavior_analysis import analyze_behavior
 from skill_sandbox.finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
 from skill_sandbox.governance import build_governance_profile
@@ -73,16 +74,17 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         "size": len(data),
         "skipped": False,
         "reason": "",
-        "artifact_role": "active",
+        "artifact_role": classify_artifact_role(path),
         "findings": [],
     }
 
-    if not _is_probably_text(data):
+    text, reason = extract_scannable_text(data)
+    if text is None:
         entry["skipped"] = True
-        entry["reason"] = "Binary or non-text content"
+        entry["reason"] = reason
         return entry, None
 
-    text = data.decode("utf-8", errors="replace")
+    entry["reason"] = reason
     entry["artifact_role"] = classify_artifact_role(path, text)
     entry["findings"] = _scan_text(path, text, entry["artifact_role"])
     return entry, text
@@ -146,20 +148,6 @@ def _assemble_result(
         **behavior_report,
         "governance_profile": governance_profile,
     }
-
-
-def _is_probably_text(data: bytes) -> bool:
-    if not data:
-        return True
-
-    if b"\x00" in data:
-        return False
-
-    sample = data[:4096]
-    printable = sum(1 for byte in sample if 32 <= byte <= 126 or byte in (9, 10, 13))
-    return printable / len(sample) >= 0.7
-
-
 def _build_text_sources(text_pairs: List[Tuple[str, str | None, str]]) -> List[Dict[str, str]]:
     sources = []
     for path, text, artifact_role in text_pairs:
