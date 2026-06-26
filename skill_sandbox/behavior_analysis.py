@@ -38,7 +38,7 @@ AUTO_OPEN_REGEX = re.compile(
 UX_MANIPULATION_REGEX = re.compile(r"\b(rickroll|prank|surprise|autoplay|pop[- ]?up|fullscreen)\b", re.IGNORECASE)
 PERSISTENCE_REGEX = re.compile(r"\b(persist|persistent|store|cache|remember|stateful|session)\b", re.IGNORECASE)
 CREDENTIAL_ACTION_REGEX = re.compile(
-    r"\b(provide|enter|supply|use|using|set|store|save|load|configure|authenticate|connect|register|rotate|inject|pass|write|read|fetch|return|reveal|display|show)\b",
+    r"\b(provide|enter|supply|use|using|set|store|save|load|configure|authenticate|connect|register|rotate|inject|pass|write|return|reveal|display|show)\b",
     re.IGNORECASE,
 )
 CREDENTIAL_TARGET_REGEX = re.compile(
@@ -298,7 +298,12 @@ def _detect_credential_handling(text: str) -> bool:
     if CREDENTIAL_EXCLUDES_REGEX.search(text):
         return False
 
-    return bool(CREDENTIAL_ACTION_REGEX.search(text) and CREDENTIAL_TARGET_REGEX.search(text))
+    for unit in re.split(r"[.\n;]+", text):
+        if len(unit) > 240:
+            continue
+        if CREDENTIAL_ACTION_REGEX.search(unit) and CREDENTIAL_TARGET_REGEX.search(unit):
+            return True
+    return False
 
 
 def _select_capability_sources(text_sources: Iterable[Dict[str, str]]) -> List[Dict[str, str]]:

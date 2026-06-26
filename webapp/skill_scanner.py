@@ -11,7 +11,7 @@ from skill_sandbox.behavior_analysis import analyze_behavior
 from skill_sandbox.contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
 from skill_sandbox.finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
 from skill_sandbox.governance import build_governance_profile
-from skill_sandbox.scan_rules import compile_patterns, find_rule_matches
+from skill_sandbox.scan_rules import build_scan_units, compile_patterns, find_rule_matches
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_ZIP_FILES = 200
@@ -109,7 +109,7 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
 
 def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
     findings = []
-    scan_units = _iter_scan_units(path, text)
+    scan_units = build_scan_units(path, text)
 
     for pattern in PATTERNS:
         if pattern["id"] in CONTEXTUAL_RULE_IDS:
@@ -174,16 +174,3 @@ def _build_text_sources(text_pairs: List[Tuple[str, str | None, str]]) -> List[D
         if text:
             sources.append({"path": path, "text": text, "artifact_role": artifact_role})
     return sources
-
-
-def _iter_scan_units(path: str, text: str) -> List[str]:
-    lower_path = path.lower()
-    if lower_path.endswith(".csv"):
-        return [line for line in text.splitlines() if line.strip()]
-    if lower_path.endswith((".md", ".skill", ".txt")):
-        units = [
-            " ".join(line.strip() for line in block.splitlines() if line.strip())
-            for block in text.split("\n\n")
-        ]
-        return [unit for unit in units if unit]
-    return [text]

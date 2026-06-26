@@ -128,3 +128,36 @@ def test_scan_api_detects_sqlite_pii_phi():
     assert "pii_email_address" in finding_ids
     assert "pii_ssn" in finding_ids
     assert "phi_patient_record" in finding_ids
+
+
+def test_architecture_options_lists_profiles_and_scenarios():
+    client = TestClient(app)
+
+    response = client.get("/api/architecture/options")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert any(profile["id"] == "mcp_grouped_agent" for profile in payload["profiles"])
+    assert any(
+        scenario["id"] == "poisoned_retrieval_to_enterprise_write"
+        for scenario in payload["scenarios"]
+    )
+
+
+def test_architecture_analysis_endpoint_returns_trace():
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/architecture/analyze",
+        json={
+            "profile_id": "mcp_grouped_agent",
+            "scenario_id": "model_output_to_code_exec",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    finding_ids = {finding["finding_id"] for finding in payload["trace"]["findings"]}
+    assert payload["trace"]["scenario_id"] == "model_output_to_code_exec"
+    assert "tool_invocation_abuse" in finding_ids
+    assert "memory_contamination" in finding_ids

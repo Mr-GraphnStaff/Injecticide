@@ -46,6 +46,8 @@ REFERENCE_TEMPLATE_RULE_IDS = {
 REFERENCE_TEMPLATE_MARKERS = (
     "quick-reference",
     "detection patterns",
+    "threat modeling framework",
+    "attack vectors",
     "report template",
     "classification guidelines",
     "audit report template",
@@ -69,13 +71,18 @@ TRUSTED_MCP_SUFFIXES = (
 
 def classify_artifact_role(path: str, text: str | None = None) -> str:
     normalized_path = path.replace("\\", "/").lower()
+    path_parts = [part for part in normalized_path.split("/") if part]
     filename = Path(normalized_path).name
     text_lower = (text or "").lower()
-    is_reference = "/references/" in f"/{normalized_path}" or filename.startswith("reference")
+    is_reference_namespace = any(part.endswith("-references") for part in path_parts)
+    is_reference = (
+        "references" in path_parts
+        or is_reference_namespace
+        or filename.startswith("reference")
+    )
     is_template_like = any(marker in text_lower for marker in REFERENCE_TEMPLATE_MARKERS)
     is_audit_policy = (
-        filename == "skill.md"
-        and "audit" in text_lower
+        "audit" in text_lower
         and any(marker in text_lower for marker in ("risk domains", "automatic high-severity", "detection patterns", "classification guidelines"))
         and any(marker in text_lower for marker in ("inspect", "review", "evaluate"))
     )
@@ -83,7 +90,8 @@ def classify_artifact_role(path: str, text: str | None = None) -> str:
     if is_audit_policy:
         return "audit_policy"
     if is_reference and (
-        any(token in filename for token in ("template", "pattern", "catalog", "mapping"))
+        is_reference_namespace
+        or any(token in filename for token in ("template", "pattern", "catalog", "mapping", "methodology", "framework"))
         or is_template_like
     ):
         return "reference_template"

@@ -381,6 +381,365 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     return lines.join('\n');
 }
 
+function architectureSeverityClass(severity) {
+    switch (severity) {
+        case 'critical':
+            return 'border-red-600/70 bg-red-950/40 text-red-100';
+        case 'high':
+            return 'border-orange-600/60 bg-orange-950/30 text-orange-100';
+        case 'medium':
+            return 'border-yellow-600/60 bg-yellow-950/20 text-yellow-100';
+        default:
+            return 'border-blue-600/50 bg-blue-950/20 text-blue-100';
+    }
+}
+
+function ArchitectureWorkbench({ onBack, buildInfo }) {
+    const [profiles, setProfiles] = useState([]);
+    const [scenarios, setScenarios] = useState([]);
+    const [profileId, setProfileId] = useState('');
+    const [scenarioId, setScenarioId] = useState('');
+    const [analysisResult, setAnalysisResult] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchArchitectureOptions = async () => {
+            setIsLoadingOptions(true);
+            try {
+                const response = await fetch('/api/architecture/options');
+                if (!response.ok) {
+                    throw new Error('Failed to load architecture analysis options');
+                }
+
+                const data = await response.json();
+                const profileItems = data.profiles || [];
+                const scenarioItems = data.scenarios || [];
+                setProfiles(profileItems);
+                setScenarios(scenarioItems);
+                setProfileId(profileItems[0]?.id || '');
+                setScenarioId(scenarioItems[0]?.id || '');
+            } catch (fetchError) {
+                console.error('Architecture options error:', fetchError);
+                setError(fetchError.message || 'Could not load architecture analysis options');
+            } finally {
+                setIsLoadingOptions(false);
+            }
+        };
+
+        fetchArchitectureOptions();
+    }, []);
+
+    const runAnalysis = async () => {
+        if (!profileId || !scenarioId) {
+            setError('Select a profile and scenario to analyze.');
+            return;
+        }
+
+        setError('');
+        setIsLoading(true);
+
+        try {
+            const response = await fetch('/api/architecture/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    profile_id: profileId,
+                    scenario_id: scenarioId,
+                }),
+            });
+
+            if (!response.ok) {
+                const details = await response.json().catch(() => ({}));
+                throw new Error(details?.detail || 'Architecture analysis failed');
+            }
+
+            const data = await response.json();
+            setAnalysisResult(data);
+        } catch (analysisError) {
+            console.error('Architecture analysis failed:', analysisError);
+            setError(analysisError.message || 'Architecture analysis failed');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const activeScenario = scenarios.find((scenario) => scenario.id === scenarioId);
+    const findings = analysisResult?.trace?.findings || [];
+    const crossings = analysisResult?.trace?.boundary_crossings || [];
+    const edges = analysisResult?.trace?.edges || [];
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-cyan-950 to-black text-white">
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 right-0 w-[34rem] h-[34rem] bg-cyan-600/10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-[28rem] h-[28rem] bg-red-600/10 rounded-full blur-3xl"></div>
+            </div>
+
+            <header className="relative border-b border-cyan-800/40 bg-black/40 backdrop-blur">
+                <div className="container mx-auto px-6 py-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-700/40 bg-cyan-900/30 text-cyan-200">
+                                <i className="fas fa-diagram-project"></i>
+                            </span>
+                            <div>
+                                <h1 className="text-3xl font-bold text-white">Architecture Analysis</h1>
+                                <p className="text-sm text-cyan-100/80">Trace risky paths across prompts, retrieval, tools, memory, connectors, and outputs.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        {buildInfo && (
+                            <span className="inline-flex items-center text-[11px] text-gray-300 bg-gray-900/60 border border-gray-700/60 px-2 py-1 rounded-md">
+                                <i className="fas fa-code-branch text-cyan-300 mr-2"></i>
+                                {buildInfo.display_version}
+                            </span>
+                        )}
+                        <button
+                            onClick={onBack}
+                            className="px-4 py-2 rounded-lg text-sm font-semibold transition border border-gray-600/70 bg-gray-800/70 hover:bg-gray-700/80 text-gray-200"
+                        >
+                            <i className="fas fa-arrow-left mr-2"></i>
+                            Back to Overview
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main className="relative container mx-auto px-6 py-8">
+                <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-8">
+                    <section className="space-y-6">
+                        <div className="rounded-2xl border border-cyan-800/40 bg-slate-950/70 p-6 shadow-2xl">
+                            <p className="text-xs uppercase tracking-[0.3em] text-cyan-300 mb-3">Modeled Input</p>
+                            <h2 className="text-xl font-semibold mb-4">Analysis Setup</h2>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs mb-2 text-gray-400">Architecture Profile</label>
+                                    <select
+                                        value={profileId}
+                                        onChange={(event) => setProfileId(event.target.value)}
+                                        disabled={isLoadingOptions || isLoading}
+                                        className="w-full rounded-lg border border-gray-700 bg-gray-950/80 px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                                    >
+                                        {profiles.map((profile) => (
+                                            <option key={profile.id} value={profile.id}>
+                                                {profile.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs mb-2 text-gray-400">Scenario</label>
+                                    <select
+                                        value={scenarioId}
+                                        onChange={(event) => setScenarioId(event.target.value)}
+                                        disabled={isLoadingOptions || isLoading}
+                                        className="w-full rounded-lg border border-gray-700 bg-gray-950/80 px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                                    >
+                                        {scenarios.map((scenario) => (
+                                            <option key={scenario.id} value={scenario.id}>
+                                                {scenario.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <button
+                                    onClick={runAnalysis}
+                                    disabled={isLoadingOptions || isLoading || !profileId || !scenarioId}
+                                    className={`w-full rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                                        isLoadingOptions || isLoading || !profileId || !scenarioId
+                                            ? 'cursor-not-allowed border-gray-700 bg-gray-800/60 text-gray-400'
+                                            : 'border-cyan-500/60 bg-cyan-700/80 text-white hover:bg-cyan-600/80'
+                                    }`}
+                                >
+                                    <i className={`mr-2 fas ${isLoading ? 'fa-spinner fa-spin' : 'fa-wave-square'}`}></i>
+                                    {isLoading ? 'Analyzing Path' : 'Run Architecture Analysis'}
+                                </button>
+                            </div>
+
+                            {error && (
+                                <div className="mt-4 rounded-xl border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-100">
+                                    {error}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="rounded-2xl border border-gray-800 bg-black/40 p-6 shadow-2xl">
+                            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-3">Current Scenario</p>
+                            {activeScenario ? (
+                                <div className="space-y-3">
+                                    <h3 className="text-lg font-semibold text-white">{activeScenario.name}</h3>
+                                    <p className="text-sm leading-relaxed text-gray-300">{activeScenario.description}</p>
+                                    <div className="flex flex-wrap gap-2 text-xs">
+                                        <span className="rounded-full border border-cyan-700/40 bg-cyan-950/30 px-3 py-1 text-cyan-100">
+                                            Entry: {activeScenario.entry_point}
+                                        </span>
+                                        <span className="rounded-full border border-orange-700/40 bg-orange-950/20 px-3 py-1 text-orange-100">
+                                            Class: {activeScenario.category.replaceAll('_', ' ')}
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-400">Select a scenario to see its modeled path.</p>
+                            )}
+                        </div>
+                    </section>
+
+                    <section className="space-y-6">
+                        {analysisResult ? (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="rounded-2xl border border-gray-800 bg-black/40 p-5">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Severity</p>
+                                        <div className="text-3xl font-black text-white">{analysisResult.summary.highest_severity}</div>
+                                        <p className="mt-2 text-sm text-gray-300">Highest modeled path severity for this scenario.</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-gray-800 bg-black/40 p-5">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Boundary Crossings</p>
+                                        <div className="text-3xl font-black text-white">{analysisResult.summary.boundary_crossing_count}</div>
+                                        <p className="mt-2 text-sm text-gray-300">Trust, privilege, or memory boundaries crossed.</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-gray-800 bg-black/40 p-5">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Findings</p>
+                                        <div className="text-3xl font-black text-white">{analysisResult.summary.finding_count}</div>
+                                        <p className="mt-2 text-sm text-gray-300">Deterministic findings derived from the path.</p>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-cyan-800/30 bg-slate-950/70 p-6 shadow-2xl">
+                                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                                        <div>
+                                            <p className="text-xs uppercase tracking-[0.3em] text-cyan-300 mb-2">Path Overview</p>
+                                            <h2 className="text-2xl font-semibold text-white">{analysisResult.scenario.name}</h2>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 text-xs">
+                                            {analysisResult.trace.score.privileges_exposed.map((item) => (
+                                                <span key={item} className="rounded-full border border-red-700/40 bg-red-950/20 px-3 py-1 text-red-100">
+                                                    {item}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-gray-300">
+                                        {edges.map((edge, index) => (
+                                            <React.Fragment key={`${edge.source}-${edge.target}-${index}`}>
+                                                <span className="rounded-full border border-gray-700 bg-gray-950/80 px-3 py-2">{edge.source}</span>
+                                                <span className="text-cyan-300"><i className="fas fa-arrow-right"></i></span>
+                                                <span className="rounded-full border border-cyan-700/40 bg-cyan-950/20 px-3 py-2">{edge.target}</span>
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+
+                                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        <div className="rounded-xl border border-gray-800 bg-black/30 p-4">
+                                            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Attack Entry</p>
+                                            <p className="text-white font-semibold">{analysisResult.trace.score.attack_entry_point}</p>
+                                        </div>
+                                        <div className="rounded-xl border border-gray-800 bg-black/30 p-4">
+                                            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Propagation</p>
+                                            <p className="text-white font-semibold">{analysisResult.trace.score.propagation_likelihood}</p>
+                                        </div>
+                                        <div className="rounded-xl border border-gray-800 bg-black/30 p-4">
+                                            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Data Sensitivity</p>
+                                            <p className="text-white font-semibold">{analysisResult.trace.score.data_sensitivity}</p>
+                                        </div>
+                                        <div className="rounded-xl border border-gray-800 bg-black/30 p-4">
+                                            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Components Touched</p>
+                                            <p className="text-white font-semibold">{analysisResult.trace.score.components_touched.join(', ')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
+                                    <div className="rounded-2xl border border-gray-800 bg-black/40 p-6 shadow-2xl">
+                                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">Path Findings</p>
+                                        <div className="space-y-4">
+                                            {findings.map((finding) => (
+                                                <div key={finding.finding_id} className={`rounded-xl border p-4 ${architectureSeverityClass(finding.severity)}`}>
+                                                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                                                        <h3 className="text-lg font-semibold">{finding.title}</h3>
+                                                        <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em]">
+                                                            {finding.severity}
+                                                        </span>
+                                                    </div>
+                                                    <p className="mt-3 text-sm leading-relaxed">{finding.summary}</p>
+                                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                        <div>
+                                                            <p className="text-xs uppercase tracking-[0.2em] text-white/70 mb-2">Evidence</p>
+                                                            <ul className="space-y-2">
+                                                                {finding.evidence.map((item, index) => (
+                                                                    <li key={index} className="text-white/90">• {item}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs uppercase tracking-[0.2em] text-white/70 mb-2">Controls</p>
+                                                            <ul className="space-y-2">
+                                                                {finding.recommended_controls.map((item, index) => (
+                                                                    <li key={index} className="text-white/90">• {item}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="rounded-2xl border border-gray-800 bg-black/40 p-6 shadow-2xl">
+                                            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">Boundary Crossings</p>
+                                            <div className="space-y-3">
+                                                {crossings.map((crossing, index) => (
+                                                    <div key={`${crossing.source}-${crossing.target}-${index}`} className="rounded-xl border border-gray-800 bg-gray-950/60 p-4">
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <span className="text-sm font-semibold text-white">{crossing.source} → {crossing.target}</span>
+                                                            <span className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${crossing.severity === 'high' ? 'bg-red-700/40 text-red-100' : crossing.severity === 'medium' ? 'bg-yellow-700/30 text-yellow-100' : 'bg-blue-700/30 text-blue-100'}`}>
+                                                                {crossing.severity}
+                                                            </span>
+                                                        </div>
+                                                        <p className="mt-2 text-xs text-cyan-200/90">{crossing.boundary_type.replaceAll('_', ' ')}</p>
+                                                        <p className="mt-2 text-sm text-gray-300">{crossing.reason}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-2xl border border-gray-800 bg-black/40 p-6 shadow-2xl">
+                                            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">Execution Posture</p>
+                                            <div className="space-y-3 text-sm text-gray-300">
+                                                <p>Profile: <span className="font-semibold text-white">{analysisResult.profile.name}</span></p>
+                                                <p>Scenario: <span className="font-semibold text-white">{analysisResult.scenario.category.replaceAll('_', ' ')}</span></p>
+                                                <p>Focus: <span className="font-semibold text-white">Grouped tool boundaries and deterministic trust crossings</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="rounded-3xl border border-dashed border-cyan-800/40 bg-black/20 p-12 text-center shadow-2xl">
+                                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl border border-cyan-700/40 bg-cyan-950/20 text-cyan-200 text-3xl">
+                                    <i className="fas fa-route"></i>
+                                </div>
+                                <h2 className="text-2xl font-semibold text-white">Modeled path review lives here</h2>
+                                <p className="mt-3 text-sm leading-relaxed text-gray-400 max-w-2xl mx-auto">
+                                    Select a grouped architecture profile and a scenario pack, then run analysis to surface risky trust crossings, exposed privileges, and memory or tool-path findings.
+                                </p>
+                            </div>
+                        )}
+                    </section>
+                </div>
+            </main>
+        </div>
+    );
+}
+
 function App({ onBack, buildInfo }) {
     const [testConfig, setTestConfig] = useState({
         target_service: 'anthropic',
@@ -1576,7 +1935,17 @@ function Root() {
     }, []);
 
     if (page === 'home') {
-        return <Home onLaunch={() => setPage('console')} buildInfo={buildInfo} />;
+        return (
+            <Home
+                onLaunchConsole={() => setPage('console')}
+                onLaunchArchitecture={() => setPage('architecture')}
+                buildInfo={buildInfo}
+            />
+        );
+    }
+
+    if (page === 'architecture') {
+        return <ArchitectureWorkbench onBack={() => setPage('home')} buildInfo={buildInfo} />;
     }
 
     return <App onBack={() => setPage('home')} buildInfo={buildInfo} />;

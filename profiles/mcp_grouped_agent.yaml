@@ -1,0 +1,78 @@
+id: mcp_grouped_agent
+name: Grouped Tool Agent
+description: >
+  Grouped MCP-style agent with isolated execution workers, enterprise connectors,
+  memory controls, and explicit output handling.
+components:
+  - id: client
+    kind: client
+    trust_level: untrusted
+    description: User-controlled prompt and attachment surface.
+  - id: system_prompt
+    kind: system_prompt
+    trust_level: trusted
+    description: Orchestration policy and guardrails.
+  - id: memory
+    kind: memory
+    trust_level: privileged
+    description: Durable state store reused across sessions.
+  - id: retrieval_source
+    kind: retrieval_source
+    trust_level: untrusted
+    description: External or semi-trusted retrieved content.
+  - id: model
+    kind: model
+    trust_level: privileged
+    description: LLM runtime that plans responses and tool use.
+  - id: tool_registry
+    kind: tool_registry
+    trust_level: trusted
+    description: Allow-listed tool metadata and schema registry.
+  - id: function_runner
+    kind: function_runner
+    trust_level: privileged
+    boundary_mode: grouped_sandbox
+    tool_groups:
+      - read_only_web
+      - enterprise_write
+      - code_exec
+    description: Broker that dispatches grouped tool calls into isolated workers.
+  - id: connector_targets
+    kind: connector_target
+    trust_level: privileged
+    description: External enterprise APIs and SaaS connectors.
+  - id: enterprise_write
+    kind: tool_group
+    trust_level: privileged
+    description: Write-capable enterprise connectors and actions.
+  - id: code_exec
+    kind: tool_group
+    trust_level: privileged
+    description: Sandboxed code and file execution boundary.
+  - id: output_handler
+    kind: output_handler
+    trust_level: trusted
+    description: Final response shaping and operator-visible delivery.
+tool_groups:
+  - id: read_only_web
+    risk: medium
+    side_effects: false
+    boundary: grouped_sandbox
+  - id: enterprise_write
+    risk: high
+    side_effects: true
+    boundary: grouped_sandbox
+  - id: code_exec
+    risk: high
+    side_effects: true
+    boundary: grouped_sandbox
+memory_rules:
+  - id: validated_writes_only
+    description: External or execution-derived content must be validated before persistence.
+data_classifications:
+  - id: public
+    description: Non-sensitive information.
+  - id: internal
+    description: Internal operational information.
+  - id: regulated
+    description: Sensitive or regulated enterprise records.

@@ -37,7 +37,8 @@
       "status": "verified",
       "match_mode": "any",
       "patterns": [
-        "\\b(system|developer)\\s+(prompt|message|instructions)\\b",
+        "\\b(show|reveal|dump|print|return|expose|output|extract|leak|disclose|send|share|display)\\b.{0,80}\\b(system|developer)\\s+(prompt|message|instructions)\\b",
+        "\\b(system|developer)\\s+(prompt|message|instructions)\\b.{0,80}\\b(show|reveal|dump|print|return|expose|output|extract|leak|disclose|send|share|display)\\b",
         "\\breveal\\s+the\\s+system\\s+prompt\\b"
       ],
       "exclude_patterns": [],
@@ -66,7 +67,7 @@
       "status": "verified",
       "match_mode": "all",
       "patterns": [
-        "\\b(show|reveal|dump|print|return|expose|fetch|read|display|output|extract|leak)\\b",
+        "\\b(show|reveal|dump|print|return|expose|display|output|extract|leak)\\b",
         "\\b(api\\s*key|access\\s+token|bearer\\s+token|password|credential|secret|access\\s+key|private\\s+key|ssh\\s+key|pem)\\b"
       ],
       "exclude_patterns": [
@@ -290,7 +291,8 @@
       "patterns": [
         "open\\s*\\(\\s*[\"']SKILL\\.md[\"']\\s*,\\s*[\"'](?:w|a|r\\+)\\b",
         "\\b/mnt/skills/\\b",
-        "\\b(after\\s+completing|post-execution|then\\s+modify|update\\s+the\\s+skill)\\b"
+        "\\b(after\\s+completing|post-execution|then\\s+modify)\\b",
+        "\\bupdate\\s+the\\s+skill(?:'s)?\\s+(?:skill\\.md|files?|directory|source|code|implementation|frontmatter)\\b"
       ],
       "exclude_patterns": [],
       "sources": [
@@ -415,7 +417,7 @@
       "status": "verified",
       "match_mode": "any",
       "patterns": [
-        "\\b(exec|eval|compile)\\s*\\("
+        "(?<![\\w.])(?:exec|eval|compile)\\s*\\("
       ],
       "exclude_patterns": [],
       "sources": [

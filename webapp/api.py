@@ -29,8 +29,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import core Injecticide modules
 from analyzer import analyze
+from architecture_profiles import list_profiles
+from architecture_scenarios import list_scenarios
 from endpoints import create_endpoint
 from generator import build_payload_suite
+from path_analyzer import analyze_architecture_scenario
 from payloads import get_all_payloads
 from reporter import ReportGenerator, build_summary
 from webapp.config_loader import (
@@ -154,6 +157,11 @@ class TestStartRequest(BaseModel):
     delay_between_requests: float = Field(default=0.0, ge=0.0)
     requests_per_minute: StrictInt = Field(default=60, gt=0)
     requests_per_hour: StrictInt = Field(default=1000, gt=0)
+
+
+class ArchitectureAnalysisRequest(BaseModel):
+    profile_id: str = Field(..., min_length=1)
+    scenario_id: str = Field(..., min_length=1)
 
 
 def _resolve_test_config(request: TestStartRequest) -> Dict[str, Any]:
@@ -319,6 +327,31 @@ async def get_app_version():
     """Return visible build/version info for the UI."""
 
     return get_build_info()
+
+
+@app.get("/api/architecture/options")
+async def get_architecture_options():
+    """Return available architecture profiles and modeled scenarios."""
+
+    return {
+        "profiles": list_profiles(),
+        "scenarios": list_scenarios(),
+    }
+
+
+@app.post("/api/architecture/analyze")
+async def analyze_architecture(request: ArchitectureAnalysisRequest):
+    """Run a deterministic architecture-path analysis."""
+
+    try:
+        return analyze_architecture_scenario(
+            profile_id=request.profile_id,
+            scenario_id=request.scenario_id,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 # ----------------------------
 # RESTORED ENDPOINT (THE FIX)
