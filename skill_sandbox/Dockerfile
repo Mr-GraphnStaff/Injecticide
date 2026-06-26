@@ -11,6 +11,7 @@ COPY app.py /app/app.py
 COPY artifact_text.py /app/artifact_text.py
 COPY behavior_analysis.py /app/behavior_analysis.py
 COPY contextual_rules.py /app/contextual_rules.py
+COPY disposition.py /app/disposition.py
 COPY finding_enrichment.py /app/finding_enrichment.py
 COPY governance.py /app/governance.py
 COPY scan_rules.py /app/scan_rules.py
