@@ -6,9 +6,11 @@ from typing import Dict, Iterable, List
 from urllib.parse import urlparse
 
 if __package__:
+    from .disposition import apply_disposition, format_observation_sample, normalize_observations
     from .scan_rules import load_rule_catalog
     from .sensitive_data import detect_sensitive_data_findings
 else:
+    from disposition import apply_disposition, format_observation_sample, normalize_observations
     from scan_rules import load_rule_catalog
     from sensitive_data import detect_sensitive_data_findings
 
@@ -105,31 +107,35 @@ def build_finding(
     matches: Iterable[str],
     artifact_role: str,
 ) -> Dict[str, object]:
-    normalized_matches = list(matches)
-    severity = str(rule["severity"])
+    observations = normalize_observations(matches)
+    detector_id = str(rule["id"])
+    disposition_result = apply_disposition(detector_id, observations, artifact_role)
+    severity = str(disposition_result["severity"])
     finding_category = str(rule.get("finding_category", "signal"))
     action_state = str(rule.get("action_state", "present"))
-    disposition = str(rule.get("disposition", _default_disposition(severity)))
+    disposition = str(disposition_result["disposition"])
 
-    if artifact_role in {"reference_template", "audit_policy"} and str(rule["id"]) in REFERENCE_TEMPLATE_RULE_IDS:
-        severity = "info"
+    if severity == "info" and artifact_role in {"reference_template", "audit_policy"} and detector_id in REFERENCE_TEMPLATE_RULE_IDS:
         action_state = "documented"
-        disposition = "info"
 
-    is_actionable = severity != "info"
+    is_actionable = bool(disposition_result["is_actionable"])
     display_kind = _display_kind(artifact_role, severity)
+    samples = _unique_samples(format_observation_sample(observation) for observation in observations)
 
     return {
-        "id": rule["id"],
+        "id": detector_id,
         "category": rule["category"],
         "severity": severity,
+        "tier": disposition_result["tier"],
         "description": rule["description"],
         "finding_category": finding_category,
         "subject": rule.get("subject", "unknown"),
         "action_state": action_state,
         "disposition": disposition,
-        "count": len(normalized_matches),
-        "samples": normalized_matches[:3],
+        "count": len(observations),
+        "samples": samples[:3],
+        "observations": observations[:10],
+        "counts_for_governance": disposition_result["counts_for_governance"],
         "status": rule.get("status", "unknown"),
         "sources": rule.get("sources", []),
         "artifact_role": artifact_role,
@@ -159,6 +165,14 @@ def detect_special_findings(path: str, text: str, artifact_role: str) -> List[Di
 
     findings.extend(detect_sensitive_data_findings(text, artifact_role, build_finding))
     return findings
+
+
+def _unique_samples(samples: Iterable[str]) -> List[str]:
+    unique: List[str] = []
+    for sample in samples:
+        if sample and sample not in unique:
+            unique.append(sample)
+    return unique
 
 
 def _looks_like_mcp_url(url: str) -> bool:

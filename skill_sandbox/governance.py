@@ -58,7 +58,9 @@ def build_governance_profile(
     behavior_report: Dict[str, object],
 ) -> Dict[str, object]:
     findings = _collect_actionable_findings(scan_results)
+    governance_findings = _collect_governance_findings(findings)
     finding_ids = {finding["id"] for finding in findings}
+    governance_finding_ids = {finding["id"] for finding in governance_findings}
     required_capabilities = set(
         behavior_report.get("behavioral_summary", {}).get("required_capabilities", [])
     )
@@ -72,10 +74,10 @@ def build_governance_profile(
         or "enterprise_access" in policy_capabilities
         or "credential_handling" in policy_capabilities
         or "regulated_data" in policy_capabilities
-        or finding_ids.intersection(ENTERPRISE_WRITE_RULES)
+        or governance_finding_ids.intersection(ENTERPRISE_WRITE_RULES)
     )
 
-    blocked = bool(finding_ids.intersection(BLOCK_BY_DEFAULT_RULES))
+    blocked = bool(governance_findings)
     execution_tier = _execution_tier(blocked, sandbox_required, policy_capabilities)
 
     decision_reasons = _build_decision_reasons(
@@ -83,7 +85,7 @@ def build_governance_profile(
         sandbox_required=sandbox_required,
         approval_required=approval_required,
         policy_capabilities=policy_capabilities,
-        finding_ids=finding_ids,
+        finding_ids=governance_finding_ids,
     )
 
     recommended_controls = _recommended_controls(
@@ -91,7 +93,7 @@ def build_governance_profile(
         sandbox_required=sandbox_required,
         approval_required=approval_required,
         policy_capabilities=policy_capabilities,
-        finding_ids=finding_ids,
+        finding_ids=governance_finding_ids,
     )
 
     return {
@@ -104,14 +106,14 @@ def build_governance_profile(
             blocked=blocked,
             approval_required=approval_required,
             policy_capabilities=policy_capabilities,
-            finding_ids=finding_ids,
+            finding_ids=governance_finding_ids,
         ),
         "customer_managed_keys": _route_decision(
             mode="byo",
             blocked=blocked,
             approval_required=approval_required,
             policy_capabilities=policy_capabilities,
-            finding_ids=finding_ids,
+            finding_ids=governance_finding_ids,
         ),
         "decision_reasons": decision_reasons,
         "recommended_controls": recommended_controls,
@@ -127,6 +129,14 @@ def _collect_actionable_findings(scan_results: Iterable[Dict[str, object]]) -> L
             if finding.get("is_actionable", finding.get("severity") != "info")
         )
     return findings
+
+
+def _collect_governance_findings(findings: Iterable[Dict[str, object]]) -> List[Dict[str, object]]:
+    return [
+        finding
+        for finding in findings
+        if finding.get("counts_for_governance") is True or finding.get("tier") == "block"
+    ]
 
 
 def _infer_policy_capabilities(finding_ids: set[str], required_capabilities: set[str]) -> set[str]:

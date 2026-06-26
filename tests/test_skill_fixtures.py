@@ -33,14 +33,15 @@ def test_jira_governance_fixture_has_no_findings():
     assert result["governance_profile"]["brokered_tokens"]["decision"] == "require_admin_approval"
 
 
-def test_security_architect_fixture_has_only_informational_sensitive_topic():
+def test_security_architect_fixture_has_only_informational_credential_findings():
     result = _scan_fixture(FIXTURES_DIR / "clean" / "security_architect.skill")
 
     findings = result["files"][0]["findings"]
     finding_ids = {finding["id"] for finding in findings}
 
-    assert "secret_exfiltration" not in finding_ids
+    assert "secret_exfiltration" in finding_ids
     assert "sensitive_topic" in finding_ids
+    assert all(finding["tier"] == "info" for finding in findings)
     assert result["risk_classification"]["overall_risk"] == "low"
     assert result["governance_profile"]["brokered_tokens"]["decision"] == "allow"
 

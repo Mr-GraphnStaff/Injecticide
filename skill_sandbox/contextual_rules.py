@@ -47,6 +47,10 @@ SAFE_SECRET_DISCUSSION_REGEX = re.compile(
     r"\b(token\s+lifecycle|credential\s+exposure|key\s+management|risk\s+statements?|control\s+gap|governance\s+artifacts?|threat\s+model(?:ing)?|security\s+architecture|best\s+practices?)\b",
     re.IGNORECASE,
 )
+NEGATED_DISCLOSURE_REGEX = re.compile(
+    r"\b(do\s+not|don't|never|must\s+not|should\s+not|not\s+allowed\s+to)\b",
+    re.IGNORECASE,
+)
 
 EXECUTION_VERB_REGEX = re.compile(r"\b(run|execute|launch|invoke|use|open)\b", re.IGNORECASE)
 EXECUTION_CONTEXT_REGEX = re.compile(
@@ -132,63 +136,90 @@ def detect_contextual_findings(
     return findings
 
 
-def _match_secret_exfiltration(units: Iterable[str], artifact_role: str) -> List[str]:
-    matches: List[str] = []
+def _match_secret_exfiltration(units: Iterable[Dict[str, object]], artifact_role: str) -> List[Dict[str, object]]:
+    matches: List[Dict[str, object]] = []
     reference_like = artifact_role in {"reference", "reference_template"}
 
     for unit in units:
-        target_match = SECRET_TARGET_REGEX.search(unit)
+        text = str(unit.get("text", ""))
+        line = unit.get("line") if isinstance(unit.get("line"), int) else None
+        target_match = SECRET_TARGET_REGEX.search(text)
         if not target_match:
             continue
 
-        if POLICY_SECRET_CONTEXT_REGEX.search(unit):
+        if POLICY_SECRET_CONTEXT_REGEX.search(text):
             continue
 
-        if SAFE_SECRET_DISCUSSION_REGEX.search(unit):
+        if SAFE_SECRET_DISCUSSION_REGEX.search(text):
+            matches.append(
+                {
+                    "text": text,
+                    "line": line,
+                    "context_tag": "topic_discussion",
+                    "confidence": "medium",
+                }
+            )
             continue
 
-        if target_match.group(0).lower() == "password" and AUTHENTICATION_CONTEXT_REGEX.search(unit):
+        if target_match.group(0).lower() == "password" and AUTHENTICATION_CONTEXT_REGEX.search(text):
             continue
 
         if reference_like:
-            verb_match = HIGH_CONFIDENCE_DISCLOSURE_VERB_REGEX.search(unit)
+            verb_match = HIGH_CONFIDENCE_DISCLOSURE_VERB_REGEX.search(text)
         else:
-            verb_match = DISCLOSURE_VERB_REGEX.search(unit)
+            verb_match = DISCLOSURE_VERB_REGEX.search(text)
 
         if not verb_match:
             continue
 
-        sample = f"{verb_match.group(0)} {target_match.group(0)}"
-        if sample not in matches:
-            matches.append(sample)
+        sample = _source_span(text, verb_match, target_match)
+        context_tag = "topic_discussion" if NEGATED_DISCLOSURE_REGEX.search(text) else "imperative_disclosure"
+        if not any(match["text"] == sample and match.get("line") == line for match in matches):
+            matches.append(
+                {
+                    "text": sample,
+                    "line": line,
+                    "context_tag": context_tag,
+                    "confidence": "high" if context_tag == "imperative_disclosure" else "medium",
+                }
+            )
         if len(matches) >= 3:
             break
 
     return matches
 
 
-def _match_tool_escape(units: Iterable[str], artifact_role: str) -> List[str]:
-    matches: List[str] = []
+def _match_tool_escape(units: Iterable[Dict[str, object]], artifact_role: str) -> List[Dict[str, object]]:
+    matches: List[Dict[str, object]] = []
     reference_like = artifact_role in {"reference", "reference_template"}
 
     for unit in units:
-        if EXECUTION_FALSE_POSITIVE_REGEX.search(unit):
+        text = str(unit.get("text", ""))
+        line = unit.get("line") if isinstance(unit.get("line"), int) else None
+        if EXECUTION_FALSE_POSITIVE_REGEX.search(text):
             continue
 
-        verb_match = EXECUTION_VERB_REGEX.search(unit)
-        context_match = EXECUTION_CONTEXT_REGEX.search(unit)
+        verb_match = EXECUTION_VERB_REGEX.search(text)
+        context_match = EXECUTION_CONTEXT_REGEX.search(text)
         if not verb_match or not context_match:
             continue
 
         if not _are_matches_close(verb_match, context_match, 48):
             continue
 
-        if reference_like and not STRONG_EXECUTION_CONTEXT_REGEX.search(unit):
+        if reference_like and not STRONG_EXECUTION_CONTEXT_REGEX.search(text):
             continue
 
-        sample = f"{verb_match.group(0)} {context_match.group(0)}"
-        if sample not in matches:
-            matches.append(sample)
+        sample = _source_span(text, verb_match, context_match)
+        if not any(match["text"] == sample and match.get("line") == line for match in matches):
+            matches.append(
+                {
+                    "text": sample,
+                    "line": line,
+                    "context_tag": "pattern_match",
+                    "confidence": "medium",
+                }
+            )
         if len(matches) >= 3:
             break
 
@@ -207,7 +238,7 @@ def _match_autonomous_authoritative_write(units: Iterable[str]) -> List[str]:
     )
 
 
-def _match_bulk_enterprise_modification(units: Iterable[str]) -> List[str]:
+def _match_bulk_enterprise_modification(units: Iterable[Dict[str, object]]) -> List[Dict[str, object]]:
     return _match_enterprise_rule(
         units,
         required_patterns=(
@@ -219,7 +250,7 @@ def _match_bulk_enterprise_modification(units: Iterable[str]) -> List[str]:
     )
 
 
-def _match_workflow_manipulation(units: Iterable[str]) -> List[str]:
+def _match_workflow_manipulation(units: Iterable[Dict[str, object]]) -> List[Dict[str, object]]:
     return _match_enterprise_rule(
         units,
         required_patterns=(
@@ -230,20 +261,29 @@ def _match_workflow_manipulation(units: Iterable[str]) -> List[str]:
     )
 
 
-def _match_cross_system_automation(units: Iterable[str]) -> List[str]:
-    matches: List[str] = []
+def _match_cross_system_automation(units: Iterable[Dict[str, object]]) -> List[Dict[str, object]]:
+    matches: List[Dict[str, object]] = []
     for unit in units:
-        services = [match.group(0) for match in ENTERPRISE_SERVICE_REGEX.finditer(unit)]
-        if len({service.lower() for service in services}) < 2:
+        text = str(unit.get("text", ""))
+        line = unit.get("line") if isinstance(unit.get("line"), int) else None
+        services = [match for match in ENTERPRISE_SERVICE_REGEX.finditer(text)]
+        if len({service.group(0).lower() for service in services}) < 2:
             continue
-        sync_match = SYNC_ACTION_REGEX.search(unit)
-        autonomy_match = ENTERPRISE_AUTONOMY_REGEX.search(unit)
+        sync_match = SYNC_ACTION_REGEX.search(text)
+        autonomy_match = ENTERPRISE_AUTONOMY_REGEX.search(text)
         if not sync_match or not autonomy_match:
             continue
 
-        sample = f"{services[0]} {sync_match.group(0)} {services[1]}"
-        if sample not in matches:
-            matches.append(sample)
+        sample = _source_span(text, services[0], services[1])
+        if not any(match["text"] == sample and match.get("line") == line for match in matches):
+            matches.append(
+                {
+                    "text": sample,
+                    "line": line,
+                    "context_tag": "pattern_match",
+                    "confidence": "medium",
+                }
+            )
         if len(matches) >= 3:
             break
 
@@ -251,29 +291,42 @@ def _match_cross_system_automation(units: Iterable[str]) -> List[str]:
 
 
 def _match_enterprise_rule(
-    units: Iterable[str],
+    units: Iterable[Dict[str, object]],
     required_patterns: Iterable[re.Pattern[str]],
-) -> List[str]:
-    matches: List[str] = []
+) -> List[Dict[str, object]]:
+    matches: List[Dict[str, object]] = []
 
     for unit in units:
-        unit_matches = [pattern.search(unit) for pattern in required_patterns]
+        text = str(unit.get("text", ""))
+        line = unit.get("line") if isinstance(unit.get("line"), int) else None
+        unit_matches = [pattern.search(text) for pattern in required_patterns]
         if not all(unit_matches):
             continue
 
-        sample = " | ".join(match.group(0) for match in unit_matches if match)
-        if sample not in matches:
-            matches.append(sample)
+        sample = _source_span(text, unit_matches[0], unit_matches[-1])
+        if not any(match["text"] == sample and match.get("line") == line for match in matches):
+            matches.append(
+                {
+                    "text": sample,
+                    "line": line,
+                    "context_tag": "pattern_match",
+                    "confidence": "medium",
+                }
+            )
         if len(matches) >= 3:
             break
 
     return matches
 
 
-def _iter_context_units(path: str, text: str, artifact_role: str) -> List[str]:
+def _iter_context_units(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
     lower_path = Path(path.lower()).suffix
     if lower_path == ".csv":
-        return [line.strip() for line in text.splitlines() if line.strip()]
+        return [
+            {"text": line.strip(), "line": index}
+            for index, line in enumerate(text.splitlines(), start=1)
+            if line.strip()
+        ]
 
     if lower_path in MARKDOWN_LIKE_EXTENSIONS:
         base_units = _markdown_context_units(text)
@@ -281,19 +334,31 @@ def _iter_context_units(path: str, text: str, artifact_role: str) -> List[str]:
             return _with_active_windows(base_units)
         return base_units
 
-    return [text]
+    return [{"text": text, "line": 1}]
 
 
-def _markdown_context_units(text: str) -> List[str]:
-    units: List[str] = []
+def _markdown_context_units(text: str) -> List[Dict[str, object]]:
+    units: List[Dict[str, object]] = []
 
-    for paragraph in re.split(r"\n\s*\n", text):
-        stripped = paragraph.strip()
+    current_lines: List[tuple[int, str]] = []
+    paragraphs: List[List[tuple[int, str]]] = []
+    for index, line in enumerate(text.splitlines(), start=1):
+        if not line.strip():
+            if current_lines:
+                paragraphs.append(current_lines)
+                current_lines = []
+            continue
+        current_lines.append((index, line))
+    if current_lines:
+        paragraphs.append(current_lines)
+
+    for paragraph in paragraphs:
+        stripped = "\n".join(line for _, line in paragraph).strip()
         if not stripped:
             continue
 
-        lines = [line.strip() for line in stripped.splitlines() if line.strip()]
-        for line in lines:
+        lines = [(line_number, line.strip()) for line_number, line in paragraph if line.strip()]
+        for line_number, line in lines:
             cleaned = _clean_markdown_text(line)
             if not cleaned:
                 continue
@@ -303,16 +368,16 @@ def _markdown_context_units(text: str) -> List[str]:
             for segment in segments:
                 normalized = re.sub(r"\s+", " ", segment).strip()
                 if normalized:
-                    units.append(normalized)
+                    units.append({"text": normalized, "line": line_number})
 
     return _unique(units)
 
 
-def _with_active_windows(units: List[str]) -> List[str]:
+def _with_active_windows(units: List[Dict[str, object]]) -> List[Dict[str, object]]:
     expanded = list(units)
     for index in range(len(units) - 1):
-        combined = f"{units[index]} {units[index + 1]}"
-        expanded.append(combined)
+        combined = f"{units[index]['text']} {units[index + 1]['text']}"
+        expanded.append({"text": combined, "line": units[index].get("line")})
     return _unique(expanded)
 
 
@@ -329,11 +394,17 @@ def _are_matches_close(left: re.Match[str], right: re.Match[str], max_gap: int) 
     return gap <= max_gap
 
 
-def _unique(values: Iterable[str]) -> List[str]:
+def _source_span(text: str, left: re.Match[str], right: re.Match[str]) -> str:
+    start = min(left.start(), right.start())
+    end = max(left.end(), right.end())
+    return text[start:end].strip()
+
+
+def _unique(values: Iterable[Dict[str, object]]) -> List[Dict[str, object]]:
     seen = set()
     output = []
     for value in values:
-        key = value.lower()
+        key = (str(value.get("text", "")).lower(), value.get("line"))
         if key in seen:
             continue
         seen.add(key)

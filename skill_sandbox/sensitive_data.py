@@ -130,7 +130,7 @@ def detect_sensitive_data_findings(
     matched_rule_ids = set()
 
     for rule in SENSITIVE_DATA_RULES:
-        matches = _normalize_matches(rule["compiled_pattern"].findall(text))
+        matches = _observations_for_pattern(rule["compiled_pattern"], text)
         if not matches:
             continue
         findings.append(build_finding(rule, matches, artifact_role))
@@ -157,12 +157,42 @@ def detect_sensitive_data_findings(
                         }
                     ],
                 },
-                ["patient-context-with-identifiers"],
+                [
+                    {
+                        "text": "patient-context-with-identifiers",
+                        "line": _first_match_line(MEDICAL_CONTEXT_REGEX, text),
+                        "context_tag": "pattern_match",
+                        "confidence": "medium",
+                    }
+                ],
                 artifact_role,
             )
         )
 
     return findings
+
+
+def _observations_for_pattern(pattern: re.Pattern[str], text: str) -> List[Dict[str, object]]:
+    observations: List[Dict[str, object]] = []
+    for match in pattern.finditer(text):
+        observations.append(
+            {
+                "text": re.sub(r"\s+", " ", match.group(0)).strip(),
+                "line": text.count("\n", 0, match.start()) + 1,
+                "context_tag": "pattern_match",
+                "confidence": "medium",
+            }
+        )
+        if len(observations) >= 3:
+            break
+    return observations
+
+
+def _first_match_line(pattern: re.Pattern[str], text: str) -> int:
+    match = pattern.search(text)
+    if not match:
+        return 1
+    return text.count("\n", 0, match.start()) + 1
 
 
 def _normalize_matches(matches: Iterable[object]) -> List[str]:

@@ -1,0 +1,244 @@
+{
+  "catalog_version": "2026-06-26",
+  "tiers": ["block", "review", "info"],
+  "default": {
+    "tier": "review",
+    "severity": "medium",
+    "disposition": "require_approval",
+    "is_actionable": true,
+    "counts_for_governance": false
+  },
+  "role_overrides": [
+    {
+      "artifact_roles": ["audit_policy", "reference_template"],
+      "tier": "info",
+      "severity": "info",
+      "disposition": "info",
+      "is_actionable": false,
+      "counts_for_governance": false
+    }
+  ],
+  "rules": [
+    {
+      "detector_id": "prompt_override",
+      "contexts": {
+        "pattern_match": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        }
+      }
+    },
+    {
+      "detector_id": "sensitive_topic",
+      "contexts": {
+        "pattern_match": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "system_exfiltration",
+      "contexts": {
+        "imperative_disclosure": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        },
+        "negated_or_defined": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "quoted_or_fenced": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "secret_exfiltration",
+      "contexts": {
+        "imperative_disclosure": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        },
+        "topic_discussion": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "quoted_or_fenced": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "runtime_dependency_install",
+      "contexts": {
+        "allowlisted_dependency": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "unknown_dependency": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        },
+        "url_or_vcs_dependency": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "unicode_deception",
+      "contexts": {
+        "emoji_joiner": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "self_documented_spacer": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "bidi_override": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        },
+        "invisible_mid_instruction": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        },
+        "invisible_character": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "dynamic_exec",
+      "contexts": {
+        "direct_dynamic_exec": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        },
+        "decoded_or_fetched_exec": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        }
+      }
+    },
+    {
+      "detector_id": "autonomous_authoritative_write",
+      "contexts": {
+        "pattern_match": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        }
+      }
+    },
+    {
+      "detector_id": "bulk_enterprise_modification",
+      "contexts": {
+        "pattern_match": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        }
+      }
+    },
+    {
+      "detector_id": "workflow_manipulation",
+      "contexts": {
+        "pattern_match": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        }
+      }
+    },
+    {
+      "detector_id": "cross_system_automation",
+      "contexts": {
+        "pattern_match": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        }
+      }
+    },
+    {
+      "detector_id": "base64_usage",
+      "contexts": {
+        "pattern_match": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "warn",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    }
+  ]
+}

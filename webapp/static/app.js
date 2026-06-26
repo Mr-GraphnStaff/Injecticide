@@ -29,6 +29,10 @@ function summarizeFileFindings(findings) {
 }
 
 function classifyReviewClass(finding, artifactRole = 'active') {
+    if (finding.tier === 'block') {
+        return 'security_risk';
+    }
+
     if (finding.display_kind === 'documented_pattern') {
         return 'documented_pattern';
     }
@@ -38,8 +42,10 @@ function classifyReviewClass(finding, artifactRole = 'active') {
     }
 
     if (
+        finding.tier !== 'review' && (
         SECURITY_CATEGORIES.has(finding.category) ||
         ['execution_intent', 'execution_primitive', 'connector_risk', 'policy_override', 'disclosure_request'].includes(finding.finding_category)
+        )
     ) {
         return 'security_risk';
     }
@@ -154,6 +160,14 @@ function summarizeAssessment(scanResult) {
             tone: 'low',
             title: 'Expected internal contact data detected',
             body: 'The scan found business contact data that appears consistent with a reference directory or internal bundle.',
+        };
+    }
+
+    if (reviewSummary.review > 0) {
+        return {
+            tone: 'low',
+            title: 'Review findings present',
+            body: 'The scan found ambiguous patterns that should be reviewed, but no block-tier behavior.',
         };
     }
 
@@ -370,6 +384,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
             lines.push(`  - Category: ${finding.finding_category || finding.category || 'signal'}`);
             lines.push(`  - Subject: ${finding.subject || 'unknown'}`);
             lines.push(`  - Action state: ${finding.action_state || 'present'}`);
+            lines.push(`  - Tier: ${finding.tier || 'review'}`);
             lines.push(`  - Disposition: ${finding.disposition || 'unknown'}`);
             if (finding.samples?.length) {
                 lines.push(`  - Samples: ${finding.samples.join(' | ')}`);
