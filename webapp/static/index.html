@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Injecticide - LLM Security Testing Platform</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.28.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-    <link rel="shortcut icon" href="/icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png">
+    <link rel="shortcut icon" href="/static/icons/favicon.ico">
     <style>
         @keyframes pulse-red {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
@@ -23,7 +23,7 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="text/babel" src="/static/pages/Home.jsx"></script>
-    <script type="text/babel" src="/static/app.js"></script>
+    <script type="text/babel" data-presets="react" src="/static/pages/Home.jsx"></script>
+    <script type="text/babel" data-presets="react" src="/static/app.js"></script>
 </body>
 </html>

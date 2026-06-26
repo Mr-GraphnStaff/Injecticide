@@ -1,4 +1,4 @@
-function Home({ onLaunch, buildInfo }) {
+function Home({ onLaunchConsole, onLaunchArchitecture, buildInfo }) {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -9,7 +9,7 @@ function Home({ onLaunch, buildInfo }) {
             <header className="relative bg-black/60 backdrop-blur-lg border-b border-red-700/40 shadow-2xl">
                 <div className="container mx-auto px-6 py-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex items-center space-x-4">
-                        <img src="/images/logo.png" alt="DAF-TECH logo" className="h-14 w-14 rounded-xl shadow-2xl bg-gray-900/80 border border-gray-700" />
+                        <img src="/static/images/logo.png" alt="DAF-TECH logo" className="h-14 w-14 rounded-xl shadow-2xl bg-gray-900/80 border border-gray-700" />
                         <div>
                             <h1 className="text-3xl md:text-4xl font-bold flex items-center space-x-2">
                                 <span className="text-white drop-shadow-lg">Injecticide</span>
@@ -32,13 +32,22 @@ function Home({ onLaunch, buildInfo }) {
                             <i className="fas fa-moon text-red-400 mr-2"></i>
                             Dark theme optimized for secure operations
                         </span>
-                        <button
-                            onClick={onLaunch}
-                            className="px-5 py-3 rounded-lg text-sm font-semibold transition bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-700 shadow-xl border border-red-500/60"
-                        >
-                            <i className="fas fa-rocket mr-2"></i>
-                            Launch Testing Console
-                        </button>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <button
+                                onClick={onLaunchConsole}
+                                className="px-5 py-3 rounded-lg text-sm font-semibold transition bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-700 shadow-xl border border-red-500/60"
+                            >
+                                <i className="fas fa-rocket mr-2"></i>
+                                Launch Testing Console
+                            </button>
+                            <button
+                                onClick={onLaunchArchitecture}
+                                className="px-5 py-3 rounded-lg text-sm font-semibold transition bg-gray-800/80 hover:bg-gray-700/80 shadow-xl border border-cyan-500/40 text-cyan-100"
+                            >
+                                <i className="fas fa-diagram-project mr-2"></i>
+                                Open Architecture Analysis
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -127,6 +136,30 @@ function Home({ onLaunch, buildInfo }) {
                         </div>
                         <h3 className="text-xl font-semibold text-white mb-2">Operational Insights</h3>
                         <p className="text-gray-300 leading-relaxed">Track sessions, export reports, and keep teams aligned with clear telemetry and next-step guidance.</p>
+                    </div>
+                </section>
+
+                <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-cyan-950/30 rounded-2xl border border-cyan-800/40 p-6 shadow-xl">
+                        <p className="text-sm uppercase tracking-[0.3em] text-cyan-300 mb-3">New Surface</p>
+                        <h3 className="text-2xl font-semibold text-white mb-3">Architecture Analysis</h3>
+                        <p className="text-gray-300 leading-relaxed">
+                            Model trust boundaries across prompts, retrieval, tools, memory, connectors, and output handlers. Review risky paths without crowding the existing payload console.
+                        </p>
+                        <div className="mt-5 flex flex-wrap gap-3 text-sm text-cyan-100">
+                            <span className="px-3 py-2 rounded-full bg-cyan-900/40 border border-cyan-700/40">Grouped tool boundaries</span>
+                            <span className="px-3 py-2 rounded-full bg-cyan-900/40 border border-cyan-700/40">Path-based findings</span>
+                            <span className="px-3 py-2 rounded-full bg-cyan-900/40 border border-cyan-700/40">Trust crossing evidence</span>
+                        </div>
+                    </div>
+                    <div className="bg-gray-900/80 rounded-2xl border border-gray-800 p-6 shadow-xl">
+                        <p className="text-sm uppercase tracking-[0.3em] text-gray-400 mb-3">Product Split</p>
+                        <h3 className="text-2xl font-semibold text-white mb-3">Three Clear Questions</h3>
+                        <div className="space-y-3 text-gray-300">
+                            <p><span className="text-white font-semibold">Prompt Testing:</span> Can this model be manipulated directly?</p>
+                            <p><span className="text-white font-semibold">Skill Scanning:</span> Is this uploaded skill or bundle risky?</p>
+                            <p><span className="text-white font-semibold">Architecture Analysis:</span> Where can the workflow be manipulated across boundaries?</p>
+                        </div>
                     </div>
                 </section>
             </main>
