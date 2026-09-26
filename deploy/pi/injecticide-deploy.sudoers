@@ -1,0 +1,1 @@
+azdo-injecticide ALL=(root) NOPASSWD: /usr/local/sbin/injecticide-deploy *

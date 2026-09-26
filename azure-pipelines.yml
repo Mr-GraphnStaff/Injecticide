@@ -1,0 +1,75 @@
+name: injecticide-$(Date:yyyyMMdd).$(Rev:r)
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - master
+
+pr:
+  branches:
+    include:
+      - master
+
+variables:
+  pythonVersion: "3.11"
+
+stages:
+  - stage: Validate
+    displayName: Validate candidate
+    jobs:
+      - job: Tests
+        displayName: Tests and container builds
+        pool:
+          vmImage: ubuntu-latest
+        timeoutInMinutes: 30
+        steps:
+          - task: UsePythonVersion@0
+            displayName: Use Python $(pythonVersion)
+            inputs:
+              versionSpec: $(pythonVersion)
+
+          - script: |
+              python -m pip install --upgrade pip
+              python -m pip install -r requirements.txt
+            displayName: Install dependencies
+
+          - script: python -m pytest -q
+            displayName: Run test suite
+
+          - script: docker compose config --quiet
+            displayName: Validate Docker Compose
+
+          - script: |
+              docker build --tag injecticide-web:ci .
+              docker build --tag injecticide-skill-sandbox:ci ./skill_sandbox
+            displayName: Build container candidates
+
+  - stage: DeployProduction
+    displayName: Deploy to Raspberry Pi
+    dependsOn: Validate
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+        ne(variables['Build.Reason'], 'PullRequest')
+      )
+    lockBehavior: sequential
+    jobs:
+      - deployment: DeployInjecticide
+        displayName: Deploy verified commit
+        environment: injecticide-pi-production
+        pool:
+          name: Injecticide Pi Private
+          demands:
+            - Agent.Name -equals injecticide-pi-arm64
+        timeoutInMinutes: 45
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: none
+                - bash: |
+                    set -euo pipefail
+                    sudo -n /usr/local/sbin/injecticide-deploy "${BUILD_SOURCEVERSION}"
+                  displayName: Deploy and verify on Pi
