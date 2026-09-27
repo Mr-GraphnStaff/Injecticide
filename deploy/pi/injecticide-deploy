@@ -48,13 +48,35 @@ wait_for_health() {
   return 1
 }
 
+remove_injecticide_images() {
+  local image_id repository
+  local -A image_ids=()
+
+  while read -r repository image_id; do
+    case "$repository" in
+      injecticide-web|injecticide-skill-sandbox|injecticide-injecticide|injecticide-skill_sandbox)
+        image_ids["$image_id"]=1
+        ;;
+    esac
+  done < <(docker image ls --format '{{.Repository}} {{.ID}}')
+
+  if (( ${#image_ids[@]} > 0 )); then
+    docker image rm --force "${!image_ids[@]}"
+  fi
+}
+
 deploy_commit() {
   local commit="$1"
   local image_tag="${commit:0:12}"
 
   git -C "$REPO_DIR" checkout --detach "$commit"
   compose "$image_tag" config --quiet
-  compose "$image_tag" build --pull
+  log "Stopping the Injecticide stack for a clean rebuild."
+  compose "$image_tag" down --remove-orphans --timeout 30
+  compose "$image_tag" pull nginx
+  remove_injecticide_images
+  log "Rebuilding application images without Docker build cache."
+  compose "$image_tag" build --no-cache --pull
   compose "$image_tag" up --detach --remove-orphans --wait --wait-timeout 180
   wait_for_health
 }

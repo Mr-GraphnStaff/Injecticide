@@ -7,6 +7,8 @@
   health checks, persistent report storage, and automatic rollback.
 - Added container health checks and immutable per-commit image tags.
 - Declared Starlette's `httpx2` test-client dependency for reproducible CI.
+- Made Pi deployments stop the existing stack and rebuild Injecticide images
+  without cache while leaving unrelated Docker workloads untouched.
 
 ## 0.1.0 - 2026-04-22
 

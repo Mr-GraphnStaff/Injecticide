@@ -11,8 +11,9 @@ privileged deployment action is the root-owned
 - accepts one full commit SHA;
 - fetches only the approved GitHub repository;
 - requires the commit to be reachable from `origin/master`;
-- builds and starts the Compose application under the fixed `injecticide`
-  project name;
+- stops the existing Injecticide stack, removes its previous application
+  images, refreshes Nginx, and rebuilds with `--no-cache --pull`;
+- starts the Compose application under the fixed `injecticide` project name;
 - checks both the application and reverse-proxy HTTP endpoints; and
 - rebuilds the previous commit if the candidate fails.
 
@@ -22,3 +23,7 @@ replace them.
 
 The wrapper and sudoers rule are installed manually as root. Pipeline jobs must
 not install or update either file.
+
+Cache removal is intentionally scoped to Injecticide images. The wrapper does
+not run a global Docker cache prune because the Pi also hosts unrelated
+services.
