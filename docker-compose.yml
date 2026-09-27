@@ -1,5 +1,6 @@
 services:
   injecticide:
+    image: injecticide-web:${INJECTICIDE_IMAGE_TAG:-local}
     build: .
     container_name: injecticide-web
     ports:
@@ -8,14 +9,25 @@ services:
       - PYTHONUNBUFFERED=1
       - SKILL_SANDBOX_URL=http://skill_sandbox:9001
     volumes:
-      - ./reports:/app/reports
+      - ${INJECTICIDE_REPORTS_DIR:-./reports}:/app/reports
       - ./configs:/app/configs
     networks:
       - injecticide-network
       - skill-sandbox-net
     restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=5)"
+      interval: 10s
+      timeout: 6s
+      retries: 6
+      start_period: 20s
 
   skill_sandbox:
+    image: injecticide-skill-sandbox:${INJECTICIDE_IMAGE_TAG:-local}
     build:
       context: ./skill_sandbox
     container_name: injecticide-skill-sandbox
@@ -31,6 +43,16 @@ services:
     networks:
       - skill-sandbox-net
     restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import socket; connection = socket.create_connection(('127.0.0.1', 9001), 5); connection.close()"
+      interval: 10s
+      timeout: 6s
+      retries: 6
+      start_period: 20s
 
   nginx:
     image: nginx:alpine
@@ -42,7 +64,8 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
-      - injecticide
+      injecticide:
+        condition: service_healthy
     networks:
       - injecticide-network
     restart: unless-stopped

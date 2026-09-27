@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly APP_NAME="Injecticide"
+readonly REMOTE_URL="https://github.com/Mr-GraphnStaff/Injecticide.git"
+readonly DEPLOY_ROOT="/mnt/nvme/deploy"
+readonly REPO_DIR="${DEPLOY_ROOT}/${APP_NAME}"
+readonly DATA_DIR="/mnt/nvme/injecticide-data"
+readonly REPORTS_DIR="${DATA_DIR}/reports"
+readonly LOCK_FILE="/run/lock/injecticide-deploy.lock"
+readonly HEALTH_URLS=(
+  "http://127.0.0.1:8000/"
+  "http://127.0.0.1/"
+)
+
+log() {
+  printf '[injecticide-deploy] %s\n' "$*"
+}
+
+fail() {
+  log "ERROR: $*" >&2
+  exit 1
+}
+
+require_clean_checkout() {
+  [[ -z "$(git -C "$REPO_DIR" status --porcelain --untracked-files=no)" ]] || \
+    fail "Deployment checkout contains tracked changes."
+}
+
+compose() {
+  INJECTICIDE_IMAGE_TAG="$1" \
+  INJECTICIDE_REPORTS_DIR="$REPORTS_DIR" \
+    docker compose --project-name injecticide --file "$REPO_DIR/docker-compose.yml" "${@:2}"
+}
+
+wait_for_health() {
+  local attempt url
+  for attempt in $(seq 1 30); do
+    for url in "${HEALTH_URLS[@]}"; do
+      if ! curl --fail --silent --show-error --max-time 5 "$url" >/dev/null; then
+        sleep 2
+        continue 2
+      fi
+    done
+    log "Application health checks passed."
+    return 0
+  done
+  return 1
+}
+
+deploy_commit() {
+  local commit="$1"
+  local image_tag="${commit:0:12}"
+
+  git -C "$REPO_DIR" checkout --detach "$commit"
+  compose "$image_tag" config --quiet
+  compose "$image_tag" build --pull
+  compose "$image_tag" up --detach --remove-orphans --wait --wait-timeout 180
+  wait_for_health
+}
+
+main() {
+  [[ "$EUID" -eq 0 ]] || fail "This command must run as root."
+  [[ "$#" -eq 1 ]] || fail "Usage: injecticide-deploy <40-character commit SHA>"
+
+  local requested_commit="${1,,}"
+  [[ "$requested_commit" =~ ^[0-9a-f]{40}$ ]] || fail "Commit must be a full 40-character SHA."
+
+  install -d -m 0750 "$DEPLOY_ROOT" "$DATA_DIR" "$REPORTS_DIR"
+  exec 9>"$LOCK_FILE"
+  flock --wait 900 9 || fail "Another deployment did not finish within 15 minutes."
+
+  if [[ ! -d "$REPO_DIR/.git" ]]; then
+    log "Creating the protected production checkout."
+    git clone --no-checkout "$REMOTE_URL" "$REPO_DIR"
+  fi
+
+  [[ "$(git -C "$REPO_DIR" remote get-url origin)" == "$REMOTE_URL" ]] || \
+    fail "Production checkout origin does not match the approved repository."
+  require_clean_checkout
+
+  log "Refreshing origin/master."
+  git -C "$REPO_DIR" fetch --prune origin master
+  git -C "$REPO_DIR" cat-file -e "${requested_commit}^{commit}" 2>/dev/null || \
+    fail "Requested commit does not exist in the approved repository."
+  git -C "$REPO_DIR" merge-base --is-ancestor "$requested_commit" origin/master || \
+    fail "Requested commit is not reachable from origin/master."
+
+  local previous_commit=""
+  previous_commit="$(git -C "$REPO_DIR" rev-parse --verify HEAD 2>/dev/null || true)"
+
+  log "Deploying ${requested_commit}."
+  if deploy_commit "$requested_commit"; then
+    printf '%s\n' "$requested_commit" >"${DEPLOY_ROOT}/injecticide-current"
+    log "Deployment completed successfully."
+    return 0
+  fi
+
+  log "Candidate failed health checks."
+  if [[ "$previous_commit" =~ ^[0-9a-f]{40}$ ]]; then
+    log "Rolling back to ${previous_commit}."
+    deploy_commit "$previous_commit" || fail "Rollback failed; operator intervention is required."
+    printf '%s\n' "$previous_commit" >"${DEPLOY_ROOT}/injecticide-current"
+    fail "Candidate was rolled back after failed validation."
+  fi
+
+  fail "Candidate failed and no previous production commit was available."
+}
+
+main "$@"
