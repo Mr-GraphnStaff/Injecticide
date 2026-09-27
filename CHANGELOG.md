@@ -6,6 +6,7 @@
 - Added a restricted, root-owned deployment wrapper with commit validation,
   health checks, persistent report storage, and automatic rollback.
 - Added container health checks and immutable per-commit image tags.
+- Declared Starlette's `httpx2` test-client dependency for reproducible CI.
 
 ## 0.1.0 - 2026-04-22
 
