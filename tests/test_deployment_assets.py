@@ -30,6 +30,9 @@ def test_deploy_wrapper_restricts_source_and_commit() -> None:
     assert "^[0-9a-f]{40}$" in wrapper
     assert "merge-base --is-ancestor" in wrapper
     assert "origin/master" in wrapper
+    assert "down --remove-orphans" in wrapper
+    assert "build --no-cache --pull" in wrapper
+    assert "remove_injecticide_images" in wrapper
     assert "wait_for_health" in wrapper
     assert "Rolling back" in wrapper
 
