@@ -6,6 +6,8 @@
   the 25 MiB unpacked-archive, per-file, and file-count safety limits.
 - Added browser-side size validation and a regression test for skill bundles
   that legitimately exceed the former upload ceiling.
+- Aligned the Nginx request-body ceiling with the 32 MiB skill-file limit,
+  including room for multipart form overhead.
 
 ## 0.1.1 - 2026-09-26
 

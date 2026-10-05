@@ -46,3 +46,9 @@ def test_agent_sudo_rule_exposes_only_the_fixed_wrapper() -> None:
         "azdo-injecticide ALL=(root) NOPASSWD: "
         "/usr/local/sbin/injecticide-deploy *"
     )
+
+
+def test_reverse_proxy_accepts_skill_upload_limit() -> None:
+    nginx_config = (ROOT / "nginx.conf").read_text(encoding="utf-8")
+
+    assert "client_max_body_size 34m;" in nginx_config
