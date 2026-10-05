@@ -5,7 +5,7 @@ import zipfile
 from pathlib import Path
 
 from skill_sandbox.scan_rules import load_rule_catalog
-from webapp.skill_scanner import scan_upload
+from webapp.skill_scanner import MAX_UPLOAD_BYTES, scan_upload
 
 
 def test_scan_single_skill_detects_prompt_override():
@@ -69,6 +69,20 @@ def test_scan_zip_handles_multiple_files():
     bad_findings = files["bad.skill"]["findings"]
     finding_ids = {finding["id"] for finding in bad_findings}
     assert "subprocess_spawn" in finding_ids
+
+
+def test_scan_zip_allows_bundle_above_legacy_upload_limit():
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_STORED) as archive:
+        archive.writestr("references/large-reference.bin", b"\x00" * (11 * 1024 * 1024))
+
+    payload = buffer.getvalue()
+    assert 10 * 1024 * 1024 < len(payload) < MAX_UPLOAD_BYTES
+
+    result = scan_upload(payload, "large-reference.skill")
+
+    assert result["summary"]["total_files"] == 1
+    assert result["files"][0]["skipped"] is True
 
 
 def _build_sqlite_bytes(rows):

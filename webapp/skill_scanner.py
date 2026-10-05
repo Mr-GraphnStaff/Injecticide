@@ -13,7 +13,7 @@ from skill_sandbox.finding_enrichment import build_finding, classify_artifact_ro
 from skill_sandbox.governance import build_governance_profile
 from skill_sandbox.scan_rules import build_scan_units, compile_patterns, find_rule_matches
 
-MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_UPLOAD_BYTES = 32 * 1024 * 1024
 MAX_ZIP_FILES = 200
 MAX_ZIP_TOTAL_BYTES = 25 * 1024 * 1024
 MAX_FILE_BYTES = 5 * 1024 * 1024
@@ -25,7 +25,7 @@ PATTERNS = compile_patterns()
 
 def scan_upload(upload_bytes: bytes, filename: str) -> Dict[str, object]:
     if len(upload_bytes) > MAX_UPLOAD_BYTES:
-        raise ValueError("Upload exceeds size limit.")
+        raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit.")
 
     is_zip = filename.lower().endswith(".zip") or zipfile.is_zipfile(io.BytesIO(upload_bytes))
     if is_zip:

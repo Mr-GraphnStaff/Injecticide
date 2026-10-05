@@ -125,6 +125,13 @@ def test_zip_too_many_files_rejected(monkeypatch):
         sandbox_app.scan_upload(payload, "bomb.zip")
 
 
+def test_scan_upload_rejects_payload_above_transport_limit(monkeypatch):
+    monkeypatch.setattr(sandbox_app, "MAX_UPLOAD_BYTES", 1024 * 1024)
+
+    with pytest.raises(ValueError, match="exceeds 1 MiB size limit"):
+        sandbox_app.scan_upload(b"X" * (1024 * 1024 + 1), "SKILL.md")
+
+
 def test_tar_traversal_and_links_skipped():
     traversal = tarfile.TarInfo("../evil.txt")
     traversal.size = len(b"bad")

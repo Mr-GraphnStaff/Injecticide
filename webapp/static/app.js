@@ -1115,10 +1115,20 @@ function App({ onBack, buildInfo }) {
         setSkillFindingFilter('all');
     };
 
+    const MAX_SKILL_UPLOAD_BYTES = 32 * 1024 * 1024;
+
     const handleSkillFileChange = (event) => {
         const file = event.target.files?.[0] || null;
-        setSkillFile(file);
         resetSkillScanState();
+
+        if (file && file.size > MAX_SKILL_UPLOAD_BYTES) {
+            setSkillFile(null);
+            event.target.value = '';
+            setSkillScanError('File exceeds the 32 MiB upload limit.');
+            return;
+        }
+
+        setSkillFile(file);
     };
 
     const scanSkillFile = async () => {
@@ -1446,7 +1456,7 @@ function App({ onBack, buildInfo }) {
                                     <h3 className="text-sm font-medium mb-3 text-gray-400">Claude Skill Upload</h3>
                                     <div className="space-y-3">
                                         <label className="block text-sm font-medium text-gray-300">
-                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload SKILL.md, .skill, or .zip
+                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload SKILL.md, .skill, or .zip (up to 32 MiB)
                                         </label>
                                         <input
                                             type="file"

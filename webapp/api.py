@@ -503,7 +503,7 @@ async def scan_skill_file(file: UploadFile = File(...)):
     try:
         data = await file.read()
         if len(data) > MAX_UPLOAD_BYTES:
-            raise ValueError("Upload exceeds size limit")
+            raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit")
 
         if sandbox_url:
             r = requests.post(

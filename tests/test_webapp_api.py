@@ -108,6 +108,26 @@ def test_scan_api_allows_binary_reference_db_upload():
     assert payload["files"][0]["reason"] == "Binary or non-text content"
 
 
+def test_scan_api_allows_upload_above_legacy_limit():
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/skills/scan",
+        files={
+            "file": (
+                "large-reference.bin",
+                b"\x00" * (11 * 1024 * 1024),
+                "application/octet-stream",
+            )
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["summary"]["total_files"] == 1
+    assert payload["files"][0]["skipped"] is True
+
+
 def test_scan_api_detects_sqlite_pii_phi():
     client = TestClient(app)
 
