@@ -26,7 +26,7 @@ else:
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
-MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_UPLOAD_BYTES = 32 * 1024 * 1024
 MAX_ARCHIVE_FILES = 200
 MAX_ARCHIVE_TOTAL_BYTES = 25 * 1024 * 1024
 MAX_FILE_BYTES = 5 * 1024 * 1024
@@ -58,7 +58,10 @@ async def scan_skill(file: UploadFile = File(...)) -> Dict[str, object]:
 
     upload_bytes = await file.read()
     if len(upload_bytes) > MAX_UPLOAD_BYTES:
-        raise HTTPException(status_code=400, detail="Upload exceeds size limit.")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit.",
+        )
 
     try:
         result = scan_upload(upload_bytes, file.filename)
@@ -73,6 +76,9 @@ async def scan_skill(file: UploadFile = File(...)) -> Dict[str, object]:
 
 
 def scan_upload(upload_bytes: bytes, filename: str) -> Dict[str, object]:
+    if len(upload_bytes) > MAX_UPLOAD_BYTES:
+        raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit.")
+
     lower_name = filename.lower()
 
     if lower_name.endswith(".zip") or zipfile.is_zipfile(io.BytesIO(upload_bytes)):

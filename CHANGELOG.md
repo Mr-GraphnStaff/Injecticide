@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Raised the skill-bundle upload ceiling from 10 MiB to 32 MiB while retaining
+  the 25 MiB unpacked-archive, per-file, and file-count safety limits.
+- Added browser-side size validation and a regression test for skill bundles
+  that legitimately exceed the former upload ceiling.
+
 ## 0.1.1 - 2026-09-26
 
 - Added Azure Pipelines validation and approval-gated Raspberry Pi deployment.
