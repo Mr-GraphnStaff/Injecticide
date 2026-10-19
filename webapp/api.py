@@ -2,7 +2,8 @@
 Injecticide Web Application - FastAPI Backend
 """
 
-from fastapi import FastAPI, HTTPException, WebSocket, UploadFile, File
+from fastapi import FastAPI, HTTPException, WebSocket, UploadFile, File, Form
+from starlette.concurrency import run_in_threadpool
 from fastapi.websockets import WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -22,6 +23,7 @@ import zipfile
 import requests
 import logging
 import tomllib
+import threading
 from functools import lru_cache
 
 # Add parent directory to path to import Injecticide modules
@@ -43,6 +45,25 @@ from webapp.config_loader import (
     resolve_payload_preset,
 )
 from webapp.skill_scanner import scan_upload, MAX_UPLOAD_BYTES
+from skill_sandbox.package_formats import bounded_data, RUNTIMES
+
+SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
+
+
+def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url):
+    if not sandbox_url:
+        return scan_upload(data, filename, target_runtime, bounded_data(evidence))
+    with requests.Session() as session:
+        response = session.post(
+            f"{sandbox_url.rstrip('/')}/scan",
+            files={"file": (filename, data, content_type)},
+            data={"target_runtime": target_runtime, "governance_evidence": evidence},
+            timeout=(5, 45),
+        )
+        if response.status_code in {400, 413, 422, 429}:
+            raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Scan rejected"))
+        response.raise_for_status()
+        return response.json()
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -494,34 +515,38 @@ async def root():
     return {"message": "Injecticide API"}
 
 @app.post("/api/skills/scan")
-async def scan_skill_file(file: UploadFile = File(...)):
+async def scan_skill_file(file: UploadFile = File(...), target_runtime: str = Form("auto"),
+                          governance_evidence: str = Form("{}")):
     if not file.filename:
+        await file.close()
         raise HTTPException(status_code=400, detail="Missing filename")
-
-    sandbox_url = os.getenv("SKILL_SANDBOX_URL")
-
+    if not SKILL_SCAN_SLOT.acquire(blocking=False):
+        await file.close()
+        raise HTTPException(status_code=429, detail="Another package scan is running. Retry after it finishes.")
     try:
-        data = await file.read()
+        if target_runtime not in RUNTIMES:
+            raise ValueError("Unsupported target runtime")
+        if not isinstance(bounded_data(governance_evidence), dict):
+            raise ValueError("Governance evidence must be a JSON object")
+        data = await file.read(MAX_UPLOAD_BYTES + 1)
         if len(data) > MAX_UPLOAD_BYTES:
             raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit")
-
-        if sandbox_url:
-            r = requests.post(
-                f"{sandbox_url.rstrip('/')}/scan",
-                files={"file": (file.filename, data, file.content_type)},
-                timeout=(5, 30),
-            )
-            r.raise_for_status()
-            return r.json()
-        else:
-            return scan_upload(data, file.filename)
-
+        return await run_in_threadpool(_scan_skill_data, data, file.filename, file.content_type,
+                                      target_runtime, governance_evidence, os.getenv("SKILL_SANDBOX_URL"))
     except requests.RequestException:
         raise HTTPException(status_code=502, detail="Skill sandbox unavailable")
     except zipfile.BadZipFile:
         raise HTTPException(status_code=400, detail="Invalid zip archive")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+    finally:
+        SKILL_SCAN_SLOT.release()
+        await file.close()
+
+
+@app.get("/api/skills/profiles")
+async def skill_profiles():
+    return {"runtimes": RUNTIMES, "default": "auto", "publisher_identity": "not_inferred_from_format"}
 
 async def _shutdown_server():
     await asyncio.sleep(0.1)

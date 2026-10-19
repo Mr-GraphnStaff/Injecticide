@@ -27,3 +27,14 @@ not install or update either file.
 Cache removal is intentionally scoped to Injecticide images. The wrapper does
 not run a global Docker cache prune because the Pi also hosts unrelated
 services.
+# Host memory controller prerequisite
+
+The deployment wrapper checks Docker memory-limit support before stopping the stack.
+`docker info --format '{{.MemoryLimit}}'` must return `true`.
+On the production Raspberry Pi, memory control was enabled by appending
+`cgroup_enable=memory` to `/boot/firmware/cmdline.txt` and rebooting after backing up
+the original file. Check cgroup v2's `cgroup.controllers` and the actual container's
+`memory.max`; `/proc/cgroups` alone does not establish v2 support. Confirm the sandbox
+has a 256 MiB limit after containers are recreated. See the October 19 package-scan
+validation record for the bounded allocation test and backup path.
+

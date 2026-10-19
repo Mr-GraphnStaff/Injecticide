@@ -15,6 +15,12 @@ BLOCK_BY_DEFAULT_RULES = {
 }
 
 CODE_EXECUTION_RULES = {
+    "code_in_text_artifact",
+    "executable_packaged_as_document",
+    "declared_execution_target",
+    "declared_process_launch",
+    "broad_tool_preapproval",
+    "insecure_component_transport",
     "dynamic_exec",
     "subprocess_spawn",
     "tool_escape",
@@ -39,6 +45,7 @@ ENTERPRISE_WRITE_RULES = {
 }
 
 SENSITIVE_HANDLING_RULES = {
+    "literal_credential_declaration",
     "secret_exfiltration",
     "sensitive_keywords",
 }

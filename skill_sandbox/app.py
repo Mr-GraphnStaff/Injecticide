@@ -4,10 +4,13 @@ import io
 import tarfile
 import tempfile
 import zipfile
+import hashlib
+import threading
 from pathlib import Path, PurePosixPath
 from typing import Dict, Iterable, List, Tuple
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from starlette.concurrency import run_in_threadpool
 
 if __package__:
     from .artifact_text import extract_scannable_text
@@ -16,6 +19,8 @@ if __package__:
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from .governance import build_governance_profile
     from .scan_rules import build_scan_units, compile_patterns, find_rule_matches
+    from .package_analysis import enrich_result
+    from .package_formats import bounded_data, RUNTIMES
 else:
     from artifact_text import extract_scannable_text
     from behavior_analysis import analyze_behavior
@@ -23,6 +28,8 @@ else:
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from governance import build_governance_profile
     from scan_rules import build_scan_units, compile_patterns, find_rule_matches
+    from package_analysis import enrich_result
+    from package_formats import bounded_data, RUNTIMES
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
@@ -49,68 +56,72 @@ PRIORITY_EXTENSIONS = (
 )
 
 PATTERNS = compile_patterns()
+SCAN_SLOT = threading.BoundedSemaphore(1)
+MAX_TEXT_CHARS = 1024 * 1024
 
 
 @app.post("/scan")
-async def scan_skill(file: UploadFile = File(...)) -> Dict[str, object]:
+async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("auto"),
+                     governance_evidence: str = Form("{}")) -> Dict[str, object]:
     if not file.filename:
+        await file.close()
         raise HTTPException(status_code=400, detail="Missing filename")
 
-    upload_bytes = await file.read()
-    if len(upload_bytes) > MAX_UPLOAD_BYTES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit.",
-        )
-
+    if not SCAN_SLOT.acquire(blocking=False):
+        await file.close()
+        raise HTTPException(status_code=429, detail="Another package scan is running. Retry after it finishes.")
     try:
-        result = scan_upload(upload_bytes, file.filename)
-    except ValueError as exc:
+        upload_bytes = await file.read(MAX_UPLOAD_BYTES + 1)
+        evidence = bounded_data(governance_evidence)
+        result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence)
+        return result
+    except (ValueError, zipfile.BadZipFile, tarfile.TarError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except zipfile.BadZipFile:
-        raise HTTPException(status_code=400, detail="Invalid zip archive")
-    except tarfile.TarError:
-        raise HTTPException(status_code=400, detail="Invalid tar archive")
-
-    return result
+    finally:
+        SCAN_SLOT.release()
+        await file.close()
 
 
-def scan_upload(upload_bytes: bytes, filename: str) -> Dict[str, object]:
+def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None) -> Dict[str, object]:
     if len(upload_bytes) > MAX_UPLOAD_BYTES:
         raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit.")
 
+    if target_runtime not in RUNTIMES:
+        raise ValueError("Unsupported target runtime")
     lower_name = filename.lower()
 
     if lower_name.endswith(".zip") or zipfile.is_zipfile(io.BytesIO(upload_bytes)):
-        return _scan_archive(upload_bytes, filename, archive_type="zip")
+        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence)
 
     if lower_name.endswith((".tar", ".tar.gz", ".tgz")):
-        return _scan_archive(upload_bytes, filename, archive_type="tar")
+        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence)
 
-    return _scan_single_file(upload_bytes, filename)
+    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence)
 
 
-def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str) -> Dict[str, object]:
+def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None) -> Dict[str, object]:
     warnings: List[str] = []
+    excluded = []
     with tempfile.TemporaryDirectory() as temp_root:
         temp_path = Path(temp_root)
         if archive_type == "zip":
-            extracted = _safe_extract_zip(upload_bytes, temp_path, warnings)
+            extracted = _safe_extract_zip(upload_bytes, temp_path, warnings, excluded)
         elif archive_type == "tar":
-            extracted = _safe_extract_tar(upload_bytes, temp_path, warnings)
+            extracted = _safe_extract_tar(upload_bytes, temp_path, warnings, excluded)
         else:
             raise ValueError("Unsupported archive type.")
 
         results, text_sources = _scan_extracted_files(extracted)
+        result = _assemble_result(filename, archive_type, results, warnings, text_sources)
+        return enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text)
 
-    return _assemble_result(filename, archive_type, results, warnings, text_sources)
 
-
-def _scan_single_file(upload_bytes: bytes, filename: str) -> Dict[str, object]:
+def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None) -> Dict[str, object]:
     entry, text = _scan_file_bytes(filename, upload_bytes)
     results = [entry]
     text_sources = _build_text_sources([(filename, text, entry["artifact_role"])])
-    return _assemble_result(filename, "skill", results, [], text_sources)
+    return enrich_result(_assemble_result(filename, "skill", results, [], text_sources), text_sources,
+                         upload_bytes, target_runtime, governance_evidence, rescan=_scan_text)
 
 
 def _max_scannable_file_bytes(path: str) -> int:
@@ -127,9 +138,10 @@ def _is_large_scannable_artifact(path: str) -> bool:
     return "/assets/" in anchored and normalized.endswith(LARGE_ASSET_EXTENSIONS)
 
 
-def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> List[Tuple[str, Path]]:
+def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str], excluded=None) -> List[Tuple[str, Path]]:
     extracted: List[Tuple[str, Path]] = []
     total_uncompressed = 0
+    seen_paths = set()
 
     with zipfile.ZipFile(io.BytesIO(upload_bytes)) as archive:
         members = [info for info in archive.infolist() if not info.is_dir()]
@@ -143,23 +155,27 @@ def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
                 raise ValueError("Zip archive exceeds uncompressed size limit.")
 
             if info.file_size > _max_scannable_file_bytes(info.filename):
-                warnings.append(f"Skipped {info.filename}: file too large.")
+                _skip_entry(info.filename, info.file_size, "file too large.", warnings, excluded)
                 continue
 
             if _zipinfo_is_symlink(info):
-                warnings.append(f"Skipped {info.filename}: symlink entries are not allowed.")
+                _skip_entry(info.filename, info.file_size, "symlink entries are not allowed.", warnings, excluded)
                 continue
 
             safe_name = _sanitize_member_name(info.filename)
             if not safe_name:
-                warnings.append(f"Skipped {info.filename}: invalid path.")
+                _skip_entry(info.filename, info.file_size, "invalid path.", warnings, excluded)
                 continue
 
             destination = _safe_join(root, safe_name)
             if destination is None:
-                warnings.append(f"Skipped {info.filename}: invalid path.")
+                _skip_entry(info.filename, info.file_size, "invalid path.", warnings, excluded)
                 continue
 
+            if safe_name.casefold() in seen_paths:
+                _skip_entry(safe_name, info.file_size, "duplicate or case-colliding path.", warnings, excluded)
+                continue
+            seen_paths.add(safe_name.casefold())
             destination.parent.mkdir(parents=True, exist_ok=True)
             with archive.open(info) as source, open(destination, "wb") as target:
                 _copy_limited(source, target, _max_scannable_file_bytes(info.filename))
@@ -169,9 +185,10 @@ def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
     return extracted
 
 
-def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str]) -> List[Tuple[str, Path]]:
+def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str], excluded=None) -> List[Tuple[str, Path]]:
     extracted: List[Tuple[str, Path]] = []
     total_uncompressed = 0
+    seen_paths = set()
 
     with tarfile.open(fileobj=io.BytesIO(upload_bytes), mode="r:*") as archive:
         members = [member for member in archive.getmembers() if not member.isdir()]
@@ -185,28 +202,35 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str]) -> L
                 raise ValueError("Tar archive exceeds uncompressed size limit.")
 
             if member.size > _max_scannable_file_bytes(member.name):
-                warnings.append(f"Skipped {member.name}: file too large.")
+                _skip_entry(member.name, member.size, "file too large.", warnings, excluded)
                 continue
 
             if member.issym() or member.islnk():
-                warnings.append(f"Skipped {member.name}: link entries are not allowed.")
+                _skip_entry(member.name, member.size, "link entries are not allowed.", warnings, excluded)
                 continue
 
             safe_name = _sanitize_member_name(member.name)
             if not safe_name:
-                warnings.append(f"Skipped {member.name}: invalid path.")
+                _skip_entry(member.name, member.size, "invalid path.", warnings, excluded)
                 continue
 
             destination = _safe_join(root, safe_name)
             if destination is None:
-                warnings.append(f"Skipped {member.name}: invalid path.")
+                _skip_entry(member.name, member.size, "invalid path.", warnings, excluded)
                 continue
 
+            if not member.isfile():
+                _skip_entry(member.name, member.size, "special archive entries are not allowed.", warnings, excluded)
+                continue
             source = archive.extractfile(member)
             if source is None:
-                warnings.append(f"Skipped {member.name}: unable to read entry.")
+                _skip_entry(member.name, member.size, "unable to read entry.", warnings, excluded)
                 continue
 
+            if safe_name.casefold() in seen_paths:
+                _skip_entry(safe_name, member.size, "duplicate or case-colliding path.", warnings, excluded)
+                continue
+            seen_paths.add(safe_name.casefold())
             destination.parent.mkdir(parents=True, exist_ok=True)
             with source, open(destination, "wb") as target:
                 _copy_limited(source, target, _max_scannable_file_bytes(member.name))
@@ -248,15 +272,39 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         "reason": "",
         "artifact_role": classify_artifact_role(path),
         "findings": [],
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "assessment_state": "unsupported",
+        "required_component": Path(path).name in {"SKILL.md", "plugin.json", "gemini-extension.json", "openclaw.plugin.json", "mcp.json", ".mcp.json", "hooks.json", "manifest.json"},
     }
 
-    text, reason = extract_scannable_text(data)
+    magic = next((kind for prefix, kind in ((b"\x89PNG\r\n\x1a\n", "png"), (b"OTTO", "opentype_font"),
+                    (b"\x00\x01\x00\x00", "truetype_font"), (b"MZ", "pe_executable"), (b"\x7fELF", "elf_executable"),
+                    (b"SQLite format 3\x00", "sqlite"), (b"PK\x03\x04", "zip_container")) if data.startswith(prefix)), None)
+    entry["detected_content_type"] = magic or "text_or_unknown"
+    if magic and Path(path).suffix.lower() in {".md", ".txt", ".py", ".js"}:
+        entry["content_extension_mismatch"] = True
+
+    if data.startswith((b"MZ", b"\x7fELF")):
+        entry.update(skipped=True, reason="Executable binary content is not analyzed.", assessment_state="executable_not_analyzed")
+        return entry, None
+    try:
+        text, reason = extract_scannable_text(data)
+    except ValueError as exc:
+        entry.update(skipped=True, reason=str(exc), assessment_state="limited_or_truncated")
+        return entry, None
     if text is None:
         entry["skipped"] = True
         entry["reason"] = reason
+        entry["assessment_state"] = "binary_asset_inventory_only"
         return entry, None
 
     entry["reason"] = reason
+    entry["assessment_state"] = "structured_content_analyzed" if reason else "text_analyzed"
+    if reason:
+        entry["analysis_scope"] = "Bounded text projection; binary contents and omitted records are not certified safe."
+    if len(text) > MAX_TEXT_CHARS:
+        text = text[:MAX_TEXT_CHARS]
+        entry.update(assessment_state="limited_or_truncated", reason="Text analysis limited to 1 MiB characters.")
     entry["artifact_role"] = classify_artifact_role(path, text)
     entry["findings"] = _scan_text(path, text, entry["artifact_role"])
     return entry, text
@@ -272,6 +320,9 @@ def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, objec
         matches = []
         for unit in scan_units:
             matches.extend(find_rule_matches(pattern, unit))
+            if len(matches) >= 3:
+                matches = matches[:3]
+                break
         if not matches:
             continue
 
@@ -329,7 +380,7 @@ def _sanitize_member_name(name: str) -> str | None:
     normalized = name.replace("\\", "/")
     path = PurePosixPath(normalized)
 
-    if path.is_absolute() or ".." in path.parts:
+    if path.is_absolute() or ".." in path.parts or ":" in normalized or "\x00" in normalized:
         return None
 
     cleaned = "/".join(part for part in path.parts if part not in ("", "."))
@@ -363,9 +414,17 @@ def _copy_limited(source, target, limit: int) -> None:
             break
         target.write(chunk)
         remaining -= len(chunk)
+    if remaining == 0 and source.read(1):
+        raise ValueError("Archive member exceeds extraction byte budget")
 def _build_text_sources(text_pairs: Iterable[Tuple[str, str | None, str]]) -> List[Dict[str, str]]:
     sources = []
     for path, text, artifact_role in text_pairs:
         if text:
             sources.append({"path": path, "text": text, "artifact_role": artifact_role})
     return sources
+
+
+def _skip_entry(path, size, reason, warnings, excluded):
+    warnings.append(f"Skipped {path}: {reason}")
+    if excluded is not None:
+        excluded.append({"path": path, "size": size, "sha256": None, "assessment_state": "limited_or_truncated" if "too large" in reason else "rejected_unsafe_entry", "reason": reason, "skipped": True, "findings": [], "required_component": Path(path).name in {"SKILL.md", "plugin.json", "hooks.json", "mcp.json", ".mcp.json", "manifest.json"}})

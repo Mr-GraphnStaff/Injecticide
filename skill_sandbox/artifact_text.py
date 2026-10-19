@@ -16,6 +16,8 @@ MAX_SQLITE_ROWS_PER_TABLE = 50
 MAX_SQLITE_TEXT_CHARS = 100_000
 MAX_OFFICE_PARTS = 50
 MAX_OFFICE_TEXT_CHARS = 100_000
+MAX_OFFICE_PART_BYTES = 1024 * 1024
+MAX_OFFICE_TOTAL_XML_BYTES = 5 * 1024 * 1024
 
 
 def extract_scannable_text(data: bytes) -> Tuple[str | None, str]:
@@ -73,6 +75,13 @@ def _read_sqlite_rows(db_path: str) -> str:
     lines = []
     total_chars = 0
     connection = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    operations = [0]
+    def budget():
+        operations[0] += 1
+        return operations[0] > 5000
+    connection.set_progress_handler(budget, 1000)
+    connection.execute("PRAGMA query_only=ON")
+    connection.execute("PRAGMA trusted_schema=OFF")
 
     try:
         tables = [
@@ -84,7 +93,8 @@ def _read_sqlite_rows(db_path: str) -> str:
         ]
 
         for table in tables:
-            columns = [row[1] for row in connection.execute(f'PRAGMA table_info("{table}")')]
+            quoted_table = table.replace('"', '""')
+            columns = [row[1] for row in connection.execute(f'PRAGMA table_info("{quoted_table}")')]
             if not columns:
                 continue
 
@@ -93,7 +103,7 @@ def _read_sqlite_rows(db_path: str) -> str:
             if total_chars >= MAX_SQLITE_TEXT_CHARS:
                 break
 
-            query = f'SELECT * FROM "{table}" LIMIT {MAX_SQLITE_ROWS_PER_TABLE}'
+            query = f'SELECT * FROM "{quoted_table}" LIMIT {MAX_SQLITE_ROWS_PER_TABLE}'
             for row in connection.execute(query):
                 values = []
                 for column, value in zip(columns, row):
@@ -139,8 +149,15 @@ def extract_office_document_text(data: bytes) -> str | None:
 
             lines = []
             total_chars = 0
+            total_xml_bytes = 0
+            if len(part_names) > MAX_OFFICE_PARTS:
+                raise ValueError("Office content exceeds XML part-count analysis limit.")
             for name in part_names[:MAX_OFFICE_PARTS]:
                 try:
+                    part = archive.getinfo(name)
+                    total_xml_bytes += part.file_size
+                    if part.file_size > MAX_OFFICE_PART_BYTES or total_xml_bytes > MAX_OFFICE_TOTAL_XML_BYTES:
+                        raise ValueError("Office content exceeds decompressed XML analysis limit.")
                     xml_bytes = archive.read(name)
                 except KeyError:
                     continue
@@ -184,6 +201,8 @@ def _office_part_names(names: Iterable[str]) -> list[str]:
 
 
 def _extract_xml_text(xml_bytes: bytes) -> str:
+    if b"<!DOCTYPE" in xml_bytes.upper() or b"<!ENTITY" in xml_bytes.upper():
+        raise ValueError("Office XML with DTD/entities is outside the safe parser profile.")
     root = ElementTree.fromstring(xml_bytes)
     text = " ".join(segment.strip() for segment in root.itertext() if segment and segment.strip())
     text = re.sub(r"\s+", " ", text).strip()
