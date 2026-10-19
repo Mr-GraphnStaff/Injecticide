@@ -755,6 +755,90 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
     );
 }
 
+const SKILL_FILES_PER_PAGE = 10;
+const SKILL_FINDINGS_PER_PAGE = 10;
+const SKILL_SCAN_TIMEOUT_MS = 60000;
+
+function ScanPageControls({ page, total, size, onChange, label }) {
+    if (total <= size) return null;
+    return (
+        <nav aria-label={label} className="flex items-center justify-between gap-2 my-2">
+            <button type="button" disabled={page === 0} onClick={() => onChange(page - 1)}>Previous</button>
+            <span>{page * size + 1}–{Math.min((page + 1) * size, total)} of {total}</span>
+            <button type="button" disabled={(page + 1) * size >= total} onClick={() => onChange(page + 1)}>Next</button>
+        </nav>
+    );
+}
+
+function SkillFindingList({ findings, artifactRole, depth }) {
+    const [page, setPage] = useState(0);
+    return (
+        <>
+            <ul className="mt-1 space-y-1 text-[11px] text-gray-400">
+                {findings.slice(page * SKILL_FINDINGS_PER_PAGE, (page + 1) * SKILL_FINDINGS_PER_PAGE).map((finding, index) => {
+                    const reviewClass = classifyReviewClass(finding, artifactRole);
+                    return (
+                        <li key={page * SKILL_FINDINGS_PER_PAGE + index} data-skill-finding="true">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-gray-200">{finding.id}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${findingPillClass(reviewClass)}`}>
+                                    {classifyFindingLabel(reviewClass)}
+                                </span>
+                            </div>
+                            ({finding.severity}) - {finding.description}
+                            <div className="text-[10px] text-gray-500">
+                                {finding.finding_category} / {finding.subject} / {finding.action_state} / {finding.disposition}
+                            </div>
+                            {depth === 'detailed' && finding.samples?.length > 0 && (
+                                <div className="text-[10px] text-gray-500">
+                                    Samples: {finding.samples.map(sample => String(sample).slice(0, 500)).join(' | ')}
+                                    {finding.samples.some(sample => String(sample).length > 500) && ' (preview; full samples in export)'}
+                                </div>
+                            )}
+                            {finding.display_kind === 'documented_pattern' && <div>Documented pattern in reference or audit content</div>}
+                            {finding.display_kind === 'informational_signal' && <div>Informational context only</div>}
+                        </li>
+                    );
+                })}
+            </ul>
+            <ScanPageControls page={page} total={findings.length} size={SKILL_FINDINGS_PER_PAGE} onChange={setPage} label="Finding pages" />
+        </>
+    );
+}
+
+function SkillScanFiles({ files, filter, depth }) {
+    const [page, setPage] = useState(0);
+    return (
+        <>
+            <ScanPageControls page={page} total={files.length} size={SKILL_FILES_PER_PAGE} onChange={setPage} label="File pages" />
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+                {files.slice(page * SKILL_FILES_PER_PAGE, (page + 1) * SKILL_FILES_PER_PAGE).map((item, index) => {
+                    const artifactRole = item.artifact_role || 'active';
+                    const findings = filterFindings(item.findings || [], artifactRole, filter);
+                    const summary = summarizeFileFindings(findings);
+                    return (
+                        <div key={page * SKILL_FILES_PER_PAGE + index} data-skill-file="true" className="border border-gray-800/70 rounded-md p-2">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-gray-200 truncate" title={item.path}>{item.path}</span>
+                                <span>{item.skipped ? 'Skipped' : `${summary.actionableCount} review findings`}</span>
+                            </div>
+                            {!item.skipped && summary.actionableCount === 0 && (
+                                <p>{summary.documentedPatternCount > 0
+                                    ? `${summary.documentedPatternCount} documented patterns; reference or audit content, not treated as executable behavior.`
+                                    : summary.informationalSignalCount > 0
+                                        ? `${summary.informationalSignalCount} informational signals; no blocking behavior detected.`
+                                        : 'No matching findings'}</p>
+                            )}
+                            {item.reason && <p className="text-[10px] text-gray-500">{item.reason}</p>}
+                            <SkillFindingList findings={findings} artifactRole={artifactRole} depth={depth} />
+                        </div>
+                    );
+                })}
+            </div>
+        </>
+    );
+}
+
 function App({ onBack, buildInfo }) {
     const [testConfig, setTestConfig] = useState({
         target_service: 'anthropic',
@@ -788,6 +872,18 @@ function App({ onBack, buildInfo }) {
     const [isScanningSkill, setIsScanningSkill] = useState(false);
     const [skillReportDepth, setSkillReportDepth] = useState('summary');
     const [skillFindingFilter, setSkillFindingFilter] = useState('all');
+    const skillFileInput = useRef(null);
+    const skillScanRequest = useRef(null);
+
+    useEffect(() => () => {
+        const pending = skillScanRequest.current;
+        skillScanRequest.current = null;
+        if (pending) {
+            clearTimeout(pending.timer);
+            pending.controller.abort();
+        }
+    }, []);
+
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -1117,12 +1213,30 @@ function App({ onBack, buildInfo }) {
 
     const MAX_SKILL_UPLOAD_BYTES = 32 * 1024 * 1024;
 
+    const cancelSkillScan = () => {
+        const pending = skillScanRequest.current;
+        skillScanRequest.current = null;
+        if (pending) {
+            clearTimeout(pending.timer);
+            pending.controller.abort();
+        }
+        setIsScanningSkill(false);
+    };
+
+    const clearSkillScan = () => {
+        cancelSkillScan();
+        setSkillFile(null);
+        if (skillFileInput.current) skillFileInput.current.value = '';
+        resetSkillScanState();
+    };
+
     const handleSkillFileChange = (event) => {
+        cancelSkillScan();
         const file = event.target.files?.[0] || null;
+        setSkillFile(null);
         resetSkillScanState();
 
         if (file && file.size > MAX_SKILL_UPLOAD_BYTES) {
-            setSkillFile(null);
             event.target.value = '';
             setSkillScanError('File exceeds the 32 MiB upload limit.');
             return;
@@ -1132,6 +1246,7 @@ function App({ onBack, buildInfo }) {
     };
 
     const scanSkillFile = async () => {
+        if (skillScanRequest.current) return;
         if (!skillFile) {
             setSkillScanError('Select a skill file, reference file, or archive to scan.');
             return;
@@ -1139,14 +1254,24 @@ function App({ onBack, buildInfo }) {
 
         resetSkillScanState();
         setIsScanningSkill(true);
+        const pending = { controller: new AbortController(), timer: null, timedOut: false };
+        skillScanRequest.current = pending;
+        pending.timer = setTimeout(() => {
+            pending.timedOut = true;
+            pending.controller.abort();
+        }, SKILL_SCAN_TIMEOUT_MS);
 
         try {
             const formData = new FormData();
             formData.append('file', skillFile);
+            // Only the active upload needs the File; don't retain it for the report.
+            setSkillFile(null);
+            if (skillFileInput.current) skillFileInput.current.value = '';
 
             const response = await fetch('/api/skills/scan', {
                 method: 'POST',
                 body: formData,
+                signal: pending.controller.signal,
             });
 
             if (!response.ok) {
@@ -1156,12 +1281,21 @@ function App({ onBack, buildInfo }) {
             }
 
             const data = await response.json();
-            setSkillScanResult(data);
+            if (skillScanRequest.current === pending && !pending.controller.signal.aborted) {
+                setSkillScanResult(data);
+            }
         } catch (error) {
-            console.error('Skill scan failed:', error);
-            setSkillScanError(error.message || 'Scan failed');
+            if (skillScanRequest.current === pending) {
+                setSkillScanError(pending.timedOut
+                    ? 'Scan timed out. Select the file again to retry.'
+                    : error.message || 'Scan failed');
+            }
         } finally {
-            setIsScanningSkill(false);
+            clearTimeout(pending.timer);
+            if (skillScanRequest.current === pending) {
+                skillScanRequest.current = null;
+                setIsScanningSkill(false);
+            }
         }
     };
 
@@ -1460,9 +1594,11 @@ function App({ onBack, buildInfo }) {
                                         </label>
                                         <input
                                             type="file"
+                                            ref={skillFileInput}
+                                            aria-label="Skill file"
                                             className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600"
                                             onChange={handleSkillFileChange}
-                                            disabled={disableControls || isScanningSkill}
+                                            disabled={disableControls}
                                         />
                                         <button
                                             onClick={scanSkillFile}
@@ -1472,6 +1608,12 @@ function App({ onBack, buildInfo }) {
                                             <i className={`fas ${isScanningSkill ? 'fa-spinner fa-spin' : 'fa-shield-alt'} mr-2`}></i>
                                             {isScanningSkill ? 'Scanning…' : 'Scan Skill File/Bundle'}
                                         </button>
+                                        {(skillFile || skillScanResult || isScanningSkill || skillScanError) && (
+                                            <button type="button" onClick={clearSkillScan} className="text-sm text-gray-300 underline">
+                                                {isScanningSkill ? 'Cancel and clear scan' : 'Clear scan'}
+                                            </button>
+                                        )}
+                                        <p className="text-xs text-gray-400">Selecting another file clears the previous scan. Full findings remain available in the current report export.</p>
                                         {skillScanError && (
                                             <p className="text-xs text-yellow-400">{skillScanError}</p>
                                         )}
@@ -1610,84 +1752,7 @@ function App({ onBack, buildInfo }) {
                                                         ))}
                                                     </ul>
                                                 )}
-                                                <div className="space-y-2 max-h-40 overflow-y-auto">
-                                                    {skillScanResult.files.map((item, idx) => (
-                                                        <div key={idx} className="border border-gray-800/70 rounded-md p-2">
-                                                            {(() => {
-                                                                const visibleFindings = filterFindings(
-                                                                    item.findings || [],
-                                                                    item.artifact_role || 'active',
-                                                                    skillFindingFilter
-                                                                );
-                                                                const summary = summarizeFileFindings(visibleFindings);
-                                                                return (
-                                                                    <>
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-gray-200 truncate">{item.path}</span>
-                                                                            {item.skipped ? (
-                                                                                <span className="text-[10px] text-gray-500">Skipped</span>
-                                                                            ) : summary.actionableCount > 0 ? (
-                                                                                <span className="text-[10px] text-red-300">{summary.actionableCount} review findings</span>
-                                                                            ) : summary.documentedPatternCount > 0 ? (
-                                                                                <span className="text-[10px] text-blue-300">{summary.documentedPatternCount} documented patterns</span>
-                                                                            ) : summary.informationalSignalCount > 0 ? (
-                                                                                <span className="text-[10px] text-yellow-300">{summary.informationalSignalCount} informational signals</span>
-                                                                            ) : (
-                                                                                <span className="text-[10px] text-green-300">No matching findings</span>
-                                                                            )}
-                                                                        </div>
-                                                                        {!item.skipped && (summary.documentedPatternCount > 0 || summary.informationalSignalCount > 0) && summary.actionableCount === 0 && (
-                                                                            <p className="text-[10px] text-gray-500 mt-1">
-                                                                                {summary.documentedPatternCount > 0
-                                                                                    ? 'Reference or audit content documenting risky patterns; not treated as executable behavior.'
-                                                                                    : 'Informational context only; no blocking behavior detected.'}
-                                                                            </p>
-                                                                        )}
-                                                                    </>
-                                                                );
-                                                            })()}
-                                                            {item.reason && (
-                                                                <p className="text-[10px] text-gray-500">{item.reason}</p>
-                                                            )}
-                                                            {filterFindings(item.findings || [], item.artifact_role || 'active', skillFindingFilter).length > 0 && (
-                                                                <ul className="mt-1 space-y-1 text-[11px] text-gray-400">
-                                                                    {filterFindings(item.findings || [], item.artifact_role || 'active', skillFindingFilter).map((finding, findingIdx) => {
-                                                                        const reviewClass = classifyReviewClass(finding, item.artifact_role || 'active');
-                                                                        return (
-                                                                        <li key={findingIdx}>
-                                                                            <div className="flex flex-wrap items-center gap-2">
-                                                                                <span className="text-gray-200">{finding.id}</span>
-                                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${findingPillClass(reviewClass)}`}>
-                                                                                    {classifyFindingLabel(reviewClass)}
-                                                                                </span>
-                                                                            </div>
-                                                                            {' '}({finding.severity}) - {finding.description}
-                                                                            <div className="text-[10px] text-gray-500">
-                                                                                {finding.finding_category} / {finding.subject} / {finding.action_state} / {finding.disposition}
-                                                                            </div>
-                                                                            {finding.samples?.length > 0 && skillReportDepth === 'detailed' && (
-                                                                                <div className="text-[10px] text-gray-500">
-                                                                                    Samples: {finding.samples.join(' | ')}
-                                                                                </div>
-                                                                            )}
-                                                                            {finding.display_kind === 'documented_pattern' && (
-                                                                                <div className="text-[10px] text-blue-300">
-                                                                                    Documented pattern in reference or audit content
-                                                                                </div>
-                                                                            )}
-                                                                            {finding.display_kind === 'informational_signal' && (
-                                                                                <div className="text-[10px] text-yellow-300">
-                                                                                    Informational context only
-                                                                                </div>
-                                                                            )}
-                                                                        </li>
-                                                                    );
-                                                                    })}
-                                                                </ul>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                <SkillScanFiles key={skillFindingFilter} files={skillScanResult.files || []} filter={skillFindingFilter} depth={skillReportDepth} />
                                             </div>
                                         )}
                                     </div>
