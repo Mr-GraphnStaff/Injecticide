@@ -1,0 +1,19 @@
+# Skill scan browser regression
+
+`skill_scan_lifecycle.cjs` runs the current scan UI in an isolated headless browser with synthetic endpoint responses. It does not contact Injecticide or scan real skill files. It checks file release, consecutive scans, cancellation, stale responses, pagination, complete detailed export, timeout, unmount cleanup, and bounded DOM/heap growth across 12 large reports.
+
+Prerequisites: Node.js, the `playwright` package available on Node's module search path, and Microsoft Edge installed. Set `INJECTICIDE_TEST_BROWSER=chrome` to use Chrome instead.
+
+Download the same pinned browser libraries used by `webapp/static/index.html` into `tmp/scan-resource-regression/` from the repository root:
+
+```powershell
+New-Item -ItemType Directory -Force tmp/scan-resource-regression
+Invoke-WebRequest https://unpkg.com/react@18.3.1/umd/react.production.min.js -OutFile tmp/scan-resource-regression/react.js
+Invoke-WebRequest https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js -OutFile tmp/scan-resource-regression/react-dom.js
+Invoke-WebRequest https://unpkg.com/@babel/standalone@7.28.5/babel.min.js -OutFile tmp/scan-resource-regression/babel.js
+node tests/browser/skill_scan_lifecycle.cjs
+```
+
+When using a shared Playwright installation, set `NODE_PATH` to its containing `node_modules` directory first. The test shortens only the scan timeout inside its isolated browser fixture. Heap measurements are JavaScript heap after forced garbage collection, not total browser or system memory.
+
+Optionally set `INJECTICIDE_APP_SOURCE` to a different app.js file to check a baseline. The previous implementation fails the uploaded-file-release assertion.
