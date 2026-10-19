@@ -16,6 +16,13 @@ COPY finding_enrichment.py /app/finding_enrichment.py
 COPY governance.py /app/governance.py
 COPY scan_rules.py /app/scan_rules.py
 COPY sensitive_data.py /app/sensitive_data.py
+COPY package_formats.py /app/package_formats.py
+COPY package_threats.py /app/package_threats.py
+COPY package_evidence.py /app/package_evidence.py
+COPY package_analysis.py /app/package_analysis.py
+COPY review_evidence.py /app/review_evidence.py
+COPY package_checks.py /app/package_checks.py
+COPY schemas /app/schemas
 COPY rules /app/rules
 
 USER appuser

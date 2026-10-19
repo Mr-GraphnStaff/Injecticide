@@ -4,8 +4,15 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
+const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '../..');
+const packageReport = JSON.parse(execFileSync('python', ['-c',
+    "import io,json,zipfile; from skill_sandbox.app import scan_upload; b=io.BytesIO(); z=zipfile.ZipFile(b,'w'); z.writestr('demo/SKILL.md','---\\nname: demo\\ndescription: Fixture\\n---\\nSummarize text.'); z.writestr('demo/logo.png',bytes([137,80,78,71,13,10,26,10,0])); z.close(); print(json.dumps(scan_upload(b.getvalue(),'package-fixture.zip')))"
+], {cwd: root, encoding:'utf8'}));
+const policyReport = JSON.parse(execFileSync('python', ['-c',
+    "import io,json,zipfile; from pathlib import Path; from skill_sandbox.app import scan_upload; b=io.BytesIO(); z=zipfile.ZipFile(b,'w'); z.writestr('demo/SKILL.md','---\\nname: demo\\ndescription: Fixture\\n---\\nSummarize text.'); z.writestr('demo/scripts/apply_notes.py.md',Path('tests/fixtures/package_snippets/apply_notes.py.md').read_text()); z.close(); print(json.dumps(scan_upload(b.getvalue(),'policy-fixture.zip')))"
+], {cwd: root, encoding:'utf8'}));
 const assetRoot = path.join(root, 'tmp/scan-resource-regression');
 const source = fs.readFileSync(process.env.INJECTICIDE_APP_SOURCE || path.join(root, 'webapp/static/app.js'), 'utf8');
 const server = http.createServer((req, res) => {
@@ -31,6 +38,7 @@ const server = http.createServer((req, res) => {
             window.setTimeout = (fn, ms, ...args) => originalSetTimeout(fn, ms === 60000 ? 1200 : ms, ...args);
             window.fetch = async (url, options) => {
                 if (url === '/api/skills/scan') {
+                    window.lastScanRuntime = options.body.get('target_runtime');
                     return new Promise((resolve, reject) => {
                         const ignoreAbort = window.ignoreScanAbort;
                         options.signal.addEventListener('abort', () => {
@@ -61,6 +69,33 @@ const server = http.createServer((req, res) => {
             }), { status: 200 }));
         }, {filename, large});
         const waitReport = filename => page.getByText(filename, {exact:true}).waitFor();
+
+        await page.getByLabel('Target runtime', {exact:true}).selectOption('claude-code');
+        await select('package-fixture.zip');
+        await scan.click();
+        assert.equal(await page.evaluate(() => window.lastScanRuntime), 'claude-code');
+        await page.evaluate(report => window.pendingScans.shift().resolve(new Response(JSON.stringify(report), {status:200})), packageReport);
+        await waitReport('package-fixture.zip');
+        assert.equal(await page.getByText('Package review incomplete', {exact:true}).count(), 1);
+        assert.equal(await page.locator('[data-package-overview]').count(), 1);
+        await page.getByLabel('Package report section', {exact:true}).selectOption('checks');
+        assert.equal(await page.locator('[data-package-evidence]').count(), 10);
+        await page.getByRole('navigation', {name:'Package evidence pages', exact:true}).getByRole('button', {name:'Next', exact:true}).click();
+        assert.equal(await page.locator('[data-package-evidence]').count(), 10);
+        await page.getByRole('button', {name:'detailed', exact:true}).click();
+        const packageDownload = page.waitForEvent('download');
+        await page.getByRole('button', {name:'Export Detailed', exact:true}).click();
+        const packageExport = fs.readFileSync(await (await packageDownload).path(), 'utf8');
+        assert.match(packageExport, /binary_asset_inventory_only/);
+        assert.match(packageExport, /UPD-01/);
+        assert.match(packageExport, /artifact_sha256/);
+
+        await select('policy-fixture.zip');
+        await scan.click();
+        await page.evaluate(report => window.pendingScans.shift().resolve(new Response(JSON.stringify(report), {status:200})), policyReport);
+        await waitReport('policy-fixture.zip');
+        assert.equal(await page.getByText('Executable code packaged as a document', {exact:true}).count(), 1);
+        assert.equal(await page.getByText('Potential upload-control bypass: executable source behind a document extension. Malware is not established.', {exact:true}).count(), 1);
 
         await select('first.skill');
         await scan.click();
@@ -133,7 +168,7 @@ const server = http.createServer((req, res) => {
             maxVisibleFiles:10, maxVisibleFindings:100,
             postGCHeapMiB:measurements.map(m => +(m.usedSize / 1024 / 1024).toFixed(2)),
             postGCNodes:measurements.map(m => m.nodes),
-            checked:['file release','replacement','stale response','pagination','complete export','clear','timeout','unmount']}, null, 2));
+            checked:['real package report','partial coverage headline','policy bypass distinct from malware','package evidence pagination','fingerprint and checks export','file release','replacement','stale response','pagination','complete export','clear','timeout','unmount']}, null, 2));
     } finally {
         await browser.close();
     }

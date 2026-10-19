@@ -1,0 +1,14 @@
+[
+  {
+    "file": "agent-plugins-1.0.0.plugin.json",
+    "url": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+    "sha256": "bd0cfd6388f7d5c5c1b4c5edd70df030276345df115274686a0e6d52a92366ed",
+    "reviewed_on": "2026-10-19"
+  },
+  {
+    "file": "agent-plugins-1.0.0.mcp.json",
+    "url": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+    "sha256": "2d4b2b9d1c95e75a356152534d2071f18094c1ee9be2eec238c91a1e1f9bd115",
+    "reviewed_on": "2026-10-19"
+  }
+]

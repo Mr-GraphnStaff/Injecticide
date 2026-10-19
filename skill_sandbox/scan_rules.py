@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import tokenize
+from itertools import islice
 from functools import lru_cache
 from io import StringIO
 from pathlib import Path
@@ -298,8 +299,8 @@ def _observations_for_pattern(
 ) -> List[Dict[str, object]]:
     return [
         _observation(match.group(0), line_number, context_tag, confidence)
-        for match in pattern.finditer(text)
-    ][:3]
+        for match in islice(pattern.finditer(text), 3)
+    ]
 
 
 def _observation(

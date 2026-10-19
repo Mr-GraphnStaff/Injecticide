@@ -17,6 +17,12 @@ def test_skill_sandbox_dockerfile_copies_scanner_modules():
         "governance.py",
         "scan_rules.py",
         "sensitive_data.py",
+        "package_formats.py",
+        "package_threats.py",
+        "package_evidence.py",
+        "package_analysis.py",
+        "package_checks.py",
+        "review_evidence.py",
     ]
 
     for module_name in expected_modules:

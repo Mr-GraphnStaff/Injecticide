@@ -29,6 +29,9 @@ function summarizeFileFindings(findings) {
 }
 
 function classifyReviewClass(finding, artifactRole = 'active') {
+    if (finding.id === 'executable_packaged_as_document') {
+        return 'security_risk';
+    }
     if (finding.tier === 'block') {
         return 'security_risk';
     }
@@ -138,6 +141,14 @@ function summarizeReviewClasses(scanResult) {
 
 function summarizeAssessment(scanResult) {
     const reviewSummary = summarizeReviewClasses(scanResult);
+
+    if ((scanResult.files || []).some(item => (item.findings || []).some(finding => finding.id === 'executable_packaged_as_document'))) {
+        return { tone: 'high', title: 'Executable code packaged as a document', body: 'This can bypass upload controls based on filename extensions. Review organizational policy compliance separately from malware findings.' };
+    }
+
+    if (scanResult.coverage?.status === 'partial' || scanResult.readiness?.status === 'needs_review' || scanResult.package_analysis?.format_findings?.some(item => item.severity === 'error')) {
+        return { tone: 'medium', title: 'Package review incomplete', body: 'Review findings, format errors, and unassessed content before use. Skipped files are not certified safe.' };
+    }
 
     if (reviewSummary.security_risk > 0) {
         return {
@@ -281,6 +292,25 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     lines.push(`- Flagged files: ${summary.flagged_files ?? 0}`);
     lines.push(`- Review findings: ${summary.total_findings ?? 0}`);
     lines.push(`- Informational findings: ${summary.info_findings ?? 0}`);
+    if (scanResult.package_analysis) {
+        lines.push(`- Package kind: ${scanResult.package_analysis.artifact_kind}`);
+        lines.push(`- Target runtime: ${scanResult.package_analysis.target_runtime}`);
+        lines.push(`- Coverage: ${scanResult.coverage.status}; ${scanResult.coverage.analyzed_files}/${scanResult.coverage.total_files} files analyzed`);
+        lines.push(`- Coverage note: ${scanResult.coverage.statement}`);
+        lines.push(`- Artifact SHA-256: ${scanResult.governance_evidence.artifact_sha256}`);
+        lines.push(`- Runtime evaluation: ${scanResult.governance_evidence.evaluation.status}`);
+        lines.push(`- Scanner: ${scanResult.scanner_metadata.scanner_version}; adapters ${scanResult.scanner_metadata.adapter_version}`);
+        lines.push('');
+        lines.push('## Package analysis and coverage');
+        lines.push('');
+        lines.push('```json');
+        const evidence = { package_analysis: scanResult.package_analysis, coverage: scanResult.coverage,
+            governance_evidence: scanResult.governance_evidence, scanner_metadata: scanResult.scanner_metadata,
+            checks: scanResult.check_results, readiness: scanResult.readiness };
+        if (reportDepth === 'detailed') evidence.inventory = scanResult.inventory;
+        lines.push(JSON.stringify(evidence, null, 2));
+        lines.push('```');
+    }
     lines.push('');
 
     lines.push('## Assessment');
@@ -806,6 +836,31 @@ function SkillFindingList({ findings, artifactRole, depth }) {
     );
 }
 
+function PackageScanOverview({ result }) {
+    const [section, setSection] = useState('format_findings');
+    const [page, setPage] = useState(0);
+    const analysis = result.package_analysis;
+    const sections = { format_findings: analysis.format_findings, components: analysis.components,
+        execution_references: analysis.execution_references, dependencies: analysis.dependencies,
+        inventory: result.inventory, checks: result.check_results, governance: result.governance_evidence.controls };
+    const items = sections[section] || [];
+    return <div className="border border-gray-700 rounded p-2 space-y-2" data-package-overview="true">
+        <p>Package: <strong>{analysis.artifact_kind}</strong> · Target: {analysis.target_runtime}</p>
+        <p>Runtime indicators: {analysis.runtime_targets.map(item => item.runtime).join(', ') || 'none'}; publisher identity unverified</p>
+        <p>Coverage: <strong>{result.coverage.status.replaceAll('_', ' ')}</strong> · {result.coverage.analyzed_files}/{result.coverage.total_files} files analyzed · {result.coverage.total_bytes} original bytes</p>
+        <p>{result.coverage.statement}</p>
+        <p>Signature: {result.governance_evidence.signature_verification.status} · Runtime evaluation: {result.governance_evidence.evaluation.status}</p>
+        <p>Scanner {result.scanner_metadata.scanner_version} · {result.scanner_metadata.catalogs.map(item => `${item.name}: ${item.freshness} (${item.last_reviewed || 'unknown'})`).join('; ')}</p>
+        <label htmlFor="package-report-section">Package report section</label>
+        <select id="package-report-section" value={section} onChange={e => { setSection(e.target.value); setPage(0); }} className="block w-full bg-gray-900 border border-gray-600 rounded p-2">
+            {Object.keys(sections).map(key => <option key={key} value={key}>{key.replaceAll('_', ' ')}</option>)}
+        </select>
+        <ScanPageControls page={page} total={items.length} size={10} onChange={setPage} label="Package evidence pages" />
+        {items.slice(page * 10, (page + 1) * 10).map((item, index) => <pre key={index} data-package-evidence="true" className="whitespace-pre-wrap break-all bg-black/20 p-2">{JSON.stringify(item, null, 2)}</pre>)}
+        {!items.length && <p>No entries in this section.</p>}
+    </div>;
+}
+
 function SkillScanFiles({ files, filter, depth }) {
     const [page, setPage] = useState(0);
     return (
@@ -813,7 +868,7 @@ function SkillScanFiles({ files, filter, depth }) {
             <ScanPageControls page={page} total={files.length} size={SKILL_FILES_PER_PAGE} onChange={setPage} label="File pages" />
             <div className="space-y-2 max-h-80 overflow-y-auto">
                 {files.slice(page * SKILL_FILES_PER_PAGE, (page + 1) * SKILL_FILES_PER_PAGE).map((item, index) => {
-                    const artifactRole = item.artifact_role || 'active';
+                    const artifactRole = item.effective_artifact_role === 'execution_component' ? 'active' : item.artifact_role || 'active';
                     const findings = filterFindings(item.findings || [], artifactRole, filter);
                     const summary = summarizeFileFindings(findings);
                     return (
@@ -830,6 +885,8 @@ function SkillScanFiles({ files, filter, depth }) {
                                         : 'No matching findings'}</p>
                             )}
                             {item.reason && <p className="text-[10px] text-gray-500">{item.reason}</p>}
+                            {item.assessment_state && <p>Assessment: {item.assessment_state.replaceAll('_', ' ')}{item.effective_artifact_role ? '; execution component' : ''}</p>}
+                            {item.file_type_policy?.potential_upload_control_bypass && <p className="text-yellow-300">Potential upload-control bypass: executable source behind a document extension. Malware is not established.</p>}
                             <SkillFindingList findings={findings} artifactRole={artifactRole} depth={depth} />
                         </div>
                     );
@@ -867,6 +924,8 @@ function App({ onBack, buildInfo }) {
     const [optionsError, setOptionsError] = useState('');
     const [payloadCategoriesError, setPayloadCategoriesError] = useState('');
     const [skillFile, setSkillFile] = useState(null);
+    const [skillRuntime, setSkillRuntime] = useState('auto');
+    const [skillEvidence, setSkillEvidence] = useState('');
     const [skillScanResult, setSkillScanResult] = useState(null);
     const [skillScanError, setSkillScanError] = useState('');
     const [isScanningSkill, setIsScanningSkill] = useState(false);
@@ -1263,6 +1322,8 @@ function App({ onBack, buildInfo }) {
 
         try {
             const formData = new FormData();
+            formData.append('target_runtime', skillRuntime);
+            formData.append('governance_evidence', skillEvidence || '{}');
             formData.append('file', skillFile);
             // Only the active upload needs the File; don't retain it for the report.
             setSkillFile(null);
@@ -1587,8 +1648,18 @@ function App({ onBack, buildInfo }) {
 
                                 {/* Claude Skill Upload */}
                                 <div className="border-t border-gray-700 pt-4">
-                                    <h3 className="text-sm font-medium mb-3 text-gray-400">Claude Skill Upload</h3>
+                                    <h3 className="text-sm font-medium mb-3 text-gray-400">Skill and Plugin Scan</h3>
                                     <div className="space-y-3">
+                                        <label className="block" htmlFor="skill-runtime">Target runtime</label>
+                                        <select id="skill-runtime" name="target_runtime" value={skillRuntime} disabled={isScanningSkill} onChange={e => { setSkillRuntime(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2">
+                                            {['auto', 'generic', 'claude-code', 'claude-upload', 'openai', 'copilot', 'gemini', 'cursor', 'cascade', 'kiro', 'openclaw'].map(runtime => <option key={runtime} value={runtime}>{runtime === 'auto' ? 'Detect format automatically' : runtime}</option>)}
+                                        </select>
+                                        <details>
+                                            <summary>Optional review and evaluation evidence</summary>
+                                            <label htmlFor="skill-evidence" className="block mt-2">Evidence JSON (optional)</label>
+                                            <textarea id="skill-evidence" name="governance_evidence" rows={3} maxLength={131072} value={skillEvidence} disabled={isScanningSkill} onChange={e => { setSkillEvidence(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2" />
+                                            <p>Claims require artifact fingerprints and a configured trusted issuer before they can be authenticated.</p>
+                                        </details>
                                         <label className="block text-sm font-medium text-gray-300">
                                             <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload SKILL.md, .skill, or .zip (up to 32 MiB)
                                         </label>
@@ -1615,10 +1686,11 @@ function App({ onBack, buildInfo }) {
                                         )}
                                         <p className="text-xs text-gray-400">Selecting another file clears the previous scan. Full findings remain available in the current report export.</p>
                                         {skillScanError && (
-                                            <p className="text-xs text-yellow-400">{skillScanError}</p>
+                                            <p role="alert" className="text-xs text-yellow-400">{skillScanError}</p>
                                         )}
                                         {skillScanResult && (
                                             <div className="bg-gray-900/40 border border-gray-700/60 rounded-lg p-3 text-xs text-gray-300 space-y-2">
+                                                {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
                                                 {(() => {
                                                     const assessment = summarizeAssessment(skillScanResult);
                                                     const reviewSummary = summarizeReviewClasses(skillScanResult);

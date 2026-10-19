@@ -1,0 +1,298 @@
+{
+  "status": "implemented_release_candidate_not_deployed",
+  "rule_ids_are": "local planning identifiers, not vulnerability or exploit names",
+  "checks": [
+    {
+      "id": "FMT-01",
+      "title": "Determine package type and candidate roots",
+      "category": "format",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S01",
+        "S02",
+        "S07",
+        "S09",
+        "S12",
+        "S15",
+        "S17",
+        "S24",
+        "S30"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "FMT-02",
+      "title": "Validate base skill frontmatter and directory naming",
+      "category": "format",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S01"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "FMT-03",
+      "title": "Validate portable plugin and MCP manifests against pinned local schemas",
+      "category": "format",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S02"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "FMT-04",
+      "title": "Apply runtime and distribution-surface frontmatter extensions",
+      "category": "format",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S06",
+        "S08",
+        "S14",
+        "S19",
+        "S20"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "FMT-05",
+      "title": "Preserve legacy plugin layouts and report manifest conflicts",
+      "category": "format",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S07",
+        "S09",
+        "S12",
+        "S17",
+        "S24"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "COMP-01",
+      "title": "Inventory all nested skills and runtime components",
+      "category": "security",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S02",
+        "S07",
+        "S09",
+        "S12",
+        "S15",
+        "S24"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "COMP-02",
+      "title": "Resolve declared component paths and record missing or escaping targets",
+      "category": "security",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S02",
+        "S07"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "COMP-03",
+      "title": "Inventory hook commands, MCP processes, LSP processes and install steps",
+      "category": "security",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S07",
+        "S09",
+        "S12",
+        "S15",
+        "S24"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "PERM-01",
+      "title": "Report declared permission requests and runtime-specific semantics",
+      "category": "security",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S01",
+        "S06",
+        "S08"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "PERM-02",
+      "title": "Inspect secrets, transport and environment declarations without connections",
+      "category": "security",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S02",
+        "S07",
+        "S23"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "CONT-01",
+      "title": "Analyze code-like text, fenced snippets and mixed suffixes",
+      "category": "security",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S03",
+        "S33",
+        "S34",
+        "S35"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "CONT-02",
+      "title": "Track instructions that execute, copy, rename or decode bundled files",
+      "category": "security",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S03",
+        "S33",
+        "S34",
+        "S35"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "CONT-03",
+      "title": "Preserve actionable evidence regardless of reference directory naming",
+      "category": "security",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S03"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "COV-01",
+      "title": "Record every inventory entry and an explicit assessment state",
+      "category": "coverage",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S03"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "COV-02",
+      "title": "Report file-count, byte and mandatory-component coverage separately",
+      "category": "coverage",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S03"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "COV-03",
+      "title": "Identify binary formats and extension/content mismatches without executing them",
+      "category": "coverage",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S03",
+        "S30"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "COV-04",
+      "title": "Enforce shared archive, structured-parser and result-size budgets",
+      "category": "coverage",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S02"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "GOV-01",
+      "title": "Validate optional enterprise metadata against selected policy",
+      "category": "governance",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S01",
+        "S03",
+        "S27"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "GOV-02",
+      "title": "Compute artifact and inventory fingerprints",
+      "category": "governance",
+      "evaluation": "deterministic",
+      "source_ids": [
+        "S03"
+      ],
+      "status": "implemented_static"
+    },
+    {
+      "id": "GOV-03",
+      "title": "Verify supported detached signatures against configured external trust anchors",
+      "category": "governance",
+      "evaluation": "requires_trust_configuration",
+      "source_ids": [
+        "S25",
+        "S26"
+      ],
+      "status": "implemented_requires_operator_configuration_or_evidence"
+    },
+    {
+      "id": "GOV-04",
+      "title": "Verify reviewer, source-control and evaluation provenance",
+      "category": "governance",
+      "evaluation": "requires_external_evidence",
+      "source_ids": [
+        "S03",
+        "S26",
+        "S27"
+      ],
+      "status": "implemented_requires_operator_configuration_or_evidence"
+    },
+    {
+      "id": "GOV-05",
+      "title": "Assess organization deployment and identity policy from authorized evidence",
+      "category": "governance",
+      "evaluation": "requires_external_evidence",
+      "source_ids": [
+        "S04",
+        "S05",
+        "S10",
+        "S11",
+        "S13",
+        "S16",
+        "S18"
+      ],
+      "status": "implemented_requires_operator_configuration_or_evidence"
+    },
+    {
+      "id": "EVAL-01",
+      "title": "Evaluate triggering, coexistence and bounded workflow behavior",
+      "category": "evaluation",
+      "evaluation": "isolated_dynamic_evaluation",
+      "source_ids": [
+        "S03",
+        "S31",
+        "S32"
+      ],
+      "status": "implemented_requires_operator_configuration_or_evidence"
+    },
+    {
+      "id": "UPD-01",
+      "title": "Release reviewed source-backed rule and adapter updates through controlled promotion",
+      "category": "maintenance",
+      "evaluation": "controlled_release_process",
+      "source_ids": [
+        "S02",
+        "S03",
+        "S26"
+      ],
+      "status": "implemented_requires_operator_configuration_or_evidence"
+    }
+  ]
+}

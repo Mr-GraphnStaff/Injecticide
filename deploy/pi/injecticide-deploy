@@ -27,6 +27,14 @@ require_clean_checkout() {
     fail "Deployment checkout contains tracked changes."
 }
 
+require_memory_controller() {
+  # https://docs.docker.com/engine/containers/resource_constraints/
+  local supported
+  supported="$(docker info --format '{{.MemoryLimit}}')" || fail "Docker daemon is unavailable."
+  [[ "$supported" == "true" ]] || \
+    fail "Docker memory limits are unavailable. Enable the host memory controller before deployment."
+}
+
 compose() {
   INJECTICIDE_IMAGE_TAG="$1" \
   INJECTICIDE_REPORTS_DIR="$REPORTS_DIR" \
@@ -87,6 +95,7 @@ main() {
 
   local requested_commit="${1,,}"
   [[ "$requested_commit" =~ ^[0-9a-f]{40}$ ]] || fail "Commit must be a full 40-character SHA."
+  require_memory_controller
 
   install -d -m 0750 "$DEPLOY_ROOT" "$DATA_DIR" "$REPORTS_DIR"
   exec 9>"$LOCK_FILE"
