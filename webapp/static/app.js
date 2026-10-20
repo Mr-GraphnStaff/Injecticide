@@ -392,6 +392,48 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     return lines.join('\n');
 }
 
+function ProductHeader({ section, buildInfo, onBack, onNavigate, onClose, isClosing }) {
+    return <header className="home-header">
+        <div className="home-shell home-header-inner">
+            <a className="home-brand" href="https://daf-tech.com" target="_blank" rel="noopener noreferrer" aria-label="DAF-TECH website (opens in a new tab)">
+                <img src="/static/images/daf-tech-sphere.png" alt="" width="64" height="64" />
+                <div><p className="home-product-name">Injecticide</p><p className="home-signature">Another DAF-TECH Product</p></div>
+            </a>
+            <div className="home-header-actions">
+                {buildInfo && <span className="home-version">{buildInfo.display_version}</span>}
+                {section === 'overview' && <a href="#research-updates" className="home-text-link">Research updates ↓</a>}
+                {onClose && <button onClick={onClose} disabled={isClosing} className="home-button workbench-close">{isClosing ? 'Closing…' : 'Close App'}</button>}
+            </div>
+        </div>
+        {(onBack || onNavigate) && <nav className="home-shell workbench-nav" aria-label="Product sections">
+            <button onClick={onBack || (() => onNavigate && onNavigate('home'))} aria-current={section === 'overview' ? 'page' : undefined}>Overview</button>
+            <button onClick={() => onNavigate && onNavigate('console')} aria-current={section === 'console' ? 'page' : undefined} disabled={!onNavigate && section !== 'console'}>Testing & scanning</button>
+            <button onClick={() => onNavigate && onNavigate('architecture')} aria-current={section === 'architecture' ? 'page' : undefined} disabled={!onNavigate && section !== 'architecture'}>Architecture analysis</button>
+        </nav>}
+    </header>;
+}
+
+function ProductFooter() {
+    return <footer className="home-footer home-shell"><img src="/static/images/daf-tech-sphere.png" alt="" width="32" height="32" /><span>Injecticide · Another DAF-TECH Product</span><a href="https://daf-tech.com" target="_blank" rel="noopener noreferrer">DAF-TECH ↗</a></footer>;
+}
+
+function architecturePathSegments(edges) {
+    const segments = [];
+    for (const edge of edges) {
+        let segment = segments[segments.length - 1];
+        if (!segment || segment[segment.length - 1].id !== edge.source) {
+            segment = [{id: edge.source, incoming: null}];
+            segments.push(segment);
+        }
+        segment.push({id: edge.target, incoming: edge});
+    }
+    return segments;
+}
+
+function componentLabel(value) {
+    return String(value || '').replaceAll('_', ' ');
+}
+
 function architectureSeverityClass(severity) {
     switch (severity) {
         case 'critical':
@@ -405,7 +447,7 @@ function architectureSeverityClass(severity) {
     }
 }
 
-function ArchitectureWorkbench({ onBack, buildInfo }) {
+function ArchitectureWorkbench({ onBack, onNavigate, buildInfo }) {
     const [profiles, setProfiles] = useState([]);
     const [scenarios, setScenarios] = useState([]);
     const [profileId, setProfileId] = useState('');
@@ -482,54 +524,20 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
     const edges = analysisResult?.trace?.edges || [];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-cyan-950 to-black text-white">
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 right-0 w-[34rem] h-[34rem] bg-cyan-600/10 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 w-[28rem] h-[28rem] bg-red-600/10 rounded-full blur-3xl"></div>
-            </div>
-
-            <header className="relative border-b border-cyan-800/40 bg-black/40 backdrop-blur">
-                <div className="container mx-auto px-6 py-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                        <div className="flex items-center gap-3">
-                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-700/40 bg-cyan-900/30 text-cyan-200">
-                                <i className="fas fa-diagram-project"></i>
-                            </span>
-                            <div>
-                                <h1 className="text-3xl font-bold text-white">Architecture Analysis</h1>
-                                <p className="text-sm text-cyan-100/80">Trace risky paths across prompts, retrieval, tools, memory, connectors, and outputs.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        {buildInfo && (
-                            <span className="inline-flex items-center text-[11px] text-gray-300 bg-gray-900/60 border border-gray-700/60 px-2 py-1 rounded-md">
-                                <i className="fas fa-code-branch text-cyan-300 mr-2"></i>
-                                {buildInfo.display_version}
-                            </span>
-                        )}
-                        <button
-                            onClick={onBack}
-                            className="px-4 py-2 rounded-lg text-sm font-semibold transition border border-gray-600/70 bg-gray-800/70 hover:bg-gray-700/80 text-gray-200"
-                        >
-                            <i className="fas fa-arrow-left mr-2"></i>
-                            Back to Overview
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <main className="relative container mx-auto px-6 py-8">
-                <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-8">
+        <div className="injecticide-home injecticide-workbench architecture-workbench">
+            <ProductHeader section="architecture" buildInfo={buildInfo} onBack={onBack} onNavigate={onNavigate} />
+            <main className="home-shell workbench-main">
+                <div className="workbench-intro"><div><p className="home-eyebrow">Architecture review</p><h1>Follow the path. Review the boundaries.</h1><p>Choose a model and a scenario to inspect how instructions, privileges and data move through a workflow.</p></div><span className="workbench-scope">Modeled analysis · no live endpoint execution</span></div>
+                <div className="grid grid-cols-1 workbench-grid architecture-grid">
                     <section className="space-y-6">
                         <div className="rounded-2xl border border-cyan-800/40 bg-slate-950/70 p-6 shadow-2xl">
-                            <p className="text-xs uppercase tracking-[0.3em] text-cyan-300 mb-3">Modeled Input</p>
+                            <p className="home-eyebrow">01 · Configure the review</p>
                             <h2 className="text-xl font-semibold mb-4">Analysis Setup</h2>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-xs mb-2 text-gray-400">Architecture Profile</label>
-                                    <select
+                                    <label htmlFor="architecture-profile" className="block text-xs mb-2 text-gray-400">Architecture Profile</label>
+                                    <select id="architecture-profile"
                                         value={profileId}
                                         onChange={(event) => setProfileId(event.target.value)}
                                         disabled={isLoadingOptions || isLoading}
@@ -544,8 +552,8 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs mb-2 text-gray-400">Scenario</label>
-                                    <select
+                                    <label htmlFor="architecture-scenario" className="block text-xs mb-2 text-gray-400">Scenario</label>
+                                    <select id="architecture-scenario"
                                         value={scenarioId}
                                         onChange={(event) => setScenarioId(event.target.value)}
                                         disabled={isLoadingOptions || isLoading}
@@ -562,14 +570,14 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
                                 <button
                                     onClick={runAnalysis}
                                     disabled={isLoadingOptions || isLoading || !profileId || !scenarioId}
-                                    className={`w-full rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                                    className={`workbench-primary w-full rounded-lg border px-4 py-3 text-sm font-semibold transition ${
                                         isLoadingOptions || isLoading || !profileId || !scenarioId
                                             ? 'cursor-not-allowed border-gray-700 bg-gray-800/60 text-gray-400'
                                             : 'border-cyan-500/60 bg-cyan-700/80 text-white hover:bg-cyan-600/80'
                                     }`}
                                 >
-                                    <i className={`mr-2 fas ${isLoading ? 'fa-spinner fa-spin' : 'fa-wave-square'}`}></i>
-                                    {isLoading ? 'Analyzing Path' : 'Run Architecture Analysis'}
+                                    <i aria-hidden="true" className={`mr-2 fas ${isLoading ? 'fa-spinner fa-spin' : 'fa-wave-square'}`}></i>
+                                    {isLoading ? 'Analyzing…' : 'Analyze scenario'}
                                 </button>
                             </div>
 
@@ -607,7 +615,7 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="rounded-2xl border border-gray-800 bg-black/40 p-5">
                                         <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Severity</p>
-                                        <div className="text-3xl font-black text-white">{analysisResult.summary.highest_severity}</div>
+                                        <div className={`architecture-severity ${architectureSeverityClass(analysisResult.summary.highest_severity)}`}>{analysisResult.summary.highest_severity}</div>
                                         <p className="mt-2 text-sm text-gray-300">Highest modeled path severity for this scenario.</p>
                                     </div>
                                     <div className="rounded-2xl border border-gray-800 bg-black/40 p-5">
@@ -637,20 +645,23 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
                                         </div>
                                     </div>
 
-                                    <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-gray-300">
-                                        {edges.map((edge, index) => (
-                                            <React.Fragment key={`${edge.source}-${edge.target}-${index}`}>
-                                                <span className="rounded-full border border-gray-700 bg-gray-950/80 px-3 py-2">{edge.source}</span>
-                                                <span className="text-cyan-300"><i className="fas fa-arrow-right"></i></span>
-                                                <span className="rounded-full border border-cyan-700/40 bg-cyan-950/20 px-3 py-2">{edge.target}</span>
-                                            </React.Fragment>
-                                        ))}
+                                    <div className="architecture-paths">
+                                        {architecturePathSegments(edges).map((segment, index) => <ol key={index} className="architecture-path" aria-label={`Modeled component path ${index + 1}`}>
+                                            {segment.map((step, stepIndex) => <li key={`${step.id}-${stepIndex}`} className={step.incoming?.privileged_action || step.incoming?.writes_memory ? 'architecture-step-sensitive' : ''}>
+                                                <span className="architecture-step-number">{String(stepIndex + 1).padStart(2, '0')}</span>
+                                                <strong>{componentLabel(step.id)}</strong>
+                                                <span className="architecture-step-transport">{step.incoming ? componentLabel(step.incoming.transport) : 'Entry point'}</span>
+                                                {step.incoming?.carries_untrusted_content && <span className="architecture-step-warning">Untrusted content</span>}
+                                                {step.incoming?.privileged_action && <span className="architecture-step-warning">Privileged action</span>}
+                                                {step.incoming?.writes_memory && <span className="architecture-step-warning">Memory write</span>}
+                                            </li>)}
+                                        </ol>)}
                                     </div>
 
                                     <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                         <div className="rounded-xl border border-gray-800 bg-black/30 p-4">
                                             <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Attack Entry</p>
-                                            <p className="text-white font-semibold">{analysisResult.trace.score.attack_entry_point}</p>
+                                            <p className="text-white font-semibold">{componentLabel(analysisResult.trace.score.attack_entry_point)}</p>
                                         </div>
                                         <div className="rounded-xl border border-gray-800 bg-black/30 p-4">
                                             <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Propagation</p>
@@ -662,14 +673,14 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
                                         </div>
                                         <div className="rounded-xl border border-gray-800 bg-black/30 p-4">
                                             <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-2">Components Touched</p>
-                                            <p className="text-white font-semibold">{analysisResult.trace.score.components_touched.join(', ')}</p>
+                                            <p className="text-white font-semibold">{analysisResult.trace.score.components_touched.map(componentLabel).join(', ')}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6">
                                     <div className="rounded-2xl border border-gray-800 bg-black/40 p-6 shadow-2xl">
-                                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">Path Findings</p>
+                                        <h2 className="workbench-section-title">Findings & recommended controls</h2><p className="home-muted mb-5">Review each finding against the modeled path. Controls below are recommendations, not verified protections.</p>
                                         <div className="space-y-4">
                                             {findings.map((finding) => (
                                                 <div key={finding.finding_id} className={`rounded-xl border p-4 ${architectureSeverityClass(finding.severity)}`}>
@@ -738,7 +749,7 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
                                 <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl border border-cyan-700/40 bg-cyan-950/20 text-cyan-200 text-3xl">
                                     <i className="fas fa-route"></i>
                                 </div>
-                                <h2 className="text-2xl font-semibold text-white">Modeled path review lives here</h2>
+                                <h2 className="text-2xl font-semibold text-white">Start with a scenario, leave with a reviewable path.</h2>
                                 <p className="mt-3 text-sm leading-relaxed text-gray-400 max-w-2xl mx-auto">
                                     Select a grouped architecture profile and a scenario pack, then run analysis to surface risky trust crossings, exposed privileges, and memory or tool-path findings.
                                 </p>
@@ -747,6 +758,7 @@ function ArchitectureWorkbench({ onBack, buildInfo }) {
                     </section>
                 </div>
             </main>
+            <ProductFooter />
         </div>
     );
 }
@@ -862,7 +874,7 @@ function SkillScanFiles({ files, filter, depth }) {
     );
 }
 
-function App({ onBack, buildInfo }) {
+function App({ onBack, onNavigate, buildInfo }) {
     const [testConfig, setTestConfig] = useState({
         target_service: 'anthropic',
         api_key: '',
@@ -1345,69 +1357,15 @@ function App({ onBack, buildInfo }) {
     };
     
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-            {/* Animated Background */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-600 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
-            </div>
-            
-            {/* Header */}
-            <header className="relative bg-gradient-to-r from-black/70 via-gray-900/70 to-black/70 backdrop-blur-sm shadow-2xl border-b border-red-600/50">
-                <div className="container mx-auto px-6 py-4">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="flex items-center space-x-4">
-                            <img src="/images/logo.png" alt="DAF-TECH logo" className="h-12 w-12 rounded-lg shadow-lg" />
-                            <div>
-                                <h1 className="text-3xl md:text-4xl font-bold flex items-center space-x-2">
-                                    <span className="text-white drop-shadow">Injecticide</span>
-                                    <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 bg-red-900/40 border border-red-700/40 px-2 py-1 rounded-md">DAF-TECH</span>
-                                </h1>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <p className="text-sm text-gray-300">Enterprise LLM Security Testing Platform</p>
-                                    {buildInfo && (
-                                        <span className="inline-flex items-center text-[11px] text-gray-300 bg-gray-800/70 border border-gray-700/60 px-2 py-1 rounded-md shadow-lg">
-                                            <i className="fas fa-code-branch text-red-400 mr-2"></i>
-                                            {buildInfo.display_version}
-                                            {buildInfo.git_dirty && <span className="ml-2 text-yellow-300">dirty</span>}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                            {onBack && (
-                                <button
-                                    onClick={onBack}
-                                    className="px-4 py-2 rounded-lg text-sm font-semibold transition border border-gray-600/70 bg-gray-800/70 hover:bg-gray-700/80 text-gray-200"
-                                >
-                                    <i className="fas fa-arrow-left mr-2"></i>
-                                    Back to Overview
-                                </button>
-                            )}
-                            <span className="hidden sm:inline-flex items-center text-gray-300 text-sm bg-gray-800/60 border border-gray-700/60 px-3 py-2 rounded-lg shadow-lg">
-                                <i className="fas fa-shield-alt text-red-400 mr-2"></i>
-                                Enterprise Grade Security Testing
-                            </span>
-                            <button
-                                onClick={closeApp}
-                                disabled={isShuttingDown}
-                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition border border-red-600/70 bg-red-800/80 hover:bg-red-700/80 ${isShuttingDown ? 'opacity-60 cursor-not-allowed' : ''}`}
-                            >
-                                <i className="fas fa-power-off mr-2"></i>
-                                {isShuttingDown ? 'Closing…' : 'Close App'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-            
-            <div className="relative container mx-auto px-6 py-8">
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="injecticide-home injecticide-workbench testing-workbench">
+            <ProductHeader section="console" buildInfo={buildInfo} onBack={onBack} onNavigate={onNavigate} onClose={closeApp} isClosing={isShuttingDown} />
+            <div className="home-shell workbench-main">
+                <div className="workbench-intro"><div><p className="home-eyebrow">Testing & scanning</p><h1>Inspect the package. Test the response.</h1><p>Review a skill or plugin package, or configure a model endpoint for prompt testing.</p></div><a href="#skill-scan" className="home-button">Go to package scanning ↓</a></div>
+                <div className="workbench-grid testing-grid">
                     {/* Configuration Panel */}
-                    <div className="xl:col-span-1">
+                    <div className="workbench-config">
                         <div className="bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
-                            <h2 className="text-xl font-bold mb-6 text-red-400 flex items-center">
+                            <h2 className="workbench-section-title mb-6 flex items-center">
                                 <i className="fas fa-cog mr-2"></i>Test Configuration
                             </h2>
                             
@@ -1613,8 +1571,8 @@ function App({ onBack, buildInfo }) {
                                 </div>
 
                                 {/* Claude Skill Upload */}
-                                <div className="border-t border-gray-700 pt-4">
-                                    <h3 className="text-sm font-medium mb-3 text-gray-400">Skill and Plugin Scan</h3>
+                                <div id="skill-scan" className="border-t border-gray-700 pt-4 workbench-scan-section">
+                                    <h3 className="workbench-section-title mb-3">Skill and plugin scan</h3><p className="home-muted mb-4">Static package inspection. No model API key is needed for this scan.</p>
                                     <div className="space-y-3">
                                         <label className="block" htmlFor="skill-runtime">Target runtime</label>
                                         <select id="skill-runtime" name="target_runtime" value={skillRuntime} disabled={isScanningSkill} onChange={e => { setSkillRuntime(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2">
@@ -1640,7 +1598,7 @@ function App({ onBack, buildInfo }) {
                                         <button
                                             onClick={scanSkillFile}
                                             disabled={disableControls || isScanningSkill || !skillFile}
-                                            className={`w-full py-2 rounded-lg text-sm font-semibold transition border border-blue-600/60 bg-blue-700/70 hover:bg-blue-600/80 ${disableControls || isScanningSkill || !skillFile ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                            className={`workbench-primary w-full py-2 rounded-lg text-sm font-semibold transition border border-blue-600/60 bg-blue-700/70 hover:bg-blue-600/80 ${disableControls || isScanningSkill || !skillFile ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             <i className={`fas ${isScanningSkill ? 'fa-spinner fa-spin' : 'fa-shield-alt'} mr-2`}></i>
                                             {isScanningSkill ? 'Scanning…' : 'Scan Skill File/Bundle'}
@@ -1850,7 +1808,7 @@ function App({ onBack, buildInfo }) {
                                         <button
                                             onClick={startTest}
                                             disabled={isShuttingDown}
-                                            className={`w-full py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg font-bold transition transform hover:scale-105 shadow-lg ${isShuttingDown ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                            className={`workbench-primary w-full py-3 rounded-lg font-bold transition shadow-lg ${isShuttingDown ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             <i className="fas fa-rocket mr-2"></i>Launch Attack
                                         </button>
@@ -1869,10 +1827,10 @@ function App({ onBack, buildInfo }) {
                     </div>
                     
                     {/* Results Panel */}
-                    <div className="xl:col-span-2">
+                    <div className="workbench-results">
                         <div className="bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold text-green-400 flex items-center">
+                                <h2 className="workbench-section-title flex items-center">
                                     <i className="fas fa-chart-line mr-2"></i>Security Assessment Results
                                 </h2>
                                 {session && session.status === 'completed' && (
@@ -2023,11 +1981,13 @@ function App({ onBack, buildInfo }) {
                                             </div>
                                         ) : (
                                             <div>
-                                                <div className="text-6xl text-gray-600 mb-4">
-                                                    <i className="fas fa-flask"></i>
+                                                <p className="home-eyebrow">Ready to review</p>
+                                                <h3 className="workbench-empty-title">Start with a package or a model endpoint.</h3>
+                                                <p className="home-muted">Results will show the evidence behind findings and what the test covered.</p>
+                                                <div className="workbench-start-options">
+                                                    <section><span className="home-eyebrow">01 · Package review</span><h4>Inspect a skill or plugin</h4><p>Upload a bundle for static checks of instructions, code, permissions and dependencies.</p><a href="#skill-scan">Open package scanning ↓</a></section>
+                                                    <section><span className="home-eyebrow">02 · Prompt testing</span><h4>Evaluate model responses</h4><p>Configure your endpoint, choose payloads and run a test. Review measured response signals here.</p><span className="home-muted">Uses your configured model endpoint.</span></section>
                                                 </div>
-                                                <p className="text-xl text-gray-400">No test results yet</p>
-                                                <p className="text-sm text-gray-500 mt-2">Configure your test and click "Launch Attack" to begin</p>
                                             </div>
                                         )}
                                     </div>
@@ -2037,6 +1997,7 @@ function App({ onBack, buildInfo }) {
                     </div>
                 </div>
             </div>
+            <ProductFooter />
         </div>
     );
 }
@@ -2062,21 +2023,28 @@ function Root() {
         fetchBuildInfo();
     }, []);
 
+    function navigate(nextPage) {
+        if (window.location.hash) window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        setPage(nextPage);
+        window.scrollTo(0, 0);
+    }
+
     if (page === 'home') {
         return (
             <Home
-                onLaunchConsole={() => setPage('console')}
-                onLaunchArchitecture={() => setPage('architecture')}
+                onLaunchConsole={() => navigate('console')}
+                onLaunchArchitecture={() => navigate('architecture')}
                 buildInfo={buildInfo}
+                onNavigate={navigate}
             />
         );
     }
 
     if (page === 'architecture') {
-        return <ArchitectureWorkbench onBack={() => setPage('home')} buildInfo={buildInfo} />;
+        return <ArchitectureWorkbench onBack={() => navigate('home')} onNavigate={navigate} buildInfo={buildInfo} />;
     }
 
-    return <App onBack={() => setPage('home')} buildInfo={buildInfo} />;
+    return <App onBack={() => navigate('home')} onNavigate={navigate} buildInfo={buildInfo} />;
 }
 
 // Render the app

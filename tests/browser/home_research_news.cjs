@@ -6,8 +6,15 @@ const http = require('node:http');
 const {chromium} = require('playwright');
 const root = path.resolve(__dirname, '../..');
 const assets = path.join(root, 'tmp/scan-resource-regression');
-const source = fs.readFileSync(path.join(root, 'webapp/static/pages/Home.jsx'), 'utf8');
+const appSource = fs.readFileSync(path.join(root, 'webapp/static/app.js'), 'utf8');
+const sharedBrand = appSource.slice(appSource.indexOf('function ProductHeader'), appSource.indexOf('function architecturePathSegments'));
+const source = sharedBrand + fs.readFileSync(path.join(root, 'webapp/static/pages/Home.jsx'), 'utf8');
 const fixture = `function Fixture(){const [page,setPage]=React.useState('home');return page==='home'?<Home buildInfo={{display_version:'0.3.1'}} onLaunchConsole={()=>setPage('Testing console')} onLaunchArchitecture={()=>setPage('Architecture analysis')}/>:<h1>{page}</h1>} ReactDOM.render(<Fixture/>,document.getElementById('root'));`;
+// Preserve graph discontinuities and real loops while removing repeated edge endpoints.
+const pathBuilder = new Function(appSource.slice(appSource.indexOf('function architecturePathSegments'), appSource.indexOf('function componentLabel')) + ';return architecturePathSegments;')();
+assert.deepEqual(pathBuilder([{source:'a',target:'b'},{source:'b',target:'c'}]).map(s=>s.map(n=>n.id)), [['a','b','c']]);
+assert.deepEqual(pathBuilder([{source:'a',target:'b'},{source:'x',target:'y'}]).map(s=>s.map(n=>n.id)), [['a','b'],['x','y']]);
+assert.deepEqual(pathBuilder([{source:'a',target:'a'},{source:'a',target:'b'}]).map(s=>s.map(n=>n.id)), [['a','a','b']]);
 const server = http.createServer((req,res)=>{
     if(req.url==='/') {res.setHeader('Content-Type','text/html');return res.end('<meta charset="UTF-8"><link rel="stylesheet" href="/home.css"><style>body{margin:0}p,h1,h2,h3,dd{margin:0}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}</style><div id="root"></div><script src="/react.js"></script><script src="/react-dom.js"></script><script src="/babel.js"></script><script src="/fixture.js"></script>');}
     if(req.url==='/fixture.js') {res.setHeader('Content-Type','text/javascript');return res.end('eval(Babel.transform('+JSON.stringify(source+fixture)+',{presets:["react"]}).code)');}
