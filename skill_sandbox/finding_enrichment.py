@@ -118,6 +118,10 @@ def build_finding(
     if severity == "info" and artifact_role in {"reference_template", "audit_policy"} and detector_id in REFERENCE_TEMPLATE_RULE_IDS:
         action_state = "documented"
 
+    fixture_only = bool(observations) and all(observation.get("context_tag") == "test_fixture" for observation in observations)
+    if fixture_only:
+        action_state = "declared_test_input"
+
     is_actionable = bool(disposition_result["is_actionable"])
     display_kind = _display_kind(artifact_role, severity)
     samples = _unique_samples(format_observation_sample(observation) for observation in observations)
@@ -127,7 +131,7 @@ def build_finding(
         "category": rule["category"],
         "severity": severity,
         "tier": disposition_result["tier"],
-        "description": rule["description"],
+        "description": ("Declared evaluation fixture; execution and guardrail enforcement are not established. " if fixture_only else "") + str(rule["description"]),
         "finding_category": finding_category,
         "subject": rule.get("subject", "unknown"),
         "action_state": action_state,

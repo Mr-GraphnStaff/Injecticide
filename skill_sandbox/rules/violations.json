@@ -290,8 +290,7 @@
       "match_mode": "any",
       "patterns": [
         "open\\s*\\(\\s*[\"']SKILL\\.md[\"']\\s*,\\s*[\"'](?:w|a|r\\+)\\b",
-        "\\b/mnt/skills/\\b",
-        "\\b(after\\s+completing|post-execution|then\\s+modify)\\b",
+        "\\b(?:write|modify|overwrite|append|update|delete)\\b[^.\\n]{0,80}(?:SKILL\\.md|/mnt/skills/)",
         "\\bupdate\\s+the\\s+skill(?:'s)?\\s+(?:skill\\.md|files?|directory|source|code|implementation|frontmatter)\\b"
       ],
       "exclude_patterns": [],

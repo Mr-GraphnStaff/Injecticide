@@ -1,6 +1,10 @@
 {
   "catalog_version": "2026-06-26",
-  "tiers": ["block", "review", "info"],
+  "tiers": [
+    "block",
+    "review",
+    "info"
+  ],
   "default": {
     "tier": "review",
     "severity": "medium",
@@ -10,7 +14,10 @@
   },
   "role_overrides": [
     {
-      "artifact_roles": ["audit_policy", "reference_template"],
+      "artifact_roles": [
+        "audit_policy",
+        "reference_template"
+      ],
       "tier": "info",
       "severity": "info",
       "disposition": "info",
@@ -91,6 +98,13 @@
           "severity": "info",
           "disposition": "info",
           "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "test_fixture": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
           "counts_for_governance": false
         }
       }
@@ -189,6 +203,13 @@
           "disposition": "block",
           "is_actionable": true,
           "counts_for_governance": true
+        },
+        "test_fixture": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
         }
       }
     },
@@ -201,6 +222,13 @@
           "disposition": "block",
           "is_actionable": true,
           "counts_for_governance": true
+        },
+        "test_fixture": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
         }
       }
     },
@@ -213,6 +241,13 @@
           "disposition": "block",
           "is_actionable": true,
           "counts_for_governance": true
+        },
+        "test_fixture": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
         }
       }
     },
@@ -225,6 +260,13 @@
           "disposition": "block",
           "is_actionable": true,
           "counts_for_governance": true
+        },
+        "test_fixture": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
         }
       }
     },

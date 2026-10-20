@@ -1,15 +1,6 @@
 const { useState, useEffect, useRef } = React;
 
-const FREE_EMAIL_DOMAINS = new Set([
-    'gmail.com',
-    'yahoo.com',
-    'hotmail.com',
-    'outlook.com',
-    'icloud.com',
-    'aol.com',
-    'proton.me',
-    'protonmail.com',
-]);
+
 
 const SECURITY_CATEGORIES = new Set(['prompt', 'code', 'enterprise', 'obfuscation']);
 const REGULATED_FINDING_PREFIXES = ['pii_', 'phi_'];
@@ -54,35 +45,10 @@ function classifyReviewClass(finding, artifactRole = 'active') {
     }
 
     if (REGULATED_FINDING_PREFIXES.some((prefix) => String(finding.id || '').startsWith(prefix))) {
-        if (finding.id === 'pii_email_address') {
-            const emailDomains = extractEmailDomains(finding.samples || []);
-            if (artifactRole === 'reference' && emailDomains.length === 1 && !FREE_EMAIL_DOMAINS.has(emailDomains[0])) {
-                return 'expected_internal';
-            }
-        }
-
-        if (finding.id === 'pii_phone_number' && artifactRole === 'reference') {
-            return 'expected_internal';
-        }
-
         return 'sensitive_data';
     }
 
     return finding.is_actionable === false ? 'informational' : 'review';
-}
-
-function extractEmailDomains(samples) {
-    const domains = new Set();
-    (samples || []).forEach((sample) => {
-        const matches = String(sample).match(/[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,})/gi) || [];
-        matches.forEach((email) => {
-            const domain = email.split('@')[1]?.toLowerCase();
-            if (domain) {
-                domains.add(domain);
-            }
-        });
-    });
-    return Array.from(domains);
 }
 
 function classifyFindingLabel(reviewClass) {

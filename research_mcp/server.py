@@ -25,7 +25,7 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         finally:
             await asyncio.to_thread(collector.close)
 
-    server = MCPServer("injecticide_research_mcp", version="0.3.1", lifespan=lifespan)
+    server = MCPServer("injecticide_research_mcp", version="0.3.2", lifespan=lifespan)
     read = {"readOnlyHint": True, "destructiveHint": False,
             "idempotentHint": True, "openWorldHint": False}
 
