@@ -52,3 +52,11 @@ def test_reverse_proxy_accepts_skill_upload_limit() -> None:
     nginx_config = (ROOT / "nginx.conf").read_text(encoding="utf-8")
 
     assert "client_max_body_size 34m;" in nginx_config
+
+
+def test_all_injecticide_services_have_bounded_logs() -> None:
+    config = yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8"))
+    for name in ("injecticide", "skill_sandbox", "nginx"):
+        logging = config["services"][name]["logging"]
+        assert logging["driver"] == "json-file"
+        assert logging["options"] == {"max-size": "10m", "max-file": "3"}

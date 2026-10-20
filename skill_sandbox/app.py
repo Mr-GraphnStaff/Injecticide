@@ -13,7 +13,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from starlette.concurrency import run_in_threadpool
 
 if __package__:
-    from .artifact_text import extract_scannable_text
+    from .artifact_text import extract_scannable_text, looks_like_sqlite
     from .behavior_analysis import analyze_behavior
     from .contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -22,7 +22,7 @@ if __package__:
     from .package_analysis import enrich_result
     from .package_formats import bounded_data, RUNTIMES
 else:
-    from artifact_text import extract_scannable_text
+    from artifact_text import extract_scannable_text, looks_like_sqlite
     from behavior_analysis import analyze_behavior
     from contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -35,8 +35,9 @@ app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
 MAX_UPLOAD_BYTES = 32 * 1024 * 1024
 MAX_ARCHIVE_FILES = 200
-MAX_ARCHIVE_TOTAL_BYTES = 25 * 1024 * 1024
+MAX_ARCHIVE_TOTAL_BYTES = 64 * 1024 * 1024
 MAX_FILE_BYTES = 5 * 1024 * 1024
+MAX_SQLITE_FILE_BYTES = 32 * 1024 * 1024
 MAX_LARGE_ARTIFACT_BYTES = 64 * 1024 * 1024
 LARGE_ASSET_EXTENSIONS = (".pptx", ".docx", ".xlsx")
 
@@ -124,7 +125,9 @@ def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto",
                          upload_bytes, target_runtime, governance_evidence, rescan=_scan_text)
 
 
-def _max_scannable_file_bytes(path: str) -> int:
+def _max_scannable_file_bytes(path: str, header: bytes = b"") -> int:
+    if looks_like_sqlite(header):
+        return MAX_SQLITE_FILE_BYTES
     if _is_large_scannable_artifact(path):
         return MAX_LARGE_ARTIFACT_BYTES
     return MAX_FILE_BYTES
@@ -154,10 +157,6 @@ def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str], excl
             if total_uncompressed > MAX_ARCHIVE_TOTAL_BYTES:
                 raise ValueError("Zip archive exceeds uncompressed size limit.")
 
-            if info.file_size > _max_scannable_file_bytes(info.filename):
-                _skip_entry(info.filename, info.file_size, "file too large.", warnings, excluded)
-                continue
-
             if _zipinfo_is_symlink(info):
                 _skip_entry(info.filename, info.file_size, "symlink entries are not allowed.", warnings, excluded)
                 continue
@@ -177,8 +176,15 @@ def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str], excl
                 continue
             seen_paths.add(safe_name.casefold())
             destination.parent.mkdir(parents=True, exist_ok=True)
-            with archive.open(info) as source, open(destination, "wb") as target:
-                _copy_limited(source, target, _max_scannable_file_bytes(info.filename))
+            with archive.open(info) as source:
+                header = source.read(16)
+                limit = _max_scannable_file_bytes(safe_name, header)
+                if info.file_size > limit:
+                    _skip_entry(safe_name, info.file_size, "file too large.", warnings, excluded)
+                    continue
+                source.seek(0)
+                with open(destination, "wb") as target:
+                    _copy_limited(source, target, limit)
 
             extracted.append((safe_name, destination))
 
@@ -200,10 +206,6 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str], excl
             total_uncompressed += member.size
             if total_uncompressed > MAX_ARCHIVE_TOTAL_BYTES:
                 raise ValueError("Tar archive exceeds uncompressed size limit.")
-
-            if member.size > _max_scannable_file_bytes(member.name):
-                _skip_entry(member.name, member.size, "file too large.", warnings, excluded)
-                continue
 
             if member.issym() or member.islnk():
                 _skip_entry(member.name, member.size, "link entries are not allowed.", warnings, excluded)
@@ -232,8 +234,15 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str], excl
                 continue
             seen_paths.add(safe_name.casefold())
             destination.parent.mkdir(parents=True, exist_ok=True)
-            with source, open(destination, "wb") as target:
-                _copy_limited(source, target, _max_scannable_file_bytes(member.name))
+            with source:
+                header = source.read(16)
+                limit = _max_scannable_file_bytes(safe_name, header)
+                if member.size > limit:
+                    _skip_entry(safe_name, member.size, "file too large.", warnings, excluded)
+                    continue
+                source.seek(0)
+                with open(destination, "wb") as target:
+                    _copy_limited(source, target, limit)
 
             extracted.append((safe_name, destination))
 
