@@ -51,9 +51,10 @@ SKILLS = "https://owasp.org/projects/agentic-skills-top-10"
 
 
 def validate_map(document):
-    errors = sorted(VALIDATOR.iter_errors(document), key=lambda e: str(list(e.path)))
-    if errors:
-        raise ValueError(f"Invalid map at {'.'.join(map(str, errors[0].path))}: {errors[0].message[:200]}")
+    # Stop at the first error: malformed arrays must not allocate an error per item.
+    error = next(VALIDATOR.iter_errors(document), None)
+    if error is not None:
+        raise ValueError(f"Invalid map at {'.'.join(map(str, error.path))}: {error.message[:200]}")
     nodes = {node["id"]: node for node in document["nodes"]}
     if len(nodes) != len(document["nodes"]):
         raise ValueError("Duplicate component identifiers")
