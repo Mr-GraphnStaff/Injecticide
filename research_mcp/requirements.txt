@@ -1,0 +1,2 @@
+# Official SDK, isolated from the scanner's runtime dependencies.
+mcp==2.3.0

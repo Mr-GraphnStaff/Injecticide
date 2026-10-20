@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 - 2026-10-20
+
+- Add an independent research MCP container with recurring, bounded discovery
+  of approved OWASP/NIST and vendor skill, plugin and project documentation.
+- Persist source fingerprints, retained snapshots, change cursors, freshness
+  and failed-fetch state; expose queries and queued source refresh through MCP.
+- Collect public GitHub release API data for agent runtimes and security tools;
+  expose structured release records with API rate-limit backoff and provenance.
+- Restrict collection to configured public HTTPS scopes, respect robots.txt,
+  and keep research data separate from production scanner rules and credentials.
+- Research ingestion does not activate detectors or certify compliance.
+
 ## 0.2.1 - 2026-10-19
 
 - Allow SQLite archive members up to 32 MiB in any package directory, identified

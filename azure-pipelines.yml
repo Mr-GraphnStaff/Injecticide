@@ -32,6 +32,7 @@ stages:
           - script: |
               python -m pip install --upgrade pip
               python -m pip install -r requirements.txt
+              python -m pip install -r research_mcp/requirements.txt
             displayName: Install dependencies
 
           - script: python -m pytest -q
@@ -43,6 +44,7 @@ stages:
           - script: |
               docker build --tag injecticide-web:ci .
               docker build --tag injecticide-skill-sandbox:ci ./skill_sandbox
+              docker build --tag injecticide-research-mcp:ci ./research_mcp
             displayName: Build container candidates
 
   - stage: DeployProduction
