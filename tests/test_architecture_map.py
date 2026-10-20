@@ -46,6 +46,16 @@ def test_cycle_disconnected_and_empty_maps():
     assert plan_map(dict(schema_version=1, name="Empty", nodes=[], edges=[]))["tests"] == []
 
 
+def test_llm_client_is_distinct_from_person_model_and_agent():
+    data = sample()
+    data["nodes"].append(node("sdk", "llm_client"))
+    data["edges"] = [edge("us", "u", "sdk"), edge("sa", "sdk", "a"), edge("at", "a", "t")]
+    result = plan_map(data)
+    path = next(t for t in result["tests"] if t["id"] == "path-u-t")
+    assert path["node_ids"] == ["u", "sdk", "a", "t"]
+    assert not any(t["id"] == "prompt-sdk" for t in result["tests"])
+
+
 @pytest.mark.parametrize("change", [
     lambda d: d["nodes"].append(d["nodes"][0]),
     lambda d: d["edges"].append(edge("bad", "missing", "a")),

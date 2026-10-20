@@ -11,6 +11,10 @@ Open **Explore architecture** from the overview. Start from the sample or choose
 and connect them using **From** and **To**. Connections are directed. Mark
 untrusted-content and write capabilities explicitly.
 
+**LLM client / app** is a separate component from a person, model, agent or
+gateway. Use it for a chat interface, desktop/CLI client or SDK application and
+connect it according to the actual request path; no hosting topology is assumed.
+
 Move a card with the pointer or focus it and use arrow keys. Scroll the map to
 pan, zoom or use **Fit map**. Undo and redo retain up to 30 map edits.
 

@@ -10,7 +10,8 @@ import json
 from jsonschema import Draft202012Validator
 
 KINDS = {
-    "user": "Person / client", "edge": "Edge / WAF", "gateway": "AI gateway",
+    "user": "Person / user", "llm_client": "LLM client / app",
+    "edge": "Edge / WAF", "gateway": "AI gateway",
     "model": "Model", "agent": "Agent / orchestrator", "mcp": "MCP server",
     "tool": "Tool / API", "skill": "Skill / plugin", "retrieval": "Retrieval / RAG",
     "memory": "Memory / vector store", "code": "Code runner", "data": "Data store",
