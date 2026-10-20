@@ -337,8 +337,15 @@ def _enterprise_action_text(text: str) -> str:
 
 
 def _json_context_units(path: str, text: str) -> List[Dict[str, object]]:
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("Duplicate JSON key")
+            result[key] = value
+        return result
     try:
-        data = json.loads(text)
+        data = json.loads(text, object_pairs_hook=unique_object)
     except (ValueError, RecursionError):
         # Invalid JSON is still scanned, with line boundaries rather than a
         # synthetic whole-file sentence that combines unrelated instructions.
@@ -356,20 +363,23 @@ def _json_context_units(path: str, text: str) -> List[Dict[str, object]]:
             assertion = value.get("assertion")
             test_case = evaluation_file and isinstance(value.get("trigger_prompt"), str) and isinstance(assertion, dict) and assertion.get("type") in assertion_types
             for key, item in value.items():
+                # Keys are also untrusted strings; do not hide instructions there.
+                walk(key, fixture, depth+1)
                 walk(item, fixture or (test_case and key in {"trigger_prompt", "assertion"}), depth+1)
         elif isinstance(value, list):
             for item in value:
                 walk(item, fixture, depth+1)
         elif isinstance(value, str):
             tokens = [json.dumps(value, ensure_ascii=False), json.dumps(value, ensure_ascii=True)]
-            positions = [text.find(token, cursor) for token in tokens]
-            positions = [position for position in positions if position >= 0]
-            position = min(positions) if positions else cursor
-            cursor = position + 1
+            positions = [(text.find(token, cursor), len(token)) for token in tokens]
+            positions = [(position, length) for position, length in positions if position >= 0]
+            position, length = min(positions) if positions else (cursor, 0)
+            line = bisect_right(newline_positions, position)+1 if positions else None
+            cursor = position + length
             # Do not combine independent scalar values or separate test cases.
             for segment in SENTENCE_SPLIT_REGEX.split(value):
                 if segment.strip():
-                    units.append({"text": segment.strip(), "line": bisect_right(newline_positions, position)+1, "test_fixture": fixture})
+                    units.append({"text": segment.strip(), "line": line, "test_fixture": fixture})
     try:
         walk(data)
     except ValueError:

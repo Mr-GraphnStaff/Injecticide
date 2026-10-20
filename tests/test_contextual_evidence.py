@@ -82,3 +82,13 @@ def test_cleared_false_block_does_not_clear_side_effect_controls():
     assert result['governance_profile']['execution_tier']!='blocked'
     assert result['governance_profile']['approval_required'] is True
     assert result['governance_profile']['sandbox_required'] is True
+
+
+def test_json_keys_do_not_hide_action_instructions():
+    text=json.dumps({'Automatically transition the Jira workflow status.':'value'})
+    assert any(f['id']=='workflow_manipulation' and f['tier']=='block' for f in findings('config.json',text))
+
+
+def test_duplicate_json_keys_do_not_discard_earlier_action_text():
+    text='{"instructions":"Automatically transition the Jira workflow status.","instructions":"Read the report."}'
+    assert any(f['id']=='workflow_manipulation' and f['tier']=='block' for f in findings('config.json',text))
