@@ -63,6 +63,44 @@ services:
       retries: 6
       start_period: 20s
 
+  research_mcp:
+    image: injecticide-research-mcp:${INJECTICIDE_IMAGE_TAG:-local}
+    build:
+      context: ./research_mcp
+    container_name: injecticide-research-mcp
+    ports:
+      - "127.0.0.1:8200:8200"
+    environment:
+      - RESEARCH_INTERVAL_SECONDS=${INJECTICIDE_RESEARCH_INTERVAL_SECONDS:-3600}
+      - RESEARCH_PAGE_BUDGET=${INJECTICIDE_RESEARCH_PAGE_BUDGET:-40}
+    volumes:
+      - research-data:/data
+      - ./research_mcp/sources.json:/app/research_mcp/sources.json:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.5
+    networks:
+      - research-net
+    logging: *bounded-logging
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8200/health', timeout=5)"
+      interval: 30s
+      timeout: 6s
+      retries: 3
+      start_period: 20s
+
   nginx:
     image: nginx:alpine
     container_name: injecticide-nginx
@@ -81,7 +119,12 @@ services:
     restart: unless-stopped
 
 networks:
+  research-net:
+    driver: bridge
   injecticide-network:
     driver: bridge
   skill-sandbox-net:
     internal: true
+
+volumes:
+  research-data:

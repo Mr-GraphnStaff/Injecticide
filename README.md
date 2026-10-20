@@ -21,6 +21,10 @@ Injecticide is a prompt and skill-injection stress-testing toolkit for assessing
 - **Rate Limiting**: Respect API limits with configurable rate limiting
 - **Configuration Management**: YAML/JSON configuration files for reproducible testing
 - **Web UI and Skill Sandbox**: Browser-based test runner and archive-safe skill scanning
+- **Research MCP (0.3.0)**: Recurring approved-source discovery, versioned
+  research snapshots and queries for standards and vendor skills/plugins/projects.
+  See [setup, tools and coverage limits](research_mcp/README.md). Collected research
+  does not activate scanner rules.
 
 ### Enhanced for Enterprise
 - **Custom Payloads**: Add organization-specific test cases
