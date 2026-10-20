@@ -12,6 +12,7 @@ from starlette.responses import JSONResponse
 
 from .catalog import Catalog
 from .collector import Collector
+from .news import build_news
 
 
 def create_server(catalog: Catalog, collector: Collector, start_collector: bool = True) -> MCPServer:
@@ -24,7 +25,7 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         finally:
             await asyncio.to_thread(collector.close)
 
-    server = MCPServer("injecticide_research_mcp", version="0.3.0", lifespan=lifespan)
+    server = MCPServer("injecticide_research_mcp", version="0.3.1", lifespan=lifespan)
     read = {"readOnlyHint": True, "destructiveHint": False,
             "idempotentHint": True, "openWorldHint": False}
 
@@ -71,6 +72,12 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         healthy = not start_collector or collector.thread.is_alive()
         return JSONResponse({"status": "ok" if healthy else "worker_stopped",
                              **collector.status}, status_code=200 if healthy else 503)
+
+    @server.custom_route("/news", methods=["GET"])
+    async def news(request):
+        # Read-only projection shared with the web app; no MCP write tools are proxied.
+        return JSONResponse(await asyncio.to_thread(build_news, catalog, collector),
+                            headers={"Cache-Control": "no-store"})
 
     return server
 

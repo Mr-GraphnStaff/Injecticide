@@ -1,168 +1,144 @@
-function Home({ onLaunchConsole, onLaunchArchitecture, buildInfo }) {
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-32 -left-24 w-96 h-96 bg-red-700/30 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute -bottom-32 -right-24 w-96 h-96 bg-purple-700/30 rounded-full blur-3xl animate-pulse"></div>
-            </div>
+function newsLink(url) {
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'https:' && !parsed.username && !parsed.password &&
+            (!parsed.port || parsed.port === '443') &&
+            ['github.com', 'genai.owasp.org', 'owasp.github.io', 'www.nist.gov'].includes(parsed.hostname) ? parsed.href : null;
+    } catch { return null; }
+}
 
-            <header className="relative bg-black/60 backdrop-blur-lg border-b border-red-700/40 shadow-2xl">
-                <div className="container mx-auto px-6 py-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex items-center space-x-4">
-                        <img src="/static/images/logo.png" alt="DAF-TECH logo" className="h-14 w-14 rounded-xl shadow-2xl bg-gray-900/80 border border-gray-700" />
-                        <div>
-                            <h1 className="text-3xl md:text-4xl font-bold flex items-center space-x-2">
-                                <span className="text-white drop-shadow-lg">Injecticide</span>
-                                <span className="text-xs font-semibold uppercase tracking-widest text-gray-300 bg-red-900/50 border border-red-700/50 px-2 py-1 rounded-md">DAF-TECH</span>
-                            </h1>
-                            <div className="flex flex-wrap items-center gap-3">
-                                <p className="text-gray-300 text-base">Enterprise LLM Security Testing Platform</p>
-                                {buildInfo && (
-                                    <span className="inline-flex items-center text-[11px] text-gray-300 bg-gray-800/70 border border-gray-700/60 px-2 py-1 rounded-md shadow-lg">
-                                        <i className="fas fa-code-branch text-red-400 mr-2"></i>
-                                        {buildInfo.display_version}
-                                        {buildInfo.git_dirty && <span className="ml-2 text-yellow-300">dirty</span>}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                        <span className="hidden md:inline-flex items-center text-gray-300 text-sm bg-gray-800/70 border border-gray-700/60 px-3 py-2 rounded-lg shadow-lg">
-                            <i className="fas fa-moon text-red-400 mr-2"></i>
-                            Dark theme optimized for secure operations
-                        </span>
-                        <div className="flex flex-wrap items-center gap-3">
-                            <button
-                                onClick={onLaunchConsole}
-                                className="px-5 py-3 rounded-lg text-sm font-semibold transition bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-700 shadow-xl border border-red-500/60"
-                            >
-                                <i className="fas fa-rocket mr-2"></i>
-                                Launch Testing Console
-                            </button>
-                            <button
-                                onClick={onLaunchArchitecture}
-                                className="px-5 py-3 rounded-lg text-sm font-semibold transition bg-gray-800/80 hover:bg-gray-700/80 shadow-xl border border-cyan-500/40 text-cyan-100"
-                            >
-                                <i className="fas fa-diagram-project mr-2"></i>
-                                Open Architecture Analysis
-                            </button>
-                        </div>
+function NewsTime({ value }) {
+    const date = new Date(value);
+    return value && !Number.isNaN(date.valueOf()) ?
+        <time dateTime={value}>{date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</time> :
+        <span>Not yet recorded</span>;
+}
+
+function ResearchUpdates() {
+    const [feed, setFeed] = React.useState(null);
+    const [failed, setFailed] = React.useState(false);
+    React.useEffect(() => {
+        let disposed = false;
+        let controller = null;
+        async function refresh() {
+            if (document.hidden || controller) return;
+            controller = new AbortController();
+            const timeout = setTimeout(() => controller && controller.abort(), 8000);
+            try {
+                const response = await fetch('/api/research/news', { signal: controller.signal, cache: 'no-store' });
+                if (!response.ok) throw new Error('Unavailable');
+                const data = await response.json();
+                if (!data || !Array.isArray(data.items) || !data.collection) throw new Error('Invalid feed');
+                if (!disposed) { setFeed(data); setFailed(false); }
+            } catch {
+                if (!disposed) setFailed(true);
+            } finally {
+                clearTimeout(timeout);
+                controller = null;
+            }
+        }
+        refresh();
+        const timer = setInterval(refresh, 60000);
+        document.addEventListener('visibilitychange', refresh);
+        return () => {
+            disposed = true;
+            clearInterval(timer);
+            document.removeEventListener('visibilitychange', refresh);
+            if (controller) controller.abort();
+        };
+    }, []);
+    const collection = feed?.collection || {};
+    const stale = failed || feed?.feed_stale;
+    const unavailable = feed?.available === false || (!feed && failed);
+    const status = unavailable ? 'Research feed unavailable' : stale ? 'Showing saved updates — connection interrupted' :
+        !feed ? 'Loading research updates…' : !collection.worker_alive ? 'Collector stopped' :
+        collection.collecting ? 'Collector running' : collection.last_cycle ? 'Collector active · hourly watch' : 'Waiting for first collection';
+    const items = (feed?.items || []).slice(0, 8).filter(item => newsLink(item.url));
+    return (
+        <section id="research-updates" className="home-panel" aria-labelledby="research-title">
+            <div className="home-section-head">
+                <div><p className="home-eyebrow">From the research MCP</p><h2 id="research-title">Latest source updates</h2></div>
+                <p role="status" className={`home-status ${stale || unavailable || (feed && !collection.worker_alive) ? 'home-status-warning' : ''}`}>{status}</p>
+            </div>
+            <p className="home-muted">Dated vendor releases and observed reference changes, collected from approved public sources. Preview releases are labeled.</p>
+            {feed?.available && <dl className="home-metrics">
+                <div><dt>Last collection completed</dt><dd><NewsTime value={collection.last_cycle} /></dd></div>
+                <div><dt>Configured sources</dt><dd>{collection.source_count ?? 'Unknown'}</dd></div>
+                <div><dt>Retained snapshots</dt><dd>{collection.retained_snapshots ?? 'Unknown'}</dd></div>
+                <div><dt>Sources with fetch errors</dt><dd>{collection.sources_with_errors ?? 'Unknown'}</dd></div>
+            </dl>}
+            {!!collection.last_error && <p className="home-warning">The collector reported an error. Collection coverage is incomplete.</p>}
+            {!!collection.sources_with_errors && <p className="home-warning">Some sources could not be collected. Retained updates may still be shown.</p>}
+            {items.length > 0 ? <ul className="home-news-list">{items.map(item => <li key={item.id}>
+                <div className="home-news-meta"><span>{item.kind === 'source_change' ? 'Reference change' : 'Vendor release'}</span>{item.preview && <span className="home-preview">Preview release</span>}</div>
+                <a href={newsLink(item.url)} target="_blank" rel="noopener noreferrer">{item.title}<span className="sr-only"> (opens in a new tab)</span><span aria-hidden="true"> ↗</span></a>
+                <p className="home-muted">{item.source} · {item.date_label} <NewsTime value={item.date} /></p>
+            </li>)}</ul> : feed && !unavailable && <p className="home-empty">No recent releases or changed reference pages in the retained catalog yet.</p>}
+            {unavailable && <p className="home-empty">The research service cannot be reached. Testing and scanning remain available.</p>}
+            <p className="home-footnote">Source watch · past 30 days · up to 8 items. A page change is not a verified new standard or vulnerability. Research informs review; scanner rules and payloads change through reviewed releases.</p>
+        </section>
+    );
+}
+
+function Home({ onLaunchConsole, onLaunchArchitecture, buildInfo }) {
+    const capabilities = [
+        ['01', 'Prompt testing', 'Run curated payloads against configured LLM endpoints. Review deterministic response signals and export results.'],
+        ['02', 'Skill & plugin scanning', 'Inspect uploaded instructions, code, manifests and dependencies. Review findings alongside explicit coverage gaps.'],
+        ['03', 'Architecture analysis', 'Model trust boundaries across prompts, retrieval, tools, memory and outputs. Findings describe the supplied model.'],
+        ['04', 'Research watch', 'Follow vendor tools, skills, project configuration and security references through an hourly, bounded source collector.'],
+    ];
+    return (
+        <div className="injecticide-home">
+            <a className="home-skip" href="#home-main">Skip to main content</a>
+            <header className="home-header">
+                <div className="home-shell home-header-inner">
+                    <a className="home-brand" href="https://daf-tech.com" target="_blank" rel="noopener noreferrer" aria-label="DAF-TECH website (opens in a new tab)">
+                        <img src="/static/images/daf-tech-sphere.png" alt="" width="64" height="64" />
+                        <div><p className="home-product-name">Injecticide</p><p className="home-signature">Another DAF-TECH Product</p></div>
+                    </a>
+                    <div className="home-header-actions">
+                        {buildInfo && <span className="home-version">{buildInfo.display_version}{buildInfo.git_dirty ? ' · working copy' : ''}</span>}
+                        <a href="#research-updates" className="home-text-link">Research updates ↓</a>
                     </div>
                 </div>
             </header>
-
-            <main className="relative container mx-auto px-6 py-12 space-y-10">
-                <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div className="lg:col-span-2 bg-gray-900/80 border border-gray-800 shadow-2xl rounded-2xl p-8 backdrop-blur">
-                        <p className="text-sm uppercase tracking-[0.3em] text-red-400 mb-4">Enterprise Grade Defense</p>
-                        <h2 className="text-4xl md:text-5xl font-black leading-tight text-white drop-shadow">
-                            Secure your LLM stack against prompt injection, data leaks, and policy drift.
-                        </h2>
-                        <p className="mt-6 text-lg text-gray-300 leading-relaxed">
-                            Injecticide streamlines adversarial testing with curated payloads, automated validation, and live reporting—purpose-built for security teams safeguarding generative AI deployments.
-                        </p>
-                        <div className="mt-8 flex flex-wrap gap-4">
-                            <span className="px-4 py-2 rounded-full text-sm bg-gray-800/80 border border-gray-700 text-gray-200 shadow-lg">Prompt injection testing</span>
-                            <span className="px-4 py-2 rounded-full text-sm bg-gray-800/80 border border-gray-700 text-gray-200 shadow-lg">Policy validation</span>
-                            <span className="px-4 py-2 rounded-full text-sm bg-gray-800/80 border border-gray-700 text-gray-200 shadow-lg">Endpoint hardening</span>
-                            <span className="px-4 py-2 rounded-full text-sm bg-gray-800/80 border border-gray-700 text-gray-200 shadow-lg">Automated reporting</span>
+            <main id="home-main" className="home-shell home-main" tabIndex="-1">
+                <section className="home-hero" aria-labelledby="home-title">
+                    <div>
+                        <p className="home-eyebrow">AI security testing & research</p>
+                        <h1 id="home-title">Test the prompt.<br />Inspect the package.<br /><span>Understand the risk.</span></h1>
+                        <p className="home-lead">Bring evidence to your AI security review. Test model responses, inspect agent skills and plugins, and trace risks across your workflow.</p>
+                        <div className="home-actions">
+                            <button onClick={onLaunchConsole} className="home-button home-button-primary">Open testing & scanning <span aria-hidden="true">→</span></button>
+                            <button onClick={onLaunchArchitecture} className="home-button">Explore architecture</button>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-b from-gray-900/90 to-black/80 border border-gray-800 shadow-2xl rounded-2xl p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-semibold text-white">Platform Snapshot</h3>
-                            <span className="text-xs text-gray-400 uppercase tracking-wide">Live-ready</span>
-                        </div>
-                        <div className="space-y-4 text-gray-300">
-                            <div className="flex items-center justify-between p-4 bg-gray-800/60 rounded-xl border border-gray-700/70 shadow-inner">
-                                <div className="flex items-center space-x-3">
-                                    <span className="p-3 rounded-lg bg-red-900/40 border border-red-700/50 text-red-300">
-                                        <i className="fas fa-biohazard"></i>
-                                    </span>
-                                    <div>
-                                        <p className="text-sm text-gray-400">Payload library</p>
-                                        <p className="text-lg font-semibold text-white">Continuously updated</p>
-                                    </div>
-                                </div>
-                                <i className="fas fa-check-circle text-green-400 text-2xl"></i>
-                            </div>
-                            <div className="flex items-center justify-between p-4 bg-gray-800/60 rounded-xl border border-gray-700/70 shadow-inner">
-                                <div className="flex items-center space-x-3">
-                                    <span className="p-3 rounded-lg bg-purple-900/40 border border-purple-700/50 text-purple-200">
-                                        <i className="fas fa-shield-alt"></i>
-                                    </span>
-                                    <div>
-                                        <p className="text-sm text-gray-400">Policy validation</p>
-                                        <p className="text-lg font-semibold text-white">Streamlined reviews</p>
-                                    </div>
-                                </div>
-                                <i className="fas fa-chart-line text-sky-400 text-2xl"></i>
-                            </div>
-                            <div className="flex items-center justify-between p-4 bg-gray-800/60 rounded-xl border border-gray-700/70 shadow-inner">
-                                <div className="flex items-center space-x-3">
-                                    <span className="p-3 rounded-lg bg-amber-900/40 border border-amber-700/50 text-amber-200">
-                                        <i className="fas fa-laptop-code"></i>
-                                    </span>
-                                    <div>
-                                        <p className="text-sm text-gray-400">Integration ready</p>
-                                        <p className="text-lg font-semibold text-white">Endpoints & reports</p>
-                                    </div>
-                                </div>
-                                <i className="fas fa-plug text-amber-400 text-2xl"></i>
-                            </div>
-                        </div>
-                    </div>
+                    <aside className="home-evidence-card" aria-labelledby="evidence-title">
+                        <img src="/static/images/daf-tech-sphere.png" alt="" width="160" height="160" />
+                        <p className="home-eyebrow">Evidence before assurance</p>
+                        <h2 id="evidence-title">Know what was checked.<br />See what remains unknown.</h2>
+                        <p className="home-muted">Review measurable signals, source attribution and coverage limits. A clean result does not certify a safe system.</p>
+                    </aside>
                 </section>
-
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-gray-900/80 rounded-2xl border border-gray-800 p-6 shadow-xl">
-                        <div className="w-12 h-12 rounded-xl bg-red-900/40 border border-red-700/50 flex items-center justify-center text-red-300 text-xl mb-4">
-                            <i className="fas fa-syringe"></i>
-                        </div>
-                        <h3 className="text-xl font-semibold text-white mb-2">Advanced Prompt Testing</h3>
-                        <p className="text-gray-300 leading-relaxed">Run curated adversarial prompts, automate retries, and surface risky behaviors across your LLM endpoints.</p>
-                    </div>
-                    <div className="bg-gray-900/80 rounded-2xl border border-gray-800 p-6 shadow-xl">
-                        <div className="w-12 h-12 rounded-xl bg-purple-900/40 border border-purple-700/50 flex items-center justify-center text-purple-200 text-xl mb-4">
-                            <i className="fas fa-clipboard-check"></i>
-                        </div>
-                        <h3 className="text-xl font-semibold text-white mb-2">Policy Validation</h3>
-                        <p className="text-gray-300 leading-relaxed">Verify guardrails, monitor response integrity, and document compliance for enterprise stakeholders.</p>
-                    </div>
-                    <div className="bg-gray-900/80 rounded-2xl border border-gray-800 p-6 shadow-xl">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-900/40 border border-emerald-700/50 flex items-center justify-center text-emerald-200 text-xl mb-4">
-                            <i className="fas fa-satellite-dish"></i>
-                        </div>
-                        <h3 className="text-xl font-semibold text-white mb-2">Operational Insights</h3>
-                        <p className="text-gray-300 leading-relaxed">Track sessions, export reports, and keep teams aligned with clear telemetry and next-step guidance.</p>
-                    </div>
+                <section aria-labelledby="capabilities-title">
+                    <div className="home-section-head"><h2 id="capabilities-title">One toolkit. Four ways to investigate.</h2></div>
+                    <div className="home-capabilities">{capabilities.map(([number, title, text]) => <article className="home-panel" key={number}>
+                        <span className="home-number">{number}</span><h3>{title}</h3><p className="home-muted">{text}</p>
+                    </article>)}</div>
                 </section>
-
-                <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-cyan-950/30 rounded-2xl border border-cyan-800/40 p-6 shadow-xl">
-                        <p className="text-sm uppercase tracking-[0.3em] text-cyan-300 mb-3">New Surface</p>
-                        <h3 className="text-2xl font-semibold text-white mb-3">Architecture Analysis</h3>
-                        <p className="text-gray-300 leading-relaxed">
-                            Model trust boundaries across prompts, retrieval, tools, memory, connectors, and output handlers. Review risky paths without crowding the existing payload console.
-                        </p>
-                        <div className="mt-5 flex flex-wrap gap-3 text-sm text-cyan-100">
-                            <span className="px-3 py-2 rounded-full bg-cyan-900/40 border border-cyan-700/40">Grouped tool boundaries</span>
-                            <span className="px-3 py-2 rounded-full bg-cyan-900/40 border border-cyan-700/40">Path-based findings</span>
-                            <span className="px-3 py-2 rounded-full bg-cyan-900/40 border border-cyan-700/40">Trust crossing evidence</span>
-                        </div>
-                    </div>
-                    <div className="bg-gray-900/80 rounded-2xl border border-gray-800 p-6 shadow-xl">
-                        <p className="text-sm uppercase tracking-[0.3em] text-gray-400 mb-3">Product Split</p>
-                        <h3 className="text-2xl font-semibold text-white mb-3">Three Clear Questions</h3>
-                        <div className="space-y-3 text-gray-300">
-                            <p><span className="text-white font-semibold">Prompt Testing:</span> Can this model be manipulated directly?</p>
-                            <p><span className="text-white font-semibold">Skill Scanning:</span> Is this uploaded skill or bundle risky?</p>
-                            <p><span className="text-white font-semibold">Architecture Analysis:</span> Where can the workflow be manipulated across boundaries?</p>
-                        </div>
-                    </div>
+                <ResearchUpdates />
+                <section className="home-references" aria-labelledby="references-title">
+                    <h2 id="references-title">Distinct references. Different jobs.</h2>
+                    <p className="home-muted">LLM application risks, autonomous workflows, skill risks and governance each need their own lens.</p>
+                    <ul>
+                        <li><a href="https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/" target="_blank" rel="noopener noreferrer">OWASP LLM Top 10 2026 ↗</a><span>LLM application risks</span></li>
+                        <li><a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/" target="_blank" rel="noopener noreferrer">OWASP Agentic Applications Top 10 2026 ↗</a><span>Autonomous workflows</span></li>
+                        <li><a href="https://owasp.org/projects/agentic-skills-top-10" target="_blank" rel="noopener noreferrer">OWASP Agentic Skills Top 10 ↗</a><span>Skill-specific risks · Incubator Project</span></li>
+                        <li><a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener noreferrer">NIST AI RMF & Generative AI Profile ↗</a><span>Risk management and governance</span></li>
+                    </ul>
                 </section>
             </main>
+            <footer className="home-footer home-shell"><img src="/static/images/daf-tech-sphere.png" alt="" width="32" height="32" /><span>Injecticide · Another DAF-TECH Product</span><a href="https://daf-tech.com" target="_blank" rel="noopener noreferrer">DAF-TECH ↗</a></footer>
         </div>
     );
 }
