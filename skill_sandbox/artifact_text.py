@@ -14,6 +14,7 @@ SQLITE_HEADER = b"SQLite format 3\x00"
 MAX_SQLITE_TABLES = 25
 MAX_SQLITE_ROWS_PER_TABLE = 50
 MAX_SQLITE_TEXT_CHARS = 100_000
+MAX_SQLITE_VALUE_CHARS = 4096
 MAX_OFFICE_PARTS = 50
 MAX_OFFICE_TEXT_CHARS = 100_000
 MAX_OFFICE_PART_BYTES = 1024 * 1024
@@ -103,7 +104,19 @@ def _read_sqlite_rows(db_path: str) -> str:
             if total_chars >= MAX_SQLITE_TEXT_CHARS:
                 break
 
-            query = f'SELECT * FROM "{quoted_table}" LIMIT {MAX_SQLITE_ROWS_PER_TABLE}'
+            # Slice TEXT inside SQLite so one large value is not copied into Python.
+            # BLOBs remain inventory only, as in _render_sqlite_value.
+            projections = []
+            for column in columns:
+                quoted_column = column.replace('"', '""')
+                identifier = f'"{quoted_column}"'
+                projections.append(
+                    f"CASE WHEN typeof({identifier}) = 'text' "
+                    f"THEN substr({identifier}, 1, {MAX_SQLITE_VALUE_CHARS}) "
+                    f"WHEN typeof({identifier}) = 'blob' THEN NULL ELSE {identifier} END"
+                )
+            query = (f'SELECT {", ".join(projections)} FROM "{quoted_table}" '
+                     f'LIMIT {MAX_SQLITE_ROWS_PER_TABLE}')
             for row in connection.execute(query):
                 values = []
                 for column, value in zip(columns, row):

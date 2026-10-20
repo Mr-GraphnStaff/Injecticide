@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 - 2026-10-19
+
+- Allow SQLite archive members up to 32 MiB in any package directory, identified
+  by their SQLite header. Keep ordinary files at 5 MiB and raise the total
+  decompressed package budget to 64 MiB; database text sampling stays bounded.
+- Limit SQLite text fields to 4,096 characters inside SQL before loading rows
+  into Python, preserving the existing table, row and output budgets.
+- Rotate Injecticide container logs at 10 MiB, retaining three files per container.
+
 ## 0.2.0 - 2026-10-19
 
 ### Skill and plugin threat analysis

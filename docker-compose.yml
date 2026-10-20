@@ -1,3 +1,10 @@
+# https://docs.docker.com/engine/logging/drivers/json-file/
+x-logging: &bounded-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   injecticide:
     image: injecticide-web:${INJECTICIDE_IMAGE_TAG:-local}
@@ -14,6 +21,7 @@ services:
     networks:
       - injecticide-network
       - skill-sandbox-net
+    logging: *bounded-logging
     restart: unless-stopped
     healthcheck:
       test:
@@ -42,6 +50,7 @@ services:
     mem_limit: 256m
     networks:
       - skill-sandbox-net
+    logging: *bounded-logging
     restart: unless-stopped
     healthcheck:
       test:
@@ -68,6 +77,7 @@ services:
         condition: service_healthy
     networks:
       - injecticide-network
+    logging: *bounded-logging
     restart: unless-stopped
 
 networks:
