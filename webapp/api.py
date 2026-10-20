@@ -7,7 +7,7 @@ from starlette.concurrency import run_in_threadpool
 from fastapi.websockets import WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response, JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field, StrictInt
 from typing import Optional, List, Dict, Any
@@ -45,6 +45,7 @@ from webapp.config_loader import (
     resolve_payload_preset,
 )
 from webapp.skill_scanner import scan_upload, MAX_UPLOAD_BYTES
+from webapp.research_news import news_client
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
 
 SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
@@ -87,7 +88,7 @@ PAYLOAD_CATEGORY_METADATA = {
 app = FastAPI(
     title="Injecticide",
     description="LLM Security Testing Platform",
-    version="2.0.0",
+    version=tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"],
     docs_url="/api/docs",
 )
 
@@ -153,6 +154,7 @@ def _read_git_commit(project_root: Path) -> str:
 def _get_asset_version() -> str:
     asset_paths = [
         STATIC_DIR / "index.html",
+        STATIC_DIR / "home.css",
         STATIC_DIR / "app.js",
         STATIC_DIR / "pages" / "Home.jsx",
     ]
@@ -350,6 +352,12 @@ async def get_app_version():
     return get_build_info()
 
 
+@app.get("/api/research/news")
+async def research_news():
+    """Return bounded public research updates; upstream failure does not block the console."""
+    return JSONResponse(await run_in_threadpool(news_client.get), headers={"Cache-Control": "no-store"})
+
+
 @app.get("/api/architecture/options")
 async def get_architecture_options():
     """Return available architecture profiles and modeled scenarios."""
@@ -511,6 +519,7 @@ async def root():
         html = static_file.read_text(encoding="utf-8")
         html = html.replace("/static/pages/Home.jsx", f"/static/pages/Home.jsx?v={asset_version}")
         html = html.replace("/static/app.js", f"/static/app.js?v={asset_version}")
+        html = html.replace("/static/home.css", f"/static/home.css?v={asset_version}")
         return HTMLResponse(content=html, headers={"Cache-Control": "no-store"})
     return {"message": "Injecticide API"}
 

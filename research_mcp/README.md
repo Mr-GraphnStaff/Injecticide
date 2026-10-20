@@ -8,7 +8,7 @@ Streamable HTTP, stateless JSON responses and a persistent SQLite catalog.
 ## Run on the Injecticide Raspberry Pi
 
 After human acceptance through the existing release process, Compose starts
-`research_mcp` alongside the other services. It has its own egress network and
+`research_mcp` alongside the other services. It has a dedicated research network (also joined by the web app for read-only news) and
 named data volume; the scanner network and enforcement files are not mounted.
 To build/test just this service in an approved checkout:
 
@@ -168,3 +168,23 @@ throttling, Compose isolation and real SDK client calls. The transport test
 requires the research SDK; it skips if only base test dependencies are installed.
 `tests/research_mcp_probe.py` is an operator-run HTTP transport and provenance
 probe for an isolated container on the Pi.
+
+## Front-page source watch
+
+GET `/news` exposes a bounded public projection of the catalog: up to eight vendor
+releases or changed OWASP/NIST discovery roots from the past 30 days, plus collection
+health and coverage counts. Initial reference baselines are not news. Release notes,
+raw document text and research excerpts are excluded; links are restricted to their
+approved sources. Preview releases and observed page changes are labeled separately.
+This route does not add an MCP tool or trigger collection.
+
+The web app reads it using `RESEARCH_MCP_URL=http://research_mcp:8200`, through
+GET `/api/research/news`. Requests have size/time budgets, no redirects, a 60-second
+cache and a visible stale/unavailable fallback. The browser polls once per minute
+while visible. The scanner has no connection to the research network or catalog.
+The home page shows source fetch errors rather than treating missing coverage as a
+successful check. Research does not automatically change scanner rules or payloads.
+
+The DAF-TECH sphere in `webapp/static/images/daf-tech-sphere.png` is the parent-brand
+asset reused from Better CaptionKeep v6 (`teams-captions-saver/icons/daf-tech-sphere.png`, optimized shipping size).
+Injecticide uses its own product name and the signature "Another DAF-TECH Product".

@@ -15,12 +15,14 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - SKILL_SANDBOX_URL=http://skill_sandbox:9001
+      - RESEARCH_MCP_URL=http://research_mcp:8200
     volumes:
       - ${INJECTICIDE_REPORTS_DIR:-./reports}:/app/reports
       - ./configs:/app/configs
     networks:
       - injecticide-network
       - skill-sandbox-net
+      - research-net
     logging: *bounded-logging
     restart: unless-stopped
     healthcheck:

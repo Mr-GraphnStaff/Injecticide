@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.1 - 2026-10-20
+
+- Apply the Better CaptionKeep v6 DAF-TECH sphere and teal visual identity, with
+  the Injecticide signature "Another DAF-TECH Product".
+
+- Update the front page to describe prompt testing, package scanning, modeled
+  architecture analysis and research collection without unsupported hardening
+  or compliance claims; show the actual package release in the version badge.
+- Publish an attributed, bounded research news feed from collected vendor releases
+  and observed changes to official guidance, with collector health and freshness.
+- Connect the web app to the research service through a read-only projection,
+  with bounded requests, cached last-good data and explicit unavailable states.
+
 ## 0.3.0 - 2026-10-20
 
 - Add an independent research MCP container with recurring, bounded discovery
