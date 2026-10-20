@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.3 - 2026-10-20
+
+- Share the DAF-TECH header, sphere, signature, navigation and footer across the
+  overview, testing/scanning and architecture pages; fix the broken console logo.
+- Apply consistent teal surfaces and readable controls to workspaces and reports,
+  with responsive layouts and a clear route to static package scanning.
+- Replace repeated architecture edge endpoints with an ordered component path,
+  preserving actual loops and discontinuities; clarify modeled analysis limits.
+- Add useful console start guidance and clear stale overview anchors on navigation.
+
 ## 0.3.2 - 2026-10-20
 
 - Keep JSON context within individual values; retain declared evaluation inputs

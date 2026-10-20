@@ -80,7 +80,7 @@ function ResearchUpdates() {
     );
 }
 
-function Home({ onLaunchConsole, onLaunchArchitecture, buildInfo }) {
+function Home({ onLaunchConsole, onLaunchArchitecture, buildInfo, onNavigate }) {
     const capabilities = [
         ['01', 'Prompt testing', 'Run curated payloads against configured LLM endpoints. Review deterministic response signals and export results.'],
         ['02', 'Skill & plugin scanning', 'Inspect uploaded instructions, code, manifests and dependencies. Review findings alongside explicit coverage gaps.'],
@@ -90,18 +90,7 @@ function Home({ onLaunchConsole, onLaunchArchitecture, buildInfo }) {
     return (
         <div className="injecticide-home">
             <a className="home-skip" href="#home-main">Skip to main content</a>
-            <header className="home-header">
-                <div className="home-shell home-header-inner">
-                    <a className="home-brand" href="https://daf-tech.com" target="_blank" rel="noopener noreferrer" aria-label="DAF-TECH website (opens in a new tab)">
-                        <img src="/static/images/daf-tech-sphere.png" alt="" width="64" height="64" />
-                        <div><p className="home-product-name">Injecticide</p><p className="home-signature">Another DAF-TECH Product</p></div>
-                    </a>
-                    <div className="home-header-actions">
-                        {buildInfo && <span className="home-version">{buildInfo.display_version}{buildInfo.git_dirty ? ' · working copy' : ''}</span>}
-                        <a href="#research-updates" className="home-text-link">Research updates ↓</a>
-                    </div>
-                </div>
-            </header>
+            <ProductHeader section="overview" buildInfo={buildInfo} onNavigate={onNavigate} />
             <main id="home-main" className="home-shell home-main" tabIndex="-1">
                 <section className="home-hero" aria-labelledby="home-title">
                     <div>
@@ -138,7 +127,7 @@ function Home({ onLaunchConsole, onLaunchArchitecture, buildInfo }) {
                     </ul>
                 </section>
             </main>
-            <footer className="home-footer home-shell"><img src="/static/images/daf-tech-sphere.png" alt="" width="32" height="32" /><span>Injecticide · Another DAF-TECH Product</span><a href="https://daf-tech.com" target="_blank" rel="noopener noreferrer">DAF-TECH ↗</a></footer>
+            <ProductFooter />
         </div>
     );
 }

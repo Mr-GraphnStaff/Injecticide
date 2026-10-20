@@ -60,3 +60,62 @@
 @media(max-width:1000px) { .home-capabilities { grid-template-columns:repeat(2,minmax(0,1fr)); } .home-hero { gap:24px; } .home-evidence-card { padding:22px; } }
 @media(max-width:640px) { .home-shell { padding-inline:20px; } .home-header-inner { align-items:flex-start; flex-direction:column; gap:14px; } .home-header-actions { justify-content:flex-start; } .home-main { padding-block:32px; gap:32px; } .home-hero { grid-template-columns:minmax(0,1fr); } .home-evidence-card { display:none; } .home-capabilities, .home-news-list, .home-references ul { grid-template-columns:minmax(0,1fr); } .home-capabilities { gap:12px; } .home-panel { padding:20px; } .home-number { margin-bottom:10px; } .home-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .home-actions { flex-direction:column; align-items:stretch; } .home-section-head h2, .home-references h2 { font-size:21px; } .home-footer a { margin-left:0; } }
 @media(prefers-reduced-motion:reduce) { .pulse-red, .animate-pulse { animation:none !important; } }
+
+/* Shared DAF-TECH workspace surfaces. Risk colors remain on finding badges. */
+.injecticide-workbench { color-scheme:dark; accent-color:#87d3c5; }
+.injecticide-workbench .home-shell { width:min(1480px,100%); }
+.workbench-nav { display:flex; flex-wrap:wrap; gap:8px; padding-bottom:16px; }
+.workbench-nav button { border:1px solid transparent; border-radius:10px; padding:9px 15px; min-height:44px; color:var(--home-muted); font-size:14px; font-weight:600; }
+.workbench-nav button:hover:not(:disabled) { color:#fff; background:#285044; }
+.workbench-nav button[aria-current="page"] { color:#e8fff7; background:#193c31; border-color:#67998b; }
+.workbench-nav button:disabled { opacity:.55; cursor:default; }
+.workbench-main { padding-block:34px 48px; }
+.workbench-intro { display:flex; justify-content:space-between; align-items:center; gap:24px; margin-bottom:30px; }
+.workbench-intro h1 { font-size:clamp(26px,2.5vw,36px); font-weight:700; letter-spacing:-.035em; line-height:1.2; margin-bottom:12px; }
+.workbench-intro p:not(.home-eyebrow) { color:var(--home-muted); font-size:15px; max-width:740px; }
+.workbench-intro .home-button { flex-shrink:0; }
+.workbench-scope { color:var(--home-accent); border:1px solid var(--home-border); border-radius:12px; padding:10px 14px; font-size:12px; max-width:240px; }
+.injecticide-workbench .workbench-grid { display:grid; gap:28px; align-items:start; }
+.injecticide-workbench .testing-grid { grid-template-columns:minmax(300px,380px) minmax(0,1fr); }
+.injecticide-workbench .architecture-grid { grid-template-columns:320px minmax(0,1fr); }
+.workbench-grid > *, .workbench-results > * { min-width:0; }
+.workbench-section-title { color:var(--home-accent); font-size:19px; line-height:1.4; font-weight:650; }
+.workbench-close { padding:8px 14px; min-height:42px; border-color:#93635b; color:#ffe4dc; background:#482722; }
+.workbench-close:hover { background:#60322b; }
+.injecticide-workbench :is([class*="bg-gray-8"], [class*="bg-slate-950"]) { background-color:var(--home-panel); }
+.injecticide-workbench :is([class*="bg-gray-9"], [class*="bg-black/"]) { background-color:#0b1e18; }
+.injecticide-workbench [class*="bg-gray-7"] { background-color:#214337; }
+.injecticide-workbench :is([class*="border-gray-"], [class*="border-cyan-8"], [class*="border-cyan-7"]) { border-color:var(--home-border); }
+.injecticide-workbench :is(.text-gray-300,.text-gray-400,.text-gray-500) { color:var(--home-muted); }
+.injecticide-workbench :is(.text-cyan-300,.text-cyan-200) { color:var(--home-accent); }
+.injecticide-workbench :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { color:#f0f7f5; background-color:#091e17; border:1px solid #557d70; border-radius:10px; max-width:100%; min-width:0; }
+.injecticide-workbench :is(input, textarea)::placeholder { color:#9fb8ae; opacity:1; }
+.injecticide-workbench input[type="file"] { padding:10px; font-size:13px; }
+.injecticide-workbench input[type="file"]::file-selector-button { color:#e8fff7; background:#244f40; border:1px solid #67998b; border-radius:7px; padding:7px 10px; margin-right:10px; }
+.injecticide-workbench :is(input, select, textarea, summary):focus-visible { outline:3px solid #a5e0d2; outline-offset:3px; }
+.injecticide-workbench button[class*="bg-gray"]:hover:not(:disabled) { background-color:#285044; }
+.injecticide-workbench .workbench-primary { background:#236b59; background-image:none; color:#ffffff; border:1px solid #9edbcf; }
+.injecticide-workbench .workbench-primary:hover:not(:disabled) { background:#2c7a66; color:#ffffff; }
+.injecticide-workbench button:disabled { cursor:not-allowed; }
+.workbench-scan-section { scroll-margin-top:24px; }
+.architecture-severity { display:inline-flex; border:1px solid; border-radius:10px; padding:4px 12px; text-transform:capitalize; font-size:24px; font-weight:750; }
+.architecture-paths { margin-top:24px; }
+.architecture-path { display:flex; flex-wrap:wrap; gap:12px; list-style:none; padding:0; margin:0; }
+.architecture-path + .architecture-path { margin-top:16px; }
+.architecture-path li { flex:1 1 125px; min-width:0; padding:14px; background:#0a2018; border:1px solid #4a7566; border-radius:12px; position:relative; }
+.architecture-path li strong { display:block; font-size:14px; text-transform:capitalize; line-height:1.4; overflow-wrap:anywhere; }
+.architecture-step-number { display:block; font-size:11px; color:var(--home-accent); font-weight:650; margin-bottom:12px; }
+.architecture-step-transport { display:block; margin-top:8px; font-size:11px; color:var(--home-muted); text-transform:capitalize; overflow-wrap:anywhere; }
+.architecture-step-warning { display:block; margin-top:8px; color:#f3d2a2; font-size:11px; }
+.architecture-path li.architecture-step-sensitive { border-color:#ae8951; }
+@media(max-width:1050px) { .injecticide-workbench .workbench-grid { grid-template-columns:minmax(0,1fr); } .workbench-intro { align-items:flex-start; flex-direction:column; } .workbench-scope { max-width:none; } }
+@media(max-width:640px) { .workbench-main { padding-block:24px; } .workbench-nav { gap:4px; } .workbench-nav button { font-size:12px; padding-inline:10px; } .workbench-intro { margin-bottom:24px; } .architecture-path li { flex-basis:calc(50% - 12px); } .injecticide-workbench .home-header-actions { width:100%; } }
+@media(forced-colors:active) { .workbench-nav button[aria-current="page"], .architecture-path li { border-color:ButtonText; } .architecture-step-warning { color:CanvasText; } }
+.workbench-empty-title { color:var(--home-text); font-size:24px; font-weight:650; line-height:1.35; margin-bottom:12px; }
+.workbench-start-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; text-align:left; margin-top:28px; }
+.workbench-start-options section { border:1px solid var(--home-border); border-radius:12px; padding:20px; min-width:0; }
+.workbench-start-options h4 { color:var(--home-text); font-weight:650; font-size:16px; margin-block:10px; }
+.workbench-start-options p { color:var(--home-muted); font-size:14px; margin-bottom:18px; }
+.workbench-start-options a { color:var(--home-accent); text-decoration:underline; text-underline-offset:4px; font-size:14px; }
+@media(max-width:640px) { .workbench-start-options { grid-template-columns:minmax(0,1fr); } }
+.testing-workbench .workbench-config label i { color:var(--home-accent); }
