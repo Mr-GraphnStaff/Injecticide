@@ -116,7 +116,7 @@ def scanner_metadata():
                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                          "freshness": "unknown" if age is None or age < 0 else "stale" if age > 90 else "current",
                          "age_days": age})
-    return {"scanner_version": "0.2.0", "adapter_version": "2026-10-19", "catalogs": catalogs,
+    return {"scanner_version": "0.2.1", "adapter_version": "2026-10-19", "catalogs": catalogs,
             "update_policy": "reviewed_application_release", "automatic_research_activation": False,
             "network_access_during_static_analysis": False,
             "network_scope": "Built-in static analyzers never connect; optional administrator verifier isolation is operator-managed",

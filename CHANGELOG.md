@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.2 - 2026-10-20
+
+- Keep JSON context within individual values; retain declared evaluation inputs
+  as reviewable evidence rather than treating test prompts as executed actions.
+- Distinguish automatically offered workflow steps from automatic execution, and
+  bind secret-disclosure verbs to credential targets instead of earlier topics.
+- Require skill-write evidence for self-modification; timing phrases and a skill
+  directory mention alone no longer qualify.
+- Keep reference contact data in the same Sensitive Data category as other files;
+  remove the unsupported internal-contact inference based on path/domain alone.
+- Preserve side-effect approval, sandbox and partial-coverage controls.
+
 ## 0.3.1 - 2026-10-20
 
 - Apply the Better CaptionKeep v6 DAF-TECH sphere and teal visual identity, with

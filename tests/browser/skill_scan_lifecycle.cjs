@@ -6,6 +6,16 @@ const path = require('node:path');
 const http = require('node:http');
 const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright');
+// Contact labels cannot infer internal provenance from a reference path/domain.
+const appForClassification = fs.readFileSync(path.resolve(__dirname, '../../webapp/static/app.js'), 'utf8');
+const classificationSource = appForClassification.slice(appForClassification.indexOf('const SECURITY_CATEGORIES'), appForClassification.indexOf('function classifyFindingLabel'));
+const classifyContact = new Function(classificationSource + ';return classifyReviewClass;')();
+for (const role of ['active', 'reference', 'reference_template']) {
+    for (const id of ['pii_email_address', 'pii_phone_number']) {
+        assert.equal(classifyContact({id, tier:'review', category:'data', severity:'medium', samples:['security@company.test'], is_actionable:true}, role), 'sensitive_data');
+    }
+}
+
 const root = path.resolve(__dirname, '../..');
 const packageReport = JSON.parse(execFileSync('python', ['-c',
     "import io,json,zipfile; from skill_sandbox.app import scan_upload; b=io.BytesIO(); z=zipfile.ZipFile(b,'w'); z.writestr('demo/SKILL.md','---\\nname: demo\\ndescription: Fixture\\n---\\nSummarize text.'); z.writestr('demo/logo.png',bytes([137,80,78,71,13,10,26,10,0])); z.close(); print(json.dumps(scan_upload(b.getvalue(),'package-fixture.zip')))"
