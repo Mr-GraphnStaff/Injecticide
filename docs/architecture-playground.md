@@ -30,6 +30,14 @@ should not contain credentials. Imported maps are validated by the backend
 before replacing the current map. Existing built-in scenarios remain available
 through **Open built-in scenario explorer**.
 
+**Export AI diagram prompt (.md)** downloads a self-contained Markdown brief:
+diagram instructions, DAF-TECH text branding, the complete current map and, when
+a plan exists, up to 50 suggested-test annotations with explicit omission counts.
+Open the file and paste its contents into an AI diagram assistant. This is a
+prompt, not a native Lucidchart/draw.io import format; output depends on that
+assistant's supported features and must be checked against the source IDs.
+The download works without generating a test plan and contacts no AI service.
+
 ## Contract and limits
 
 Schema version 1 contains `name`, `nodes` and `edges`; see `architecture_map.py`
