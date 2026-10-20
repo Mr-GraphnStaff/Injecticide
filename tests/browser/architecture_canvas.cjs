@@ -1,0 +1,71 @@
+// Real candidate API with pinned browser libraries; synthetic maps only.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const path=require('node:path');
+const fs=require('node:fs');
+const base=process.env.INJECTICIDE_TEST_URL||'http://127.0.0.1:8237';
+(async()=>{
+ const browser=await chromium.launch({channel:'msedge',headless:true});
+ try{
+  const page=await browser.newPage({viewport:{width:1600,height:1100},colorScheme:'dark'});
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route('https://unpkg.com/**',r=>r.fulfill({path:path.resolve('tmp/scan-resource-regression',r.request().url().includes('react-dom')?'react-dom.js':r.request().url().includes('@babel')?'babel.js':'react.js'),contentType:'text/javascript'}));
+  await page.goto(base);await page.getByRole('button',{name:'Explore architecture',exact:true}).click();
+  await page.getByRole('heading',{name:'AI architecture playground'}).waitFor();
+  assert.equal(await page.locator('header').getByText('Another DAF-TECH Product',{exact:true}).count(),1);
+  assert.ok(await page.locator('header img').evaluate(e=>e.complete&&e.naturalWidth>0));
+  assert.equal(await page.locator('.map-node').count(),8);
+  await page.getByRole('button',{name:'Generate test plan',exact:true}).click();
+  await page.getByText('Test plan ready. No live tests have run.').waitFor();
+  assert.ok(await page.locator('.map-test').count()>0);
+  const test=page.locator('.map-test').filter({hasText:'User → Cloudflare edge → Application / agent → MCP server'}).first();
+  await test.getByRole('button',{name:'Highlight on map'}).click();
+  assert.ok(await page.locator('.map-edge.active').count()>0);
+  assert.equal(await page.locator('.map-node.highlighted').filter({hasText:'AI Gateway'}).count(),0);
+  const card=page.getByRole('button',{name:'Application / agent, Agent / orchestrator. Arrow keys to move.',exact:true});
+  const before=await card.evaluate(e=>parseFloat(e.style.left));await card.focus();await card.press('ArrowRight');
+  assert.equal(await card.evaluate(e=>parseFloat(e.style.left)),before+20);
+  assert.equal(await page.locator('.map-test').count(),0);
+  await page.getByRole('button',{name:'Undo',exact:true}).click();assert.equal(await card.evaluate(e=>parseFloat(e.style.left)),before);
+  await page.getByRole('button',{name:'Redo',exact:true}).click();assert.equal(await card.evaluate(e=>parseFloat(e.style.left)),before+20);
+  const box=await card.boundingBox();await page.mouse.move(box.x+30,box.y+30);await page.mouse.down();await page.mouse.move(box.x+70,box.y+70,{steps:5});await page.mouse.up();
+  assert.ok(await card.evaluate(e=>parseFloat(e.style.left))>before+20);
+  await page.getByLabel('Name',{exact:true}).fill('<img src=x onerror=alert(1)>');
+  assert.equal(await page.locator('.map-node img').count(),0);
+  await page.getByRole('button',{name:'Save locally',exact:true}).click();
+  const saved=JSON.parse(await page.evaluate(()=>localStorage.getItem('injecticide-map-v1')));assert.equal(saved.nodes.length,8);
+  const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Export map',exact:true}).click();
+  const download=await downloadEvent;const exported=JSON.parse(fs.readFileSync(await download.path(),'utf8'));assert.deepEqual(exported,saved);
+  await page.getByRole('button',{name:'New map',exact:true}).click();assert.equal(await page.locator('.map-node').count(),0);
+  await page.getByRole('button',{name:'Load saved',exact:true}).click();await page.getByText('Map loaded. Generate a fresh plan after editing.').waitFor();assert.equal(await page.locator('.map-node').count(),8);
+  await page.locator('input[type=file]').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{"schema_version":2}')});await page.getByRole('status').filter({hasText:'Invalid map'}).waitFor();
+  assert.equal(await page.locator('.map-node').count(),8);
+  await page.locator('input[type=file]').setInputFiles({name:'map.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(saved))});await page.getByText('Map loaded. Generate a fresh plan after editing.').waitFor();
+  await page.getByRole('button',{name:'＋ Human approval',exact:true}).click();assert.equal(await page.locator('.map-node').count(),9);
+  await page.getByLabel('From',{exact:true}).selectOption('agent');await page.getByLabel('To',{exact:true}).selectOption('model');
+  await page.getByRole('button',{name:'Add directed connection',exact:true}).click();assert.equal(await page.locator('.map-edge').count(),8);
+  await page.route('**/api/architecture/plan',async route=>{await new Promise(r=>setTimeout(r,300));await route.continue().catch(()=>{});});
+  await page.getByRole('button',{name:'Generate test plan',exact:true}).click();
+  await page.getByLabel('System name',{exact:true}).fill('Edited while planning');
+  await page.waitForTimeout(500);assert.equal(await page.locator('.map-test').count(),0);
+  await page.unroute('**/api/architecture/plan');
+  const crowded={schema_version:1,name:'Bounded cycle',nodes:Array.from({length:100},(_,i)=>({id:'n'+i,kind:'mcp',label:'MCP '+i,x:0,y:0,trust:'external',sensitivity:'unknown',controls:''})),edges:Array.from({length:100},(_,i)=>({id:'e'+i,source:'n'+i,target:'n'+((i+1)%100),untrusted:false,write:false}))};
+  await page.locator('input[type=file]').setInputFiles({name:'bounded.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(crowded))});
+  await page.getByText('Map loaded. Generate a fresh plan after editing.').waitFor();
+  await page.getByRole('button',{name:'Generate test plan',exact:true}).click();await page.getByText('Test plan ready. No live tests have run.').waitFor();
+  assert.equal(await page.locator('.map-test').count(),20);
+  await page.getByRole('button',{name:'Next tests',exact:true}).click();assert.equal(await page.locator('.map-test').count(),20);
+  await page.getByText(/9400 additional suggestions omitted/).waitFor();
+  await page.getByRole('button',{name:'Starter map',exact:true}).click();
+  await page.getByRole('button',{name:'Generate test plan',exact:true}).click();await page.getByText('Test plan ready. No live tests have run.').waitFor();
+  await page.screenshot({path:'tmp/research-mcp-validation-20261020/canvas-desktop.png',fullPage:true});
+  for(const theme of ['light','dark']){
+   await page.emulateMedia({colorScheme:theme});await page.setViewportSize({width:375,height:850});
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  }
+  await page.screenshot({path:'tmp/research-mcp-validation-20261020/canvas-mobile.png',fullPage:true});
+  await page.getByRole('button',{name:'Open built-in scenario explorer'}).click();await page.getByRole('button',{name:'Analyze scenario',exact:true}).click();await page.locator('.architecture-path li').first().waitFor();
+  await page.getByRole('button',{name:'Testing & scanning',exact:true}).click();await page.getByRole('heading',{name:'Inspect the package. Test the response.'}).waitFor();
+  assert.deepEqual(errors,[]);console.log(JSON.stringify({status:'PASS',base,checks:['branding','real planner','MCP branch','highlight','keyboard and pointer movement','undo redo','stale-plan invalidation','local save load','export import','invalid input','escaped labels','connections','mobile light dark','legacy scenarios','console navigation']}));
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

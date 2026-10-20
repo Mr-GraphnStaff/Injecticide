@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0 - 2026-10-20
+
+- Add the DAF-TECH AI architecture playground with movable, keyboard-accessible
+  components spanning models, agents, gateways, edge controls, MCP, tools and data.
+- Support directed connections, trust/data/control properties, undo/redo, local
+  saving and versioned JSON import/export without executing mapped services.
+- Generate bounded deterministic test plans with exact component/connection
+  references, map hashes, evidence requirements and distinct OWASP source families.
+- Keep control declarations unverified and all suggestions explicitly not run;
+  retain the built-in scenario explorer as a separate route.
+
+
 ## 0.3.3 - 2026-10-20
 
 - Share the DAF-TECH header, sphere, signature, navigation and footer across the

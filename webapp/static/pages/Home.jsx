@@ -84,7 +84,7 @@ function Home({ onLaunchConsole, onLaunchArchitecture, buildInfo, onNavigate }) 
     const capabilities = [
         ['01', 'Prompt testing', 'Run curated payloads against configured LLM endpoints. Review deterministic response signals and export results.'],
         ['02', 'Skill & plugin scanning', 'Inspect uploaded instructions, code, manifests and dependencies. Review findings alongside explicit coverage gaps.'],
-        ['03', 'Architecture analysis', 'Model trust boundaries across prompts, retrieval, tools, memory and outputs. Findings describe the supplied model.'],
+        ['03', 'Architecture playground', 'Map models, agents, edge controls, gateways, MCP, tools and data. Generate a test plan with reasons and evidence requirements.'],
         ['04', 'Research watch', 'Follow vendor tools, skills, project configuration and security references through an hourly, bounded source collector.'],
     ];
     return (
