@@ -2041,6 +2041,10 @@ function Root() {
     }
 
     if (page === 'architecture') {
+        return <ArchitectureCanvas onBack={() => navigate('home')} onNavigate={navigate} buildInfo={buildInfo} />;
+    }
+
+    if (page === 'scenarios') {
         return <ArchitectureWorkbench onBack={() => navigate('home')} onNavigate={navigate} buildInfo={buildInfo} />;
     }
 

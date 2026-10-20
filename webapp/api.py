@@ -2,7 +2,7 @@
 Injecticide Web Application - FastAPI Backend
 """
 
-from fastapi import FastAPI, HTTPException, WebSocket, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, WebSocket, UploadFile, File, Form, Request
 from starlette.concurrency import run_in_threadpool
 from fastapi.websockets import WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,6 +33,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analyzer import analyze
 from architecture_profiles import list_profiles
 from architecture_scenarios import list_scenarios
+from architecture_map import plan_map
+import json
 from endpoints import create_endpoint
 from generator import build_payload_suite
 from path_analyzer import analyze_architecture_scenario
@@ -157,6 +159,7 @@ def _get_asset_version() -> str:
         STATIC_DIR / "home.css",
         STATIC_DIR / "app.js",
         STATIC_DIR / "pages" / "Home.jsx",
+        STATIC_DIR / "pages" / "ArchitectureCanvas.jsx",
     ]
     mtimes = [int(path.stat().st_mtime) for path in asset_paths if path.exists()]
     if not mtimes:
@@ -368,6 +371,24 @@ async def get_architecture_options():
     }
 
 
+@app.post("/api/architecture/plan")
+async def architecture_map_plan(request: Request):
+    """Plan against a bounded declared map; never contact mapped services."""
+    body = bytearray()
+    async for chunk in request.stream():
+        if len(body) + len(chunk) > 262144:
+            raise HTTPException(status_code=413, detail="Map exceeds 256 KiB")
+        body.extend(chunk)
+    try:
+        def reject_constant(value):
+            raise ValueError("Non-finite numbers are not allowed")
+        document = json.loads(body, parse_constant=reject_constant)
+        result = await run_in_threadpool(plan_map, document)
+    except (ValueError, RecursionError, UnicodeDecodeError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)[:300]) from exc
+    return JSONResponse(result, headers={"Cache-Control": "no-store"})
+
+
 @app.post("/api/architecture/analyze")
 async def analyze_architecture(request: ArchitectureAnalysisRequest):
     """Run a deterministic architecture-path analysis."""
@@ -518,6 +539,7 @@ async def root():
         asset_version = build_info.get("asset_version", app.version)
         html = static_file.read_text(encoding="utf-8")
         html = html.replace("/static/pages/Home.jsx", f"/static/pages/Home.jsx?v={asset_version}")
+        html = html.replace("/static/pages/ArchitectureCanvas.jsx", f"/static/pages/ArchitectureCanvas.jsx?v={asset_version}")
         html = html.replace("/static/app.js", f"/static/app.js?v={asset_version}")
         html = html.replace("/static/home.css", f"/static/home.css?v={asset_version}")
         return HTMLResponse(content=html, headers={"Cache-Control": "no-store"})
