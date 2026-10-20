@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 - 2026-10-20
+
+- Export a self-contained Markdown prompt for AI diagram assistants, containing
+  the current architecture, directed relationships, DAF-TECH branding and optional
+  bounded test-plan annotations. No AI service or mapped endpoint is contacted.
+
 ## 0.4.0 - 2026-10-20
 
 - Add the DAF-TECH AI architecture playground with movable, keyboard-accessible
