@@ -20,8 +20,8 @@
 .home-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
 .home-button { display:inline-flex; justify-content:center; align-items:center; gap:15px; min-height:48px; border-radius:12px; border:1px solid #4a7167; padding:12px 18px; background:#19382f; color:var(--home-text); font-size:14px; font-weight:650; cursor:pointer; }
 .home-button:hover { background:#285044; }
-.home-button-primary { background:#a5e0d2; border-color:#a5e0d2; color:#09251c; }
-.home-button-primary:hover { background:#c2eee3; }
+.injecticide-home .home-button-primary { background:#236b59; border-color:#9edbcf; color:#ffffff; }
+.injecticide-home .home-button-primary:hover { background:#2c7a66; color:#ffffff; }
 .home-evidence-card { padding:28px; border:1px solid var(--home-border); border-radius:22px; background:linear-gradient(150deg,#1b3d34,#0b211a); }
 .home-evidence-card img { display:block; margin:0 auto 20px; }
 .home-evidence-card h2 { font-size:23px; line-height:1.35; font-weight:650; margin-bottom:15px; }
