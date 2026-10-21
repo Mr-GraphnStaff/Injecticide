@@ -1,64 +1,112 @@
 {
-  "reviewed_on": "2026-10-20",
+  "reviewed_on": "2026-10-21",
   "purpose": "Primary-documentation API availability review, not active connector configuration",
   "sources": [
     {
       "id": "github-rest",
       "free_access": "Public repository reads without authentication; optional authentication raises quotas",
-      "uses": ["vendor releases", "OWASP repository commits", "versioned schemas and files"],
-      "documentation": ["https://docs.github.com/en/rest/releases/releases", "https://docs.github.com/en/rest/commits/commits", "https://docs.github.com/en/rest/repos/contents", "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api"],
-      "implementation": "Release connector implemented; commit/content adapters pending",
+      "uses": [
+        "vendor releases",
+        "OWASP repository commits",
+        "versioned schemas and files"
+      ],
+      "documentation": [
+        "https://docs.github.com/en/rest/releases/releases",
+        "https://docs.github.com/en/rest/commits/commits",
+        "https://docs.github.com/en/rest/repos/contents",
+        "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api"
+      ],
+      "implementation": "Releases and package-filtered global advisories implemented; commit/content adapters pending",
       "limits": "Shared IP quota and conditional requests/backoff. Five releases per query, one for Codex due to large asset metadata. Repository commits do not mean standards adoption."
     },
     {
       "id": "mcp-registry",
       "free_access": "Official registry is public for reading; publishing has separate authentication",
-      "uses": ["MCP server discovery", "version history", "incremental updated_since synchronization"],
-      "documentation": ["https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/official-registry-api.md", "https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/registry-authorization.md"],
-      "implementation": "Documentation verified; adapter pending",
+      "uses": [
+        "MCP server discovery",
+        "version history",
+        "incremental updated_since synchronization"
+      ],
+      "documentation": [
+        "https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/official-registry-api.md",
+        "https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/registry-authorization.md"
+      ],
+      "implementation": "Bounded first-page public read adapter implemented; incremental synchronization deferred",
       "limits": "Publisher metadata is not behavioral safety verification. Recheck live API version and operational limits before enabling."
     },
     {
       "id": "arxiv-query",
       "free_access": "Public metadata query API; documented examples require no API key",
-      "uses": ["prompt injection papers", "agent and skill security research metadata"],
-      "documentation": ["https://info.arxiv.org/help/api/index.html", "https://info.arxiv.org/help/api/user-manual.html", "https://info.arxiv.org/help/api/tou.html"],
+      "uses": [
+        "prompt injection papers",
+        "agent and skill security research metadata"
+      ],
+      "documentation": [
+        "https://info.arxiv.org/help/api/index.html",
+        "https://info.arxiv.org/help/api/user-manual.html",
+        "https://info.arxiv.org/help/api/tou.html"
+      ],
       "implementation": "cs.CR RSS collector implemented; query API adapter pending",
       "limits": "One request every 3 seconds and one connection across controlled machines. Attribution required. Metadata access does not grant paper redistribution rights. Preprints are not verified exploit claims."
     },
     {
       "id": "crossref",
       "free_access": "Public REST metadata without registration; paid Metadata Plus is optional",
-      "uses": ["DOI lookup", "publication provenance", "paper and correction metadata"],
-      "documentation": ["https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/", "https://www.crossref.org/services/metadata-retrieval/"],
-      "implementation": "Documentation verified; adapter pending",
+      "uses": [
+        "DOI lookup",
+        "publication provenance",
+        "paper and correction metadata"
+      ],
+      "documentation": [
+        "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+        "https://www.crossref.org/services/metadata-retrieval/"
+      ],
+      "implementation": "Bounded first-page prompt-injection metadata search implemented; public pool, no registration/contact sent",
       "limits": "Read rate/concurrency headers. Metadata access does not grant paywalled full text or validate claims. Do not send user email without explicit configuration."
     },
     {
       "id": "openalex",
       "free_access": "Basic keyless queries; free account/key provides 1 USD of daily API usage, no payment method required",
-      "uses": ["broader scholarly discovery", "citation relationships"],
-      "documentation": ["https://help.openalex.org/access/pricing/", "https://help.openalex.org/api/authentication/"],
+      "uses": [
+        "broader scholarly discovery",
+        "citation relationships"
+      ],
+      "documentation": [
+        "https://help.openalex.org/access/pricing/",
+        "https://help.openalex.org/api/authentication/"
+      ],
       "implementation": "Documentation verified; optional adapter pending; no account created",
       "limits": "Pricing/authentication can change. A future adapter must stop at its free allowance and never enable paid usage automatically."
     },
     {
       "id": "nist-ai-rmf",
       "free_access": "Official publications and Playbook publicly available",
-      "dedicated_governance_api": "STATUS: UNKNOWN — UNVERIFIED",
-      "uses": ["authoritative AI RMF and GenAI Profile publication monitoring"],
-      "documentation": ["https://www.nist.gov/itl/ai-risk-management-framework", "https://www.nist.gov/itl/ai-risk-management-framework/nist-ai-rmf-playbook-faqs"],
+      "dedicated_governance_api": "STATUS: UNKNOWN \u00e2\u20ac\u201d UNVERIFIED",
+      "uses": [
+        "authoritative AI RMF and GenAI Profile publication monitoring"
+      ],
+      "documentation": [
+        "https://www.nist.gov/itl/ai-risk-management-framework",
+        "https://www.nist.gov/itl/ai-risk-management-framework/nist-ai-rmf-playbook-faqs"
+      ],
       "implementation": "Official web collector implemented; no dedicated governance API claimed",
       "limits": "NIST vulnerability APIs and OSCAL catalogs are separate resources, not evidence of an AI RMF governance API."
     },
     {
       "id": "owasp-governance",
       "free_access": "Public official publications and project GitHub repositories",
-      "dedicated_governance_api": "STATUS: UNKNOWN — UNVERIFIED",
-      "uses": ["LLM, agentic application and skill risk guidance"],
-      "documentation": ["https://genai.owasp.org/llm-top-10/", "https://owasp.org/projects/agentic-skills-top-10", "https://github.com/OWASP/www-project-agentic-skills-top-10"],
+      "dedicated_governance_api": "STATUS: UNKNOWN \u00e2\u20ac\u201d UNVERIFIED",
+      "uses": [
+        "LLM, agentic application and skill risk guidance"
+      ],
+      "documentation": [
+        "https://genai.owasp.org/llm-top-10/",
+        "https://owasp.org/projects/agentic-skills-top-10",
+        "https://github.com/OWASP/www-project-agentic-skills-top-10"
+      ],
       "implementation": "Official web collector implemented; GitHub commit/content adapters pending",
       "limits": "Verify official repository identity, track exact revisions, and distinguish working changes from published guidance."
     }
-  ]
+  ],
+  "implementation_scope": "First-page API discovery only; successful transport does not establish completeness or research verification"
 }

@@ -3,18 +3,34 @@ from __future__ import annotations
 
 import logging
 import json
+import math
 import re
 import threading
 import time
+from email.utils import parsedate_to_datetime
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
 
 from .catalog import Catalog, now
-from .fetch import USER_AGENT, canonical_url, fetch, in_scope
-from .apis import GITHUB_HEADERS, github_releases, is_github_releases_url
+from .fetch import USER_AGENT, MAX_BYTES, canonical_url, fetch, in_scope
+from .apis import API_CONNECTORS, GITHUB_HEADERS, api_connector, normalize_api
 
 LOG = logging.getLogger(__name__)
+
+
+def retry_seconds(value: str | None, default: int = 3600) -> float:
+    """Honor provider not-before delay; malformed values use a conservative fallback."""
+    try:
+        seconds = float(value)
+    except (ValueError, TypeError):
+        try:
+            seconds = parsedate_to_datetime(value).timestamp() - time.time()
+        except (ValueError, TypeError, OverflowError, AttributeError):
+            seconds = default
+    if not math.isfinite(seconds) or seconds < 0:
+        seconds = default
+    return max(60, seconds)
 
 
 def rate_key(host: str) -> str:
@@ -32,7 +48,7 @@ class PageParser(HTMLParser):
             self.hidden += 1
         for key, value in attrs:
             if len(self.links) < 1000 and value and (
-                tag in ("a", "link") and key == "href"
+                not self.hidden and tag == "a" and key == "href"
             ):
                 self.links.append(value)
 
@@ -55,14 +71,20 @@ def project(response) -> tuple[str, list[str]]:
     parser = PageParser()
     parser.feed(raw)
     # RSS/Atom/sitemaps, Markdown and llms.txt indexes, without XML entity expansion.
-    links = parser.links + re.findall(r"https://[^\s<>\"')\]]+", raw)[:1000]
+    links = parser.links if "html" in media else []
+    if media in ("text/plain", "text/markdown"):
+        links += re.findall(r"https://[^\s<>\"')\]`{}]+", raw)[:1000]
     if "xml" in media:
         links += re.findall(r"<(?:link|loc)>\s*([^<]+)\s*</", raw)[:1000]
-    links += re.findall(r"\]\(([^\s)]+)\)", raw)[:1000]
+    if media in ("text/plain", "text/markdown"):
+        links += re.findall(r"\]\(([^\s)]+)\)", raw)[:1000]
     canonical = []
     for link in links[:2000]:
         try:
-            canonical.append(canonical_url(urljoin(response.url, link)))
+            candidate = canonical_url(urljoin(response.url, link))
+            if re.search(r"\.(?:js|mjs|css|png|jpe?g|gif|svg|ico|woff2?|ttf|map|zip|pdf)$", urlsplit(candidate).path, re.I):
+                continue
+            canonical.append(candidate)
         except ValueError:
             continue
     text = " ".join(" ".join(parser.text).split()) if "html" in media else raw
@@ -90,6 +112,8 @@ class Collector:
     def request(self, source_id: str) -> dict:
         if source_id not in self.catalog.sources:
             raise ValueError("Unknown source_id; use research_list_sources")
+        if not self.catalog.sources[source_id].get("enabled", True):
+            raise ValueError("Source collection is disabled; retained evidence is preserved")
         with self.lock:
             if time.monotonic() - self.last_requested.get(source_id, -1000) < 60:
                 return {"status": "rate_limited", "retry_after_seconds": 60}
@@ -129,6 +153,7 @@ class Collector:
 
     def collect(self, source_ids: list[str] | None = None) -> dict:
         ids = source_ids if source_ids is not None else list(self.catalog.sources)
+        ids = [sid for sid in ids if self.catalog.sources[sid].get("enabled", True)]
         # Rotate the starting source when the global cycle budget is exhausted.
         ids = ids[self.source_cursor % len(ids):] + ids[:self.source_cursor % len(ids)] if ids else []
         self.source_cursor += 1
@@ -146,10 +171,12 @@ class Collector:
                 page = pages[sid].pop(0)
                 attempted += 1
                 try:
-                    api = self.catalog.sources[sid].get("connector") == "github_releases"
+                    source = self.catalog.sources[sid]
+                    connector = source.get("connector", "web")
+                    api = connector in API_CONNECTORS
                     host = rate_key(urlsplit(page["url"]).hostname)
                     if api and self.api_blocked_until.get(host, 0) > time.time():
-                        raise ValueError("GitHub API rate-limit backoff active; last-good evidence retained")
+                        raise ValueError("API rate-limit backoff active; last-good evidence retained")
                     # Documented API contracts use API limits; web crawling uses robots.txt.
                     allowed, delay = (True, 1) if api else self.allowed_by_robots(page["url"])
                     if not allowed:
@@ -157,7 +184,7 @@ class Collector:
                     remaining = delay - (time.monotonic() - self.last_fetch.get(host, 0))
                     if remaining > 0 and self.stop_event.wait(remaining):
                         break
-                    headers = dict(GITHUB_HEADERS) if api else {}
+                    headers = dict(GITHUB_HEADERS) if connector.startswith("github_") else {}
                     if page["etag"]:
                         headers["If-None-Match"] = page["etag"]
                     if page["modified"]:
@@ -165,27 +192,35 @@ class Collector:
                     self.last_fetch[host] = time.monotonic()
                     def redirect_guard(url):
                         if api:
-                            if not is_github_releases_url(url):
-                                raise ValueError("API redirect must remain a public GitHub releases endpoint")
+                            if api_connector(url) != connector or urlsplit(url).hostname != host:
+                                raise ValueError("API redirect leaves its provider contract")
                             return
                         permitted, redirect_delay = self.allowed_by_robots(url)
                         if not permitted:
                             raise PermissionError("robots.txt disallows redirect destination")
                         if self.stop_event.wait(redirect_delay):
                             raise InterruptedError("Collector stopping")
-                    response = self.fetcher(page["url"], self.catalog.sources[sid]["scopes"],
-                                            headers, redirect_guard=redirect_guard)
+                    response = self.fetcher(page["url"], source["scopes"],
+                                            headers, redirect_guard=redirect_guard,
+                                            max_bytes=source.get("max_response_bytes", MAX_BYTES))
                     if api:
                         if response.headers.get("x-ratelimit-remaining") == "0":
-                            self.api_blocked_until[host] = max(time.time() + 60,
-                                float(response.headers.get("x-ratelimit-reset", time.time() + 3600)))
+                            try:
+                                reset_delay = float(response.headers.get("x-ratelimit-reset", "")) - time.time()
+                            except (ValueError, TypeError, OverflowError):
+                                reset_delay = 3600
+                            self.api_blocked_until[host] = time.time() + retry_seconds(
+                                str(reset_delay))
                         if response.status in (403, 429):
                             self.api_blocked_until[host] = max(self.api_blocked_until.get(host, 0),
-                                time.time() + min(86400, max(60, int(response.headers.get("retry-after", "3600")))))
+                                time.time() + retry_seconds(response.headers.get("retry-after")))
                         if response.status not in (200, 304):
-                            raise ValueError(f"GitHub API HTTP {response.status}")
+                            raise ValueError(f"API HTTP {response.status}")
+                        media = response.headers.get("content-type", "").split(";")[0].strip().lower()
+                        if response.status == 200 and media not in ("application/json", "application/vnd.github+json"):
+                            raise ValueError("API response must use its documented JSON media type")
                         text, links = ("", []) if response.status == 304 else (
-                            json.dumps(github_releases(response.body), ensure_ascii=False, sort_keys=True), [])
+                            json.dumps(normalize_api(connector, response.body), ensure_ascii=False, sort_keys=True), [])
                     else:
                         text, links = ("", []) if response.status == 304 else project(response)
                     changed += self.catalog.record(page, response, text, links)

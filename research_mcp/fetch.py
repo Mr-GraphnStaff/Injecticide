@@ -8,10 +8,11 @@ import ssl
 import time
 from dataclasses import dataclass
 from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
-from .apis import is_github_releases_url
+from .apis import api_connector
 
 USER_AGENT = "InjecticideResearch/0.3 (+https://github.com/Mr-GraphnStaff/Injecticide)"
 MAX_BYTES = 1024 * 1024
+HARD_MAX_BYTES = 8 * 1024 * 1024
 
 
 def canonical_url(url: str) -> str:
@@ -19,8 +20,8 @@ def canonical_url(url: str) -> str:
     if (parts.scheme != "https" or not parts.hostname or parts.username
             or parts.password or parts.port not in (None, 443)):
         raise ValueError("Only HTTPS URLs without credentials or custom ports are supported")
-    if parts.query and not (is_github_releases_url(url) and parts.query in ("per_page=1", "per_page=5")):
-        raise ValueError("Queries are restricted to the GitHub releases per_page=1 or 5 API contract")
+    if parts.query and api_connector(url) is None:
+        raise ValueError("Query does not match an approved provider contract")
     if len(url) > 2048 or any(ord(c) < 33 for c in url):
         raise ValueError("Invalid URL")
     path = parts.path or "/"
@@ -74,8 +75,12 @@ class Response:
 
 
 def fetch(url: str, scopes: list[str], headers: dict[str, str] | None = None,
-          redirect_guard=None) -> Response:
+          redirect_guard=None, max_bytes: int = MAX_BYTES) -> Response:
     """No proxies, cookies, JS, compression, credentials or uploaded URL execution."""
+    if type(max_bytes) is not int or not 1 <= max_bytes <= HARD_MAX_BYTES:
+        raise ValueError("Response limit must be between 1 byte and 8 MiB")
+    if any(key.lower() in ("authorization", "cookie", "proxy-authorization") for key in (headers or {})):
+        raise ValueError("Credential headers are unsupported by public research retrieval")
     deadline = time.monotonic() + 20
     for _ in range(5):
         url = canonical_url(url)
@@ -102,18 +107,18 @@ def fetch(url: str, scopes: list[str], headers: dict[str, str] | None = None,
                 continue
             if meta.get("content-encoding", "identity").lower() != "identity":
                 raise ValueError("Compressed responses are not accepted")
-            if int(meta.get("content-length", "0")) > MAX_BYTES:
-                raise ValueError("Response exceeds 1 MiB collection budget")
+            if int(meta.get("content-length", "0")) > max_bytes:
+                raise ValueError(f"Response exceeds {max_bytes} byte collection budget")
             chunks, count = [], 0
             while True:
                 if time.monotonic() > deadline:
                     raise TimeoutError("Response deadline exceeded")
-                block = response.read1(min(16384, MAX_BYTES + 1 - count))
+                block = response.read1(min(16384, max_bytes + 1 - count))
                 if not block:
                     break
                 count += len(block)
-                if count > MAX_BYTES:
-                    raise ValueError("Response exceeds 1 MiB collection budget")
+                if count > max_bytes:
+                    raise ValueError(f"Response exceeds {max_bytes} byte collection budget")
                 chunks.append(block)
             return Response(url, response.status, meta, b"".join(chunks))
         finally:

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.0 - 2026-10-21
+
+- Add public, read-only GitHub advisory, MCP Registry and Crossref research
+  adapters with explicit provider query contracts and bounded first-page coverage.
+  Existing GitHub release collection remains available. No API credentials or
+  paid access are introduced; future credentials require Azure Key Vault.
+- Limit shipped documentation/feed collection to explicit approved seeds;
+  stop extracting script fragments and static assets as research links.
+- Allow bounded per-source response sizes, preserving global byte/time limits,
+  strict JSON media/schema checks, source scope and provider retry delays.
+- Preserve retired source evidence on disk while excluding it from active
+  collection and ordinary research queries.
+- Distinguish source freshness, failed/pending collection and saved web-feed
+  availability; expose per-source status without fetched prose or diagnostics.
+- Full API synchronization, OSV, new arXiv queries, authenticated runtime access
+  and Cloudflare bot registration remain future work.
+
 ## 0.4.1 - 2026-10-20
 
 - Export a self-contained Markdown prompt for AI diagram assistants, containing

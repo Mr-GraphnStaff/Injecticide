@@ -308,7 +308,7 @@ def test_api_rate_limit_backoff_preserves_last_good(api_catalog):
     def fake_fetch(url, scopes, headers=None, **kwargs):
         calls.append(url)
         if len(calls) == 1:
-            return Response(url, 200, {}, api_body())
+            return Response(url, 200, {"content-type": "application/json"}, api_body())
         return Response(url, 429, {"retry-after": "3600"}, b"{}")
     collector = Collector(api_catalog, fetcher=fake_fetch)
     collector.collect()
