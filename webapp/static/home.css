@@ -79,6 +79,15 @@
 .injecticide-workbench .testing-grid { grid-template-columns:minmax(300px,380px) minmax(0,1fr); }
 .injecticide-workbench .architecture-grid { grid-template-columns:320px minmax(0,1fr); }
 .workbench-grid > *, .workbench-results > * { min-width:0; }
+.workbench-results { scroll-margin-top:24px; }
+.workbench-result-switch { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }
+.workbench-result-switch button { min-height:44px; padding:10px 18px; border:1px solid var(--home-border); border-radius:10px; color:var(--home-muted); background:var(--home-panel); font-weight:650; }
+.workbench-result-switch button[aria-pressed="true"] { color:var(--home-text); background:#236b59; border-color:#9edbcf; }
+.workbench-result-switch button:focus-visible { outline:3px solid #a5e0d2; outline-offset:3px; }
+.workbench-result-panel[hidden], .workbench-config [hidden] { display:none; }
+.workbench-result-panel { overflow-wrap:anywhere; }
+.skill-results-report :is([class~="text-[10px]"], [class~="text-[11px]"], .text-xs) { font-size:.8125rem; line-height:1.5; }
+.scan-report-toolbar > * { min-width:0; }
 .workbench-section-title { color:var(--home-accent); font-size:19px; line-height:1.4; font-weight:650; }
 .workbench-close { padding:8px 14px; min-height:42px; border-color:#93635b; color:#ffe4dc; background:#482722; }
 .workbench-close:hover { background:#60322b; }
