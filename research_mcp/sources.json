@@ -1,29 +1,516 @@
 {
   "version": 1,
   "sources": [
-    {"id":"owasp-genai","ecosystem":"OWASP","topics":["llm","agentic","governance"],"seeds":["https://genai.owasp.org/resources/","https://genai.owasp.org/llm-top-10/"],"scopes":["https://genai.owasp.org/"]},
-    {"id":"owasp-skills","ecosystem":"OWASP","topics":["skills"],"seeds":["https://owasp.github.io/www-project-agentic-skills-top-10/"],"scopes":["https://owasp.github.io/www-project-agentic-skills-top-10/"]},
-    {"id":"nist-ai","ecosystem":"NIST","topics":["governance","standards","agentic"],"seeds":["https://www.nist.gov/itl/ai-risk-management-framework","https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative"],"scopes":["https://www.nist.gov/itl/ai-risk-management-framework","https://www.nist.gov/artificial-intelligence/","https://www.nist.gov/publications/","https://www.nist.gov/news-events/news/"]},
-    {"id":"agent-skills","ecosystem":"Portable","topics":["skills","specification"],"seeds":["https://agentskills.io/specification","https://agentskills.io/llms.txt"],"scopes":["https://agentskills.io/"]},
-    {"id":"agent-plugins","ecosystem":"Portable","topics":["plugins","schemas"],"seeds":["https://agent-plugins.org/specification"],"scopes":["https://agent-plugins.org/"]},
-    {"id":"openai-plugins","ecosystem":"OpenAI","topics":["skills","plugins","changelog"],"seeds":["https://developers.openai.com/plugins/build/skills","https://developers.openai.com/plugins/build/plugins","https://developers.openai.com/plugins/changelog"],"scopes":["https://developers.openai.com/plugins/"]},
-    {"id":"openai-codex","ecosystem":"OpenAI","topics":["projects","configuration","skills","plugins"],"seeds":["https://learn.chatgpt.com/docs/config-file/config-reference.md","https://learn.chatgpt.com/docs/build-skills"],"scopes":["https://learn.chatgpt.com/docs/config-file/","https://learn.chatgpt.com/docs/build-skills"]},
-    {"id":"openai-work","ecosystem":"OpenAI","topics":["projects","skills","governance"],"seeds":["https://learn.chatgpt.com/docs/build-skills","https://learn.chatgpt.com/docs/enterprise/plugin-management"],"scopes":["https://learn.chatgpt.com/docs/"]},
-    {"id":"claude-code","ecosystem":"Anthropic","topics":["skills","plugins","hooks","projects"],"seeds":["https://code.claude.com/docs/en/skills","https://code.claude.com/docs/en/plugins-reference","https://code.claude.com/docs/en/settings"],"scopes":["https://code.claude.com/docs/"]},
-    {"id":"claude-platform","ecosystem":"Anthropic","topics":["skills","governance"],"seeds":["https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise"],"scopes":["https://platform.claude.com/docs/"]},
-    {"id":"gemini-cli","ecosystem":"Google","topics":["skills","extensions","projects","policy"],"seeds":["https://geminicli.com/docs/extensions/reference/","https://geminicli.com/docs/cli/using-agent-skills/","https://geminicli.com/docs/admin/enterprise-controls/"],"scopes":["https://geminicli.com/docs/"]},
-    {"id":"copilot","ecosystem":"GitHub","topics":["skills","plugins","projects"],"seeds":["https://docs.github.com/en/copilot/concepts/agents/about-plugins"],"scopes":["https://docs.github.com/en/copilot/"]},
-    {"id":"cursor","ecosystem":"Cursor","topics":["skills","plugins","projects","policy"],"seeds":["https://prod.cursor.com/docs/reference/plugins","https://prod.cursor.com/docs/enterprise/security-hardening"],"scopes":["https://prod.cursor.com/docs/"]},
-    {"id":"kiro","ecosystem":"AWS","topics":["skills","powers","projects"],"seeds":["https://kiro.dev/docs/skills/","https://kiro.dev/docs/powers/"],"scopes":["https://kiro.dev/docs/"]},
-    {"id":"amazon-q","ecosystem":"AWS","topics":["projects","instructions"],"seeds":["https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/context-project-rules.html"],"scopes":["https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/"]},
-    {"id":"devin","ecosystem":"Devin","topics":["skills","projects","workflows"],"seeds":["https://docs.devin.ai/desktop/cascade/skills"],"scopes":["https://docs.devin.ai/desktop/"]},
-    {"id":"openclaw","ecosystem":"OpenClaw","topics":["skills","plugins","projects"],"seeds":["https://docs.openclaw.ai/tools/skills","https://docs.openclaw.ai/tools/plugin"],"scopes":["https://docs.openclaw.ai/"]},
-    {"id":"mcp","ecosystem":"MCP","topics":["specification","tools","security"],"seeds":["https://modelcontextprotocol.io/llms.txt"],"scopes":["https://modelcontextprotocol.io/"]},
-    {"id":"skillspector-releases","connector":"github_releases","ecosystem":"NVIDIA","topics":["skills","security","releases"],"seeds":["https://api.github.com/repos/NVIDIA/SkillSpector/releases?per_page=5"],"scopes":["https://api.github.com/repos/NVIDIA/SkillSpector/releases?per_page=5"]},
-    {"id":"agent-scan-releases","connector":"github_releases","ecosystem":"Snyk","topics":["skills","plugins","security","releases"],"seeds":["https://api.github.com/repos/snyk/agent-scan/releases?per_page=5"],"scopes":["https://api.github.com/repos/snyk/agent-scan/releases?per_page=5"]},
-    {"id":"codex-releases","connector":"github_releases","ecosystem":"OpenAI","topics":["skills","plugins","projects","releases"],"seeds":["https://api.github.com/repos/openai/codex/releases?per_page=1"],"scopes":["https://api.github.com/repos/openai/codex/releases?per_page=1"]},
-    {"id":"claude-code-releases","connector":"github_releases","ecosystem":"Anthropic","topics":["skills","plugins","projects","releases"],"seeds":["https://api.github.com/repos/anthropics/claude-code/releases?per_page=5"],"scopes":["https://api.github.com/repos/anthropics/claude-code/releases?per_page=5"]},
-    {"id":"gemini-cli-releases","connector":"github_releases","ecosystem":"Google","topics":["skills","extensions","projects","releases"],"seeds":["https://api.github.com/repos/google-gemini/gemini-cli/releases?per_page=5"],"scopes":["https://api.github.com/repos/google-gemini/gemini-cli/releases?per_page=5"]},
-    {"id":"arxiv-security-ai","ecosystem":"Research preprints","topics":["prompt injection","skills","agents","security"],"seeds":["https://rss.arxiv.org/rss/cs.CR"],"scopes":["https://rss.arxiv.org/rss/cs.CR","https://arxiv.org/abs/"]}
+    {
+      "id": "owasp-genai",
+      "ecosystem": "OWASP",
+      "topics": [
+        "llm",
+        "agentic",
+        "governance"
+      ],
+      "seeds": [
+        "https://genai.owasp.org/resources/",
+        "https://genai.owasp.org/llm-top-10/"
+      ],
+      "scopes": [
+        "https://genai.owasp.org/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "owasp-skills",
+      "ecosystem": "OWASP",
+      "topics": [
+        "skills"
+      ],
+      "seeds": [
+        "https://owasp.github.io/www-project-agentic-skills-top-10/"
+      ],
+      "scopes": [
+        "https://owasp.github.io/www-project-agentic-skills-top-10/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "nist-ai",
+      "ecosystem": "NIST",
+      "topics": [
+        "governance",
+        "standards",
+        "agentic"
+      ],
+      "seeds": [
+        "https://www.nist.gov/itl/ai-risk-management-framework",
+        "https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative"
+      ],
+      "scopes": [
+        "https://www.nist.gov/itl/ai-risk-management-framework",
+        "https://www.nist.gov/artificial-intelligence/",
+        "https://www.nist.gov/publications/",
+        "https://www.nist.gov/news-events/news/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "agent-skills",
+      "ecosystem": "Portable",
+      "topics": [
+        "skills",
+        "specification"
+      ],
+      "seeds": [
+        "https://agentskills.io/specification",
+        "https://agentskills.io/llms.txt"
+      ],
+      "scopes": [
+        "https://agentskills.io/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "agent-plugins",
+      "ecosystem": "Portable",
+      "topics": [
+        "plugins",
+        "schemas"
+      ],
+      "seeds": [
+        "https://agent-plugins.org/specification"
+      ],
+      "scopes": [
+        "https://agent-plugins.org/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "openai-plugins",
+      "ecosystem": "OpenAI",
+      "topics": [
+        "skills",
+        "plugins",
+        "changelog"
+      ],
+      "seeds": [
+        "https://developers.openai.com/plugins/build/skills",
+        "https://developers.openai.com/plugins/build/plugins",
+        "https://developers.openai.com/plugins/changelog"
+      ],
+      "scopes": [
+        "https://developers.openai.com/plugins/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "openai-codex",
+      "ecosystem": "OpenAI",
+      "topics": [
+        "projects",
+        "configuration",
+        "skills",
+        "plugins"
+      ],
+      "seeds": [
+        "https://learn.chatgpt.com/docs/config-file/config-reference.md",
+        "https://learn.chatgpt.com/docs/build-skills"
+      ],
+      "scopes": [
+        "https://learn.chatgpt.com/docs/config-file/",
+        "https://learn.chatgpt.com/docs/build-skills"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "openai-work",
+      "ecosystem": "OpenAI",
+      "topics": [
+        "projects",
+        "skills",
+        "governance"
+      ],
+      "seeds": [
+        "https://learn.chatgpt.com/docs/build-skills",
+        "https://learn.chatgpt.com/docs/enterprise/plugin-management"
+      ],
+      "scopes": [
+        "https://learn.chatgpt.com/docs/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "claude-code",
+      "ecosystem": "Anthropic",
+      "topics": [
+        "skills",
+        "plugins",
+        "hooks",
+        "projects"
+      ],
+      "seeds": [
+        "https://code.claude.com/docs/en/skills",
+        "https://code.claude.com/docs/en/plugins-reference",
+        "https://code.claude.com/docs/en/settings"
+      ],
+      "scopes": [
+        "https://code.claude.com/docs/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "max_response_bytes": 4194304
+    },
+    {
+      "id": "claude-platform",
+      "ecosystem": "Anthropic",
+      "topics": [
+        "skills",
+        "governance"
+      ],
+      "seeds": [
+        "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise"
+      ],
+      "scopes": [
+        "https://platform.claude.com/docs/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "gemini-cli",
+      "ecosystem": "Google",
+      "topics": [
+        "skills",
+        "extensions",
+        "projects",
+        "policy"
+      ],
+      "seeds": [
+        "https://geminicli.com/docs/extensions/reference/",
+        "https://geminicli.com/docs/cli/using-agent-skills/",
+        "https://geminicli.com/docs/admin/enterprise-controls/"
+      ],
+      "scopes": [
+        "https://geminicli.com/docs/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "copilot",
+      "ecosystem": "GitHub",
+      "topics": [
+        "skills",
+        "plugins",
+        "projects"
+      ],
+      "seeds": [
+        "https://docs.github.com/en/copilot/concepts/agents/about-plugins"
+      ],
+      "scopes": [
+        "https://docs.github.com/en/copilot/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "cursor",
+      "ecosystem": "Cursor",
+      "topics": [
+        "skills",
+        "plugins",
+        "projects",
+        "policy"
+      ],
+      "seeds": [
+        "https://prod.cursor.com/docs/reference/plugins",
+        "https://prod.cursor.com/docs/enterprise/security-hardening"
+      ],
+      "scopes": [
+        "https://prod.cursor.com/docs/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "kiro",
+      "ecosystem": "AWS",
+      "topics": [
+        "skills",
+        "powers",
+        "projects"
+      ],
+      "seeds": [
+        "https://kiro.dev/docs/skills/",
+        "https://kiro.dev/docs/powers/"
+      ],
+      "scopes": [
+        "https://kiro.dev/docs/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "amazon-q",
+      "ecosystem": "AWS",
+      "topics": [
+        "projects",
+        "instructions"
+      ],
+      "seeds": [
+        "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/context-project-rules.html"
+      ],
+      "scopes": [
+        "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "devin",
+      "ecosystem": "Devin",
+      "topics": [
+        "skills",
+        "projects",
+        "workflows"
+      ],
+      "seeds": [
+        "https://docs.devin.ai/desktop/cascade/skills"
+      ],
+      "scopes": [
+        "https://docs.devin.ai/desktop/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "openclaw",
+      "ecosystem": "OpenClaw",
+      "topics": [
+        "skills",
+        "plugins",
+        "projects"
+      ],
+      "seeds": [
+        "https://docs.openclaw.ai/tools/skills",
+        "https://docs.openclaw.ai/tools/plugin"
+      ],
+      "scopes": [
+        "https://docs.openclaw.ai/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "mcp",
+      "ecosystem": "MCP",
+      "topics": [
+        "specification",
+        "tools",
+        "security"
+      ],
+      "seeds": [
+        "https://modelcontextprotocol.io/llms.txt"
+      ],
+      "scopes": [
+        "https://modelcontextprotocol.io/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "skillspector-releases",
+      "connector": "github_releases",
+      "ecosystem": "NVIDIA",
+      "topics": [
+        "skills",
+        "security",
+        "releases"
+      ],
+      "seeds": [
+        "https://api.github.com/repos/NVIDIA/SkillSpector/releases?per_page=5"
+      ],
+      "scopes": [
+        "https://api.github.com/repos/NVIDIA/SkillSpector/releases?per_page=5"
+      ]
+    },
+    {
+      "id": "agent-scan-releases",
+      "connector": "github_releases",
+      "ecosystem": "Snyk",
+      "topics": [
+        "skills",
+        "plugins",
+        "security",
+        "releases"
+      ],
+      "seeds": [
+        "https://api.github.com/repos/snyk/agent-scan/releases?per_page=5"
+      ],
+      "scopes": [
+        "https://api.github.com/repos/snyk/agent-scan/releases?per_page=5"
+      ]
+    },
+    {
+      "id": "codex-releases",
+      "connector": "github_releases",
+      "ecosystem": "OpenAI",
+      "topics": [
+        "skills",
+        "plugins",
+        "projects",
+        "releases"
+      ],
+      "seeds": [
+        "https://api.github.com/repos/openai/codex/releases?per_page=1"
+      ],
+      "scopes": [
+        "https://api.github.com/repos/openai/codex/releases?per_page=1"
+      ]
+    },
+    {
+      "id": "claude-code-releases",
+      "connector": "github_releases",
+      "ecosystem": "Anthropic",
+      "topics": [
+        "skills",
+        "plugins",
+        "projects",
+        "releases"
+      ],
+      "seeds": [
+        "https://api.github.com/repos/anthropics/claude-code/releases?per_page=5"
+      ],
+      "scopes": [
+        "https://api.github.com/repos/anthropics/claude-code/releases?per_page=5"
+      ]
+    },
+    {
+      "id": "gemini-cli-releases",
+      "connector": "github_releases",
+      "ecosystem": "Google",
+      "topics": [
+        "skills",
+        "extensions",
+        "projects",
+        "releases"
+      ],
+      "seeds": [
+        "https://api.github.com/repos/google-gemini/gemini-cli/releases?per_page=5"
+      ],
+      "scopes": [
+        "https://api.github.com/repos/google-gemini/gemini-cli/releases?per_page=5"
+      ]
+    },
+    {
+      "id": "arxiv-security-ai",
+      "ecosystem": "Research preprints",
+      "topics": [
+        "prompt injection",
+        "skills",
+        "agents",
+        "security"
+      ],
+      "seeds": [
+        "https://rss.arxiv.org/rss/cs.CR"
+      ],
+      "scopes": [
+        "https://rss.arxiv.org/rss/cs.CR",
+        "https://arxiv.org/abs/"
+      ],
+      "discovery": false,
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+    },
+    {
+      "id": "mcp-advisories",
+      "connector": "github_advisories",
+      "ecosystem": "Python MCP SDK",
+      "topics": [
+        "security",
+        "research"
+      ],
+      "seeds": [
+        "https://api.github.com/advisories?ecosystem=pip&affects=mcp&per_page=10"
+      ],
+      "scopes": [
+        "https://api.github.com/advisories?ecosystem=pip&affects=mcp&per_page=10"
+      ],
+      "discovery": false,
+      "coverage_note": "Bounded first page only; not complete synchronization"
+    },
+    {
+      "id": "mcp-js-advisories",
+      "connector": "github_advisories",
+      "ecosystem": "JavaScript MCP SDK",
+      "topics": [
+        "security",
+        "research"
+      ],
+      "seeds": [
+        "https://api.github.com/advisories?ecosystem=npm&affects=%40modelcontextprotocol%2Fsdk&per_page=10"
+      ],
+      "scopes": [
+        "https://api.github.com/advisories?ecosystem=npm&affects=%40modelcontextprotocol%2Fsdk&per_page=10"
+      ],
+      "discovery": false,
+      "coverage_note": "Bounded first page only; not complete synchronization"
+    },
+    {
+      "id": "langchain-advisories",
+      "connector": "github_advisories",
+      "ecosystem": "LangChain",
+      "topics": [
+        "security",
+        "research"
+      ],
+      "seeds": [
+        "https://api.github.com/advisories?ecosystem=pip&affects=langchain-core&per_page=10"
+      ],
+      "scopes": [
+        "https://api.github.com/advisories?ecosystem=pip&affects=langchain-core&per_page=10"
+      ],
+      "discovery": false,
+      "coverage_note": "Bounded first page only; not complete synchronization"
+    },
+    {
+      "id": "mcp-registry",
+      "connector": "mcp_registry",
+      "ecosystem": "MCP",
+      "topics": [
+        "security",
+        "research"
+      ],
+      "seeds": [
+        "https://registry.modelcontextprotocol.io/v0.1/servers?limit=10"
+      ],
+      "scopes": [
+        "https://registry.modelcontextprotocol.io/v0.1/servers?limit=10"
+      ],
+      "discovery": false,
+      "coverage_note": "Bounded first page only; not complete synchronization"
+    },
+    {
+      "id": "crossref-prompt-injection",
+      "connector": "crossref",
+      "ecosystem": "Research metadata",
+      "topics": [
+        "security",
+        "research"
+      ],
+      "seeds": [
+        "https://api.crossref.org/works?query=prompt%20injection&rows=5"
+      ],
+      "scopes": [
+        "https://api.crossref.org/works?query=prompt%20injection&rows=5"
+      ],
+      "discovery": false,
+      "coverage_note": "Bounded first page only; not complete synchronization"
+    }
   ]
 }

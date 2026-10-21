@@ -173,3 +173,44 @@ def test_research_http_news_route_is_read_only_and_no_store(tmp_path):
         assert response.json()['items'][0]['title'] == 'OpenAI Codex v1.2'
         assert client.post('/news').status_code == 405
         assert collector.status['running'] is False
+
+
+def test_source_health_separates_worker_from_pending_and_failed_evidence(tmp_path):
+    catalog = news_catalog(tmp_path)
+    record(catalog, 'codex-releases', json.dumps([release()]).encode())
+    pending = build_news(catalog, worker())
+    assert pending['collection']['worker_alive'] is True
+    assert pending['collection']['coverage_incomplete'] is True
+    assert pending['collection']['sources_current'] == 1
+    assert pending['collection']['sources_pending'] == 1
+    catalog.failure(catalog.due_pages('nist-ai', 1)[0], ValueError('private diagnostic'))
+    failed = build_news(catalog, worker())
+    assert failed['collection']['sources_with_errors'] == 1
+    assert failed['collection']['source_health'][1]['state'] == 'fetch_error'
+    assert 'private diagnostic' not in json.dumps(failed)
+
+
+def test_stale_source_is_distinct_from_successful_feed_connection(tmp_path):
+    catalog = news_catalog(tmp_path)
+    record(catalog, 'codex-releases', json.dumps([release()]).encode())
+    record(catalog, 'nist-ai', b'baseline')
+    old = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
+    with catalog.db() as db:
+        db.execute('UPDATE pages SET successful=? WHERE source=?', (old, 'nist-ai'))
+    feed = sanitize_news(build_news(catalog, worker()))
+    assert feed['feed_stale'] is False
+    assert feed['collection']['sources_stale'] == 1
+    assert feed['collection']['coverage_incomplete'] is True
+    assert feed['collection']['source_health'][1]['state'] == 'stale'
+
+
+def test_source_health_projection_rejects_unknown_states_and_bounds_fields():
+    source = {'id':'a' * 500, 'name':'Example', 'state':'fetch_error', 'errors':True,
+              'pending':-1, 'coverage':'b' * 500, 'diagnostic':'private'}
+    data = {'items':[], 'collection':{'source_health':[source, {'state':'invented'}]}}
+    safe = sanitize_news(data)['collection']['source_health']
+    assert len(safe) == 1
+    assert len(safe[0]['id']) == 200
+    assert len(safe[0]['coverage']) == 200
+    assert safe[0]['errors'] == safe[0]['pending'] == 0
+    assert 'private' not in json.dumps(safe)

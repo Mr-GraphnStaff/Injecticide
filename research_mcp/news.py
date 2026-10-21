@@ -22,6 +22,26 @@ def recent_date(value):
         return False
 
 
+def source_health(source):
+    """Public operational state without untrusted diagnostics or fetched prose."""
+    if not source.get("enabled", True):
+        state = "disabled"
+    elif source["errors"]:
+        state = "fetch_error"
+    elif not source.get("oldest_success"):
+        state = "pending"
+    elif source.get("is_stale"):
+        state = "stale"
+    elif source.get("freshness") != "current":
+        state = "partial"
+    else:
+        state = "current"
+    return {"id": source["id"], "name": source.get("ecosystem", source["id"]),
+            "state": state, "errors": source["errors"], "pending": source["pending"],
+            "oldest_success": source.get("oldest_success"),
+            "coverage": source.get("coverage", "bounded approved-source collection")}
+
+
 def build_news(catalog, collector) -> dict:
     items = []
     with catalog.db() as db:
@@ -64,12 +84,20 @@ def build_news(catalog, collector) -> dict:
                         "observed_at": row["retrieved"]})
         snapshots = db.execute("SELECT count(*) FROM snapshots").fetchone()[0]
     sources = catalog.list_sources()["sources"]
+    health = [source_health(source) for source in sources]
+    enabled = [source for source in health if source["state"] != "disabled"]
     items.sort(key=lambda item: datetime.fromisoformat(item["date"].replace("Z", "+00:00")), reverse=True)
     return {"generated_at": now(), "feed_stale": False, "available": True,
         "items": items[:8], "collection": {
             "worker_alive": collector.thread.is_alive(), "collecting": collector.status["running"],
             "last_cycle": collector.status["last_cycle"], "last_error": collector.status["last_error"],
             "interval_seconds": collector.interval, "source_count": len(sources),
+            "enabled_sources": len(enabled),
+            "sources_current": sum(source["state"] == "current" for source in enabled),
+            "sources_stale": sum(source["state"] == "stale" for source in enabled),
+            "sources_pending": sum(source["state"] in ("pending", "partial") for source in enabled),
+            "coverage_incomplete": any(source["state"] != "current" for source in health),
+            "source_health": health,
             "sources_with_errors": sum(s["errors"] > 0 for s in sources),
             "retained_snapshots": snapshots, "last_result": collector.status.get("last_result")},
         "notice": "Automated source watch. A page change is not a verified new standard or vulnerability."}

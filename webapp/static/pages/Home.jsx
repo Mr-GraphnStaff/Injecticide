@@ -25,7 +25,7 @@ function ResearchUpdates() {
             controller = new AbortController();
             const timeout = setTimeout(() => controller && controller.abort(), 8000);
             try {
-                const response = await fetch('/api/research/news', { signal: controller.signal, cache: 'no-store' });
+                const response = await fetch('/api/research/news', { signal: controller.signal, cache: 'no-store', priority: 'low' });
                 if (!response.ok) throw new Error('Unavailable');
                 const data = await response.json();
                 if (!data || !Array.isArray(data.items) || !data.collection) throw new Error('Invalid feed');
@@ -52,13 +52,18 @@ function ResearchUpdates() {
     const unavailable = feed?.available === false || (!feed && failed);
     const status = unavailable ? 'Research feed unavailable' : stale ? 'Showing saved updates — connection interrupted' :
         !feed ? 'Loading research updates…' : !collection.worker_alive ? 'Collector stopped' :
-        collection.collecting ? 'Collector running' : collection.last_cycle ? 'Collector active · hourly watch' : 'Waiting for first collection';
+        collection.collecting ? 'Collection in progress' : collection.last_error ? 'Collection cycle failed' :
+        collection.coverage_incomplete || collection.sources_with_errors ? 'Collector active · incomplete coverage' :
+        collection.last_cycle ? 'Collector active · bounded source watch' : 'Waiting for first collection';
+    const health = Array.isArray(collection.source_health) ? collection.source_health : [];
+    const stateLabels = { current: 'Current', stale: 'Stale evidence', pending: 'Not yet collected',
+        partial: 'Partially collected', fetch_error: 'Fetch failed', disabled: 'Collection disabled' };
     const items = (feed?.items || []).slice(0, 8).filter(item => newsLink(item.url));
     return (
         <section id="research-updates" className="home-panel" aria-labelledby="research-title">
             <div className="home-section-head">
                 <div><p className="home-eyebrow">From the research MCP</p><h2 id="research-title">Latest source updates</h2></div>
-                <p role="status" className={`home-status ${stale || unavailable || (feed && !collection.worker_alive) ? 'home-status-warning' : ''}`}>{status}</p>
+                <p role="status" className={`home-status ${stale || unavailable || collection.coverage_incomplete || collection.sources_with_errors || collection.last_error || (feed && !collection.worker_alive) ? 'home-status-warning' : ''}`}>{status}</p>
             </div>
             <p className="home-muted">Dated vendor releases and observed reference changes, collected from approved public sources. Preview releases are labeled.</p>
             {feed?.available && <dl className="home-metrics">
@@ -69,6 +74,18 @@ function ResearchUpdates() {
             </dl>}
             {!!collection.last_error && <p className="home-warning">The collector reported an error. Collection coverage is incomplete.</p>}
             {!!collection.sources_with_errors && <p className="home-warning">Some sources could not be collected. Retained updates may still be shown.</p>}
+            {!!collection.sources_stale && <p className="home-warning">Some retained evidence is more than 24 hours old.</p>}
+            {!!collection.sources_pending && <p className="home-muted">Some configured pages have not completed collection. A running collector does not mean all sources are current.</p>}
+            {health.length > 0 && <details className="home-source-health">
+                <summary>Source collection status ({collection.sources_current ?? 0} current of {collection.enabled_sources ?? collection.source_count} enabled)</summary>
+                <p className="home-muted">Current means the configured collection completed within the past 24 hours. API results cover a bounded first page; they do not represent an exhaustive search.</p>
+                <ul>{health.map(source => <li key={source.id}>
+                    <strong>{source.name} · {source.id}</strong>: {stateLabels[source.state] || 'Unknown'}
+                    {source.errors > 0 && <span> · {source.errors} failed pages</span>}
+                    {source.pending > 0 && <span> · {source.pending} pages awaiting a first attempt</span>}
+                    <span> · Oldest successful collection: <NewsTime value={source.oldest_success} /></span>
+                </li>)}</ul>
+            </details>}
             {items.length > 0 ? <ul className="home-news-list">{items.map(item => <li key={item.id}>
                 <div className="home-news-meta"><span>{item.kind === 'source_change' ? 'Reference change' : 'Vendor release'}</span>{item.preview && <span className="home-preview">Preview release</span>}</div>
                 <a href={newsLink(item.url)} target="_blank" rel="noopener noreferrer">{item.title}<span className="sr-only"> (opens in a new tab)</span><span aria-hidden="true"> ↗</span></a>

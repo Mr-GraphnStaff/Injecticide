@@ -34,7 +34,20 @@ def sanitize_news(data):
                      {"preview": item.get("preview") is True})
     collection = data["collection"]
     safe = {key: collection.get(key) for key in ("worker_alive", "collecting", "last_cycle",
-        "last_error", "interval_seconds", "source_count", "sources_with_errors", "retained_snapshots", "last_result")}
+        "last_error", "interval_seconds", "source_count", "sources_with_errors", "retained_snapshots", "last_result",
+        "enabled_sources", "sources_current", "sources_stale", "sources_pending")}
+    safe["coverage_incomplete"] = collection.get("coverage_incomplete") is True
+    states = {"current", "stale", "pending", "partial", "fetch_error", "disabled"}
+    safe["source_health"] = []
+    health = collection.get("source_health", [])
+    for source in health[:100] if isinstance(health, list) else []:
+        if not isinstance(source, dict) or source.get("state") not in states:
+            continue
+        safe["source_health"].append({
+            **{key: str(source.get(key) or "")[:200] for key in ("id", "name", "oldest_success", "coverage")},
+            "state": source["state"],
+            **{key: source[key] if type(source.get(key)) is int and source[key] >= 0 else 0
+               for key in ("errors", "pending")}})
     return {"available": True, "feed_stale": False, "generated_at": data.get("generated_at"),
             "items": items, "collection": safe}
 

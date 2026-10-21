@@ -51,18 +51,32 @@ representation to stay within the response budget.
 References were seeded from the repository's October 19 source register and
 current primary documentation; seed inclusion is not a successful-fetch claim.
 
-On startup and hourly thereafter, one worker retrieves approved pages, discovers
-links in HTML, Markdown/llms.txt and RSS/Atom/XML, follows scoped HTTPS redirects,
+The API-first increment configures 29 sources: the original 24 plus three
+package-filtered GitHub Advisory sources, MCP Registry metadata and Crossref
+prompt-injection paper metadata. All shipped web/feed sources now declare
+`discovery: false`: only their explicit official seed URLs are scheduled.
+Existing discovered URLs and snapshots are preserved in SQLite when retired,
+but excluded from active collection/status and current evidence queries.
+This is a registry configuration change, not a claim that all sources are reachable.
+
+On startup and hourly thereafter, one worker retrieves approved seeds,
+follows scoped HTTPS redirects,
 and compares raw content SHA-256 hashes. Changes include initial baselines and
 cosmetic HTML changes; no semantic vulnerability or control conclusion is inferred.
 The catalog reports prior fingerprints, timestamps, current fetch failures and
 retained versions. An on-demand refresh queues existing source IDs only.
 
-This is bounded crawling of approved public sources, not an unrestricted web
+This is bounded collection of approved public sources, not an unrestricted web
 search engine. It does not discover every new domain, query private vendor
 tenants, inventory installed packages, install updates or prove exploit claims.
 New domains and discovery roots are added by editing/reviewing the registry and
-restarting the service. Pages/snapshots removed from scope are pruned on restart.
+restarting the service. Scope changes preserve retired database rows instead of
+deleting their evidence. Set `enabled: false` to disable a configured source while
+keeping it in the inventory and retaining its in-scope historical evidence.
+Removed source IDs and retired URLs are unavailable through current catalog
+queries; their stored rows remain recoverable through a controlled database
+restore or an explicitly reviewed registry change. `archived_pages` reports
+retired URLs for source IDs that remain configured.
 No MCP tool can alter that registry.
 
 Configuration:
@@ -73,9 +87,12 @@ Configuration:
 | `INJECTICIDE_RESEARCH_PAGE_BUDGET` | 40 | Document attempts per cycle, range 1–100 |
 | `RESEARCH_SOURCES` | packaged `sources.json` | In-container source-registry path |
 | `RESEARCH_DB` | `/data/research.sqlite3` | In-container catalog path |
+| Source `max_response_bytes` | 1048576 | Per-response streaming limit; integer from 1 byte through the hard 8 MiB ceiling |
+| Source `discovery` | true for compatibility | All shipped web/feed sources set false; fetch only declared seeds |
+| Source `enabled` | true | False disables collection/refresh while retaining source inventory and evidence |
 
 Budgets: 100 tracked pages/source, 8 selected pages/source/cycle, 240-second cycle
-deadline checked between requests, 1 MiB/response, 20-second response deadline,
+deadline checked between requests, 1 MiB/response by default, 20-second response deadline,
 8-second socket timeouts, 4 redirects, minimum 1 second/host, and 60-second manual
 refresh cooldown/source. DNS resolver latency is OS-controlled. Robots requests
 are additional to the document budget and cached for one hour. Robots failures
@@ -84,7 +101,16 @@ and request rates are honored up to 60 seconds; larger delays defer collection.
 arXiv requests share a rate bucket across its subdomains with at least 3 seconds
 between requests. Thank you to arXiv for use of its open access interoperability.
 
-Discovery roots are preserved. At frontier capacity, up to eight previously
+The Claude Code source is configured for up to 4 MiB per response because the
+earlier 1 MiB cap rejected its documentation. The 4 MiB allowance and 8 MiB hard
+ceiling are bounded configuration choices, not measured Raspberry Pi capacity
+or a guarantee that future documentation fits. Larger responses fail without
+storing partial evidence. Prefer official Markdown or structured APIs to raising
+limits. Container memory and disk measurements remain part of candidate validation.
+
+If an operator explicitly enables discovery, roots are preserved. HTML discovery
+uses visible anchor links rather than searching scripts for URL-shaped strings;
+common asset types are filtered out. At frontier capacity, up to eight previously
 attempted derived pages per fetched document rotate out to admit newly linked
 material. Their snapshots are pruned; this bounded frontier can revisit pages
 and cannot retain every page. Full-frontier state remains visible in queries.
@@ -107,7 +133,8 @@ verified simply because their freshness is current.
 - `research_get_status`: worker lifecycle, last cycle result, error and budgets.
 - `research_get_releases`: structured, cached release records from approved GitHub APIs.
 
-Queries support pagination; there is no background push notification or automatic
+Local catalog queries support pagination; upstream API collection in this
+increment does not. There is no background push notification or automatic
 rescan integration in this release. Cursor gaps are possible after retention pruning.
 Collected material is explicitly `STATUS: UNKNOWN — UNVERIFIED`, including official
 documents: attribution/integrity records are not verification of research claims.
@@ -126,15 +153,50 @@ bounded release notes. `research_get_releases` returns these records as structur
 MCP data with source attribution and snapshot hash. `research_refresh_source`
 queues the next API refresh, using the same worker as document collection.
 
+Additional public connectors in this increment:
+
+| Connector | Request contract | Shipped scope and coverage |
+| --- | --- | --- |
+| `github_advisories` | GET `/advisories` with fixed approved `ecosystem`, `affects` and `per_page=10` | Python `mcp`, npm `@modelcontextprotocol/sdk`, Python `langchain-core`; first ten matching records only |
+| `mcp_registry` | GET `/v0.1/servers?limit=10` | First ten server metadata records; no installation, server connection or safety certification |
+| `crossref` | GET `/works` with approved `query` and `rows=5` | Five prompt-injection research metadata results; DOI/publication metadata does not verify a paper's claims |
+
+Provider response containers and record identities are validated before their
+normalized searchable projection enters the catalog. API 200 responses must use
+the documented JSON media type. Unknown query parameters, duplicate parameters,
+unapproved filters and off-contract redirects are rejected. Returned links are
+stored as untrusted metadata and never followed by API adapters.
+
+These adapters collect a bounded first page on each refresh. There are no
+upstream cursors, pagination loops, incremental checkpoints or completeness
+guarantees. A successful refresh means the configured request succeeded, not
+that every advisory, registry entry or publication was observed. Advisory
+withdrawal fields are retained when present in collected records. Previously
+observed records can leave a bounded page; their absence is not a withdrawal.
+API records are searchable through the existing evidence tools; only release
+records use the specialized `research_get_releases` tool.
+
 The API requests use conditional ETags and share per-host backoff after rate
-exhaustion, 403 or 429. They obey API limits instead of crawling robots.txt.
+exhaustion, 403 or 429. `Retry-After` seconds and HTTP dates are honored;
+valid long deferrals are not shortened to the hourly schedule. Malformed delay
+headers use a conservative fallback. They obey API limits instead of crawling robots.txt.
 Public GitHub collection is unauthenticated and shares the outbound IP's quota;
 no API key, GitHub write operation, asset download or paid LLM call is used.
+All added connectors use anonymous public access. No account was registered and
+no contact email was transmitted for this increment. If future connectors require
+credentials, they must be held in Azure Key Vault and accessed through an
+explicitly designed runtime identity path; the current service has no Key Vault
+integration. Credentials must not be added to source, registry URLs, environment
+files, snapshots or logs. Public retrieval currently rejects credential headers.
 API data is unverified research evidence, not release authenticity verification.
 Other vendors and OWASP/NIST currently use approved web/feed sources, not invented
 vendor APIs. Additional documented API adapters can follow the same interface.
 References: [GitHub releases](https://docs.github.com/en/rest/releases/releases#list-releases)
-and [rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api).
+and [rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api),
+[GitHub global advisories](https://docs.github.com/en/rest/security-advisories/global-advisories),
+[MCP Registry API](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/official-registry-api.md),
+and [Crossref access](https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/).
+OSV, GitHub commit/content tracking and targeted arXiv API queries remain deferred.
 
 ## Isolation and promotion
 
@@ -142,8 +204,9 @@ The container is non-root, read-only except `/data` and bounded `/tmp`, drops al
 capabilities, disallows privilege escalation, and has 256 MiB/0.5 CPU/64 PID limits.
 Retrieval uses public-address-only DNS results, pins the socket to a validated IP
 while retaining TLS hostname validation, ignores proxy environment variables,
-and rejects credentials and custom ports. The only permitted query string is
-the fixed GitHub releases `per_page=1` or `per_page=5` contract, pinned in source scopes.
+and rejects credentials and custom ports. Permitted query strings are limited to
+the provider contracts above and fixed GitHub releases `per_page=1` or `per_page=5`,
+pinned exactly in configured source scopes.
 Redirects are rechecked.
 The collector does not execute JS, shell, packages or LLM calls. These are
 application-level egress restrictions, not a host firewall guarantee.
@@ -168,6 +231,11 @@ throttling, Compose isolation and real SDK client calls. The transport test
 requires the research SDK; it skips if only base test dependencies are installed.
 `tests/research_mcp_probe.py` is an operator-run HTTP transport and provenance
 probe for an isolated container on the Pi.
+`tests/test_research_api_acceptance.py` adds independent checks for API contracts,
+media/schema rejection, oversized responses, long/malformed backoff, discovery
+filtering, disabled sources and preserved evidence on registry migration.
+Mocked tests and one-off HTTP probes are not sustained collection evidence;
+live validation must use the actual collector, catalog and MCP retrieval path.
 
 ## Front-page source watch
 
