@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1 - 2026-10-21
+
+- Give package scans and prompt tests a shared main results workspace, with
+  matching controls and retained output when switching views.
+- Move package findings, filters and report exports out of the controls sidebar;
+  wrap report controls and retain the stacked layout on smaller screens.
+- Bring results into view when starting a scan or prompt test, while preserving
+  bounded report rendering, cancellation and stale-response protection.
+
 ## 0.5.0 - 2026-10-21
 
 - Add public, read-only GitHub advisory, MCP Registry and Crossref research

@@ -909,6 +909,8 @@ function App({ onBack, onNavigate, buildInfo }) {
     const [isScanningSkill, setIsScanningSkill] = useState(false);
     const [skillReportDepth, setSkillReportDepth] = useState('summary');
     const [skillFindingFilter, setSkillFindingFilter] = useState('all');
+    const [activeResultView, setActiveResultView] = useState('package');
+    const resultWorkspace = useRef(null);
     const skillFileInput = useRef(null);
     const skillScanRequest = useRef(null);
 
@@ -1096,6 +1098,8 @@ function App({ onBack, onNavigate, buildInfo }) {
 
         setIsRunning(true);
         setResults([]);
+        setActiveResultView('prompt');
+        requestAnimationFrame(() => resultWorkspace.current?.scrollIntoView({ block: 'start' }));
 
         try {
             const response = await fetch('/api/test/start', {
@@ -1291,6 +1295,8 @@ function App({ onBack, onNavigate, buildInfo }) {
 
         resetSkillScanState();
         setIsScanningSkill(true);
+        setActiveResultView('package');
+        requestAnimationFrame(() => resultWorkspace.current?.scrollIntoView({ block: 'start' }));
         const pending = { controller: new AbortController(), timer: null, timedOut: false };
         skillScanRequest.current = pending;
         pending.timer = setTimeout(() => {
@@ -1360,17 +1366,26 @@ function App({ onBack, onNavigate, buildInfo }) {
         <div className="injecticide-home injecticide-workbench testing-workbench">
             <ProductHeader section="console" buildInfo={buildInfo} onBack={onBack} onNavigate={onNavigate} onClose={closeApp} isClosing={isShuttingDown} />
             <div className="home-shell workbench-main">
-                <div className="workbench-intro"><div><p className="home-eyebrow">Testing & scanning</p><h1>Inspect the package. Test the response.</h1><p>Review a skill or plugin package, or configure a model endpoint for prompt testing.</p></div><a href="#skill-scan" className="home-button">Go to package scanning ↓</a></div>
+                <div className="workbench-intro"><div><p className="home-eyebrow">Testing & scanning</p><h1>Inspect the package. Test the response.</h1><p>Choose a test below. Its controls and results share the workspace.</p></div></div>
+                <div className="workbench-result-switch" role="group" aria-label="Test and results view">
+                    {[['package', 'Package scan'], ['prompt', 'Prompt tests']].map(([view, label]) => (
+                        <button type="button" key={view} aria-pressed={activeResultView === view}
+                            aria-controls={`${view}-controls ${view}-results`} onClick={() => setActiveResultView(view)}>
+                            {label}{view === 'package' && isScanningSkill ? ' · Running' : view === 'prompt' && isRunning ? ' · Running' : ''}
+                        </button>
+                    ))}
+                </div>
                 <div className="workbench-grid testing-grid">
                     {/* Configuration Panel */}
                     <div className="workbench-config">
                         <div className="bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
                             <h2 className="workbench-section-title mb-6 flex items-center">
-                                <i className="fas fa-cog mr-2"></i>Test Configuration
+                                <i className="fas fa-cog mr-2"></i>{activeResultView === 'package' ? 'Scan configuration' : 'Test configuration'}
                             </h2>
                             
                             <div className="space-y-4">
                                 {/* Saved Endpoint */}
+                                <div id="prompt-controls" hidden={activeResultView !== 'prompt'} className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-gray-300">
                                         <i className="fas fa-bookmark mr-1 text-blue-400"></i>Saved Endpoint
@@ -1571,7 +1586,9 @@ function App({ onBack, onNavigate, buildInfo }) {
                                 </div>
 
                                 {/* Claude Skill Upload */}
-                                <div id="skill-scan" className="border-t border-gray-700 pt-4 workbench-scan-section">
+                                </div>
+                                <div id="package-controls" hidden={activeResultView !== 'package'}>
+                                <div id="skill-scan" className="workbench-scan-section">
                                     <h3 className="workbench-section-title mb-3">Skill and plugin scan</h3><p className="home-muted mb-4">Static package inspection. No model API key is needed for this scan.</p>
                                     <div className="space-y-3">
                                         <label className="block" htmlFor="skill-runtime">Target runtime</label>
@@ -1609,151 +1626,12 @@ function App({ onBack, onNavigate, buildInfo }) {
                                             </button>
                                         )}
                                         <p className="text-xs text-gray-400">Selecting another file clears the previous scan. Full findings remain available in the current report export.</p>
-                                        {skillScanError && (
-                                            <p role="alert" className="text-xs text-yellow-400">{skillScanError}</p>
-                                        )}
-                                        {skillScanResult && (
-                                            <div className="bg-gray-900/40 border border-gray-700/60 rounded-lg p-3 text-xs text-gray-300 space-y-2">
-                                                {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
-                                                {(() => {
-                                                    const assessment = summarizeAssessment(skillScanResult);
-                                                    const reviewSummary = summarizeReviewClasses(skillScanResult);
-                                                    const concerns = topConcerns(skillScanResult);
-                                                    return (
-                                                        <>
-                                                            <div className={`rounded-md border px-3 py-2 ${assessmentClass(assessment.tone)}`}>
-                                                                <div className="text-sm font-semibold">{assessment.title}</div>
-                                                                <p className="mt-1 text-[11px] opacity-90">{assessment.body}</p>
-                                                                <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
-                                                                    <span>Security risks: {reviewSummary.security_risk}</span>
-                                                                    <span>Sensitive data: {reviewSummary.sensitive_data}</span>
-                                                                    <span>Expected/internal: {reviewSummary.expected_internal}</span>
-                                                                </div>
-                                                            </div>
-                                                            {concerns.length > 0 && (
-                                                                <div className="rounded-md border border-gray-800/80 bg-black/20 p-2">
-                                                                    <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">Top Concerns</div>
-                                                                    <ul className="space-y-1 text-[11px] text-gray-300">
-                                                                        {concerns.map((concern, concernIdx) => (
-                                                                            <li key={concernIdx}>
-                                                                                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] mr-2 ${findingPillClass(concern.reviewClass)}`}>
-                                                                                    {classifyFindingLabel(concern.reviewClass)}
-                                                                                </span>
-                                                                                {concern.finding.id} in {concern.path}
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                </div>
-                                                            )}
-                                                        </>
-                                                    );
-                                                })()}
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-semibold text-gray-200">{skillScanResult.filename}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="flex rounded-md overflow-hidden border border-gray-700/70">
-                                                            {['summary', 'detailed'].map((mode) => (
-                                                                <button
-                                                                    key={mode}
-                                                                    onClick={() => setSkillReportDepth(mode)}
-                                                                    className={`px-2 py-1 text-[10px] uppercase tracking-wide transition ${skillReportDepth === mode ? 'bg-blue-700/80 text-white' : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80'}`}
-                                                                >
-                                                                    {mode}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                        <button
-                                                            onClick={downloadSkillScanMarkdown}
-                                                            className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wide bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700/70 text-gray-200 transition"
-                                                        >
-                                                            <i className="fas fa-file-arrow-down mr-1"></i>
-                                                            Export {skillReportDepth === 'summary' ? 'Summary' : 'Detailed'}
-                                                        </button>
-                                                        <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
-                                                            {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
-                                                    <span>Total files: {skillScanResult.summary.total_files}</span>
-                                                    <span>Flagged: {skillScanResult.summary.flagged_files}</span>
-                                                    <span>Review findings: {skillScanResult.summary.total_findings}</span>
-                                                </div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {[
-                                                        ['all', 'All'],
-                                                        ['security', 'Security Risks'],
-                                                        ['sensitive', 'Sensitive Data'],
-                                                        ['expected', 'Expected/Internal'],
-                                                    ].map(([filterId, label]) => (
-                                                        <button
-                                                            key={filterId}
-                                                            onClick={() => setSkillFindingFilter(filterId)}
-                                                            className={`px-2 py-1 rounded-md text-[10px] uppercase tracking-wide border transition ${skillFindingFilter === filterId ? 'bg-blue-700/80 border-blue-600/60 text-white' : 'bg-gray-800/70 border-gray-700/70 text-gray-300 hover:bg-gray-700/80'}`}
-                                                        >
-                                                            {label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                {skillScanResult.governance_profile && (
-                                                    <div className="rounded-md border border-gray-800/80 bg-black/20 p-2 space-y-2">
-                                                        <div className="flex flex-wrap items-center gap-2">
-                                                            <span className="text-[10px] uppercase tracking-wide text-gray-500">Governance</span>
-                                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${
-                                                                skillScanResult.governance_profile.brokered_tokens.decision === 'block_by_default'
-                                                                    ? 'bg-red-600/40 text-red-200'
-                                                                    : skillScanResult.governance_profile.brokered_tokens.decision === 'require_admin_approval'
-                                                                        ? 'bg-yellow-600/30 text-yellow-200'
-                                                                        : 'bg-green-600/30 text-green-200'
-                                                            }`}>
-                                                                Brokered: {skillScanResult.governance_profile.brokered_tokens.decision.replaceAll('_', ' ')}
-                                                            </span>
-                                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${
-                                                                skillScanResult.governance_profile.customer_managed_keys.decision === 'block_by_default'
-                                                                    ? 'bg-red-600/40 text-red-200'
-                                                                    : skillScanResult.governance_profile.customer_managed_keys.decision === 'require_admin_approval'
-                                                                        ? 'bg-yellow-600/30 text-yellow-200'
-                                                                        : 'bg-blue-600/30 text-blue-200'
-                                                            }`}>
-                                                                BYO: {skillScanResult.governance_profile.customer_managed_keys.decision.replaceAll('_', ' ')}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
-                                                            <span>Tier: {skillScanResult.governance_profile.execution_tier}</span>
-                                                            <span>Sandbox: {skillScanResult.governance_profile.sandbox_required ? 'required' : 'not required'}</span>
-                                                            <span>Approval: {skillScanResult.governance_profile.approval_required ? 'required' : 'not required'}</span>
-                                                        </div>
-                                                        {skillScanResult.governance_profile.policy_capabilities?.length > 0 && (
-                                                            <div className="flex flex-wrap gap-1">
-                                                                {skillScanResult.governance_profile.policy_capabilities.map((capability, capabilityIdx) => (
-                                                                    <span key={capabilityIdx} className="px-2 py-1 rounded bg-gray-800/80 text-[10px] text-gray-300">
-                                                                        {capability}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        {skillScanResult.governance_profile.decision_reasons?.length > 0 && (
-                                                            <ul className="list-disc list-inside text-[11px] text-gray-400">
-                                                                {skillScanResult.governance_profile.decision_reasons.map((reason, idx) => (
-                                                                    <li key={idx}>{reason}</li>
-                                                                ))}
-                                                            </ul>
-                                                        )}
-                                                    </div>
-                                                )}
-                                                {skillScanResult.warnings?.length > 0 && (
-                                                    <ul className="list-disc list-inside text-yellow-400">
-                                                        {skillScanResult.warnings.map((warning, idx) => (
-                                                            <li key={idx}>{warning}</li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                                <SkillScanFiles key={skillFindingFilter} files={skillScanResult.files || []} filter={skillFindingFilter} depth={skillReportDepth} />
-                                            </div>
-                                        )}
+
                                     </div>
                                 </div>
 
+                                </div>
+                                <div hidden={activeResultView !== 'prompt'} className="space-y-4">
                                 {/* Advanced Settings */}
                                 <div className="border-t border-gray-700 pt-4">
                                     <h3 className="text-sm font-medium mb-3 text-gray-400">Advanced Settings</h3>
@@ -1822,19 +1700,167 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         </button>
                                     )}
                                 </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     {/* Results Panel */}
-                    <div className="workbench-results">
-                        <div className="bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="workbench-section-title flex items-center">
-                                    <i className="fas fa-chart-line mr-2"></i>Security Assessment Results
+                    <div className="workbench-results" ref={resultWorkspace}>
+                        <section id="package-results" hidden={activeResultView !== 'package'} aria-labelledby="package-results-title" className="workbench-result-panel bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
+                            <h2 id="package-results-title" className="workbench-section-title mb-6">Skill and plugin scan results</h2>
+                            <div role="status">{isScanningSkill && <p className="home-muted mb-4">Scanning package…</p>}</div>
+                            {skillScanError && <p role="alert" className="home-warning">{skillScanError}</p>}
+                            {!skillScanResult && !isScanningSkill && !skillScanError && <p className="home-muted">Choose a file in Scan configuration to review its findings, coverage and report here.</p>}
+                            {skillScanResult && (
+                                <div className="skill-results-report text-sm text-gray-300 space-y-4">
+                                    {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
+                                    {(() => {
+                                        const assessment = summarizeAssessment(skillScanResult);
+                                        const reviewSummary = summarizeReviewClasses(skillScanResult);
+                                        const concerns = topConcerns(skillScanResult);
+                                        return (
+                                            <>
+                                                <div className={`rounded-md border px-3 py-2 ${assessmentClass(assessment.tone)}`}>
+                                                    <div className="text-sm font-semibold">{assessment.title}</div>
+                                                    <p className="mt-1 text-[11px] opacity-90">{assessment.body}</p>
+                                                    <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
+                                                        <span>Security risks: {reviewSummary.security_risk}</span>
+                                                        <span>Sensitive data: {reviewSummary.sensitive_data}</span>
+                                                        <span>Expected/internal: {reviewSummary.expected_internal}</span>
+                                                    </div>
+                                                </div>
+                                                {concerns.length > 0 && (
+                                                    <div className="rounded-md border border-gray-800/80 bg-black/20 p-2">
+                                                        <div className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">Top Concerns</div>
+                                                        <ul className="space-y-1 text-[11px] text-gray-300">
+                                                            {concerns.map((concern, concernIdx) => (
+                                                                <li key={concernIdx}>
+                                                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] mr-2 ${findingPillClass(concern.reviewClass)}`}>
+                                                                        {classifyFindingLabel(concern.reviewClass)}
+                                                                    </span>
+                                                                    {concern.finding.id} in {concern.path}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
+                                    <div className="scan-report-toolbar flex flex-wrap items-center justify-between gap-3">
+                                        <span className="font-semibold text-gray-200">{skillScanResult.filename}</span>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <div className="flex rounded-md overflow-hidden border border-gray-700/70">
+                                                {['summary', 'detailed'].map((mode) => (
+                                                    <button
+                                                        key={mode}
+                                                        aria-pressed={skillReportDepth === mode}
+                                                        onClick={() => setSkillReportDepth(mode)}
+                                                        className={`px-2 py-1 text-[10px] uppercase tracking-wide transition ${skillReportDepth === mode ? 'bg-blue-700/80 text-white' : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80'}`}
+                                                    >
+                                                        {mode}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <button
+                                                onClick={downloadSkillScanMarkdown}
+                                                className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wide bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700/70 text-gray-200 transition"
+                                            >
+                                                <i className="fas fa-file-arrow-down mr-1"></i>
+                                                Export {skillReportDepth === 'summary' ? 'Summary' : 'Detailed'}
+                                            </button>
+                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
+                                                {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
+                                        <span>Total files: {skillScanResult.summary.total_files}</span>
+                                        <span>Flagged: {skillScanResult.summary.flagged_files}</span>
+                                        <span>Review findings: {skillScanResult.summary.total_findings}</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            ['all', 'All'],
+                                            ['security', 'Security Risks'],
+                                            ['sensitive', 'Sensitive Data'],
+                                            ['expected', 'Expected/Internal'],
+                                        ].map(([filterId, label]) => (
+                                            <button
+                                                key={filterId}
+                                                aria-pressed={skillFindingFilter === filterId}
+                                                onClick={() => setSkillFindingFilter(filterId)}
+                                                className={`px-2 py-1 rounded-md text-[10px] uppercase tracking-wide border transition ${skillFindingFilter === filterId ? 'bg-blue-700/80 border-blue-600/60 text-white' : 'bg-gray-800/70 border-gray-700/70 text-gray-300 hover:bg-gray-700/80'}`}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {skillScanResult.governance_profile && (
+                                        <div className="rounded-md border border-gray-800/80 bg-black/20 p-2 space-y-2">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="text-[10px] uppercase tracking-wide text-gray-500">Governance</span>
+                                                <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${
+                                                    skillScanResult.governance_profile.brokered_tokens.decision === 'block_by_default'
+                                                        ? 'bg-red-600/40 text-red-200'
+                                                        : skillScanResult.governance_profile.brokered_tokens.decision === 'require_admin_approval'
+                                                            ? 'bg-yellow-600/30 text-yellow-200'
+                                                            : 'bg-green-600/30 text-green-200'
+                                                }`}>
+                                                    Brokered: {skillScanResult.governance_profile.brokered_tokens.decision.replaceAll('_', ' ')}
+                                                </span>
+                                                <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${
+                                                    skillScanResult.governance_profile.customer_managed_keys.decision === 'block_by_default'
+                                                        ? 'bg-red-600/40 text-red-200'
+                                                        : skillScanResult.governance_profile.customer_managed_keys.decision === 'require_admin_approval'
+                                                            ? 'bg-yellow-600/30 text-yellow-200'
+                                                            : 'bg-blue-600/30 text-blue-200'
+                                                }`}>
+                                                    BYO: {skillScanResult.governance_profile.customer_managed_keys.decision.replaceAll('_', ' ')}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
+                                                <span>Tier: {skillScanResult.governance_profile.execution_tier}</span>
+                                                <span>Sandbox: {skillScanResult.governance_profile.sandbox_required ? 'required' : 'not required'}</span>
+                                                <span>Approval: {skillScanResult.governance_profile.approval_required ? 'required' : 'not required'}</span>
+                                            </div>
+                                            {skillScanResult.governance_profile.policy_capabilities?.length > 0 && (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {skillScanResult.governance_profile.policy_capabilities.map((capability, capabilityIdx) => (
+                                                        <span key={capabilityIdx} className="px-2 py-1 rounded bg-gray-800/80 text-[10px] text-gray-300">
+                                                            {capability}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {skillScanResult.governance_profile.decision_reasons?.length > 0 && (
+                                                <ul className="list-disc list-inside text-[11px] text-gray-400">
+                                                    {skillScanResult.governance_profile.decision_reasons.map((reason, idx) => (
+                                                        <li key={idx}>{reason}</li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    )}
+                                    {skillScanResult.warnings?.length > 0 && (
+                                        <ul className="list-disc list-inside text-yellow-400">
+                                            {skillScanResult.warnings.map((warning, idx) => (
+                                                <li key={idx}>{warning}</li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    <SkillScanFiles key={skillFindingFilter} files={skillScanResult.files || []} filter={skillFindingFilter} depth={skillReportDepth} />
+                                </div>
+                            )}
+                        </section>
+                        <section id="prompt-results" hidden={activeResultView !== 'prompt'} aria-labelledby="prompt-results-title" className="workbench-result-panel bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
+                            <div className="scan-report-toolbar flex flex-wrap items-center justify-between gap-3 mb-6">
+                                <h2 id="prompt-results-title" className="workbench-section-title flex items-center">
+                                    <i className="fas fa-chart-line mr-2"></i>Prompt test results
                                 </h2>
                                 {session && session.status === 'completed' && (
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-wrap gap-2">
                                         <button 
                                             onClick={() => downloadReport('html')}
                                             className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition"
@@ -1982,18 +2008,14 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         ) : (
                                             <div>
                                                 <p className="home-eyebrow">Ready to review</p>
-                                                <h3 className="workbench-empty-title">Start with a package or a model endpoint.</h3>
-                                                <p className="home-muted">Results will show the evidence behind findings and what the test covered.</p>
-                                                <div className="workbench-start-options">
-                                                    <section><span className="home-eyebrow">01 · Package review</span><h4>Inspect a skill or plugin</h4><p>Upload a bundle for static checks of instructions, code, permissions and dependencies.</p><a href="#skill-scan">Open package scanning ↓</a></section>
-                                                    <section><span className="home-eyebrow">02 · Prompt testing</span><h4>Evaluate model responses</h4><p>Configure your endpoint, choose payloads and run a test. Review measured response signals here.</p><span className="home-muted">Uses your configured model endpoint.</span></section>
-                                                </div>
+                                                <h3 className="workbench-empty-title">Evaluate model responses.</h3>
+                                                <p className="home-muted">Configure your endpoint, choose payloads and launch a test. Results and measured response signals appear here.</p>
                                             </div>
                                         )}
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </section>
                     </div>
                 </div>
             </div>
