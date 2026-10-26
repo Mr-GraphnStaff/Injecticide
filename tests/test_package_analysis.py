@@ -286,7 +286,9 @@ def test_web_api_forwards_profile_and_evidence(monkeypatch):
     monkeypatch.setattr(web.requests, 'Session', Session)
     monkeypatch.setenv('SKILL_SANDBOX_URL', 'http://sandbox.internal')
     client = TestClient(web.app)
-    assert client.post('/api/skills/scan', files={'file': ('SKILL.md', skill())}, data={'target_runtime': 'cursor'}).json() == {'forwarded': True}
+    result = client.post('/api/skills/scan', files={'file': ('SKILL.md', skill())}, data={'target_runtime': 'cursor'}).json()
+    assert result['forwarded'] is True
+    assert result['vendor_verification']['verification'] == 'STATUS: UNKNOWN — UNVERIFIED'
     assert client.post('/api/skills/scan', files={'file': ('SKILL.md', skill())}, data={'governance_evidence': '[]'}).status_code == 400
     assert 'cursor' in client.get('/api/skills/profiles').json()['runtimes']
 

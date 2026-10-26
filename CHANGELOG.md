@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0 - 2026-10-26
+
+- Add per-scan live vendor documentation verification through Research MCP for
+  OpenAI plugin skills, Claude Code, Claude skill uploads, Gemini CLI and Copilot
+  CLI. Sources, reviewed fingerprints, retrieval times and individual documented
+  requirements accompany reports. Vendor changes require review, not automatic
+  scanner rule activation. No packages or credentials are sent to vendors.
+- Compare documented Claude upload metadata limits separately from portable
+  format checks. Missing size, asset-type and output-artifact constraints remain
+  explicitly unknown; documented resource folders are not file allowlists.
+- Preserve offline static scans with an explicit unverified vendor status.
+  Production promotion requires human acceptance.
+
 ## 0.5.1 - 2026-10-21
 
 - Give package scans and prompt tests a shared main results workspace, with

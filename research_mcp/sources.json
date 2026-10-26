@@ -511,6 +511,114 @@
       ],
       "discovery": false,
       "coverage_note": "Bounded first page only; not complete synchronization"
+    },
+    {
+      "id": "requirements-openai",
+      "ecosystem": "OpenAI",
+      "topics": [
+        "skills",
+        "plugins",
+        "vendor-requirements"
+      ],
+      "seeds": [
+        "https://developers.openai.com/plugins/build/skills.md"
+      ],
+      "scopes": [
+        "https://developers.openai.com/plugins/build/skills.md"
+      ],
+      "discovery": false,
+      "max_response_bytes": 4194304,
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+    },
+    {
+      "id": "requirements-claude-code",
+      "ecosystem": "Anthropic",
+      "topics": [
+        "skills",
+        "plugins",
+        "vendor-requirements"
+      ],
+      "seeds": [
+        "https://code.claude.com/docs/en/skills.md"
+      ],
+      "scopes": [
+        "https://code.claude.com/docs/en/skills.md"
+      ],
+      "discovery": false,
+      "max_response_bytes": 4194304,
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+    },
+    {
+      "id": "requirements-claude-upload",
+      "ecosystem": "Anthropic",
+      "topics": [
+        "skills",
+        "plugins",
+        "vendor-requirements"
+      ],
+      "seeds": [
+        "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+      ],
+      "scopes": [
+        "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+      ],
+      "discovery": false,
+      "max_response_bytes": 4194304,
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+    },
+    {
+      "id": "requirements-gemini",
+      "ecosystem": "Google",
+      "topics": [
+        "skills",
+        "plugins",
+        "vendor-requirements"
+      ],
+      "seeds": [
+        "https://geminicli.com/docs/cli/creating-skills/"
+      ],
+      "scopes": [
+        "https://geminicli.com/docs/cli/creating-skills/"
+      ],
+      "discovery": false,
+      "max_response_bytes": 4194304,
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+    },
+    {
+      "id": "requirements-copilot",
+      "ecosystem": "GitHub",
+      "topics": [
+        "skills",
+        "plugins",
+        "vendor-requirements"
+      ],
+      "seeds": [
+        "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+      ],
+      "scopes": [
+        "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+      ],
+      "discovery": false,
+      "max_response_bytes": 4194304,
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+    },
+    {
+      "id": "requirements-openai-mcp-import",
+      "ecosystem": "OpenAI",
+      "topics": [
+        "skills",
+        "plugins",
+        "vendor-requirements"
+      ],
+      "seeds": [
+        "https://developers.openai.com/plugins/build/mcp-server.md"
+      ],
+      "scopes": [
+        "https://developers.openai.com/plugins/build/mcp-server.md"
+      ],
+      "discovery": false,
+      "max_response_bytes": 4194304,
+      "coverage_note": "Submission-time MCP import requirements only; no live resources or uploads are executed."
     }
   ]
 }

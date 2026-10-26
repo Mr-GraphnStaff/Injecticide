@@ -16,7 +16,7 @@ from referencing import Registry
 SCHEMA_ROOT = Path(__file__).resolve().parent / "schemas"
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
-RUNTIMES = ("auto", "generic", "claude-code", "claude-upload", "openai", "copilot", "gemini", "cursor", "cascade", "kiro", "openclaw")
+RUNTIMES = ("auto", "generic", "claude-code", "claude-upload", "openai", "openai-mcp-import", "copilot", "gemini", "cursor", "cascade", "kiro", "openclaw")
 BASE_FIELDS = {"name", "description", "license", "compatibility", "metadata", "allowed-tools"}
 CODE_FIELDS = {"argument-hint", "arguments", "disable-model-invocation", "user-invocable", "model", "context", "agent", "hooks", "disallowed-tools"}
 MAX_CONFIG_CHARS = 131072
@@ -186,6 +186,8 @@ def inspect_formats(records, texts, target_runtime="auto"):
             skill = {"path": path, "root": str(PurePosixPath(path).parent), "metadata": {}, "validation": "valid"}
             try:
                 data = frontmatter(text)
+                skill["field_lengths"] = {key: len(data[key]) for key in ("name", "description", "compatibility")
+                                         if isinstance(data.get(key), str)}
                 skill["frontmatter"] = data
                 metadata = data.get("metadata", {})
                 skill["metadata"] = {str(k): str(v)[:300] for k, v in metadata.items()} if isinstance(metadata, dict) else {}

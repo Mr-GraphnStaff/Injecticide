@@ -13,9 +13,11 @@ from starlette.responses import JSONResponse
 from .catalog import Catalog
 from .collector import Collector
 from .news import build_news
+from .requirements import Requirements
 
 
 def create_server(catalog: Catalog, collector: Collector, start_collector: bool = True) -> MCPServer:
+    requirements = Requirements(catalog)
     @asynccontextmanager
     async def lifespan(server):
         if start_collector:
@@ -25,7 +27,7 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         finally:
             await asyncio.to_thread(collector.close)
 
-    server = MCPServer("injecticide_research_mcp", version="0.5.0", lifespan=lifespan)
+    server = MCPServer("injecticide_research_mcp", version="0.6.0", lifespan=lifespan)
     read = {"readOnlyHint": True, "destructiveHint": False,
             "idempotentHint": True, "openWorldHint": False}
 
@@ -66,6 +68,34 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
     def research_get_releases(source_id: str, limit: int = 10) -> dict[str, object]:
         """Read structured cached GitHub API releases: IDs, tags, publication dates and notes; no downloads."""
         return catalog.releases(source_id, limit)
+
+    @server.tool(structured_output=True, annotations={"readOnlyHint": False,
+                 "destructiveHint": False, "idempotentHint": False, "openWorldHint": True})
+    def research_check_requirements(runtime: str, refresh: bool = True) -> dict[str, object]:
+        """Check official OpenAI, Claude, Gemini CLI or Copilot CLI skill/plugin requirements.
+
+        Refresh performs bounded live public-document checks, never an LLM completion,
+        upload, rule activation or runtime acceptance test. Changed/failed sources are unknown.
+        """
+        return requirements.check(runtime, refresh)
+
+    @server.custom_route("/requirements/check", methods=["POST"])
+    async def check_requirements(request):
+        # Read only a product identifier. Never accept an upload, credential or URL.
+        body = bytearray()
+        async for block in request.stream():
+            body.extend(block)
+            if len(body) > 1024:
+                return JSONResponse({"error": "Request exceeds budget"}, status_code=413)
+        import json
+        try:
+            data = json.loads(body)
+            if not isinstance(data, dict) or set(data) != {"runtime"} or not isinstance(data["runtime"], str):
+                raise ValueError("Supply only runtime")
+        except (ValueError, TypeError):
+            return JSONResponse({"error": "Supply only runtime"}, status_code=400)
+        return JSONResponse(await asyncio.to_thread(requirements.check, data["runtime"]),
+                            headers={"Cache-Control": "no-store"})
 
     @server.custom_route("/health", methods=["GET"])
     async def health(request):

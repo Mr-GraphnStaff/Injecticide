@@ -1,0 +1,313 @@
+{
+  "version": "2026-10-26",
+  "profiles": {
+    "openai": {
+      "vendor": "OpenAI",
+      "product": "OpenAI plugin skills",
+      "source_id": "requirements-openai",
+      "documents": [
+        {
+          "url": "https://developers.openai.com/plugins/build/skills.md",
+          "reviewed_on": "2026-10-26",
+          "reviewed_sha256": "e4f96c0d297f17fc1ce55472fce42de1c13c98d8e710ce8062d0656bcf5b1fa5"
+        }
+      ],
+      "requirements": {
+        "package_max_bytes": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "name_max_characters": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "description_max_characters": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_asset_types": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_artifact_types": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "resource_directories": {
+          "value": [
+            "references/",
+            "assets/",
+            "scripts/"
+          ],
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "note": "Documented resource layout; not an exhaustive file-type permission list."
+        }
+      }
+    },
+    "claude-code": {
+      "vendor": "Anthropic",
+      "product": "Claude Code skills",
+      "source_id": "requirements-claude-code",
+      "documents": [
+        {
+          "url": "https://code.claude.com/docs/en/skills.md",
+          "reviewed_on": "2026-10-26",
+          "reviewed_sha256": "acb1f1388ee96a516f707c42bac1e834b22df90081e5c2eccb90a2f76a5430f6"
+        }
+      ],
+      "requirements": {
+        "package_max_bytes": {
+          "value": null,
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "name_max_characters": {
+          "value": null,
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "description_max_characters": {
+          "value": null,
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_asset_types": {
+          "value": null,
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_artifact_types": {
+          "value": null,
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "skill_listing_max_characters": {
+          "value": 1536,
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "note": "Combined description and when_to_use text is truncated in the listing; not a skill upload acceptance limit."
+        },
+        "compatibility_max_characters": {
+          "value": 500,
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "note": "Documented maximum for the optional compatibility metadata field."
+        }
+      }
+    },
+    "claude-upload": {
+      "vendor": "Anthropic",
+      "product": "Claude custom skill uploads",
+      "source_id": "requirements-claude-upload",
+      "documents": [
+        {
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "reviewed_on": "2026-10-26",
+          "reviewed_sha256": "c3919adcefab2ce1e260a3fa84ae684d60ae3bb8e3e71f239e31da466079f857",
+          "fingerprint_scope": "projected_text"
+        }
+      ],
+      "requirements": {
+        "package_max_bytes": {
+          "value": null,
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "name_max_characters": {
+          "value": 64,
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "note": "Maximum in Claude custom skill upload guide; not a Claude Code or API limit."
+        },
+        "description_max_characters": {
+          "value": 200,
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "note": "Maximum in Claude custom skill upload guide; not a Claude Code or API limit."
+        },
+        "allowed_asset_types": {
+          "value": null,
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_artifact_types": {
+          "value": null,
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        }
+      }
+    },
+    "gemini": {
+      "vendor": "Google",
+      "product": "Gemini CLI skills",
+      "source_id": "requirements-gemini",
+      "documents": [
+        {
+          "url": "https://geminicli.com/docs/cli/creating-skills/",
+          "reviewed_on": "2026-10-26",
+          "reviewed_sha256": "e27e73ce5a20743d6ac99f5ae6b0552ec2e260c6e7ababfe185e50d7e66379a7",
+          "fingerprint_scope": "projected_text"
+        }
+      ],
+      "requirements": {
+        "package_max_bytes": {
+          "value": null,
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "name_max_characters": {
+          "value": null,
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "description_max_characters": {
+          "value": null,
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_asset_types": {
+          "value": null,
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_artifact_types": {
+          "value": null,
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "resource_directories": {
+          "value": [
+            "scripts/",
+            "references/",
+            "assets/"
+          ],
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "note": "Documented resource layout; not an exhaustive file-type permission list."
+        }
+      }
+    },
+    "copilot": {
+      "vendor": "GitHub",
+      "product": "Copilot CLI plugins",
+      "source_id": "requirements-copilot",
+      "documents": [
+        {
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "reviewed_on": "2026-10-26",
+          "reviewed_sha256": "c54bb833dd620ba51508c95fa31c074ff5f99a13d2005f5bb30cae7dd9a3d98d",
+          "fingerprint_scope": "projected_text"
+        }
+      ],
+      "requirements": {
+        "package_max_bytes": {
+          "value": null,
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "name_max_characters": {
+          "value": null,
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "description_max_characters": {
+          "value": null,
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_asset_types": {
+          "value": null,
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        },
+        "allowed_artifact_types": {
+          "value": null,
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation."
+        }
+      }
+    },
+    "openai-mcp-import": {
+      "vendor": "OpenAI",
+      "product": "OpenAI plugin submission: MCP skill import",
+      "source_id": "requirements-openai-mcp-import",
+      "documents": [
+        {
+          "url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "reviewed_on": "2026-10-26",
+          "reviewed_sha256": "db5ccf6e3b692ff1ef5d5aa81792a8d0df2bb49379e60c14acd770a2b1e082c3"
+        }
+      ],
+      "requirements": {
+        "package_max_bytes": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation."
+        },
+        "name_max_characters": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation."
+        },
+        "description_max_characters": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation."
+        },
+        "allowed_asset_types": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation."
+        },
+        "allowed_artifact_types": {
+          "value": null,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation."
+        },
+        "skill_md_max_bytes": {
+          "value": 262144,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit."
+        },
+        "supporting_file_max_bytes": {
+          "value": 1048576,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit."
+        },
+        "skill_resources_max_bytes": {
+          "value": 5242880,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit."
+        },
+        "generated_archives_max_bytes": {
+          "value": 8388608,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit."
+        },
+        "skill_max_files": {
+          "value": 100,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit."
+        },
+        "import_max_skills": {
+          "value": 5,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit."
+        },
+        "catalog_max_pages": {
+          "value": 10,
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit."
+        },
+        "resource_content_encodings": {
+          "value": [
+            "UTF-8 text",
+            "base64-encoded blob"
+          ],
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "note": "Resource transport encodings; does not establish allowed file extensions or generated artifact types."
+        }
+      }
+    }
+  }
+}

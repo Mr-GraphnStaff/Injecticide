@@ -5,6 +5,12 @@ plugins, project configuration and security documentation. This service uses the
 [official Python MCP SDK](https://py.sdk.modelcontextprotocol.io/run/) with
 Streamable HTTP, stateless JSON responses and a persistent SQLite catalog.
 
+The 0.6.0 candidate adds `research_check_requirements(runtime, refresh=True)`
+and the bounded web-scanner route `POST /requirements/check`. Official skill and
+plugin requirement checks cover OpenAI, Anthropic, Google Gemini CLI and GitHub
+Copilot CLI only. See [vendor requirements](../docs/vendor-requirements.md) for
+product profiles, freshness, drift review, measured limits and explicit unknowns.
+
 ## Run on the Injecticide Raspberry Pi
 
 After human acceptance through the existing release process, Compose starts
