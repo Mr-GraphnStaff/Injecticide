@@ -112,6 +112,10 @@ function summarizeAssessment(scanResult) {
         return { tone: 'high', title: 'Executable code packaged as a document', body: 'This can bypass upload controls based on filename extensions. Review organizational policy compliance separately from malware findings.' };
     }
 
+    if (scanResult.vendor_verification?.compatibility === 'fails_documented_requirement') {
+        return { tone: 'medium', title: 'Documented vendor requirement not met', body: 'Review the failed vendor checks before uploading this package. This is a compatibility finding; malware is not established.' };
+    }
+
     if (scanResult.coverage?.status === 'partial' || scanResult.readiness?.status === 'needs_review' || scanResult.package_analysis?.format_findings?.some(item => item.severity === 'error')) {
         return { tone: 'medium', title: 'Package review incomplete', body: 'Review findings, format errors, and unassessed content before use. Skipped files are not certified safe.' };
     }
@@ -161,6 +165,24 @@ function summarizeAssessment(scanResult) {
         title: 'No review findings',
         body: 'The scan did not find security risks or regulated data patterns that require follow-up.',
     };
+}
+
+function VendorVerification({ evidence }) {
+    if (!evidence) return <p className="home-warning">Vendor requirements: STATUS: UNKNOWN — UNVERIFIED</p>;
+    return <section className="rounded-md border border-gray-600 p-3 space-y-2" aria-label="Vendor requirement verification">
+        <h3 className="font-semibold">Vendor requirements: {evidence.status === 'current_documented_requirements' ? 'reviewed documentation is current' : 'STATUS: UNKNOWN — UNVERIFIED'}</h3>
+        <p>{evidence.product || evidence.runtime} · {evidence.live_check ? 'Live documentation check' : 'Live check not confirmed'}</p>
+        <p>{evidence.reason || evidence.statement}</p>
+        <p>Runtime compatibility: {evidence.compatibility || 'unknown'}</p>
+        <details>
+            <summary className="cursor-pointer">Sources, limits and checks</summary>
+            <div className="space-y-2 mt-2 break-words">
+                {(evidence.documents || []).map(doc => <p key={doc.url}>{doc.url} — {doc.state}; checked {doc.checked_at || 'never'}; snapshot {doc.snapshot_id || 'none'}</p>)}
+                {(evidence.requirements || []).map(rule => <p key={rule.field}>{rule.field}: {rule.value == null ? 'STATUS: UNKNOWN — UNVERIFIED' : JSON.stringify(rule.value)}. {rule.note}</p>)}
+                {(evidence.checks || []).map(check => <p key={`${check.path}:${check.field}`}>{check.path} · {check.field}: {check.status}; observed {check.observed ?? 'unknown'}, maximum {check.maximum}</p>)}
+            </div>
+        </details>
+    </section>;
 }
 
 function assessmentClass(tone) {
@@ -272,7 +294,8 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         lines.push('```json');
         const evidence = { package_analysis: scanResult.package_analysis, coverage: scanResult.coverage,
             governance_evidence: scanResult.governance_evidence, scanner_metadata: scanResult.scanner_metadata,
-            checks: scanResult.check_results, readiness: scanResult.readiness };
+            checks: scanResult.check_results, readiness: scanResult.readiness,
+            vendor_verification: scanResult.vendor_verification };
         if (reportDepth === 'detailed') evidence.inventory = scanResult.inventory;
         lines.push(JSON.stringify(evidence, null, 2));
         lines.push('```');
@@ -1589,11 +1612,11 @@ function App({ onBack, onNavigate, buildInfo }) {
                                 </div>
                                 <div id="package-controls" hidden={activeResultView !== 'package'}>
                                 <div id="skill-scan" className="workbench-scan-section">
-                                    <h3 className="workbench-section-title mb-3">Skill and plugin scan</h3><p className="home-muted mb-4">Static package inspection. No model API key is needed for this scan.</p>
+                                    <h3 className="workbench-section-title mb-3">Skill and plugin scan</h3><p className="home-muted mb-4">Static package inspection with vendor requirement checks through Research MCP. Choose a product for verification. No model API key is needed.</p>
                                     <div className="space-y-3">
                                         <label className="block" htmlFor="skill-runtime">Target runtime</label>
                                         <select id="skill-runtime" name="target_runtime" value={skillRuntime} disabled={isScanningSkill} onChange={e => { setSkillRuntime(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2">
-                                            {['auto', 'generic', 'claude-code', 'claude-upload', 'openai', 'copilot', 'gemini', 'cursor', 'cascade', 'kiro', 'openclaw'].map(runtime => <option key={runtime} value={runtime}>{runtime === 'auto' ? 'Detect format automatically' : runtime}</option>)}
+                                            {['auto', 'generic', 'claude-code', 'claude-upload', 'openai', 'openai-mcp-import', 'copilot', 'gemini', 'cursor', 'cascade', 'kiro', 'openclaw'].map(runtime => <option key={runtime} value={runtime}>{runtime === 'auto' ? 'Detect format automatically' : runtime === 'openai-mcp-import' ? 'OpenAI MCP skill import' : runtime}</option>)}
                                         </select>
                                         <details>
                                             <summary>Optional review and evaluation evidence</summary>
@@ -1709,12 +1732,13 @@ function App({ onBack, onNavigate, buildInfo }) {
                     <div className="workbench-results" ref={resultWorkspace}>
                         <section id="package-results" hidden={activeResultView !== 'package'} aria-labelledby="package-results-title" className="workbench-result-panel bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
                             <h2 id="package-results-title" className="workbench-section-title mb-6">Skill and plugin scan results</h2>
-                            <div role="status">{isScanningSkill && <p className="home-muted mb-4">Scanning package…</p>}</div>
+                            <div role="status">{isScanningSkill && <p className="home-muted mb-4">Scanning package and checking vendor requirements…</p>}</div>
                             {skillScanError && <p role="alert" className="home-warning">{skillScanError}</p>}
                             {!skillScanResult && !isScanningSkill && !skillScanError && <p className="home-muted">Choose a file in Scan configuration to review its findings, coverage and report here.</p>}
                             {skillScanResult && (
                                 <div className="skill-results-report text-sm text-gray-300 space-y-4">
                                     {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
+                                    <VendorVerification evidence={skillScanResult.vendor_verification} />
                                     {(() => {
                                         const assessment = summarizeAssessment(skillScanResult);
                                         const reviewSummary = summarizeReviewClasses(skillScanResult);

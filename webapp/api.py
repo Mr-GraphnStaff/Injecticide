@@ -48,6 +48,7 @@ from webapp.config_loader import (
 )
 from webapp.skill_scanner import scan_upload, MAX_UPLOAD_BYTES
 from webapp.research_news import news_client
+from webapp.vendor_requirements import attach_vendor_check
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
 
 SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
@@ -55,7 +56,7 @@ SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
 
 def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url):
     if not sandbox_url:
-        return scan_upload(data, filename, target_runtime, bounded_data(evidence))
+        return attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence)))
     with requests.Session() as session:
         response = session.post(
             f"{sandbox_url.rstrip('/')}/scan",
@@ -66,7 +67,7 @@ def _scan_skill_data(data, filename, content_type, target_runtime, evidence, san
         if response.status_code in {400, 413, 422, 429}:
             raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Scan rejected"))
         response.raise_for_status()
-        return response.json()
+        return attach_vendor_check(response.json())
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"

@@ -95,4 +95,9 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                            "tenant_policy_verified": False, "runtime_evaluation": evidence["evaluation"]["status"]}
     result["readiness"]["upload_policy_review_required"] = result["summary"]["upload_policy_review_files"] > 0
     result["check_results"] = check_results(result)
+    result["vendor_verification"] = {
+        "status": "unknown", "verification": "STATUS: UNKNOWN — UNVERIFIED",
+        "reason": "Static sandbox scan; live vendor requirements are checked by the web service through Research MCP.",
+        "live_check": False, "runtime_tested": False, "requirements": [], "documents": []}
+    result["readiness"]["vendor_compatibility"] = "unknown"
     return result

@@ -26,7 +26,7 @@ const policyReport = JSON.parse(execFileSync('python', ['-c',
 const assetRoot = path.join(root, 'tmp/scan-resource-regression');
 const source = fs.readFileSync(process.env.INJECTICIDE_APP_SOURCE || path.join(root, 'webapp/static/app.js'), 'utf8');
 const server = http.createServer((req, res) => {
-    res.setHeader('Content-Type', req.url === '/' ? 'text/html' : 'text/javascript');
+    res.setHeader('Content-Type', req.url === '/' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8');
     if (req.url === '/') return res.end('<div id="root"></div><script src="/react.js"></script><script src="/react-dom.js"></script><script src="/babel.js"></script><script src="/fixture.js"></script>');
     if (req.url === '/fixture.js') return res.end('eval(Babel.transform(' + JSON.stringify(source.replace('ReactDOM.render(<Root />,', 'ReactDOM.render(<App />,')) + ', {presets:["react"]}).code)');
     if (['/react.js', '/react-dom.js', '/babel.js'].includes(req.url)) return res.end(fs.readFileSync(path.join(assetRoot, req.url.slice(1))));
@@ -88,6 +88,11 @@ const server = http.createServer((req, res) => {
         await waitReport('package-fixture.zip');
         assert.equal(await page.getByText('Package review incomplete', {exact:true}).count(), 1);
         assert.equal(await page.locator('[data-package-overview]').count(), 1);
+        assert.equal(await page.getByRole('region', {name:'Vendor requirement verification'}).count(), 1);
+        assert.match(await page.getByRole('region', {name:'Vendor requirement verification'}).innerText(), /UNKNOWN/);
+        if (process.env.INJECTICIDE_TEST_SCREENSHOT) {
+            await page.getByRole('region', {name:'Vendor requirement verification'}).screenshot({path: process.env.INJECTICIDE_TEST_SCREENSHOT});
+        }
         await page.getByLabel('Package report section', {exact:true}).selectOption('checks');
         assert.equal(await page.locator('[data-package-evidence]').count(), 10);
         await page.getByRole('navigation', {name:'Package evidence pages', exact:true}).getByRole('button', {name:'Next', exact:true}).click();
@@ -99,6 +104,22 @@ const server = http.createServer((req, res) => {
         assert.match(packageExport, /binary_asset_inventory_only/);
         assert.match(packageExport, /UPD-01/);
         assert.match(packageExport, /artifact_sha256/);
+        assert.match(packageExport, /vendor_verification/);
+
+        await select('vendor-fixture.zip');
+        await scan.click();
+        const vendorReport = {...packageReport, filename:'vendor-fixture.zip', vendor_verification:{
+            status:'current_documented_requirements', product:'Claude custom skill uploads', live_check:true,
+            compatibility:'fails_documented_requirement', statement:'Harmless metadata fixture.',
+            documents:[], requirements:[], checks:[{path:'demo/SKILL.md', field:'description_max_characters',
+                observed:201, maximum:200, status:'fail'}]}};
+        await page.evaluate(report => window.pendingScans.shift().resolve(new Response(JSON.stringify(report), {status:200})), vendorReport);
+        await waitReport('vendor-fixture.zip');
+        assert.equal(await page.getByText('Documented vendor requirement not met', {exact:true}).count(), 1);
+        const vendorPanel = page.getByRole('region', {name:'Vendor requirement verification'});
+        await vendorPanel.getByText('Sources, limits and checks', {exact:true}).click();
+        assert.match(await vendorPanel.innerText(), /observed 201, maximum 200/);
+        if (process.env.INJECTICIDE_TEST_SCREENSHOT) await vendorPanel.screenshot({path:process.env.INJECTICIDE_TEST_SCREENSHOT});
 
         await select('policy-fixture.zip');
         await scan.click();

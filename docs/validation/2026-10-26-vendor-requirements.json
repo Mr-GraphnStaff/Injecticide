@@ -1,0 +1,684 @@
+{
+  "date": "2026-10-26",
+  "release_status": "0.6.0 unreleased; not deployed",
+  "full_python_suite": {
+    "passed": 327,
+    "skipped": 0
+  },
+  "final_focused_suite": {
+    "passed": 15,
+    "skipped": 0
+  },
+  "browser_regression": {
+    "status": "PASS",
+    "repeated_large_scans": 12,
+    "vendor_unknown_panel": true,
+    "vendor_limit_failure_headline": true,
+    "vendor_evidence_export": true
+  },
+  "initial_end_to_end_probe_summary": {
+    "profiles_with_live_reviewed_documents": 6,
+    "claude_upload_description_observed": 201,
+    "claude_upload_description_maximum": 200,
+    "compatibility": "fails_documented_requirement"
+  },
+  "direct_vendor_checks": [
+    {
+      "status": "current_documented_requirements",
+      "verification": "reviewed_documents_unchanged",
+      "runtime": "openai",
+      "product": "OpenAI plugin skills",
+      "vendor": "OpenAI",
+      "checked_at": "2026-10-26T16:11:36+00:00",
+      "max_age_seconds": 3600,
+      "live_check": true,
+      "refresh_state": "completed",
+      "requirements": [
+        {
+          "field": "package_max_bytes",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "name_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "description_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_asset_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_artifact_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "resource_directories",
+          "value": [
+            "references/",
+            "assets/",
+            "scripts/"
+          ],
+          "status": "vendor_documented",
+          "note": "Documented resource layout; not an exhaustive file-type permission list.",
+          "source_url": "https://developers.openai.com/plugins/build/skills.md",
+          "verification": "reviewed_document_unchanged"
+        }
+      ],
+      "documents": [
+        {
+          "url": "https://developers.openai.com/plugins/build/skills.md",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:11:36+00:00",
+          "last_success": "2026-10-26T16:11:36+00:00",
+          "snapshot_id": 1,
+          "sha256": "e4f96c0d297f17fc1ce55472fce42de1c13c98d8e710ce8062d0656bcf5b1fa5",
+          "final_url": "https://developers.openai.com/plugins/build/skills.md",
+          "fingerprint_scope": "response_bytes",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "runtime_tested": false,
+      "coverage": "Only listed reviewed requirements; unknown values are not unlimited or allowed",
+      "authority": "vendor_documentation_evidence_not_active_scanner_rules"
+    },
+    {
+      "status": "current_documented_requirements",
+      "verification": "reviewed_documents_unchanged",
+      "runtime": "claude-code",
+      "product": "Claude Code skills",
+      "vendor": "Anthropic",
+      "checked_at": "2026-10-26T16:11:38+00:00",
+      "max_age_seconds": 3600,
+      "live_check": true,
+      "refresh_state": "completed",
+      "requirements": [
+        {
+          "field": "package_max_bytes",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "name_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "description_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_asset_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_artifact_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "skill_listing_max_characters",
+          "value": 1536,
+          "status": "vendor_documented",
+          "note": "Combined description and when_to_use text is truncated in the listing; not a skill upload acceptance limit.",
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "compatibility_max_characters",
+          "value": 500,
+          "status": "vendor_documented",
+          "note": "Documented maximum for the optional compatibility metadata field.",
+          "source_url": "https://code.claude.com/docs/en/skills.md",
+          "verification": "reviewed_document_unchanged"
+        }
+      ],
+      "documents": [
+        {
+          "url": "https://code.claude.com/docs/en/skills.md",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:11:38+00:00",
+          "last_success": "2026-10-26T16:11:38+00:00",
+          "snapshot_id": 2,
+          "sha256": "acb1f1388ee96a516f707c42bac1e834b22df90081e5c2eccb90a2f76a5430f6",
+          "final_url": "https://code.claude.com/docs/en/skills.md",
+          "fingerprint_scope": "response_bytes",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "runtime_tested": false,
+      "coverage": "Only listed reviewed requirements; unknown values are not unlimited or allowed",
+      "authority": "vendor_documentation_evidence_not_active_scanner_rules"
+    },
+    {
+      "status": "current_documented_requirements",
+      "verification": "reviewed_documents_unchanged",
+      "runtime": "claude-upload",
+      "product": "Claude custom skill uploads",
+      "vendor": "Anthropic",
+      "checked_at": "2026-10-26T16:11:42+00:00",
+      "max_age_seconds": 3600,
+      "live_check": true,
+      "refresh_state": "completed",
+      "requirements": [
+        {
+          "field": "package_max_bytes",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "name_max_characters",
+          "value": 64,
+          "status": "vendor_documented",
+          "note": "Maximum in Claude custom skill upload guide; not a Claude Code or API limit.",
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "description_max_characters",
+          "value": 200,
+          "status": "vendor_documented",
+          "note": "Maximum in Claude custom skill upload guide; not a Claude Code or API limit.",
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "allowed_asset_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_artifact_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        }
+      ],
+      "documents": [
+        {
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:11:40+00:00",
+          "last_success": "2026-10-26T16:11:40+00:00",
+          "snapshot_id": 6,
+          "sha256": "b8d254b113f119961992d8996a6d5a73921a191c10dfbabda4bfd8d18519340b",
+          "final_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "fingerprint_scope": "projected_text",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "runtime_tested": false,
+      "coverage": "Only listed reviewed requirements; unknown values are not unlimited or allowed",
+      "authority": "vendor_documentation_evidence_not_active_scanner_rules"
+    },
+    {
+      "status": "current_documented_requirements",
+      "verification": "reviewed_documents_unchanged",
+      "runtime": "gemini",
+      "product": "Gemini CLI skills",
+      "vendor": "Google",
+      "checked_at": "2026-10-26T16:11:45+00:00",
+      "max_age_seconds": 3600,
+      "live_check": true,
+      "refresh_state": "completed",
+      "requirements": [
+        {
+          "field": "package_max_bytes",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "name_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "description_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_asset_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_artifact_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "resource_directories",
+          "value": [
+            "scripts/",
+            "references/",
+            "assets/"
+          ],
+          "status": "vendor_documented",
+          "note": "Documented resource layout; not an exhaustive file-type permission list.",
+          "source_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "verification": "reviewed_document_unchanged"
+        }
+      ],
+      "documents": [
+        {
+          "url": "https://geminicli.com/docs/cli/creating-skills/",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:11:44+00:00",
+          "last_success": "2026-10-26T16:11:44+00:00",
+          "snapshot_id": 4,
+          "sha256": "9b58e12a53852193813786559e9c1581aea5ae2dd16d5f7be0d6b7675daddea0",
+          "final_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "fingerprint_scope": "projected_text",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "runtime_tested": false,
+      "coverage": "Only listed reviewed requirements; unknown values are not unlimited or allowed",
+      "authority": "vendor_documentation_evidence_not_active_scanner_rules"
+    },
+    {
+      "status": "current_documented_requirements",
+      "verification": "reviewed_documents_unchanged",
+      "runtime": "copilot",
+      "product": "Copilot CLI plugins",
+      "vendor": "GitHub",
+      "checked_at": "2026-10-26T16:11:47+00:00",
+      "max_age_seconds": 3600,
+      "live_check": true,
+      "refresh_state": "completed",
+      "requirements": [
+        {
+          "field": "package_max_bytes",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "name_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "description_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_asset_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_artifact_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this product in the selected vendor documentation.",
+          "source_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        }
+      ],
+      "documents": [
+        {
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:11:47+00:00",
+          "last_success": "2026-10-26T16:11:47+00:00",
+          "snapshot_id": 5,
+          "sha256": "18672a73c97c03827d1ff0ced4ad3cedb0fb8f2bdccd723b364d00adde0dfb80",
+          "final_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "fingerprint_scope": "projected_text",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "runtime_tested": false,
+      "coverage": "Only listed reviewed requirements; unknown values are not unlimited or allowed",
+      "authority": "vendor_documentation_evidence_not_active_scanner_rules"
+    },
+    {
+      "status": "current_documented_requirements",
+      "verification": "reviewed_documents_unchanged",
+      "runtime": "openai-mcp-import",
+      "product": "OpenAI plugin submission: MCP skill import",
+      "vendor": "OpenAI",
+      "checked_at": "2026-10-26T16:11:48+00:00",
+      "max_age_seconds": 3600,
+      "live_check": true,
+      "refresh_state": "completed",
+      "requirements": [
+        {
+          "field": "package_max_bytes",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "name_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "description_max_characters",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_asset_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "allowed_artifact_types",
+          "value": null,
+          "status": "unknown",
+          "note": "No reviewed explicit constraint for this import surface in the selected vendor documentation.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "STATUS: UNKNOWN \u2014 UNVERIFIED"
+        },
+        {
+          "field": "skill_md_max_bytes",
+          "value": 262144,
+          "status": "vendor_documented",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "supporting_file_max_bytes",
+          "value": 1048576,
+          "status": "vendor_documented",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "skill_resources_max_bytes",
+          "value": 5242880,
+          "status": "vendor_documented",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "generated_archives_max_bytes",
+          "value": 8388608,
+          "status": "vendor_documented",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "skill_max_files",
+          "value": 100,
+          "status": "vendor_documented",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "import_max_skills",
+          "value": 5,
+          "status": "vendor_documented",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "catalog_max_pages",
+          "value": 10,
+          "status": "vendor_documented",
+          "note": "OpenAI submission-time MCP skill import only; not a general plugin upload or API limit.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "reviewed_document_unchanged"
+        },
+        {
+          "field": "resource_content_encodings",
+          "value": [
+            "UTF-8 text",
+            "base64-encoded blob"
+          ],
+          "status": "vendor_documented",
+          "note": "Resource transport encodings; does not establish allowed file extensions or generated artifact types.",
+          "source_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "verification": "reviewed_document_unchanged"
+        }
+      ],
+      "documents": [
+        {
+          "url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:11:48+00:00",
+          "last_success": "2026-10-26T16:11:48+00:00",
+          "snapshot_id": 7,
+          "sha256": "db5ccf6e3b692ff1ef5d5aa81792a8d0df2bb49379e60c14acd770a2b1e082c3",
+          "final_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "fingerprint_scope": "response_bytes",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "runtime_tested": false,
+      "coverage": "Only listed reviewed requirements; unknown values are not unlimited or allowed",
+      "authority": "vendor_documentation_evidence_not_active_scanner_rules"
+    }
+  ],
+  "repeat_end_to_end_probe": [
+    {
+      "runtime": "openai",
+      "status": "current_documented_requirements",
+      "live_check": true,
+      "compatibility": "unknown",
+      "documents": [
+        {
+          "url": "https://developers.openai.com/plugins/build/skills.md",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:23:33+00:00",
+          "last_success": "2026-10-26T16:23:33+00:00",
+          "snapshot_id": 1,
+          "sha256": "e4f96c0d297f17fc1ce55472fce42de1c13c98d8e710ce8062d0656bcf5b1fa5",
+          "final_url": "https://developers.openai.com/plugins/build/skills.md",
+          "fingerprint_scope": "response_bytes",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "checks": []
+    },
+    {
+      "runtime": "claude-code",
+      "status": "current_documented_requirements",
+      "live_check": true,
+      "compatibility": "unknown",
+      "documents": [
+        {
+          "url": "https://code.claude.com/docs/en/skills.md",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:23:36+00:00",
+          "last_success": "2026-10-26T16:23:36+00:00",
+          "snapshot_id": 2,
+          "sha256": "acb1f1388ee96a516f707c42bac1e834b22df90081e5c2eccb90a2f76a5430f6",
+          "final_url": "https://code.claude.com/docs/en/skills.md",
+          "fingerprint_scope": "response_bytes",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "checks": [
+        {
+          "field": "compatibility_max_characters",
+          "path": "demo/SKILL.md",
+          "maximum": 500,
+          "observed": null,
+          "status": "unknown",
+          "source_url": "https://code.claude.com/docs/en/skills.md"
+        }
+      ]
+    },
+    {
+      "runtime": "claude-upload",
+      "status": "current_documented_requirements",
+      "live_check": true,
+      "compatibility": "fails_documented_requirement",
+      "documents": [
+        {
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:23:38+00:00",
+          "last_success": "2026-10-26T16:23:38+00:00",
+          "snapshot_id": 7,
+          "sha256": "7896b012cf0b0e84b60185419f2ce57dc367540868da928bcb688118603cd5d9",
+          "final_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "fingerprint_scope": "projected_text",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "checks": [
+        {
+          "field": "name_max_characters",
+          "path": "demo/SKILL.md",
+          "maximum": 64,
+          "observed": 4,
+          "status": "pass",
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+        },
+        {
+          "field": "description_max_characters",
+          "path": "demo/SKILL.md",
+          "maximum": 200,
+          "observed": 201,
+          "status": "fail",
+          "source_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+        }
+      ]
+    },
+    {
+      "runtime": "gemini",
+      "status": "current_documented_requirements",
+      "live_check": true,
+      "compatibility": "unknown",
+      "documents": [
+        {
+          "url": "https://geminicli.com/docs/cli/creating-skills/",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:23:40+00:00",
+          "last_success": "2026-10-26T16:23:40+00:00",
+          "snapshot_id": 4,
+          "sha256": "9b58e12a53852193813786559e9c1581aea5ae2dd16d5f7be0d6b7675daddea0",
+          "final_url": "https://geminicli.com/docs/cli/creating-skills/",
+          "fingerprint_scope": "projected_text",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "checks": []
+    },
+    {
+      "runtime": "copilot",
+      "status": "unknown",
+      "live_check": false,
+      "compatibility": "unknown",
+      "documents": [],
+      "checks": []
+    },
+    {
+      "runtime": "openai-mcp-import",
+      "status": "unknown",
+      "live_check": false,
+      "compatibility": "unknown",
+      "documents": [
+        {
+          "url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "state": "unchanged",
+          "checked_at": "2026-10-26T16:22:00+00:00",
+          "last_success": "2026-10-26T16:22:00+00:00",
+          "snapshot_id": 6,
+          "sha256": "db5ccf6e3b692ff1ef5d5aa81792a8d0df2bb49379e60c14acd770a2b1e082c3",
+          "final_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "fingerprint_scope": "response_bytes",
+          "reviewed_on": "2026-10-26"
+        }
+      ],
+      "checks": []
+    }
+  ]
+}
