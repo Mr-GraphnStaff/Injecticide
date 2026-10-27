@@ -44,6 +44,14 @@ public exposure requires a separate identity/TLS design and review.
 
 ## Collection and discovery
 
+The October 27 source expansion adds official validator source monitoring,
+MITRE ATLAS and CoSAI, plus explicit NIST GenAI, OWASP Agentic Applications and
+MCP security pages. See [source authority and coverage](../docs/research/2026-10-27-source-authority.md)
+for applicability, validator limitations, source conflicts and remaining work.
+The registry now has 42 sources and 61 seeds; the 40-attempt rotating cycle does
+not guarantee an hourly refresh of every URL. Collection does not execute vendor
+scripts or automatically promote retrieved text into scanner rejection rules.
+
 `sources.json` is an administrator-controlled source registry mounted read-only.
 It includes OWASP, NIST, portable specifications and vendor-specific sources for
 OpenAI, Claude, Gemini, Copilot, Cursor, Kiro, Amazon Q, Devin and OpenClaw.
@@ -57,7 +65,7 @@ representation to stay within the response budget.
 References were seeded from the repository's October 19 source register and
 current primary documentation; seed inclusion is not a successful-fetch claim.
 
-The API-first increment configures 29 sources: the original 24 plus three
+The earlier API-first increment configured 29 sources: the original 24 plus three
 package-filtered GitHub Advisory sources, MCP Registry metadata and Crossref
 prompt-injection paper metadata. All shipped web/feed sources now declare
 `discovery: false`: only their explicit official seed URLs are scheduled.
