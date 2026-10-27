@@ -10,6 +10,9 @@ try:
     from .governance import build_governance_profile
     from .behavior_analysis import analyze_behavior
     from .package_checks import check_results
+    from .official_validators import attach_official_validator_results
+    from .inspection_evidence import initial_coverage, creator_mitigation
+    from .evidence_redaction import redact_result
 except ImportError:
     from package_formats import inspect_formats, RUNTIMES
     from package_threats import inspect_threats, embedded_blocks
@@ -17,6 +20,9 @@ except ImportError:
     from governance import build_governance_profile
     from behavior_analysis import analyze_behavior
     from package_checks import check_results
+    from official_validators import attach_official_validator_results
+    from inspection_evidence import initial_coverage, creator_mitigation
+    from evidence_redaction import redact_result
 
 
 def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", supplied_evidence=None,
@@ -24,6 +30,11 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
     entries = result["files"]
     texts = {source["path"]: source["text"] for source in text_sources}
     records = list(entries) + list(excluded)
+    for record in records:
+        record.setdefault("analysis_coverage", initial_coverage())
+        record.setdefault("creator_mitigation", creator_mitigation(record["path"], None))
+        if record.get("skipped"):
+            record["analysis_coverage"]["extraction"]["reason"] = record.get("reason", "Not extracted")
     analysis = inspect_formats(entries, texts, target_runtime)
     threats = inspect_threats(entries, texts, analysis)
     for entry in entries:
@@ -33,7 +44,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
             entry["effective_artifact_role"] = "execution_component"
             entry["required_component"] = True
             if rescan and path in texts:
-                supplemental = [f for f in entry["findings"] if f.get("subject") == "package_component"]
+                supplemental = [f for f in entry["findings"] if f.get("subject") in {"package_component", "creator_reading_convention"}]
                 entry["findings"] = rescan(path, texts[path], "active") + supplemental
                 for block in embedded_blocks(texts[path]):
                     extension = {"python": ".py", "javascript": ".js", "typescript": ".ts", "powershell": ".ps1",
@@ -49,8 +60,15 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                 if source["path"] == path:
                     source["artifact_role"] = "active"
         if len(entry["findings"]) > 80:
+            entry.setdefault("analysis_coverage", {})["result_display"] = {
+                "status": "partial", "findings_before_limit": len(entry["findings"]),
+                "findings_displayed": 80, "reason": "Finding display budget reached; analysis and display coverage are separate."}
             entry.update(assessment_state="limited_or_truncated", reason="Finding display budget reached; remaining findings omitted.")
             entry["findings"] = entry["findings"][:80]
+        else:
+            entry.setdefault("analysis_coverage", {})["result_display"] = {
+                "status": "complete", "findings_before_limit": len(entry["findings"]),
+                "findings_displayed": len(entry["findings"]), "reason": "No per-file finding display limit reached."}
     coverage = coverage_report(records)
     if threats["inventory_limited"]:
         coverage.update(status="partial", component_inventory_limited=True)
@@ -65,7 +83,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                                   "dependencies": threats["dependencies"], "execution_references": threats["execution_references"],
                                   "permissions": threats["permissions"], "composition_analysis": threats["composition_analysis"]}
     result.update(coverage=coverage, governance_evidence=evidence, scanner_metadata=scanner_metadata(),
-                  inventory=[{key: e.get(key) for key in ("path", "size", "sha256", "assessment_state", "reason", "required_component")} for e in records])
+                  inventory=[{key: e.get(key) for key in ("path", "size", "sha256", "assessment_state", "reason", "required_component", "analysis_coverage", "creator_mitigation", "large_file_tagged_chunked_reference")} for e in records])
     findings = [f for entry in entries for f in entry["findings"]]
     result["summary"].update(flagged_files=sum(any(f.get("severity") != "info" for f in e["findings"]) for e in entries),
                              total_findings=sum(f.get("severity") != "info" for f in findings),
@@ -100,4 +118,6 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
         "reason": "Static sandbox scan; live vendor requirements are checked by the web service through Research MCP.",
         "live_check": False, "runtime_tested": False, "requirements": [], "documents": []}
     result["readiness"]["vendor_compatibility"] = "unknown"
-    return result
+    result["readiness"]["format_compatibility"] = "explicit_portable_profile_checked" if target_runtime == "generic" else "unverified"
+    attach_official_validator_results(result, texts)
+    return redact_result(result, texts)

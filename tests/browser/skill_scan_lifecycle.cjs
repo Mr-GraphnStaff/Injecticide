@@ -130,7 +130,7 @@ const server = http.createServer((req, res) => {
 
         await select('first.skill');
         await scan.click();
-        assert.equal(await input.evaluate(el => el.files.length), 0, 'upload must release file picker reference');
+        assert.equal(await input.evaluate(el => el.files.length), 1, 'in-flight upload stays selected for manual retry; success releases it');
         await respond('first.skill', true);
         await waitReport('first.skill');
         assert.equal(await page.locator('[data-skill-file]').count(), 10);
@@ -182,7 +182,8 @@ const server = http.createServer((req, res) => {
 
         await select('timeout.skill');
         await scan.click();
-        await page.getByText('Scan timed out. Select the file again to retry.', {exact:true}).waitFor();
+        await page.getByRole('alert').filter({hasText:'Scan timed out.'}).waitFor();
+        assert.equal(await input.evaluate(el => el.files.length), 1, 'timeout preserves selection without auto retry');
         assert.equal(await page.evaluate(() => window.pendingScans[0].signal.aborted), true);
         await respond('timeout.skill');
         assert.equal(await page.getByText('timeout.skill', {exact:true}).count(), 0);

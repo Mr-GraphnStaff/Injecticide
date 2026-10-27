@@ -190,6 +190,16 @@ def inspect_threats(records, texts, analysis):
         entry = entries[path]
         evidence = code_evidence(path, text)
         entry["content_analysis"] = evidence
+        blocks = embedded_blocks(text)
+        entry.setdefault("analysis_coverage", {})["embedded_code"] = {
+            "status": "partial" if evidence["embedded_analysis_limited"] else "complete_input",
+            "total_characters": len(text), "inspected_characters": None,
+            "embedded_characters_supplied": sum(len(block["text"]) for block in blocks),
+            "embedded_blocks_supplied": len(blocks), "maximum_embedded_blocks": 8,
+            "maximum_embedded_characters": 131072,
+            "supplied_block_ranges": [{"start_line": b["line"], "end_line": b["line"] + len(b["text"].splitlines()) - 1} for b in blocks],
+            "reason": "Embedded/whole-source analysis hit its character or block budget; supplied ranges do not imply omitted content is safe." if evidence["embedded_analysis_limited"]
+                      else "Supported source structures and bounded recognized code blocks inspected; exact character traversal is not measured."}
         if evidence["embedded_analysis_limited"]:
             inventory_limited[0] = True
         if evidence["code_like"]:

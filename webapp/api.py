@@ -111,6 +111,22 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def scan_request_diagnostics(request: Request, call_next):
+    if request.url.path != "/api/skills/scan" or request.method != "POST":
+        return await call_next(request)
+    request.state.scan_request_id = uuid.uuid4().hex
+    response = await call_next(request)
+    if response.status_code == 422 and "X-Scan-Request-ID" not in response.headers:
+        # Framework validation happens before the handler. Preserve correlation
+        # without echoing validation inputs or missing-field structures.
+        response = JSONResponse(status_code=422, content={"detail": {
+            "message": "Invalid scan request. Supply one file and valid scan options.",
+            "stage": "validation", "request_id": request.state.scan_request_id}})
+    response.headers["X-Scan-Request-ID"] = request.state.scan_request_id
+    return response
+
+
 @lru_cache(maxsize=1)
 def get_build_info() -> Dict[str, str]:
     package_version = "unknown"
@@ -547,30 +563,56 @@ async def root():
     return {"message": "Injecticide API"}
 
 @app.post("/api/skills/scan")
-async def scan_skill_file(file: UploadFile = File(...), target_runtime: str = Form("auto"),
+async def scan_skill_file(request: Request, file: UploadFile = File(...), target_runtime: str = Form("auto"),
                           governance_evidence: str = Form("{}")):
+    request_id = request.state.scan_request_id
+    started = time.monotonic()
+    stage = "validation"
+
+    def failure(status, message, failed_stage=None):
+        return JSONResponse(status_code=status, headers={"X-Scan-Request-ID": request_id},
+            content={"detail": {"message": message, "stage": failed_stage or stage,
+                                "request_id": request_id}})
+
     if not file.filename:
         await file.close()
-        raise HTTPException(status_code=400, detail="Missing filename")
+        return failure(400, "Missing filename")
     if not SKILL_SCAN_SLOT.acquire(blocking=False):
         await file.close()
-        raise HTTPException(status_code=429, detail="Another package scan is running. Retry after it finishes.")
+        return failure(429, "Another package scan is running. Retry after it finishes.", "admission")
     try:
         if target_runtime not in RUNTIMES:
             raise ValueError("Unsupported target runtime")
         if not isinstance(bounded_data(governance_evidence), dict):
             raise ValueError("Governance evidence must be a JSON object")
+        stage = "upload"
         data = await file.read(MAX_UPLOAD_BYTES + 1)
         if len(data) > MAX_UPLOAD_BYTES:
             raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit")
-        return await run_in_threadpool(_scan_skill_data, data, file.filename, file.content_type,
-                                      target_runtime, governance_evidence, os.getenv("SKILL_SANDBOX_URL"))
+        stage = "analysis"
+        result = await run_in_threadpool(_scan_skill_data, data, file.filename, file.content_type,
+                                        target_runtime, governance_evidence, os.getenv("SKILL_SANDBOX_URL"))
+        result["scan_request_id"] = request_id
+        result["scan_diagnostics"] = {"stage": "completed", "elapsed_ms": round((time.monotonic() - started) * 1000),
+                                     "payload_logged": False}
+        return JSONResponse(content=jsonable_encoder(result), headers={"X-Scan-Request-ID": request_id})
     except requests.RequestException:
-        raise HTTPException(status_code=502, detail="Skill sandbox unavailable")
+        return failure(502, "Skill sandbox unavailable or timed out. The file can be selected again to retry.", "sandbox")
+    except HTTPException as exc:
+        # Do not reflect an arbitrary upstream exception object or uploaded text.
+        return failure(exc.status_code, "The analysis service could not accept this scan.", "sandbox")
     except zipfile.BadZipFile:
-        raise HTTPException(status_code=400, detail="Invalid zip archive")
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        return failure(400, "Invalid zip archive")
+    except ValueError:
+        message = {
+            "validation": "Invalid scan options or governance evidence; use a supported target and bounded JSON object with unique keys.",
+            "upload": f"Upload could not be read within the {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit.",
+            "analysis": "Package could not be analyzed within the supported format and resource limits.",
+        }.get(stage, "Scan input could not be processed.")
+        return failure(400, message)
+    except Exception as exc:
+        logging.getLogger(__name__).error("Scan request %s failed at %s (%s)", request_id, stage, type(exc).__name__)
+        return failure(500, "Scan failed unexpectedly. Use the request ID when reporting the problem.")
     finally:
         SKILL_SCAN_SLOT.release()
         await file.close()

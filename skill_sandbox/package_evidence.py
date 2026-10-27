@@ -93,19 +93,34 @@ def coverage_report(records):
         counts[state] = counts.get(state, 0) + 1
     covered = {"text_analyzed", "structured_content_analyzed"}
     analyzed = [e for e in records if e.get("assessment_state") in covered]
-    partial = len(analyzed) != len(records) or not records or any(e.get("assessment_state") == "structured_content_analyzed" for e in records)
+    partial = (len(analyzed) != len(records) or not records
+               or any(e.get("assessment_state") == "structured_content_analyzed" for e in records)
+               or any(stage.get("status") == "partial" for e in records
+                      for name, stage in e.get("analysis_coverage", {}).items()
+                      if name != "creator_markers"))
     total_bytes = sum(e.get("size", 0) for e in records)
     return {"status": "partial" if partial else "complete_supported_content",
             "total_files": len(records), "analyzed_files": len(analyzed), "unassessed_files": len(records) - len(analyzed),
             "total_bytes": total_bytes, "analyzed_file_bytes": sum(e.get("size", 0) for e in analyzed),
             "byte_metric_scope": "Original file sizes represented by analysis; not bytes exhaustively inspected",
             "states": counts, "binary_security_analysis": "not_performed",
+            "detector_coverage": [{"path": e["path"], "detectors": e.get("analysis_coverage", {})} for e in records],
+            "creator_mitigation_scope": "Creator reading-convention verification is separate from scanner detector completeness and target runtime acceptance.",
             "statement": "No findings applies only to analyzed content. Binary assets and excluded content are not certified safe.",
             "mandatory_components_complete": not any(e.get("required_component") and e.get("assessment_state") not in covered for e in records)}
 
 
 def scanner_metadata():
     base = Path(__file__).resolve().parent
+    engine_digest = hashlib.sha256()
+    for source in sorted(base.glob("*.py"), key=lambda item: item.name):
+        raw = source.read_bytes()
+        engine_digest.update(source.name.encode("utf-8") + b"\0")
+        engine_digest.update(len(raw).to_bytes(8, "big"))
+        engine_digest.update(raw)
+    manifest = base / "vendor_validators" / "manifest.json"
+    if manifest.is_file():
+        engine_digest.update(b"vendor_validators/manifest.json\0" + manifest.read_bytes())
     catalogs = []
     for name in ("violations", "dispositions", "package_sources"):
         path = base / "rules" / (name + ".json")
@@ -116,7 +131,9 @@ def scanner_metadata():
                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                          "freshness": "unknown" if age is None or age < 0 else "stale" if age > 90 else "current",
                          "age_days": age})
-    return {"scanner_version": "0.2.1", "adapter_version": "2026-10-19", "catalogs": catalogs,
+    return {"scanner_version": "0.3.0", "adapter_version": "2026-10-27", "catalogs": catalogs,
+            "engine_source_sha256": engine_digest.hexdigest(),
+            "engine_fingerprint_scope": "Sorted local scanner Python modules and shipped validator manifest; excludes uploaded content.",
             "update_policy": "reviewed_application_release", "automatic_research_activation": False,
             "network_access_during_static_analysis": False,
             "network_scope": "Built-in static analyzers never connect; optional administrator verifier isolation is operator-managed",

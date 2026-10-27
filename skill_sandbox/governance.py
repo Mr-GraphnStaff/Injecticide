@@ -51,13 +51,12 @@ SENSITIVE_HANDLING_RULES = {
 }
 
 REGULATED_DATA_RULES = {
-    "pii_email_address",
-    "pii_phone_number",
     "pii_ssn",
     "pii_date_of_birth",
     "phi_medical_record_number",
     "phi_patient_record",
 }
+CONTACT_PRESENCE_RULES = {"pii_email_address", "pii_phone_number"}
 
 
 def build_governance_profile(
@@ -104,6 +103,10 @@ def build_governance_profile(
     )
 
     return {
+        "data_observations": {"contact_data_present": bool(finding_ids.intersection(CONTACT_PRESENCE_RULES)),
+                              "sensitive_identifier_or_clinical_signal": bool(finding_ids.intersection(REGULATED_DATA_RULES)),
+                              "disclosure_attempt_detected": "secret_exfiltration" in finding_ids,
+                              "classification_scope": "Pattern observations, not a legal classification, ownership attestation or proof of a data transfer."},
         "policy_capabilities": sorted(policy_capabilities),
         "execution_tier": execution_tier,
         "sandbox_required": sandbox_required,

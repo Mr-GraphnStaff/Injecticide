@@ -177,3 +177,24 @@
 .map-examples { margin-top:1rem; }
 @media(max-width:1100px) { .map-layout { grid-template-columns:165px minmax(0,1fr); } .map-inspector { grid-column:1/-1; } }
 @media(max-width:650px) { .map-layout { grid-template-columns:minmax(0,1fr); } .map-palette { grid-template-columns:repeat(2,minmax(0,1fr)); } .map-palette h2,.map-palette p { grid-column:1/-1; } .map-scroll { height:440px; } .map-test-list { grid-template-columns:minmax(0,1fr); } }
+
+/* Scan evidence remains readable independently of its raw audit export. */
+.scan-evidence-summary, .scan-evidence-panel { border:1px solid var(--home-border, #496e65); border-radius:.75rem; padding:1rem; min-width:0; overflow-wrap:anywhere; }
+.scan-evidence-summary h3, .scan-evidence-panel h3 { font-size:1.1rem; font-weight:700; margin-bottom:.5rem; }
+.scan-evidence-summary > p, .scan-evidence-panel p { line-height:1.6; }
+.scan-evidence-summary dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.85rem; margin-top:1rem; }
+.scan-evidence-summary dl > div { background:#09251e; border:1px solid #3e685c; border-radius:.5rem; padding:.8rem; min-width:0; }
+.scan-evidence-summary dt { color:#a8e5d8; font-weight:700; margin-bottom:.35rem; }
+.scan-evidence-summary dd { margin:0; }
+.scan-evidence-summary dd strong { font-weight:600; }
+.scan-evidence-summary dd p { color:#bad0c9; margin-top:.4rem; line-height:1.6; }
+.scan-evidence-panel > ul { padding-inline-start:1.2rem; }
+.scan-evidence-panel li { margin-block:.65rem; }
+.scan-evidence-panel a { color:#a8e5d8; text-decoration:underline; text-underline-offset:.2em; }
+.scan-file-evidence { padding:.7rem; margin-block:.5rem; border:1px solid #476b5f; border-radius:.4rem; line-height:1.6; overflow-wrap:anywhere; }
+.scan-file-evidence summary { cursor:pointer; padding-block:.5rem; }
+.scan-file-evidence ul { padding-inline-start:1.2rem; }
+.scan-file-evidence li { margin-block:.4rem; }
+.scan-request-id, .scan-revision { font-family:monospace; overflow-wrap:anywhere; }
+.scan-evidence-summary + .scan-evidence-panel { margin-top:1rem; }
+@media(max-width:640px) { .scan-evidence-summary dl { grid-template-columns:minmax(0,1fr); } }

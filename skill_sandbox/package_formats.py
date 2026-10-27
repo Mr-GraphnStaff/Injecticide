@@ -44,6 +44,8 @@ def bounded_data(text: str, kind: str = "json"):
         raise ValueError("Configuration exceeds 128 KiB parser budget")
     try:
         if kind == "json":
+            def reject_constant(value):
+                raise ValueError("Nonstandard JSON numeric constant")
             def unique(pairs):
                 result = {}
                 for key, value in pairs:
@@ -51,7 +53,7 @@ def bounded_data(text: str, kind: str = "json"):
                         raise ValueError(f"Duplicate key: {key}")
                     result[key] = value
                 return result
-            result = json.loads(text, object_pairs_hook=unique)
+            result = json.loads(text, object_pairs_hook=unique, parse_constant=reject_constant)
         else:
             tokens = list(yaml.scan(text))
             if any(isinstance(token, (yaml.tokens.AliasToken, yaml.tokens.AnchorToken)) for token in tokens):
@@ -183,7 +185,18 @@ def inspect_formats(records, texts, target_runtime="auto"):
             if name == "mcp.json" and data.get("$schema") == MCP_SCHEMA:
                 issues.extend(_schema_findings(data, "mcp", path))
         if name == "SKILL.md":
-            skill = {"path": path, "root": str(PurePosixPath(path).parent), "metadata": {}, "validation": "valid"}
+            format_coverage = {"status": "complete_input", "supplied_characters": len(text),
+                               "inspected_characters": None, "parser_max_characters": MAX_CONFIG_CHARS,
+                               "reason": "Bounded frontmatter parser; body text is outside format validation."}
+            entry.setdefault("analysis_coverage", {})["format_validation"] = format_coverage
+            portable_selected = target_runtime == "generic"
+            authority = {"kind": "portable_specification", "source_url": "https://agentskills.io/specification",
+                         "applicability": "explicit_portable_profile" if portable_selected else "unverified_for_selected_runtime",
+                         "enforcement": "selected_local_format_contract" if portable_selected else "advisory_only",
+                         "vendor_compatibility_verified": False}
+            skill = {"path": path, "root": str(PurePosixPath(path).parent), "metadata": {},
+                     "validation": "valid_portable_profile" if portable_selected else "parsed_vendor_compatibility_unverified",
+                     "validation_authority": authority}
             try:
                 data = frontmatter(text)
                 skill["field_lengths"] = {key: len(data[key]) for key in ("name", "description", "compatibility")
@@ -193,7 +206,7 @@ def inspect_formats(records, texts, target_runtime="auto"):
                 skill["metadata"] = {str(k): str(v)[:300] for k, v in metadata.items()} if isinstance(metadata, dict) else {}
                 problems = []
                 n, d = data.get("name"), data.get("description")
-                if not isinstance(n, str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", n) or len(n) > 64:
+                if not isinstance(n, str) or not n or n != n.lower() or not all(c.isalnum() or c == "-" for c in n) or n.startswith("-") or n.endswith("-") or "--" in n or len(n) > 64:
                     problems.append("Invalid or missing skill name")
                 parent = PurePosixPath(path).parent.name
                 if parent and isinstance(n, str) and parent != n:
@@ -209,14 +222,19 @@ def inspect_formats(records, texts, target_runtime="auto"):
                 elif set(data) & CODE_FIELDS:
                     indicators.add("claude-code")
                 for problem in problems:
-                    issues.append({"id": "skill_frontmatter", "path": path, "detail": problem, "severity": "error"})
-                if problems:
+                    issues.append({"id": "skill_frontmatter", "path": path, "detail": problem,
+                                   "severity": "error" if portable_selected else "warning", "authority": authority})
+                if problems and portable_selected:
                     skill["validation"] = "invalid"
                 if target_runtime in {"generic", "claude-upload"} and "allowed-tools" in data and not isinstance(data["allowed-tools"], str):
-                    issues.append({"id": "allowed_tools_type", "path": path, "detail": "Selected profile requires a string", "severity": "error"})
+                    issues.append({"id": "allowed_tools_type", "path": path, "detail": "Portable profile requires a string; selected vendor acceptance must be verified independently.",
+                                   "severity": "error" if portable_selected else "warning", "authority": authority})
             except ValueError as exc:
                 skill["validation"] = "invalid"
-                issues.append({"id": "skill_frontmatter", "path": path, "detail": str(exc), "severity": "error"})
+                format_coverage.update(status="partial", reason=str(exc))
+                issues.append({"id": "skill_frontmatter", "path": path, "detail": str(exc), "severity": "error",
+                               "authority": {"kind": "local_parser_safety", "applicability": "configuration_cannot_be_safely_parsed",
+                                             "vendor_compatibility_verified": False}})
             skills.append(skill)
             components.append({"kind": "skill", "path": path})
             profiles.append({"format": "agent-skills", "version": "unversioned-spec", "path": path})
@@ -234,7 +252,8 @@ def inspect_formats(records, texts, target_runtime="auto"):
         if package["profile"] not in {"agent-plugins", "marketplace", "legacy-or-unknown-plugin"}:
             identity = data.get("id") if package["profile"] == "openclaw-plugin" else data.get("name")
             if not isinstance(identity, str) or not identity.strip():
-                issues.append({"id": "native_manifest_name", "path": package["manifest"], "detail": "Native manifest requires a nonempty name", "severity": "error"})
+                issues.append({"id": "native_manifest_name", "path": package["manifest"], "detail": "Native manifest identity is missing; current product requirement has not been verified.", "severity": "warning",
+                               "authority": {"kind": "vendor_compatibility", "applicability": "unverified_for_selected_runtime", "enforcement": "advisory_only"}})
         if package["profile"] == "agent-plugins":
             mcp = (package["root"] + "/mcp.json").lstrip("/")
             if mcp in config_data and config_data[mcp].get("$schema") != MCP_SCHEMA:
@@ -247,5 +266,5 @@ def inspect_formats(records, texts, target_runtime="auto"):
     return {"artifact_kind": kind, "packages": packages, "format_profiles": profiles,
             "runtime_targets": [{"runtime": r, "evidence": "structural_indicator_not_publisher_identity"} for r in sorted(indicators)],
             "target_runtime": target_runtime, "publisher_provenance": "unverified", "format_findings": issues[:100],
-            "validation_scope": "pinned_portable_schemas_and_documented_runtime_security_fields", "skills": skills,
+            "validation_scope": "explicit_portable_contracts_and_local_parse_safety; vendor_acceptance_checked_separately", "skills": skills,
             "components": components[:500], "configurations": config_data}
