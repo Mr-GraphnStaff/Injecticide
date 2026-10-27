@@ -11,13 +11,15 @@
       ],
       "seeds": [
         "https://genai.owasp.org/resources/",
-        "https://genai.owasp.org/llm-top-10/"
+        "https://genai.owasp.org/llm-top-10/",
+        "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/"
       ],
       "scopes": [
         "https://genai.owasp.org/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "owasp-skills",
@@ -32,7 +34,8 @@
         "https://owasp.github.io/www-project-agentic-skills-top-10/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "nist-ai",
@@ -44,7 +47,8 @@
       ],
       "seeds": [
         "https://www.nist.gov/itl/ai-risk-management-framework",
-        "https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative"
+        "https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative",
+        "https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence"
       ],
       "scopes": [
         "https://www.nist.gov/itl/ai-risk-management-framework",
@@ -53,7 +57,8 @@
         "https://www.nist.gov/news-events/news/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "agent-skills",
@@ -70,7 +75,8 @@
         "https://agentskills.io/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "agent-plugins",
@@ -86,7 +92,8 @@
         "https://agent-plugins.org/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "openai-plugins",
@@ -105,7 +112,8 @@
         "https://developers.openai.com/plugins/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "openai-codex",
@@ -125,7 +133,8 @@
         "https://learn.chatgpt.com/docs/build-skills"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "openai-work",
@@ -143,7 +152,8 @@
         "https://learn.chatgpt.com/docs/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "claude-code",
@@ -164,7 +174,8 @@
       ],
       "discovery": false,
       "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
-      "max_response_bytes": 4194304
+      "max_response_bytes": 4194304,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "claude-platform",
@@ -180,7 +191,8 @@
         "https://platform.claude.com/docs/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "gemini-cli",
@@ -200,7 +212,8 @@
         "https://geminicli.com/docs/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "copilot",
@@ -217,7 +230,8 @@
         "https://docs.github.com/en/copilot/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "cursor",
@@ -236,7 +250,8 @@
         "https://prod.cursor.com/docs/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "kiro",
@@ -254,7 +269,8 @@
         "https://kiro.dev/docs/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "amazon-q",
@@ -270,7 +286,8 @@
         "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "devin",
@@ -287,7 +304,8 @@
         "https://docs.devin.ai/desktop/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "openclaw",
@@ -305,7 +323,8 @@
         "https://docs.openclaw.ai/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "mcp",
@@ -316,13 +335,15 @@
         "security"
       ],
       "seeds": [
-        "https://modelcontextprotocol.io/llms.txt"
+        "https://modelcontextprotocol.io/llms.txt",
+        "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices"
       ],
       "scopes": [
         "https://modelcontextprotocol.io/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "skillspector-releases",
@@ -338,7 +359,8 @@
       ],
       "scopes": [
         "https://api.github.com/repos/NVIDIA/SkillSpector/releases?per_page=5"
-      ]
+      ],
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "agent-scan-releases",
@@ -355,7 +377,8 @@
       ],
       "scopes": [
         "https://api.github.com/repos/snyk/agent-scan/releases?per_page=5"
-      ]
+      ],
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "codex-releases",
@@ -372,7 +395,8 @@
       ],
       "scopes": [
         "https://api.github.com/repos/openai/codex/releases?per_page=1"
-      ]
+      ],
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "claude-code-releases",
@@ -389,7 +413,8 @@
       ],
       "scopes": [
         "https://api.github.com/repos/anthropics/claude-code/releases?per_page=5"
-      ]
+      ],
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "gemini-cli-releases",
@@ -406,7 +431,8 @@
       ],
       "scopes": [
         "https://api.github.com/repos/google-gemini/gemini-cli/releases?per_page=5"
-      ]
+      ],
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "arxiv-security-ai",
@@ -425,7 +451,8 @@
         "https://arxiv.org/abs/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved"
+      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "mcp-advisories",
@@ -442,7 +469,8 @@
         "https://api.github.com/advisories?ecosystem=pip&affects=mcp&per_page=10"
       ],
       "discovery": false,
-      "coverage_note": "Bounded first page only; not complete synchronization"
+      "coverage_note": "Bounded first page only; not complete synchronization",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "mcp-js-advisories",
@@ -459,7 +487,8 @@
         "https://api.github.com/advisories?ecosystem=npm&affects=%40modelcontextprotocol%2Fsdk&per_page=10"
       ],
       "discovery": false,
-      "coverage_note": "Bounded first page only; not complete synchronization"
+      "coverage_note": "Bounded first page only; not complete synchronization",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "langchain-advisories",
@@ -476,7 +505,8 @@
         "https://api.github.com/advisories?ecosystem=pip&affects=langchain-core&per_page=10"
       ],
       "discovery": false,
-      "coverage_note": "Bounded first page only; not complete synchronization"
+      "coverage_note": "Bounded first page only; not complete synchronization",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "mcp-registry",
@@ -493,7 +523,8 @@
         "https://registry.modelcontextprotocol.io/v0.1/servers?limit=10"
       ],
       "discovery": false,
-      "coverage_note": "Bounded first page only; not complete synchronization"
+      "coverage_note": "Bounded first page only; not complete synchronization",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "crossref-prompt-injection",
@@ -510,7 +541,8 @@
         "https://api.crossref.org/works?query=prompt%20injection&rows=5"
       ],
       "discovery": false,
-      "coverage_note": "Bounded first page only; not complete synchronization"
+      "coverage_note": "Bounded first page only; not complete synchronization",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "requirements-openai",
@@ -528,7 +560,8 @@
       ],
       "discovery": false,
       "max_response_bytes": 4194304,
-      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported.",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "requirements-claude-code",
@@ -546,7 +579,8 @@
       ],
       "discovery": false,
       "max_response_bytes": 4194304,
-      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported.",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "requirements-claude-upload",
@@ -564,7 +598,8 @@
       ],
       "discovery": false,
       "max_response_bytes": 4194304,
-      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported.",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "requirements-gemini",
@@ -582,7 +617,8 @@
       ],
       "discovery": false,
       "max_response_bytes": 4194304,
-      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported.",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "requirements-copilot",
@@ -600,7 +636,8 @@
       ],
       "discovery": false,
       "max_response_bytes": 4194304,
-      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported."
+      "coverage_note": "Explicit official product requirement document; changes require review before current requirements are reported.",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {
       "id": "requirements-openai-mcp-import",
@@ -618,7 +655,161 @@
       ],
       "discovery": false,
       "max_response_bytes": 4194304,
-      "coverage_note": "Submission-time MCP import requirements only; no live resources or uploads are executed."
+      "coverage_note": "Submission-time MCP import requirements only; no live resources or uploads are executed.",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "validator-openai",
+      "ecosystem": "OpenAI",
+      "topics": [
+        "skills",
+        "validation"
+      ],
+      "seeds": [
+        "https://raw.githubusercontent.com/openai/skills/main/skills/.system/skill-creator/scripts/quick_validate.py"
+      ],
+      "scopes": [
+        "https://raw.githubusercontent.com/openai/skills/main/skills/.system/skill-creator/scripts/quick_validate.py"
+      ],
+      "discovery": false,
+      "publisher": "OpenAI",
+      "authority_class": "vendor_validator",
+      "coverage_note": "Basic skill-creator validation; not proof of runtime acceptance or a security audit.",
+      "max_response_bytes": 4194304,
+      "evidence_policy": "research_only_requires_review_before_enforcement",
+      "publisher_verified_on": "2026-10-27"
+    },
+    {
+      "id": "validator-anthropic",
+      "ecosystem": "Anthropic",
+      "topics": [
+        "skills",
+        "validation"
+      ],
+      "seeds": [
+        "https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/scripts/quick_validate.py"
+      ],
+      "scopes": [
+        "https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/scripts/quick_validate.py"
+      ],
+      "discovery": false,
+      "publisher": "Anthropic",
+      "authority_class": "vendor_validator",
+      "coverage_note": "Basic skill-creator validation; not a universal Claude product contract.",
+      "max_response_bytes": 4194304,
+      "evidence_policy": "research_only_requires_review_before_enforcement",
+      "publisher_verified_on": "2026-10-27"
+    },
+    {
+      "id": "validator-gemini",
+      "ecosystem": "Google Gemini CLI",
+      "topics": [
+        "skills",
+        "validation"
+      ],
+      "seeds": [
+        "https://raw.githubusercontent.com/google-gemini/gemini-cli/main/packages/core/src/skills/builtin/skill-creator/scripts/validate_skill.cjs"
+      ],
+      "scopes": [
+        "https://raw.githubusercontent.com/google-gemini/gemini-cli/main/packages/core/src/skills/builtin/skill-creator/scripts/validate_skill.cjs"
+      ],
+      "discovery": false,
+      "publisher": "Google Gemini CLI",
+      "authority_class": "vendor_validator",
+      "coverage_note": "Gemini CLI builtin skill-creator validation; collection does not execute this JavaScript.",
+      "max_response_bytes": 4194304,
+      "evidence_policy": "research_only_requires_review_before_enforcement",
+      "publisher_verified_on": "2026-10-27"
+    },
+    {
+      "id": "validator-copilot",
+      "ecosystem": "GitHub CLI",
+      "topics": [
+        "skills",
+        "validation"
+      ],
+      "seeds": [
+        "https://cli.github.com/manual/gh_skill_publish"
+      ],
+      "scopes": [
+        "https://cli.github.com/manual/gh_skill_publish"
+      ],
+      "discovery": false,
+      "publisher": "GitHub CLI",
+      "authority_class": "vendor_validator",
+      "coverage_note": "Official dry-run validation command documentation. Do not publish or use --fix when auditing.",
+      "max_response_bytes": 4194304,
+      "evidence_policy": "research_only_requires_review_before_enforcement",
+      "publisher_verified_on": "2026-10-27"
+    },
+    {
+      "id": "validator-agent-skills",
+      "ecosystem": "Agent Skills",
+      "topics": [
+        "skills",
+        "validation"
+      ],
+      "seeds": [
+        "https://raw.githubusercontent.com/agentskills/agentskills/main/skills-ref/README.md",
+        "https://raw.githubusercontent.com/agentskills/agentskills/main/skills-ref/src/skills_ref/validator.py"
+      ],
+      "scopes": [
+        "https://raw.githubusercontent.com/agentskills/agentskills/main/skills-ref/README.md",
+        "https://raw.githubusercontent.com/agentskills/agentskills/main/skills-ref/src/skills_ref/validator.py"
+      ],
+      "discovery": false,
+      "publisher": "Agent Skills",
+      "authority_class": "specification_reference",
+      "coverage_note": "The publisher labels skills-ref demonstration-only and not for production. Compare with specification; never make this a universal acceptance gate.",
+      "max_response_bytes": 4194304,
+      "evidence_policy": "research_only_requires_review_before_enforcement",
+      "publisher_verified_on": "2026-10-27"
+    },
+    {
+      "id": "mitre-atlas",
+      "ecosystem": "MITRE ATLAS",
+      "topics": [
+        "security",
+        "standards",
+        "agentic"
+      ],
+      "seeds": [
+        "https://raw.githubusercontent.com/mitre-atlas/atlas-data/main/dist/manifest.yaml",
+        "https://raw.githubusercontent.com/mitre-atlas/atlas-data/main/dist/v6/ATLAS-2026.09.yaml"
+      ],
+      "scopes": [
+        "https://raw.githubusercontent.com/mitre-atlas/atlas-data/main/dist/manifest.yaml",
+        "https://raw.githubusercontent.com/mitre-atlas/atlas-data/main/dist/v6/ATLAS-2026.09.yaml"
+      ],
+      "discovery": false,
+      "publisher": "MITRE ATLAS",
+      "authority_class": "threat_taxonomy",
+      "coverage_note": "Current v6 data and release manifest. dist/ATLAS.yaml is deprecated. Taxonomy membership is not evidence a submitted skill is malicious. GitHub raw latest files are symlink text, not YAML exports; manifest changes require reviewing and advancing this explicit content-version URL.",
+      "max_response_bytes": 4194304,
+      "evidence_policy": "research_only_requires_review_before_enforcement",
+      "publisher_verified_on": "2026-10-27"
+    },
+    {
+      "id": "cosai-mcp",
+      "ecosystem": "CoSAI / OASIS",
+      "topics": [
+        "security",
+        "standards",
+        "agentic"
+      ],
+      "seeds": [
+        "https://raw.githubusercontent.com/cosai-oasis/ws4-secure-design-agentic-systems/main/whitepapers/model-context-protocol-security.md"
+      ],
+      "scopes": [
+        "https://raw.githubusercontent.com/cosai-oasis/ws4-secure-design-agentic-systems/main/whitepapers/model-context-protocol-security.md"
+      ],
+      "discovery": false,
+      "publisher": "CoSAI / OASIS",
+      "authority_class": "security_guidance",
+      "coverage_note": "MCP security threat model and mitigations; scope to relevant MCP behavior, not skill-format rejection.",
+      "max_response_bytes": 4194304,
+      "evidence_policy": "research_only_requires_review_before_enforcement",
+      "publisher_verified_on": "2026-10-27"
     }
   ]
 }

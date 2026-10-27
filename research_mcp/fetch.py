@@ -46,24 +46,47 @@ def in_scope(url: str, scopes: list[str]) -> bool:
     return False
 
 
-def public_address(host: str) -> str:
+def public_addresses(host: str) -> list[str]:
     addresses = list(dict.fromkeys(
         info[4][0] for info in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
     ))
     if not addresses or any(not ipaddress.ip_address(a).is_global for a in addresses):
         raise ValueError("Source DNS must resolve exclusively to public addresses")
-    return addresses[0]
+    return addresses
+
+
+def public_address(host: str) -> str:
+    """Compatibility helper for callers needing one validated public address."""
+    return public_addresses(host)[0]
 
 
 class PinnedHTTPSConnection(http.client.HTTPSConnection):
     def connect(self) -> None:
-        address = public_address(self.host)
-        connection = socket.create_connection((address, 443), self.timeout)
-        try:
-            self.sock = self._context.wrap_socket(connection, server_hostname=self.host)
-        except BaseException:
-            connection.close()
-            raise
+        # Validate the entire DNS answer before connecting. Some hosts advertise
+        # IPv6 even where this collector has only IPv4 connectivity. Retry only
+        # this pinned, public set within one connection budget; never resolve a
+        # hostname again at connection time or relax certificate verification.
+        addresses = public_addresses(self.host)
+        deadline = time.monotonic() + self.timeout
+        last_error = None
+        for index, address in enumerate(addresses):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("Public address connection budget exhausted") from last_error
+            try:
+                connection = socket.create_connection(
+                    (address, 443), remaining / (len(addresses) - index))
+            except OSError as exc:
+                last_error = exc
+                continue
+            try:
+                connection.settimeout(max(0.001, deadline - time.monotonic()))
+                self.sock = self._context.wrap_socket(connection, server_hostname=self.host)
+                return
+            except BaseException:
+                connection.close()
+                raise
+        raise last_error
 
 
 @dataclass(frozen=True)

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Expand research collection to official skill-validator sources, current MITRE
+  ATLAS data, CoSAI MCP guidance and explicit NIST/OWASP/MCP security documents.
+  Record source authority and research-only applicability; collecting validators
+  does not execute them or activate their checks in package scans.
+- Retry alternate pinned public DNS addresses within the existing connection
+  budget when a source address is unreachable, preserving full-answer public-IP
+  validation, TLS hostname verification and fail-closed certificate errors.
+
 ## 0.6.0 - 2026-10-26
 
 - Add per-scan live vendor documentation verification through Research MCP for

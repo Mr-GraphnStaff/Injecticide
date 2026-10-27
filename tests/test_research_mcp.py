@@ -76,14 +76,53 @@ def test_mixed_public_private_dns_rejected(monkeypatch):
 
 
 def test_connection_pins_public_ip_and_preserves_tls_hostname(monkeypatch):
-    monkeypatch.setattr("research_mcp.fetch.public_address", lambda host: "8.8.8.8")
+    monkeypatch.setattr("research_mcp.fetch.public_addresses", lambda host: ["8.8.8.8"])
     connect = MagicMock()
     monkeypatch.setattr(socket, "create_connection", connect)
     context = MagicMock()
     connection = PinnedHTTPSConnection("example.org", timeout=8, context=context)
     connection.connect()
-    connect.assert_called_once_with(("8.8.8.8", 443), 8)
+    assert connect.call_count == 1
+    assert connect.call_args.args[0] == ("8.8.8.8", 443)
+    assert 0 < connect.call_args.args[1] <= 8
     context.wrap_socket.assert_called_once_with(connect.return_value, server_hostname="example.org")
+
+
+def test_connection_falls_back_from_unreachable_public_ipv6(monkeypatch):
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: [
+        (10, 1, 6, "", ("2606:4700:4700::1111", 443, 0, 0)),
+        (2, 1, 6, "", ("1.1.1.1", 443))])
+    connected = MagicMock()
+    connect = MagicMock(side_effect=[OSError("Network unreachable"), connected])
+    monkeypatch.setattr(socket, "create_connection", connect)
+    context = MagicMock()
+    PinnedHTTPSConnection("example.org", timeout=8, context=context).connect()
+    assert [c.args[0] for c in connect.call_args_list] == [
+        ("2606:4700:4700::1111", 443), ("1.1.1.1", 443)]
+    context.wrap_socket.assert_called_once_with(connected, server_hostname="example.org")
+
+
+def test_connection_rejects_mixed_dns_before_any_network_io(monkeypatch):
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: [
+        (2, 1, 6, "", ("1.1.1.1", 443)), (2, 1, 6, "", ("127.0.0.1", 443))])
+    connect = MagicMock()
+    monkeypatch.setattr(socket, "create_connection", connect)
+    with pytest.raises(ValueError, match="public"):
+        PinnedHTTPSConnection("example.org", timeout=8).connect()
+    connect.assert_not_called()
+
+
+def test_connection_does_not_bypass_tls_failure(monkeypatch):
+    import ssl
+    monkeypatch.setattr("research_mcp.fetch.public_addresses", lambda host: ["1.1.1.1", "8.8.8.8"])
+    connect = MagicMock()
+    monkeypatch.setattr(socket, "create_connection", connect)
+    context = MagicMock()
+    context.wrap_socket.side_effect = ssl.SSLCertVerificationError("untrusted")
+    with pytest.raises(ssl.SSLCertVerificationError):
+        PinnedHTTPSConnection("example.org", timeout=8, context=context).connect()
+    assert connect.call_count == 1
+    connect.return_value.close.assert_called_once()
 
 
 def fake_http(monkeypatch, headers, status=200):
@@ -258,6 +297,32 @@ def test_shipped_registry_validates(tmp_path):
     assert len(sources) >= 15
     assert all(s["freshness"] == "unknown" for s in sources)
     assert any("projects" in s["topics"] for s in sources)
+
+
+def test_official_validator_and_standards_sources_are_scoped_research(tmp_path):
+    catalog = Catalog(tmp_path / "catalog.db", ROOT / "research_mcp/sources.json")
+    ids = {"validator-openai", "validator-anthropic", "validator-gemini",
+           "validator-copilot", "validator-agent-skills", "mitre-atlas", "cosai-mcp"}
+    for sid in ids:
+        source = catalog.sources[sid]
+        assert source["discovery"] is False
+        assert source["scopes"] == source["seeds"]
+        assert source["evidence_policy"] == "research_only_requires_review_before_enforcement"
+        assert source["publisher_verified_on"] == "2026-10-27"
+        assert source["authority_class"]
+    assert all("dist/ATLAS.yaml" not in url and "ATLAS-latest.yaml" not in url
+               for url in catalog.sources["mitre-atlas"]["seeds"])
+    assert "not for production" in catalog.sources["validator-agent-skills"]["coverage_note"]
+
+
+def test_collected_validator_source_is_data_not_executed(catalog, tmp_path):
+    marker = tmp_path / "must-not-exist"
+    code = f"from pathlib import Path\nPath({str(marker)!r}).write_text('executed')"
+    record(catalog, code.encode())
+    assert not marker.exists()
+    result = catalog.query()
+    assert result["items"][0]["verification"] == STATUS
+    assert "Path" in result["items"][0]["excerpt"]
 
 
 def test_registry_scope_change_reconciles_old_frontier(catalog, tmp_path):
