@@ -116,8 +116,12 @@ function summarizeAssessment(scanResult) {
         return { tone: 'medium', title: 'Documented vendor requirement not met', body: 'Review the failed vendor checks before uploading this package. This is a compatibility finding; malware is not established.' };
     }
 
-    if (scanResult.coverage?.status === 'partial' || scanResult.readiness?.status === 'needs_review' || scanResult.package_analysis?.format_findings?.some(item => item.severity === 'error')) {
-        return { tone: 'medium', title: 'Package review incomplete', body: 'Review findings, format errors, and unassessed content before use. Skipped files are not certified safe.' };
+    if (scanResult.coverage?.status === 'partial') {
+        return { tone: 'medium', title: 'Package review incomplete', body: 'Some content or detector passes were not fully inspected. Creator mitigation, format observations and security findings remain separate results.' };
+    }
+
+    if (scanResult.package_analysis?.format_findings?.some(item => item.severity === 'error')) {
+        return { tone: 'medium', title: 'Format observations need review', body: 'Static format checks reported differences. Review the applicable target and source before treating them as upload incompatibility.' };
     }
 
     if (reviewSummary.security_risk > 0) {
@@ -160,10 +164,14 @@ function summarizeAssessment(scanResult) {
         };
     }
 
+    if (scanResult.readiness?.status === 'needs_review') {
+        return { tone: 'medium', title: 'Additional review evidence needs attention', body: 'Review the policy and evaluation evidence. This status does not establish an attack or a scan coverage limit.' };
+    }
+
     return {
         tone: 'clean',
         title: 'No review findings',
-        body: 'The scan did not find security risks or regulated data patterns that require follow-up.',
+        body: 'No matching review patterns were reported in inspected content. Runtime behavior and unassessed content are not certified safe.',
     };
 }
 
@@ -183,6 +191,90 @@ function VendorVerification({ evidence }) {
             </div>
         </details>
     </section>;
+}
+
+function evidenceLabel(value, fallback = 'Not assessed') {
+    return typeof value === 'string' && value ? value.replaceAll('_', ' ') : fallback;
+}
+
+function safeRequestId(value) {
+    return typeof value === 'string' && /^[a-zA-Z0-9._:-]{1,128}$/.test(value) ? value : '';
+}
+
+function EvidenceSourceLink({ url }) {
+    let safe = false;
+    try { const parsed = new URL(url); safe = parsed.protocol === 'https:' && !parsed.username && !parsed.password; } catch (_) { /* Untrusted metadata stays text. */ }
+    return safe ? <a href={url} target="_blank" rel="noopener noreferrer">Source documentation (opens in a new tab)</a> : <span>Source link unavailable</span>;
+}
+
+function mitigationSummary(result) {
+    const records = (result.files || []).map(file => file.creator_mitigation).filter(Boolean);
+    const verified = records.filter(item => item.status === 'verified').length;
+    const unresolved = records.filter(item => ['invalid', 'unverifiable'].includes(item.status)).length;
+    return { records, verified, unresolved,
+        text: !records.length ? 'Tag recognition not reported by this scanner version' :
+            `${verified} verified; ${unresolved} invalid or unverifiable; ${records.filter(item => item.status === 'absent').length} absent` };
+}
+
+function ScanEvidenceSummary({ result }) {
+    const summary = summarizeReviewClasses(result);
+    const mitigation = mitigationSummary(result);
+    const evaluation = result.governance_evidence?.evaluation?.status || result.readiness?.runtime_evaluation;
+    const axes = [
+        ['Analysis coverage', result.coverage ? `${evidenceLabel(result.coverage.status)} · ${result.coverage.analyzed_files}/${result.coverage.total_files} files represented` : 'Coverage not reported',
+            'File counts do not establish that every detector inspected every character. See per-file detector coverage.'],
+        ['Static observations', `${summary.security_risk} security observations · ${summary.sensitive_data} sensitive-data signals · ${summary.review} other review findings`,
+            'A matched pattern or contact address alone does not establish malicious behavior or disclosure.'],
+        ['Vendor applicability', result.vendor_verification?.status === 'current_documented_requirements' ? 'Reviewed documentation is current' : 'Current vendor applicability is unverified',
+            `Runtime acceptance: ${evidenceLabel(result.vendor_verification?.compatibility, 'Unknown')}. Official format checks are reported separately.`],
+        ['Creator mitigation', mitigation.text,
+            'A verified chunk-reading tag satisfies its tagging convention, not complete scan coverage or a safety certification.'],
+        ['Policy and runtime evaluation', `Evaluation: ${evidenceLabel(evaluation)} · tenant policy: ${result.readiness?.tenant_policy_verified ? 'verified as reported' : 'not verified'}`,
+            'Static observations do not grant organizational approval or establish runtime behavior.'],
+    ];
+    return <section className="scan-evidence-summary" aria-label="Independent scan evidence">
+        <h3>Evidence at a glance</h3>
+        <p>These results answer different questions. A verified mitigation does not erase an observation or an analysis limit.</p>
+        <dl>{axes.map(([title, value, note]) => <div key={title}><dt>{title}</dt><dd><strong>{value}</strong><p>{note}</p></dd></div>)}</dl>
+        {result.scan_request_id && <p className="scan-request-id">Scan request: {result.scan_request_id}</p>}
+    </section>;
+}
+
+function OfficialValidatorResults({ results }) {
+    if (!Array.isArray(results)) return null;
+    return <section className="scan-evidence-panel" aria-label="Official format validator results">
+        <h3>Official format checks</h3>
+        <p>Each result applies to its named validator and revision. A format-check failure is not a universal security verdict; a pass is not runtime approval.</p>
+        {!results.length && <p>No official validator result was reported for this target.</p>}
+        <ul>{results.map((item, index) => <li key={`${item.id}:${index}`}>
+            <strong>{item.runtime || 'Target not reported'} · {item.id || 'Validator'}: {evidenceLabel(item.status, 'Unavailable')}</strong>
+            <p>Scope: {evidenceLabel(item.scope, 'Format validation only')} · revision: <span className="scan-revision">{item.revision || 'not reported'}</span></p>
+            <EvidenceSourceLink url={item.source_url} />
+            {(item.diagnostics || []).length > 0 && <ul>{item.diagnostics.map((message, i) => <li key={i}>{String(message).slice(0, 2000)}</li>)}</ul>}
+        </li>)}</ul>
+    </section>;
+}
+
+function FileAnalysisEvidence({ file }) {
+    const mitigation = file.creator_mitigation;
+    const detectors = Object.entries(file.analysis_coverage || {});
+    if (!mitigation && !detectors.length) return null;
+    return <div className="scan-file-evidence">
+        {mitigation && <p><strong>Creator mitigation: {evidenceLabel(mitigation.status)}</strong>
+            {mitigation.convention ? ` · convention ${mitigation.convention}` : ''}
+            {mitigation.status !== 'absent' && ` · EOF marker ${mitigation.eof_verified ? 'verified' : 'not verified'}`}
+            {mitigation.satisfies_tagging_convention ? ' · tagging convention satisfied' : ''}
+            {mitigation.policy_scope && <span> · {evidenceLabel(mitigation.policy_scope)}</span>}
+        </p>}
+        {detectors.length > 0 && <details>
+            <summary>Detector coverage for {file.path}</summary>
+            <ul>{detectors.map(([name, coverage]) => <li key={name}>
+                <strong>{evidenceLabel(name)}: {evidenceLabel(coverage.status)}</strong>
+                {Number.isFinite(coverage.inspected_characters) && <span> · {coverage.inspected_characters} of {coverage.total_characters ?? 'unknown'} characters inspected</span>}
+                {coverage.reason && <p>{coverage.reason}</p>}
+            </li>)}</ul>
+        </details>}
+    </div>;
 }
 
 function assessmentClass(tone) {
@@ -273,6 +365,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     lines.push('');
     lines.push(`- Generated: ${generatedAt}`);
     lines.push(`- File type: ${scanResult.file_type}`);
+    if (scanResult.scan_request_id) lines.push(`- Scan request: ${scanResult.scan_request_id}`);
     if (buildInfo?.display_version) {
         lines.push(`- Build: ${buildInfo.display_version}`);
     }
@@ -295,13 +388,23 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         const evidence = { package_analysis: scanResult.package_analysis, coverage: scanResult.coverage,
             governance_evidence: scanResult.governance_evidence, scanner_metadata: scanResult.scanner_metadata,
             checks: scanResult.check_results, readiness: scanResult.readiness,
-            vendor_verification: scanResult.vendor_verification };
+            vendor_verification: scanResult.vendor_verification,
+            official_validator_results: scanResult.official_validator_results,
+            scan_request_id: scanResult.scan_request_id,
+            file_analysis: (scanResult.files || []).map(file => ({path: file.path, assessment_state: file.assessment_state,
+                analysis_coverage: file.analysis_coverage, creator_mitigation: file.creator_mitigation,
+                large_file_tagged_chunked_reference: file.large_file_tagged_chunked_reference})) };
         if (reportDepth === 'detailed') evidence.inventory = scanResult.inventory;
         lines.push(JSON.stringify(evidence, null, 2));
         lines.push('```');
     }
     lines.push('');
 
+    lines.push('## Independent evidence');
+    lines.push('');
+    lines.push(`- Creator mitigation: ${mitigationSummary(scanResult).text}`);
+    lines.push('- Format validation, scan coverage, security observations and organizational approval are separate conclusions.');
+    lines.push('');
     lines.push('## Assessment');
     lines.push('');
     lines.push(`- Headline: ${assessment.title}`);
@@ -371,6 +474,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         lines.push('');
         lines.push(`- Artifact role: ${item.artifact_role || 'active'}`);
         lines.push(`- Size: ${item.size ?? 0} bytes`);
+        if (item.assessment_state) lines.push(`- Assessment: ${evidenceLabel(item.assessment_state)}`);
         if (item.skipped) {
             lines.push(`- Status: skipped`);
             if (item.reason) {
@@ -817,6 +921,7 @@ function SkillFindingList({ findings, artifactRole, depth }) {
                                 </span>
                             </div>
                             ({finding.severity}) - {finding.description}
+                            {String(finding.id || '').startsWith('pii_') && <p>Presence of contact or personal data is an observation. Disclosure or misuse is not established by this match.</p>}
                             <div className="text-[10px] text-gray-500">
                                 {finding.finding_category} / {finding.subject} / {finding.action_state} / {finding.disposition}
                             </div>
@@ -887,6 +992,7 @@ function SkillScanFiles({ files, filter, depth }) {
                             )}
                             {item.reason && <p className="text-[10px] text-gray-500">{item.reason}</p>}
                             {item.assessment_state && <p>Assessment: {item.assessment_state.replaceAll('_', ' ')}{item.effective_artifact_role ? '; execution component' : ''}</p>}
+                            <FileAnalysisEvidence file={item} />
                             {item.file_type_policy?.potential_upload_control_bypass && <p className="text-yellow-300">Potential upload-control bypass: executable source behind a document extension. Malware is not established.</p>}
                             <SkillFindingList findings={findings} artifactRole={artifactRole} depth={depth} />
                         </div>
@@ -1320,7 +1426,7 @@ function App({ onBack, onNavigate, buildInfo }) {
         setIsScanningSkill(true);
         setActiveResultView('package');
         requestAnimationFrame(() => resultWorkspace.current?.scrollIntoView({ block: 'start' }));
-        const pending = { controller: new AbortController(), timer: null, timedOut: false };
+        const pending = { controller: new AbortController(), timer: null, timedOut: false, stage: 'upload or connection', requestId: '' };
         skillScanRequest.current = pending;
         pending.timer = setTimeout(() => {
             pending.timedOut = true;
@@ -1332,9 +1438,8 @@ function App({ onBack, onNavigate, buildInfo }) {
             formData.append('target_runtime', skillRuntime);
             formData.append('governance_evidence', skillEvidence || '{}');
             formData.append('file', skillFile);
-            // Only the active upload needs the File; don't retain it for the report.
-            setSkillFile(null);
-            if (skillFileInput.current) skillFileInput.current.value = '';
+            // Keep this local selection retryable until success, replacement or clear.
+            // It is never stored in a completed report or automatically uploaded again.
 
             const response = await fetch('/api/skills/scan', {
                 method: 'POST',
@@ -1342,21 +1447,31 @@ function App({ onBack, onNavigate, buildInfo }) {
                 signal: pending.controller.signal,
             });
 
+            pending.requestId = safeRequestId(response.headers?.get('X-Scan-Request-ID'));
+            pending.stage = 'server response';
             if (!response.ok) {
                 const errorDetails = await response.json().catch(() => ({}));
-                const detailMessage = errorDetails?.detail || response.statusText;
-                throw new Error(detailMessage || 'Scan failed');
+                const detail = errorDetails?.detail;
+                const failure = new Error(typeof detail === 'string' ? detail : detail?.message || response.statusText || 'Scan failed');
+                pending.stage = typeof detail?.stage === 'string' ? detail.stage.slice(0, 80) : pending.stage;
+                pending.requestId = safeRequestId(detail?.request_id) || pending.requestId;
+                throw failure;
             }
 
+            pending.stage = 'reading scan response';
             const data = await response.json();
             if (skillScanRequest.current === pending && !pending.controller.signal.aborted) {
-                setSkillScanResult(data);
+                const requestId = pending.requestId || safeRequestId(data.scan_request_id) || safeRequestId(data.request_id);
+                setSkillScanResult({ ...data, ...(requestId ? { scan_request_id: requestId } : {}) });
+                setSkillFile(null);
+                if (skillFileInput.current) skillFileInput.current.value = '';
             }
         } catch (error) {
             if (skillScanRequest.current === pending) {
-                setSkillScanError(pending.timedOut
-                    ? 'Scan timed out. Select the file again to retry.'
-                    : error.message || 'Scan failed');
+                const message = pending.timedOut ? 'Scan timed out.' : error.message || 'Scan failed';
+                const connectionHint = pending.stage === 'upload or connection'
+                    ? ' A connection or authentication problem may have interrupted the request; the cause is not confirmed.' : '';
+                setSkillScanError(`${message} Stage: ${pending.stage}.${connectionHint} The file is still selected; retry when ready.${pending.requestId ? ` Request: ${pending.requestId}.` : ''}`);
             }
         } finally {
             clearTimeout(pending.timer);
@@ -1624,11 +1739,14 @@ function App({ onBack, onNavigate, buildInfo }) {
                                             <textarea id="skill-evidence" name="governance_evidence" rows={3} maxLength={131072} value={skillEvidence} disabled={isScanningSkill} onChange={e => { setSkillEvidence(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2" />
                                             <p>Claims require artifact fingerprints and a configured trusted issuer before they can be authenticated.</p>
                                         </details>
-                                        <label className="block text-sm font-medium text-gray-300">
+                                        <label htmlFor="skill-upload-file" className="block text-sm font-medium text-gray-300">
                                             <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload SKILL.md, .skill, or .zip (up to 32 MiB)
                                         </label>
                                         <input
                                             type="file"
+                                            id="skill-upload-file"
+                                            name="file"
+                                            aria-describedby="skill-upload-help skill-scan-error"
                                             ref={skillFileInput}
                                             aria-label="Skill file"
                                             className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-700 file:text-gray-200 hover:file:bg-gray-600"
@@ -1648,7 +1766,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                                 {isScanningSkill ? 'Cancel and clear scan' : 'Clear scan'}
                                             </button>
                                         )}
-                                        <p className="text-xs text-gray-400">Selecting another file clears the previous scan. Full findings remain available in the current report export.</p>
+                                        <p id="skill-upload-help" className="text-xs text-gray-400">Selecting another file clears the previous scan. Failed uploads remain selected for manual retry; successful scans release the file. Full findings remain available in the report export.</p>
 
                                     </div>
                                 </div>
@@ -1730,13 +1848,15 @@ function App({ onBack, onNavigate, buildInfo }) {
                     
                     {/* Results Panel */}
                     <div className="workbench-results" ref={resultWorkspace}>
-                        <section id="package-results" hidden={activeResultView !== 'package'} aria-labelledby="package-results-title" className="workbench-result-panel bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
+                        <section id="package-results" aria-busy={isScanningSkill} hidden={activeResultView !== 'package'} aria-labelledby="package-results-title" className="workbench-result-panel bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
                             <h2 id="package-results-title" className="workbench-section-title mb-6">Skill and plugin scan results</h2>
                             <div role="status">{isScanningSkill && <p className="home-muted mb-4">Scanning package and checking vendor requirements…</p>}</div>
-                            {skillScanError && <p role="alert" className="home-warning">{skillScanError}</p>}
+                            {skillScanError && <p id="skill-scan-error" role="alert" tabIndex={-1} className="home-warning">{skillScanError}</p>}
                             {!skillScanResult && !isScanningSkill && !skillScanError && <p className="home-muted">Choose a file in Scan configuration to review its findings, coverage and report here.</p>}
                             {skillScanResult && (
                                 <div className="skill-results-report text-sm text-gray-300 space-y-4">
+                                    <ScanEvidenceSummary result={skillScanResult} />
+                                    <OfficialValidatorResults results={skillScanResult.official_validator_results} />
                                     {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
                                     <VendorVerification evidence={skillScanResult.vendor_verification} />
                                     {(() => {

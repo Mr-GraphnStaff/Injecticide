@@ -1,6 +1,22 @@
 # Changelog
 
-## Unreleased
+## 0.7.0 - 2026-10-27
+
+- Report file/detector inspection limits separately from creator chunk-reading
+  conventions and verified EOF markers. Retain incomplete coverage and unrelated
+  security signals even when a creator mitigation is valid.
+- Separate explicit portable-format checks from unverified product compatibility
+  advice. Preserve structural parsing errors and fresh documented vendor checks.
+- Run pinned, integrity-checked official skill-creator reference validators
+  locally as format-only evidence; unavailable validators do not receive a pass.
+- Preserve contact-presence observations without treating an email address alone
+  as proof of regulated data handling or exfiltration.
+- Add local authored evaluation fixtures and hash-bound audit report comparison;
+  report coverage and review burden without claiming general market accuracy.
+- Present independent evidence states and retain uploads after failed requests
+  for explicit retry. Add scan request IDs and failure stages without payload logs.
+- Redact credential-bearing evidence after detection while retaining original
+  artifact hashes, rule identities and policy outcomes.
 
 - Expand research collection to official skill-validator sources, current MITRE
   ATLAS data, CoSAI MCP guidance and explicit NIST/OWASP/MCP security documents.

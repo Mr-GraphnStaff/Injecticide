@@ -22,6 +22,10 @@ COPY package_evidence.py /app/package_evidence.py
 COPY package_analysis.py /app/package_analysis.py
 COPY review_evidence.py /app/review_evidence.py
 COPY package_checks.py /app/package_checks.py
+COPY inspection_evidence.py /app/inspection_evidence.py
+COPY evidence_redaction.py /app/evidence_redaction.py
+COPY official_validators.py /app/official_validators.py
+COPY vendor_validators /app/vendor_validators
 COPY schemas /app/schemas
 COPY rules /app/rules
 

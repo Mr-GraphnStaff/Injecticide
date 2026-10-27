@@ -21,6 +21,7 @@ if __package__:
     from .scan_rules import build_scan_units, compile_patterns, find_rule_matches
     from .package_analysis import enrich_result
     from .package_formats import bounded_data, RUNTIMES
+    from .inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
 else:
     from artifact_text import extract_scannable_text, looks_like_sqlite
     from behavior_analysis import analyze_behavior
@@ -30,6 +31,7 @@ else:
     from scan_rules import build_scan_units, compile_patterns, find_rule_matches
     from package_analysis import enrich_result
     from package_formats import bounded_data, RUNTIMES
+    from inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
@@ -283,6 +285,8 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         "findings": [],
         "sha256": hashlib.sha256(data).hexdigest(),
         "assessment_state": "unsupported",
+        "analysis_coverage": initial_coverage(),
+        "creator_mitigation": creator_mitigation(path, None),
         "required_component": Path(path).name in {"SKILL.md", "plugin.json", "gemini-extension.json", "openclaw.plugin.json", "mcp.json", ".mcp.json", "hooks.json", "manifest.json"},
     }
 
@@ -295,19 +299,34 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
 
     if data.startswith((b"MZ", b"\x7fELF")):
         entry.update(skipped=True, reason="Executable binary content is not analyzed.", assessment_state="executable_not_analyzed")
+        entry["analysis_coverage"]["extraction"].update(reason=entry["reason"])
         return entry, None
     try:
         text, reason = extract_scannable_text(data)
     except ValueError as exc:
         entry.update(skipped=True, reason=str(exc), assessment_state="limited_or_truncated")
+        entry["analysis_coverage"]["extraction"].update(status="partial", reason=entry["reason"])
         return entry, None
     if text is None:
         entry["skipped"] = True
         entry["reason"] = reason
         entry["assessment_state"] = "binary_asset_inventory_only"
+        entry["analysis_coverage"]["extraction"].update(reason=reason)
         return entry, None
 
     entry["reason"] = reason
+    entry["creator_mitigation"] = creator_mitigation(path, text if not reason else None)
+    entry["analysis_coverage"]["creator_markers"] = {
+        "status": "not_performed" if reason else "partial" if "budget" in entry["creator_mitigation"]["reason"] else "complete_input",
+        "total_characters": len(text), "inspected_characters": None,
+        "reason": entry["creator_mitigation"]["reason"],
+        "scope": "Header convention and true EOF verification only; this does not increase security detector coverage."}
+    entry["large_file_tagged_chunked_reference"] = entry["creator_mitigation"]["large_file_tagged_chunked_reference"]
+    total_characters = len(text)
+    entry["analysis_coverage"]["extraction"] = {
+        "status": "partial" if reason else "complete", "extracted_characters": total_characters,
+        "reason": reason or "Supported text decoded; this is extraction coverage, not exhaustive detector coverage.",
+        "original_binary_security_analysis": "not_performed" if reason else "not_applicable"}
     entry["assessment_state"] = "structured_content_analyzed" if reason else "text_analyzed"
     if reason:
         entry["analysis_scope"] = "Bounded text projection; binary contents and omitted records are not certified safe."
@@ -315,7 +334,14 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         text = text[:MAX_TEXT_CHARS]
         entry.update(assessment_state="limited_or_truncated", reason="Text analysis limited to 1 MiB characters.")
     entry["artifact_role"] = classify_artifact_role(path, text)
-    entry["findings"] = _scan_text(path, text, entry["artifact_role"])
+    entry["analysis_coverage"]["text_patterns"] = {
+        "status": "partial" if len(text) < total_characters else "complete_input",
+        "total_characters": total_characters, "supplied_characters": len(text),
+        "inspected_characters": None, "supplied_range": {"start_character": 0, "end_character": len(text)},
+        "reason": "Text supplied to deterministic rules; individual rule matching and displayed evidence are bounded. Exact per-rule inspected character counts are not measured."}
+    entry["findings"] = _scan_text(path, text, entry["artifact_role"]) + mitigation_finding(entry["creator_mitigation"])
+    entry["analysis_coverage"]["result_display"] = {"status": "complete", "findings_before_limit": len(entry["findings"]),
+                                                     "findings_displayed": len(entry["findings"]), "reason": "No file finding display limit reached."}
     return entry, text
 
 

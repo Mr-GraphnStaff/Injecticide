@@ -1,2 +1,4 @@
 *.png binary
 *.ico binary
+# Preserve reviewed upstream bytes and whitespace for integrity verification.
+skill_sandbox/vendor_validators/** -text -whitespace

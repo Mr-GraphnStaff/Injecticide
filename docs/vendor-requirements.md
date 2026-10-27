@@ -1,6 +1,9 @@
 # Vendor requirements before a package scan
 
-Implementation: 0.6.0. Deployment evidence is recorded separately under
+Live-document checks were introduced in 0.6.0. The 0.7.0 evidence update separates
+unverified static product advice from documented checks and adds pinned local
+reference validators; see [scanner evidence contracts](scanner-evidence.md).
+Deployment evidence is recorded separately under
 `docs/validation/`.
 
 Research MCP owns official-document collection and freshness. The web scanner
