@@ -195,7 +195,8 @@
       "implementation_status": "not_implemented",
       "test_refs": [
         "tests/test_skill_standards.py"
-      ]
+      ],
+      "source_id": "optimizing-descriptions"
     },
     {
       "id": "vendor_runtime_compatibility",
@@ -225,7 +226,8 @@
       "implementation_status": "not_implemented",
       "test_refs": [
         "tests/test_skill_standards.py"
-      ]
+      ],
+      "source_id": "optimizing-descriptions"
     },
     {
       "id": "output_quality",
@@ -235,7 +237,8 @@
       "implementation_status": "not_implemented",
       "test_refs": [
         "tests/test_skill_standards.py"
-      ]
+      ],
+      "source_id": "evaluating-skills"
     },
     {
       "id": "script_behavior",
@@ -245,7 +248,8 @@
       "implementation_status": "not_implemented",
       "test_refs": [
         "tests/test_skill_standards.py"
-      ]
+      ],
+      "source_id": "using-scripts"
     },
     {
       "id": "runtime_control_enforcement",
@@ -255,7 +259,8 @@
       "implementation_status": "not_implemented",
       "test_refs": [
         "tests/test_skill_standards.py"
-      ]
+      ],
+      "source_id": "client-implementation"
     },
     {
       "id": "skill_collection_intent",
@@ -266,6 +271,123 @@
       "test_refs": [
         "tests/test_skill_standards.py"
       ]
+    },
+    {
+      "id": "frontmatter_fields",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "Frontmatter field allowlist",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ],
+      "source_id": "reference-validator"
+    },
+    {
+      "id": "body_instruction_quality",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "Body content",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ],
+      "source_id": "authoring"
+    },
+    {
+      "id": "optional_resource_layout",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "Optional directories",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ]
+    },
+    {
+      "id": "script_authoring_guidance",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "scripts/",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ]
+    },
+    {
+      "id": "reference_file_guidance",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "File references",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ]
+    },
+    {
+      "id": "metadata_key_guidance",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "metadata field",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ]
+    },
+    {
+      "id": "reproducible_dependencies",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "Self-contained scripts",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ],
+      "source_id": "using-scripts"
+    },
+    {
+      "id": "script_interface_quality",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "Designing scripts for agentic use",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ],
+      "source_id": "using-scripts"
+    },
+    {
+      "id": "client_lifecycle",
+      "category": "runtime_evaluation",
+      "requirement_level": "status",
+      "section": "Discovery, disclosure, activation and context",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ],
+      "source_id": "client-implementation"
+    },
+    {
+      "id": "evaluation_methodology",
+      "category": "runtime_evaluation",
+      "requirement_level": "status",
+      "section": "Running evals, grading outputs and human review",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ],
+      "source_id": "evaluating-skills"
+    },
+    {
+      "id": "trigger_evaluation_methodology",
+      "category": "runtime_evaluation",
+      "requirement_level": "status",
+      "section": "Trigger eval queries and train/validation splits",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_agent_skills_complete_reference.py"
+      ],
+      "source_id": "optimizing-descriptions"
     }
   ]
 }

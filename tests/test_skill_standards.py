@@ -59,11 +59,12 @@ def test_license_semantics_and_unspecified_types_do_not_invent_mandatory_failure
     assert report["overall_status"] == "pass"
 
 
-def test_vendor_extensions_do_not_invalidate_portable_base():
+def test_vendor_extensions_fail_strict_portability_without_claiming_vendor_rejection():
     report, result = assess({"demo/SKILL.md": document(**{"disable-model-invocation": True, "future-vendor-field": "opaque"})})
-    assert report["overall_status"] == "pass"
+    assert report["overall_status"] == "fail"
+    assert row(report, "frontmatter_fields")["status"] == "fail"
     assert row(report, "frontmatter_extensions")["status"] == "not_assessed"
-    assert not any(f["severity"] == "error" for f in result["package_analysis"]["format_findings"])
+    assert any(f["severity"] == "error" for f in result["package_analysis"]["format_findings"])
 
 
 def test_vendor_selected_is_advisory_even_with_failed_portable_constraints():

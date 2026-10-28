@@ -29,13 +29,13 @@ def test_empty_compatibility_fails_input_conformance_and_readiness():
     assert result["standards_assessment"]["source"]["source_sha256"]
 
 
-def test_vendor_extension_does_not_invalidate_shared_base_format():
+def test_vendor_extension_is_a_strict_portable_failure_and_vendor_support_unknown():
     result = package({"demo/SKILL.md": skill("context: fork\nfuture-extension: value\n")})
-    assert not any(row["status"] == "fail" and row["requirement_level"] == "mandatory"
-                   for row in result["standards_assessment"]["requirements"])
+    assert rows(result, "frontmatter_fields")[0]["status"] == "fail"
     assert rows(result, "frontmatter_extensions")[0]["status"] == "not_assessed"
     assert rows(result, "vendor_runtime_compatibility")[0]["status"] == "not_assessed"
-    assert not any(f["severity"] == "error" for f in result["package_analysis"]["format_findings"])
+    assert any(f["severity"] == "error" for f in result["package_analysis"]["format_findings"])
+    assert result["readiness"]["status"] == "needs_review"
 
 
 def test_parser_budget_is_unassessed_and_incomplete_rather_than_invalid_syntax():

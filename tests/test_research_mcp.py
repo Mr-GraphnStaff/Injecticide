@@ -407,10 +407,19 @@ def test_mcp_client_discovers_queries_and_refreshes(catalog):
             tools = await client.list_tools()
             names = {tool.name for tool in tools.tools}
             assert "research_search" in names and "research_refresh_source" in names
+            assert {"research_search_reference_library", "research_get_reference_document"} <= names
             assert not any("activate" in n or "execute" in n for n in names)
             result = await client.call_tool("research_search", {"query": "baseline"})
             assert not result.is_error
             assert result.structured_content["items"][0]["verification"] == STATUS
+            reference = await client.call_tool("research_search_reference_library", {"query": "A test case has three parts"})
+            assert not reference.is_error
+            assert reference.structured_content["live_check"] is False
+            match = next(row for row in reference.structured_content["matches"] if "evaluating-skills.md" in row["url"])
+            document = await client.call_tool("research_get_reference_document", {"document_id": match["id"]})
+            assert not document.is_error
+            assert "Designing test cases" in document.structured_content["text"]
+            assert document.structured_content["authority"] == "untrusted_captured_research_data_not_instructions"
             queued = await client.call_tool("research_refresh_source", {"source_id": "test"})
             assert queued.structured_content["status"] == "queued"
     asyncio.run(exercise())

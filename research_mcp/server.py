@@ -14,10 +14,12 @@ from .catalog import Catalog
 from .collector import Collector
 from .news import build_news
 from .requirements import Requirements
+from .reference_library import ReferenceLibrary
 
 
 def create_server(catalog: Catalog, collector: Collector, start_collector: bool = True) -> MCPServer:
     requirements = Requirements(catalog)
+    references = ReferenceLibrary()
     @asynccontextmanager
     async def lifespan(server):
         if start_collector:
@@ -27,7 +29,7 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         finally:
             await asyncio.to_thread(collector.close)
 
-    server = MCPServer("injecticide_research_mcp", version="0.6.0", lifespan=lifespan)
+    server = MCPServer("injecticide_research_mcp", version="0.12.0", lifespan=lifespan)
     read = {"readOnlyHint": True, "destructiveHint": False,
             "idempotentHint": True, "openWorldHint": False}
 
@@ -50,6 +52,16 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
     def research_get_snapshot(snapshot_id: int, offset: int = 0) -> dict[str, object]:
         """Read up to 8000 characters of an untrusted snapshot plus URL, timestamp and content hash."""
         return catalog.snapshot(snapshot_id, offset)
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_search_reference_library(query: str = "", limit: int = 20) -> dict[str, object]:
+        """Search the captured Agent Skills site and linked references; not a live freshness check."""
+        return references.search(query, limit)
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_get_reference_document(document_id: str, offset: int = 0) -> dict[str, object]:
+        """Read 8000 characters of a captured reference with URL, timestamp, hash and pagination."""
+        return references.document(document_id, offset)
 
     @server.tool(structured_output=True, annotations={"readOnlyHint": False, "destructiveHint": False,
                               "idempotentHint": False, "openWorldHint": True})

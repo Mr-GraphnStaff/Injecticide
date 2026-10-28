@@ -145,7 +145,7 @@ def scanner_metadata():
                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                          "freshness": "unknown" if age is None or age < 0 else "stale" if age > 90 else "current",
                          "age_days": age})
-    return {"scanner_version": "0.11.0", "adapter_version": "2026-10-28", "catalogs": catalogs,
+    return {"scanner_version": "0.12.0", "adapter_version": "2026-10-28", "catalogs": catalogs,
             "engine_source_sha256": engine_digest.hexdigest(),
             "engine_fingerprint_scope": "Sorted local scanner Python modules and shipped validator manifest; excludes uploaded content.",
             "update_policy": "reviewed_application_release", "automatic_research_activation": False,

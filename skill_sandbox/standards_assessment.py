@@ -50,6 +50,7 @@ def build_standards_assessment(result, text_sources):
     catalog = load_standards_catalog()
     source = dict(catalog["source"])
     definitions = {row["id"]: row for row in catalog["requirements"]}
+    sources = {row["id"]: row for row in _source_catalog()["sources"]}
     analysis = result.get("package_analysis") or {}
     target = analysis.get("target_runtime", "auto")
     texts = {s["path"]: s["text"] for s in text_sources
@@ -68,15 +69,16 @@ def build_standards_assessment(result, text_sources):
             omitted_rows += 1
             return
         definition = definitions[rule_id]
+        row_source = sources.get(definition.get("source_id"), source)
         row = {**definition, "status": status, "applicability": applicability,
                "path": path, "line": line, "message": message,
                "evidence": [{"path": path, "line": line, "text": message}] if path else [],
-               "sources": [{"url": source["url"], "title": source.get("title", "Agent Skills specification"),
-                            "section": definition["section"], "revision": source.get("revision"),
-                            "source_sha256": source.get("source_sha256")}], **details}
+               "sources": [{"url": row_source["url"], "title": row_source.get("title", "Agent Skills documentation"),
+                            "section": definition["section"], "revision": row_source.get("revision"),
+                            "source_sha256": row_source.get("source_sha256")}], **details}
         # The specification is not an authority for security/runtime validation;
         # those rows expose unsupported areas rather than invented standards.
-        if definition["category"] in {"security", "runtime_evaluation"} or rule_id == "vendor_runtime_compatibility":
+        if (definition["category"] in {"security", "runtime_evaluation"} and not definition.get("source_id")) or rule_id == "vendor_runtime_compatibility":
             row["sources"] = []
         rows.append(row)
 
@@ -123,9 +125,11 @@ def build_standards_assessment(result, text_sources):
         add("yaml_frontmatter", parse_status, parse_message, path, 1 if text is not None else None)
         checks = portable_skill_checks(parsed, path) if parsed is not None else [
             {"id": rule_id, "status": "not_assessed", "message": "Field constraints cannot be assessed without parsed frontmatter."}
-            for rule_id in ("name_required", "name_length", "name_characters", "name_hyphens", "name_directory_match", "description_required", "description_length", "compatibility_value", "metadata_value", "allowed_tools_value")]
+            for rule_id in ("name_required", "name_length", "name_characters", "name_hyphens", "name_directory_match", "description_required", "description_length", "compatibility_value", "metadata_value", "frontmatter_fields", "allowed_tools_value")]
         for check in checks:
             key = "name" if check["id"].startswith("name_") else "description" if check["id"].startswith("description_") else check["id"].removesuffix("_value").replace("_", "-")
+            if check["id"] == "frontmatter_fields" and parsed is not None:
+                key = next((field for field in parsed if field not in BASE_FIELDS), "")
             add(check["id"], check["status"], check["message"], path, positions.get(key),
                 applicability="not_applicable" if check["status"] == "not_applicable" else "applicable")
         add("markdown_body", "pass" if parsed is not None else "not_assessed",
@@ -137,7 +141,7 @@ def build_standards_assessment(result, text_sources):
             path, positions.get("license"), applicability="applicable" if license_present or parsed is None else "not_applicable")
         extras = parsed is not None and bool(set(parsed) - BASE_FIELDS)
         add("frontmatter_extensions", "not_assessed" if extras or parsed is None else "not_applicable",
-            "Additional frontmatter fields do not automatically invalidate portable base constraints; vendor support and unknown extension semantics are unverified.", path,
+            "Additional fields fail the strict portable field allowlist. Selected vendor extension support is a separate, unverified compatibility question.", path,
             applicability="applicable" if extras or parsed is None else "not_applicable")
         coverage = entry.get("analysis_coverage") or {}
         incomplete = any((coverage.get(stage) or {}).get("status") == "partial" for stage in ("extraction", "text_patterns"))
@@ -148,6 +152,16 @@ def build_standards_assessment(result, text_sources):
             path, measured_lines=complete_lines)
         add("body_token_guidance", "not_assessed", "Fewer than 5000 instruction tokens is recommended. Token count is unavailable; no tokenizer was run.", path, token_measurement="not_available")
         add("description_trigger_quality", "not_assessed", "Whether the description communicates when to use the skill requires semantic and behavioral evaluation.", path, positions.get("description"))
+        for rule_id, message in (
+            ("body_instruction_quality", "Step-by-step instructions, examples and edge cases are recommended; heading presence cannot establish instructional quality."),
+            ("optional_resource_layout", "scripts/, references/ and assets/ are optional conventions. Arbitrary additional files and directories are permitted."),
+            ("script_authoring_guidance", "Self-containment, dependency documentation, helpful errors and edge-case handling require script review; no script was run."),
+            ("reference_file_guidance", "Focused reference files and references one level deep are recommended. Complete reference-chain depth and semantic focus are not assessed."),
+            ("metadata_key_guidance", "Distinct metadata key names are recommended; uniqueness across external clients is not verified."),
+            ("reproducible_dependencies", "Pinned tool/dependency versions, prerequisites and supported launcher syntax require review; static declarations do not establish reproducible execution."),
+            ("script_interface_quality", "Noninteractive inputs, help, structured output, diagnostic separation, safe retries and exit behavior require review and isolated execution."),
+        ):
+            add(rule_id, "not_assessed", message, path)
     add("vendor_runtime_compatibility", "not_assessed", "Portable syntax does not establish acceptance by the selected vendor, installed version or managed environment.")
     add("security_coverage", "not_assessed", "Measured security findings are reported separately. These detectors do not establish complete OWASP coverage, absence of malicious behavior or safe execution.")
     for rule_id, message in (
@@ -155,6 +169,9 @@ def build_standards_assessment(result, text_sources):
         ("output_quality", "Output quality requires representative runtime tasks and reviewed results; none was performed."),
         ("script_behavior", "Script behavior and environment compatibility were not executed or verified."),
         ("runtime_control_enforcement", "Runtime permissions, approvals and enforcement were not verified."),
+        ("client_lifecycle", "Discovery, trust gating, collisions, activation, progressive loading, permission handling and context preservation are client behaviors; an uploaded package cannot establish them."),
+        ("evaluation_methodology", "Quality evaluation requires realistic cases, with/without or previous-version baselines, evidence-backed assertions, repeated runs, timing/token records and human review; none was executed by this static scan."),
+        ("trigger_evaluation_methodology", "Description evaluation requires labeled positive and near-miss prompts, repeated activation observations, train/validation separation and fresh checks; no trigger evaluation was run."),
     ):
         add(rule_id, "not_assessed", message)
     if omitted_rows:

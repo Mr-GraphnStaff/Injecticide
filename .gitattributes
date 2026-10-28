@@ -2,3 +2,5 @@
 *.ico binary
 # Preserve reviewed upstream bytes and whitespace for integrity verification.
 skill_sandbox/vendor_validators/** -text -whitespace
+research_mcp/reference_docs/agent-skills/*.txt -text -whitespace
+skill_sandbox/schemas/** -text -whitespace

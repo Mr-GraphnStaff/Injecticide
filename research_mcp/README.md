@@ -48,9 +48,40 @@ The October 27 source expansion adds official validator source monitoring,
 MITRE ATLAS and CoSAI, plus explicit NIST GenAI, OWASP Agentic Applications and
 MCP security pages. See [source authority and coverage](../docs/research/2026-10-27-source-authority.md)
 for applicability, validator limitations, source conflicts and remaining work.
-The registry now has 42 sources and 61 seeds; the 40-attempt rotating cycle does
+The October 28 documentation ingestion expands the Agent Skills source to all
+nine pages listed in both its official index and sitemap, plus the indexes.
+The registry still has 42 sources, with additional explicit documentation seeds;
+the 40-attempt rotating cycle does
 not guarantee an hourly refresh of every URL. Collection does not execute vendor
 scripts or automatically promote retrieved text into scanner rejection rules.
+
+### Captured Agent Skills reference library
+
+`reference_docs/agent-skills/manifest.json` records the complete published site,
+every direct HTTPS link in its Markdown, and pinned reference-validator and
+skill-creator evaluation supplements. Captured text retains source URLs, retrieval
+times, raw-response SHA-256 fingerprints and separate text-integrity hashes.
+The complete Agent Skills documentation and licensed pinned examples retain
+their notices. Other linked pages are shipped as attributed excerpts of at most
+200 words; complete raw responses remain in local research evidence.
+Failed retrievals and reviewed fallback destinations are retained explicitly.
+Community/product links are not treated as normative scanner requirements.
+
+`research_search_reference_library` searches this bundled evidence offline;
+`research_get_reference_document` returns up to 8000 characters with pagination.
+These tools return captured research data, never live verification or active
+instructions. Live source monitoring remains in the normal collector.
+
+Reproduce a capture from the repository root into a **new** directory:
+
+```powershell
+python -m tools.ingest_agent_skills_site --output tmp/new-agent-skills-capture
+```
+
+The tool checks the index against the sitemap, follows each direct HTTPS
+reference, records unavailable destinations and captures the explicitly reviewed
+supplement list. It never recursively mirrors unrelated websites or executes
+downloaded scripts. See the [full review and implementation map](../docs/research/2026-10-28-agent-skills-full-reference.md).
 
 `sources.json` is an administrator-controlled source registry mounted read-only.
 It includes OWASP, NIST, portable specifications and vendor-specific sources for

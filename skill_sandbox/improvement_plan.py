@@ -24,6 +24,7 @@ FORMAT_ACTIONS = {
     "description_length": "Adjust the description to the specification's supported length.",
     "compatibility_value": "Correct the compatibility field representation and documented length constraints.",
     "metadata_value": "Represent metadata as a mapping with string keys and string values.",
+    "frontmatter_fields": "Move additional skill properties such as version under metadata as string values. Use the selected vendor profile to assess vendor-specific extensions separately.",
     "allowed_tools_value": "Correct allowed-tools to the representation required by the cited portable specification.",
 }
 SECURITY_ACTIONS = {
@@ -45,6 +46,9 @@ MANUAL_ACTIONS = {
     "runtime_control_enforcement": "Verify the intended permissions and approval boundaries in the selected runtime, including a case that must be denied.",
     "vendor_runtime_compatibility": "Check the selected vendor and installed version's requirements, then validate the skill in that environment.",
     "security_coverage": "Review the scanner's disclosed coverage gaps and the skill's trust boundaries. A clear static scan does not establish safe execution.",
+    "evaluation_methodology": "Create realistic test cases and run each with the skill and a no-skill or previous-version baseline in fresh isolated contexts. Grade actual outputs with evidence-backed assertions; record repeated-run timing and token data, critique weak assertions, and obtain human review.",
+    "trigger_evaluation_methodology": "Create labeled positive and near-miss prompts, keep a fixed train/validation split, observe repeated real skill activations, and verify the chosen description against fresh prompts.",
+    "client_lifecycle": "Verify discovery, precedence, trust checks, activation, on-demand loading and context preservation in the intended client; package text cannot establish those behaviors.",
 }
 PRIORITY_ORDER = {"required": 0, "high": 1, "normal": 2, "manual": 3}
 

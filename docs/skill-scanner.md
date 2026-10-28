@@ -28,6 +28,18 @@ unsupported compression and budget exclusions remain visible.
 
 ## What the result contains
 
+The 0.12.0 candidate adds a source-backed portable frontmatter allowlist and
+enforces version declarations as strings at `metadata.version`. A version is
+optional; no SemVer or changelog requirement is invented. Misplaced/non-string
+version declarations make the skill invalid and require review in every runtime
+profile. The scanner still inspects the artifact to return diagnostic evidence;
+this is not an HTTP upload rejection or runtime execution enforcement.
+
+All Agent Skills documentation sections are represented in the standards matrix,
+including explicit unimplemented authoring, script, client and runtime evaluation
+checks. The full site and linked references are available through the research
+MCP reference library. See the [source review and implementation map](research/2026-10-28-agent-skills-full-reference.md).
+
 - Original artifact and per-file hashes; accepted and excluded inventory.
 - Text/security findings with source locations and separate informational,
   review and governance classifications.

@@ -1,0 +1,2978 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-10-28T22:35:13+00:00",
+  "scope": "All pages in both the official documentation index and sitemap, plus every direct HTTPS reference in their Markdown. Outbound sites are not recursively mirrored.",
+  "documentation_pages": 9,
+  "documentation_complete": true,
+  "direct_references": 23,
+  "retrieved": 57,
+  "unavailable": 5,
+  "records": [
+    {
+      "url": "https://agentskills.io/llms.txt",
+      "retrieved_at": "2026-10-28T22:34:47+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/llms.txt",
+      "sha256": "d9b01a3a13b79bb04ee0bc25125087d92e393f0c7e8f028c4c5fa4c217f1fbfb",
+      "bytes": 1374,
+      "media": "text/plain; charset=utf-8",
+      "text_file": "834ef9f0104d8bf173368e43.txt",
+      "id": "834ef9f0104d8bf173368e43",
+      "role": "site_index",
+      "text_sha256": "f79dacde45088bc74c0bdfda6fc128b0721cd8cb705a2c741b4936612641a432",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/sitemap.xml",
+      "retrieved_at": "2026-10-28T22:34:48+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/sitemap.xml",
+      "sha256": "a2638d695083d91fd36a87da6177410d5e45e7ba6ad9c6cee16e28c1e0c17c8b",
+      "bytes": 1504,
+      "media": "text/xml",
+      "text_file": "8af032a6a29a16f16de4bc3e.txt",
+      "id": "8af032a6a29a16f16de4bc3e",
+      "role": "site_index",
+      "text_sha256": "b707e193875a2993b0e9cc9944a02bf22d514982c14c6fc08aba44750438f32a",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/client-implementation/adding-skills-support.md",
+      "retrieved_at": "2026-10-28T22:34:49+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/client-implementation/adding-skills-support.md",
+      "sha256": "07511caadbe1bad84d81477d0efce87bc2c7eaff562179522c083910586dfb06",
+      "bytes": 20446,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "7f5d88b317537836aada1861.txt",
+      "id": "7f5d88b317537836aada1861",
+      "role": "site_document",
+      "text_sha256": "0579268d0e27cfecc0a1a104148af5169f60e56792d83a1bdf6d569a4ad2631f",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/clients.md",
+      "retrieved_at": "2026-10-28T22:34:50+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/clients.md",
+      "sha256": "6dabf4e3f4b39b29c6df9dcc6cff893a59a5cce3740a3a905df2a8b19e183e32",
+      "bytes": 282,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "4f5805b3611d176f4777034c.txt",
+      "id": "4f5805b3611d176f4777034c",
+      "role": "site_document",
+      "text_sha256": "bcc9d240acce807591835d34ff1e841d79735ad0e9d9e0172fd0dde9765c2d93",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/home.md",
+      "retrieved_at": "2026-10-28T22:34:51+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/home.md",
+      "sha256": "d17b5e7010bf5da5475cad48be33693e1943799aaa3fdb827a521002e2e77140",
+      "bytes": 3225,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "81ce1c1a2e185da6ec5847bd.txt",
+      "id": "81ce1c1a2e185da6ec5847bd",
+      "role": "site_document",
+      "text_sha256": "1b1b246008b2c4710e7ac64c7719e7decbe32cfbd25037477438fccd8953f89e",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/best-practices.md",
+      "retrieved_at": "2026-10-28T22:34:52+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/best-practices.md",
+      "sha256": "ab9f3b6091a0f24816b52cd7b90a3fdf53e621f47dba13b36694be272b87fb41",
+      "bytes": 15060,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "cbd99b2c87e830f5eae8e8db.txt",
+      "id": "cbd99b2c87e830f5eae8e8db",
+      "role": "site_document",
+      "text_sha256": "7f90d3a0d5cffa8257d08eb2c4f5262ee37d0628054fb7b6c62f71b3647a4b05",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "retrieved_at": "2026-10-28T22:34:53+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "sha256": "a799805f3a285390c1b6e906b691f56684fa1031b499d177f664f464d99fb684",
+      "bytes": 16973,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "94c6f5ccb444f9a9fbe82264.txt",
+      "id": "94c6f5ccb444f9a9fbe82264",
+      "role": "site_document",
+      "text_sha256": "e8e5100fffc34496b4646a29d690e1472937c941496e7d8faa94a41a2cc3fd46",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "retrieved_at": "2026-10-28T22:34:54+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "sha256": "7cc54fbb6abbcf08c33e7b320fd01a1fb9696426270da3b588a398d243bfd837",
+      "bytes": 13403,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "e65ffb50802d251e0b27d13e.txt",
+      "id": "e65ffb50802d251e0b27d13e",
+      "role": "site_document",
+      "text_sha256": "84ee5dbd11d31650797a5c9b297288cf2456cd322f27b7bb578161229e696339",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/quickstart.md",
+      "retrieved_at": "2026-10-28T22:34:56+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/quickstart.md",
+      "sha256": "7c480b447edac58fd8ff8f250c471dfc7d4621155b91fabed46379075c32bffb",
+      "bytes": 4080,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "f8ed2f7dc0b0131e2f2595cf.txt",
+      "id": "f8ed2f7dc0b0131e2f2595cf",
+      "role": "site_document",
+      "text_sha256": "63493e8d5504eb38af2317ecee9d6aeec0708e0b56ecc3dcd9ab55c16501f36a",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/using-scripts.md",
+      "retrieved_at": "2026-10-28T22:34:59+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/using-scripts.md",
+      "sha256": "2cd7727106b423a758b4b6b1ab3545da74845a98e68e6718279846f89d62ad1f",
+      "bytes": 12078,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "2d01afef73c46c5bcd58690e.txt",
+      "id": "2d01afef73c46c5bcd58690e",
+      "role": "site_document",
+      "text_sha256": "eb53e90db9e6e6e833e8a7b1fe450face95b2729770870707a0183455d8eab2f",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/specification.md",
+      "retrieved_at": "2026-10-28T22:35:00+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/specification.md",
+      "sha256": "9a67de89132948b2300b8dc87b93817971d47f9be89b644444965881a8dfde16",
+      "bytes": 7608,
+      "media": "text/markdown; charset=utf-8",
+      "text_file": "c196aa51b13b61a0c0cf5352.txt",
+      "id": "c196aa51b13b61a0c0cf5352",
+      "role": "site_document",
+      "text_sha256": "d649e260113d7fcd478eb0a5678678bac10994498aee81637d928e73093f899d",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/specification",
+      "retrieved_at": "2026-10-28T22:35:01+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/specification",
+      "sha256": "bbc245eb19d09e70fc9faee4bf54771a122d8da8f1b3b6e9de02d47fda6f4f05",
+      "bytes": 254887,
+      "media": "text/html; charset=utf-8",
+      "text_file": "f36ae4007ec3a8cffaebbd58.txt",
+      "role": "direct_outbound_reference",
+      "id": "f36ae4007ec3a8cffaebbd58",
+      "text_sha256": "d517dfad9358621b86fdbaf7b3ba87627fe48c8a790ee149f322a7b13ae5af37",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://bun.sh/",
+      "retrieved_at": "2026-10-28T22:35:01+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://bun.sh/",
+      "sha256": "52f151335bcc0a314ceb2622ebfb8f7286f27e7dbeecf04e8bf941f49d03d87c",
+      "bytes": 263351,
+      "media": "text/html; charset=utf-8",
+      "text_file": "57c1f1097c960c03ba5d346d.txt",
+      "role": "direct_outbound_reference",
+      "id": "57c1f1097c960c03ba5d346d",
+      "text_sha256": "4ff37b6246d55b9394213cbc51fe8f9669cbb03a5ce69ab1cfaed0ad9cc548c7",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://bun.sh/docs/cli/bunx",
+      "retrieved_at": "2026-10-28T22:35:01+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://bun.sh/docs/pm/bunx",
+      "sha256": "72fe82b4cec69f9221c850964a0a2be5b2055f27ad693bef665619488c3f2916",
+      "bytes": 111065,
+      "media": "text/html; charset=utf-8",
+      "text_file": "99024300be7ba95c24e574c5.txt",
+      "role": "direct_outbound_reference",
+      "id": "99024300be7ba95c24e574c5",
+      "text_sha256": "8b77aa426a6395eda33122fd0c17e9d04ac40c2002274cf37ea6b94599feb38a",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://code.visualstudio.com/",
+      "retrieved_at": "2026-10-28T22:35:01+00:00",
+      "status": "unknown_unverified",
+      "reason": "Redirect leaves configured source scopes",
+      "role": "direct_outbound_reference",
+      "id": "177f0934751badde8cc4b6dd"
+    },
+    {
+      "url": "https://deno.com/",
+      "retrieved_at": "2026-10-28T22:35:01+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://deno.com/",
+      "sha256": "b57fed530acf986964cef77ecdc665a0452db8c6d26b33d54dc21b1dad7704ab",
+      "bytes": 286124,
+      "media": "text/html; charset=utf-8",
+      "text_file": "b522df73c3c721cecfeace16.txt",
+      "role": "direct_outbound_reference",
+      "id": "b522df73c3c721cecfeace16",
+      "text_sha256": "d41c8e8156eb0fe941b9bc379658982f3d220da5234c6531a5a0efe2ac7f5d15",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://discord.gg/MKPE9g8aUy",
+      "retrieved_at": "2026-10-28T22:35:02+00:00",
+      "status": "unknown_unverified",
+      "reason": "Redirect leaves configured source scopes",
+      "role": "direct_outbound_reference",
+      "id": "32de03e5a380777ca7622399"
+    },
+    {
+      "url": "https://docs.astral.sh/uv/",
+      "retrieved_at": "2026-10-28T22:35:02+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://docs.astral.sh/uv/",
+      "sha256": "1ed3861862ea3552844cca3a6f68394c440df5540b76db6d13f93ab10b4d7562",
+      "bytes": 83236,
+      "media": "text/html; charset=utf-8",
+      "text_file": "3eec1b11d66cfd86665066ff.txt",
+      "role": "direct_outbound_reference",
+      "id": "3eec1b11d66cfd86665066ff",
+      "text_sha256": "89045897dd3a62aadcaaa99a322c21cbe090aeb403a8a65a3f84ad2e1fa592bf",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://docs.astral.sh/uv/guides/tools/",
+      "retrieved_at": "2026-10-28T22:35:05+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://docs.astral.sh/uv/guides/tools/",
+      "sha256": "001390257dfb6b3941d4f106951ae4886353303d4fceb6b7235bfe70f81ca3c3",
+      "bytes": 85941,
+      "media": "text/html; charset=utf-8",
+      "text_file": "01c87d426f4832c6609f7559.txt",
+      "role": "direct_outbound_reference",
+      "id": "01c87d426f4832c6609f7559",
+      "text_sha256": "23eb035666eb6fe70b6378d512d2d593080834d48cd435dd918380a1600ebc32",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://docs.deno.com/runtime/reference/cli/run/",
+      "retrieved_at": "2026-10-28T22:35:05+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://docs.deno.com/runtime/reference/cli/run/",
+      "sha256": "197ef7a8d45b428095c368cb4afbf78d1f6b52bbf540ba70bf12387593c19d75",
+      "bytes": 109018,
+      "media": "text/html; charset=UTF-8",
+      "text_file": "53d5945c911fbda2affb8276.txt",
+      "role": "direct_outbound_reference",
+      "id": "53d5945c911fbda2affb8276",
+      "text_sha256": "cba0a27e3239e2994d4a64cdfc9bd840513a94a5eaa7c5cf3cc0b9f59eb4f4ba",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://docs.npmjs.com/cli/commands/npx",
+      "retrieved_at": "2026-10-28T22:35:05+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://docs.npmjs.com/cli/commands/npx/",
+      "sha256": "4e9e23e258bd3bb1315c2b7f92558c138bb1b0e769c7ad188e604f12c3d9906c",
+      "bytes": 71,
+      "media": "text/html; charset=utf-8",
+      "text_file": "293874d2d592069dd07fe7d8.txt",
+      "role": "direct_outbound_reference",
+      "id": "293874d2d592069dd07fe7d8",
+      "text_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://github.com/agentskills/agentskills",
+      "retrieved_at": "2026-10-28T22:35:05+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://github.com/agentskills/agentskills",
+      "sha256": "ebd283448ce90d02676254af25640bc70cb49b8fd38f6dfc2191eb2db495a4bf",
+      "bytes": 251558,
+      "media": "text/html; charset=utf-8",
+      "text_file": "48dbbdd8fd0d302995a78e82.txt",
+      "role": "direct_outbound_reference",
+      "id": "48dbbdd8fd0d302995a78e82",
+      "text_sha256": "0c66f5fff1bd7c9aadad294337347519203b36bbbc9149d6a35c33eabd1df625",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://github.com/agentskills/agentskills/tree/main/skills-ref",
+      "retrieved_at": "2026-10-28T22:35:06+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://github.com/agentskills/agentskills/tree/main/skills-ref",
+      "sha256": "438bddb4ff601b8b7407ffce7490ce5fa4977bf1601212ae04ad2367c0b9dfab",
+      "bytes": 222192,
+      "media": "text/html; charset=utf-8",
+      "text_file": "a05d483b880c7c5232b1f145.txt",
+      "role": "direct_outbound_reference",
+      "id": "a05d483b880c7c5232b1f145",
+      "text_sha256": "06a7cb7dec5bdc855cbe515c21c874a4fb6088ce314aabeb175872ff7bc9f1ad",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://github.com/anthropics/skills",
+      "retrieved_at": "2026-10-28T22:35:06+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://github.com/anthropics/skills",
+      "sha256": "b34f7fbf856b7180756fe5c49af0d5f25f2cc1002d183133c98d0648fe00016b",
+      "bytes": 244514,
+      "media": "text/html; charset=utf-8",
+      "text_file": "82a901da1b9bedec6f38670b.txt",
+      "role": "direct_outbound_reference",
+      "id": "82a901da1b9bedec6f38670b",
+      "text_sha256": "5277a4afc0aabd4b652428a5a0d4ea78aa3807fc6a50adf85dbf0b9a83c2fb0a",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+      "retrieved_at": "2026-10-28T22:35:06+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+      "sha256": "bc9c6acf571d8909878910270e93213a673a469624ea3467e84acfc488cb3fa5",
+      "bytes": 185182,
+      "media": "text/html; charset=utf-8",
+      "text_file": "8a7784776c1d7d1da2d9eec1.txt",
+      "role": "direct_outbound_reference",
+      "id": "8a7784776c1d7d1da2d9eec1",
+      "text_sha256": "c00ec0ef1e5a728998c21145f3a1faa3f9b69a63efe7e640ad7b24baf9e273c8",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot",
+      "retrieved_at": "2026-10-28T22:35:06+00:00",
+      "status": "unknown_unverified",
+      "reason": "Query does not match an approved provider contract",
+      "role": "direct_outbound_reference",
+      "id": "cdcf036a1e70bc01f2cce224"
+    },
+    {
+      "url": "https://peps.python.org/pep-0508/",
+      "retrieved_at": "2026-10-28T22:35:06+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://peps.python.org/pep-0508/",
+      "sha256": "f3dafae185e704fbf90cc0147bead8156d6dad3b40d115c50415b6b3890f822a",
+      "bytes": 61538,
+      "media": "text/html; charset=utf-8",
+      "text_file": "af9f5bee9c7951688401f5c4.txt",
+      "role": "direct_outbound_reference",
+      "id": "af9f5bee9c7951688401f5c4",
+      "text_sha256": "bee0096ec97f1715016570fae917dc514403bfa0297ea60c19152a0244e2dd43",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://peps.python.org/pep-0723/",
+      "retrieved_at": "2026-10-28T22:35:07+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://peps.python.org/pep-0723/",
+      "sha256": "1bb79e5880add2424221e259128a0a8ceeb8f047a159d8a03d8a26b823f22c78",
+      "bytes": 73655,
+      "media": "text/html; charset=utf-8",
+      "text_file": "8b7710c3253b6511d33ff0c0.txt",
+      "role": "direct_outbound_reference",
+      "id": "8b7710c3253b6511d33ff0c0",
+      "text_sha256": "f1668a107784dc36557041c3c87512b8ae71dce5d12576b3111a37eafd097f05",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://pipx.pypa.io/",
+      "retrieved_at": "2026-10-28T22:35:07+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://pipx.pypa.io/stable/",
+      "sha256": "4156548b48a0bdb579a52894635820d230335dc0fc56dcb4786a91ab03496212",
+      "bytes": 49169,
+      "media": "text/html; charset=utf-8",
+      "text_file": "92008da2415fd8501cb6dfab.txt",
+      "role": "direct_outbound_reference",
+      "id": "92008da2415fd8501cb6dfab",
+      "text_sha256": "05f2e812b5809ae6038b6b52332259b1e48f97e62ebed10868e32af0e0e82720",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://pkg.go.dev/cmd/go",
+      "retrieved_at": "2026-10-28T22:35:12+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://pkg.go.dev/cmd/go",
+      "sha256": "c97876ec81b607ef3d529ed32a804e0be0c27b4adf5c7f489e7c1ad416281d5e",
+      "bytes": 258188,
+      "media": "text/html; charset=utf-8",
+      "text_file": "e8ff882c3f303f62e984e451.txt",
+      "role": "direct_outbound_reference",
+      "id": "e8ff882c3f303f62e984e451",
+      "text_sha256": "f9ba20c5f38fa8847c580f180b2238e1fb71bfadea52253a52eebb59b186e99b",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agent-sdk/typescript",
+      "retrieved_at": "2026-10-28T22:35:12+00:00",
+      "status": "unknown_unverified",
+      "reason": "Redirect leaves configured source scopes",
+      "role": "direct_outbound_reference",
+      "id": "3490ea16ea80a6589a9fefc4"
+    },
+    {
+      "url": "https://rubygems.org",
+      "retrieved_at": "2026-10-28T22:35:12+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://rubygems.org/",
+      "sha256": "31e2ad13e84b21a7bb29f2ca5d9ab8190ab692d871b6c8bc7f9850602dbb845e",
+      "bytes": 36689,
+      "media": "text/html; charset=utf-8",
+      "text_file": "63ecb22b03941ff8baf8a861.txt",
+      "role": "direct_outbound_reference",
+      "id": "63ecb22b03941ff8baf8a861",
+      "text_sha256": "aa0021e5b74becae515b566e9bc792ce42c1b6df7c1f7312fb9d9f996cd73119",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://specifications.freedesktop.org/basedir-spec/latest/",
+      "retrieved_at": "2026-10-28T22:35:12+00:00",
+      "status": "unknown_unverified",
+      "reason": "Redirect leaves configured source scopes",
+      "role": "direct_outbound_reference",
+      "id": "52b2c9ea778684934f393cc3"
+    },
+    {
+      "url": "https://www.anthropic.com/",
+      "retrieved_at": "2026-10-28T22:35:13+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://www.anthropic.com/",
+      "sha256": "d8c7353dd77108bcbd4f840048242ca29b8100e69ae80de2021b53ee34ca79cc",
+      "bytes": 217523,
+      "media": "text/html; charset=utf-8",
+      "text_file": "afe2508ac4caf5ee1733a2f2.txt",
+      "role": "direct_outbound_reference",
+      "id": "afe2508ac4caf5ee1733a2f2",
+      "text_sha256": "3f700330244c9cf5e057e30e9b6f220f4ff70b1d74ccb66c7de1d06f478efa72",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/README.md",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/README.md",
+      "retrieved_at": "2026-10-28T22:37:44+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "2fb9c4cc026366ea6e21c60cb23c908a4d27c62071819cc06beffaac102d0694",
+      "text_file": "c9231e6f69c4781f767ac786.txt",
+      "bytes": 5552,
+      "id": "c9231e6f69c4781f767ac786",
+      "text_sha256": "16a04096f2595b14c26c3efd6aa609711010148888d60efe2560970d28a1b7be",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/SKILL.md",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/SKILL.md",
+      "retrieved_at": "2026-10-28T22:37:44+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "dcd4803e61e913e6fc27294184cd3a71f09f5e924ff20c8a9a20173e7b3c2bcf",
+      "text_file": "f086d61fd6e6ba0bf7a745c8.txt",
+      "bytes": 33168,
+      "id": "f086d61fd6e6ba0bf7a745c8",
+      "text_sha256": "e030e7685e26283b4a76f5202aa3ae8516fb41dde799be5ae8ea6393ec009fe9",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/references/schemas.md",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/references/schemas.md",
+      "retrieved_at": "2026-10-28T22:37:44+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "8e8876180a8989b406a4d3edddf875b04cdfd5805cc8616686d552b11ce4455f",
+      "text_file": "cee0532bd47d2129338971dc.txt",
+      "bytes": 12061,
+      "id": "cee0532bd47d2129338971dc",
+      "text_sha256": "5ef5fd3c1ac7baae965b5bda6b4f2cf6a191a2d712c7fef2a12dde84573b4833",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/grader.md",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/grader.md",
+      "retrieved_at": "2026-10-28T22:37:44+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "57134da0c1a4eea33fbd74a1c9c44aa814f07d6bc64de303edb586f941e5d21a",
+      "text_file": "af03f4c47fc2dc76466a7f0e.txt",
+      "bytes": 9049,
+      "id": "af03f4c47fc2dc76466a7f0e",
+      "text_sha256": "6ec1c6950fcafa3e00d5e845b2498c5ea3e8f7f012bd9c6abad25425f3ee619c",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/comparator.md",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/comparator.md",
+      "retrieved_at": "2026-10-28T22:37:45+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "fe1fc9787c495d864c5d6eada47396478572325fde1b33a96d78bf4b849b7a3e",
+      "text_file": "d9423566945bd37c5f626e6f.txt",
+      "bytes": 7287,
+      "id": "d9423566945bd37c5f626e6f",
+      "text_sha256": "ee90af43eb0dbe2fdadbb96d01f9776f387ed5c529ce083c22b8bec4e3ae10d3",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/analyzer.md",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/analyzer.md",
+      "retrieved_at": "2026-10-28T22:37:45+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "bf68f4cac5a56c673a928c2e6d619586c5b93ea364026ab37547772cb45a663a",
+      "text_file": "fcf9b2e1ff7a7c7fc2985c7e.txt",
+      "bytes": 10376,
+      "id": "fcf9b2e1ff7a7c7fc2985c7e",
+      "text_sha256": "8ccce0d9755f7684277870e791ffb643b026d5dd4508e5c1bdc8dfec9e8532b5",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/run_loop.py",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/run_loop.py",
+      "retrieved_at": "2026-10-28T22:37:45+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "7bd6f674203168520517eec94c55f493c0d154339b061b4d7c0f0dad187d0f21",
+      "text_file": "b410f66a87597ad2079ab703.txt",
+      "bytes": 13605,
+      "id": "b410f66a87597ad2079ab703",
+      "text_sha256": "85b36782ec856e066257cf8e917606945e6df098428005e17f8d60a5b6789c29",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/run_eval.py",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/run_eval.py",
+      "retrieved_at": "2026-10-28T22:37:45+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "43e3b8f80dbf69c343967ba77e268fae991d9fa3ed68b32a0ff02532cd48657f",
+      "text_file": "1e82b74817097bf8a1bb85af.txt",
+      "bytes": 11464,
+      "id": "1e82b74817097bf8a1bb85af",
+      "text_sha256": "252ac58feedf233673d6a605661158db20806f724c7d1dd32c92ae316b24ef67",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/improve_description.py",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/improve_description.py",
+      "retrieved_at": "2026-10-28T22:37:45+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "87d864570220b699fac52da309d2d6efdb060647bfebc74f768128e646accf80",
+      "text_file": "838b38e5858b20dda3fb407c.txt",
+      "bytes": 11116,
+      "id": "838b38e5858b20dda3fb407c",
+      "text_sha256": "09425704c5717656fffd346ba075a390bb55d494dd1082bccd4fe2423117fa05",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/aggregate_benchmark.py",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/aggregate_benchmark.py",
+      "retrieved_at": "2026-10-28T22:37:46+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "123ef128ea5ccc01a4b1ac212ef5567f21e9c13d3d240609780beeb3200c49aa",
+      "text_file": "2a5b6a2214b64bf7030a7eba.txt",
+      "bytes": 14386,
+      "id": "2a5b6a2214b64bf7030a7eba",
+      "text_sha256": "16c5a53e4cbf55a679a42c244cba39cee463d99ce507ecc9fafc4cb4e0a133e0",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/generate_report.py",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/generate_report.py",
+      "retrieved_at": "2026-10-28T22:37:46+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "13df7118a3c50c83c4c3250a606d5f2b20b25a3d44cbc392b3d669ec75281453",
+      "text_file": "425d776beac2ee0690aadbfd.txt",
+      "bytes": 12847,
+      "id": "425d776beac2ee0690aadbfd",
+      "text_sha256": "d90ec4cfc2dd539564edd332880fb7561309a1f0097d082de88e3101d6c8031e",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/eval-viewer/generate_review.py",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/eval-viewer/generate_review.py",
+      "retrieved_at": "2026-10-28T22:37:46+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "fc9d1b9243fe5ab6012ebd579bd76d0035de1b79fd3b969de114defab26478fb",
+      "text_file": "62bba0589474a561616763b4.txt",
+      "bytes": 16365,
+      "id": "62bba0589474a561616763b4",
+      "text_sha256": "44d97a35be977331b13b04932927b3beb285862a173f0f15dd052d4f31de5c76",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref/src/skills_ref/validator.py",
+      "resolved_url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref/src/skills_ref/validator.py",
+      "retrieved_at": "2026-10-28T22:37:46+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "b5ee3d8537c83c959c31c2cb080a5227646ede5aea545f1ac835ed3c4645f6c5",
+      "text_file": "03b0fc8447c521742e8daf7f.txt",
+      "bytes": 5154,
+      "id": "03b0fc8447c521742e8daf7f",
+      "text_sha256": "44da48d29a89c1bb540ecd629b5bafd9d7e6c13c124cb31c33f7d0bf95b648a0",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref/README.md",
+      "resolved_url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref/README.md",
+      "retrieved_at": "2026-10-28T22:37:46+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "23945a45bd15d18d7da3652cd4ea6ea66950db464613c4810d7026bd0921eb9f",
+      "text_file": "b0896facaec1471cf88d50b2.txt",
+      "bytes": 2166,
+      "id": "b0896facaec1471cf88d50b2",
+      "text_sha256": "0d93bd0c2a285a6571fb6eb7fa016dc3529a5c52efe293351413e308aefa4df1",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/agent-sdk/typescript.md",
+      "resolved_url": "https://code.claude.com/docs/en/agent-sdk/typescript.md",
+      "retrieved_at": "2026-10-28T22:37:48+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "1153044d62625a791f34279ce3db54587c2dd51aed2fc61a3f984c80bb329913",
+      "text_file": "b196bc56c2294b0ad04f5665.txt",
+      "bytes": 328795,
+      "id": "b196bc56c2294b0ad04f5665",
+      "text_sha256": "b66c1e2af1587ab2f12f522ce59f86c891db86f1420657b67b512aa7f81990ef",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://specifications.freedesktop.org/basedir/latest/",
+      "resolved_url": "https://specifications.freedesktop.org/basedir/latest/",
+      "retrieved_at": "2026-10-28T22:37:47+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "032442a6466297b4ad4de663e79bf6a786044dc0218f15df569482a14fde44b2",
+      "text_file": "a9e27770e839736847451da1.txt",
+      "bytes": 19980,
+      "id": "a9e27770e839736847451da1",
+      "text_sha256": "d043a28de92c7b4cae69f2c344809bd5586ba6c95df43f1d0f8af2c2b1d5de56",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "url": "https://discord.com/invite/MKPE9g8aUy",
+      "resolved_url": "https://discord.com/invite/MKPE9g8aUy",
+      "retrieved_at": "2026-10-28T22:37:47+00:00",
+      "status": "retrieved",
+      "role": "reviewed_linked_source_supplement",
+      "sha256": "8b0ba40e8be7abe1eff807b3d7864d370ac443d081f2bf5b3b15147a2c73ad45",
+      "text_file": "51988e331bc5c925e4954559.txt",
+      "bytes": 25375,
+      "id": "51988e331bc5c925e4954559",
+      "text_sha256": "431cfccc99536cb50e34a723e3995c840555fa1e232c02cabceb541b33c0bce2",
+      "text_scope": "attributed_excerpt_max_200_words"
+    },
+    {
+      "id": "622f92dd347ae60fcacae696",
+      "url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/LICENSE.txt",
+      "resolved_url": "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/LICENSE.txt",
+      "retrieved_at": "2026-10-28T22:40:30+00:00",
+      "status": "retrieved",
+      "role": "upstream_license",
+      "sha256": "bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362",
+      "text_sha256": "52b223c318576d65c32f70cb745f31352730e9f4c2c2c2570a66ce700f4f5a64",
+      "text_file": "622f92dd347ae60fcacae696.txt",
+      "bytes": 11345,
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "id": "37a453c55ffe085089aa8358",
+      "url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/LICENSE",
+      "resolved_url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/LICENSE",
+      "retrieved_at": "2026-10-28T22:40:31+00:00",
+      "status": "retrieved",
+      "role": "upstream_license",
+      "sha256": "993da3f8d330d69108e521636555f7783ef81d46b904394c59ec5ff651331fe5",
+      "text_sha256": "fe3eef8350e66cd74a866ab1c4393cf62d910ee44a0ccd2be662f3a4c331e03c",
+      "text_file": "37a453c55ffe085089aa8358.txt",
+      "bytes": 11344,
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "id": "86ae816a480f001e88ec465c",
+      "url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/docs/LICENSE",
+      "resolved_url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/docs/LICENSE",
+      "retrieved_at": "2026-10-28T22:40:32+00:00",
+      "status": "retrieved",
+      "role": "upstream_license",
+      "sha256": "9e5f1b3c610b9c2da5c313bf81d577a7d1acec686bdb0384edefa6df0f90cd94",
+      "text_sha256": "cbd5af318286b74656f145dff5091907cc23d6d8c9ad09e0291ec2497792ba41",
+      "text_file": "86ae816a480f001e88ec465c.txt",
+      "bytes": 18656,
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "retrieved_at": "2026-10-28T22:42:58+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "sha256": "5764b9f8168c2fff53e93aad73e2b879362289269a8a97162230c71801706a81",
+      "bytes": 248280,
+      "media": "text/html; charset=utf-8",
+      "text_file": "3ed1034f30451d905a26ef9d.txt",
+      "role": "site_html_representation",
+      "id": "3ed1034f30451d905a26ef9d",
+      "text_sha256": "dae7d6afbb6f9e131ee99c8ac05efe15022e13abe511041b6dbe1f4f5d903f34",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/clients",
+      "retrieved_at": "2026-10-28T22:43:01+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/clients",
+      "sha256": "c40b09a0e117ba0e6ede4419db6ce767f75ce4f20b871bdd0bc409b9964b9c00",
+      "bytes": 127050,
+      "media": "text/html; charset=utf-8",
+      "text_file": "13a0a6247f171fdb9dd9cfad.txt",
+      "role": "site_html_representation",
+      "id": "13a0a6247f171fdb9dd9cfad",
+      "text_sha256": "24339056f83238ba3ad75093417dc2f7329b6af4d06e5e0c591391cc1c51115a",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/home",
+      "retrieved_at": "2026-10-28T22:43:04+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/home",
+      "sha256": "479fbb82478b9c65046934688ee6f2087855f99cd49e479e956a7306f3ca3d35",
+      "bytes": 146797,
+      "media": "text/html; charset=utf-8",
+      "text_file": "0a8f0e808225fe01ca834685.txt",
+      "role": "site_html_representation",
+      "id": "0a8f0e808225fe01ca834685",
+      "text_sha256": "85885a09ff6ae2fee677a427dca890d4308dadf3b9dfe6a4bdc4e568f81b2609",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/best-practices",
+      "retrieved_at": "2026-10-28T22:43:06+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/best-practices",
+      "sha256": "cc46b0e6927349331460ba33a602f816854f9fcb304589aa2499a34d19c3fdbb",
+      "bytes": 248968,
+      "media": "text/html; charset=utf-8",
+      "text_file": "a7c579abbd1adff747c91cc2.txt",
+      "role": "site_html_representation",
+      "id": "a7c579abbd1adff747c91cc2",
+      "text_sha256": "fe58b8cc80556c26f89cc1bdb337f04f8e8f78c6241b90541307b0b9b47bae30",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "retrieved_at": "2026-10-28T22:43:08+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "sha256": "38067b71bfff7e1bf545494143e9ed9fd7c6396bb73001a247f784ea45dfd797",
+      "bytes": 254334,
+      "media": "text/html; charset=utf-8",
+      "text_file": "4f9e42d107b9824a081114fc.txt",
+      "role": "site_html_representation",
+      "id": "4f9e42d107b9824a081114fc",
+      "text_sha256": "95135e70b896f8d4fa022f1368e1b77c6e173048f3035e20c2bc3e836131813a",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "retrieved_at": "2026-10-28T22:43:10+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "sha256": "4e47ac998f432424cbb338351f5b8b7a046a8d2bc853de9f02e0892b8e7dfbfe",
+      "bytes": 193938,
+      "media": "text/html; charset=utf-8",
+      "text_file": "5a76c2d18403e338b2642766.txt",
+      "role": "site_html_representation",
+      "id": "5a76c2d18403e338b2642766",
+      "text_sha256": "1c2d9b2cc67bd8ee7c59020472c7d418dcc2a579dfeabe8399b59af4bb9535e8",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/quickstart",
+      "retrieved_at": "2026-10-28T22:43:11+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/quickstart",
+      "sha256": "76dd98d1d5fb2ebc8308fa77933b869b61a6b8694a5b10d16b58bb5cbfba2746",
+      "bytes": 132061,
+      "media": "text/html; charset=utf-8",
+      "text_file": "c65b6c12802c85cc291443ec.txt",
+      "role": "site_html_representation",
+      "id": "c65b6c12802c85cc291443ec",
+      "text_sha256": "eafc421f84637e52e184e1cac0f27f64e24a9b228d12674d14290781df63e8c9",
+      "text_scope": "full_licensed_source_text"
+    },
+    {
+      "url": "https://agentskills.io/skill-creation/using-scripts",
+      "retrieved_at": "2026-10-28T22:43:11+00:00",
+      "status": "retrieved",
+      "http_status": 200,
+      "resolved_url": "https://agentskills.io/skill-creation/using-scripts",
+      "sha256": "2aeda0e2c56c04ee43504e090f3d02a151c42ed6ff56a6dc8c5ff9987567469f",
+      "bytes": 291632,
+      "media": "text/html; charset=utf-8",
+      "text_file": "072dae8aa5fb753dba1503a2.txt",
+      "role": "site_html_representation",
+      "id": "072dae8aa5fb753dba1503a2",
+      "text_sha256": "2246efc0299b8a2692585a11ca4d94d9054f1e3129fc081a35d386bfe13d8543",
+      "text_scope": "full_licensed_source_text"
+    }
+  ],
+  "links": [
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support.md",
+      "target": "https://agentskills.io/specification#compatibility-field",
+      "fetch_url": "https://agentskills.io/specification"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support.md",
+      "target": "https://agentskills.io/specification.md",
+      "fetch_url": "https://agentskills.io/specification.md"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support.md",
+      "target": "https://specifications.freedesktop.org/basedir-spec/latest/",
+      "fetch_url": "https://specifications.freedesktop.org/basedir-spec/latest/"
+    },
+    {
+      "source": "https://agentskills.io/clients.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/home.md",
+      "target": "https://agentskills.io/clients.md",
+      "fetch_url": "https://agentskills.io/clients.md"
+    },
+    {
+      "source": "https://agentskills.io/home.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/home.md",
+      "target": "https://agentskills.io/skill-creation/quickstart.md",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart.md"
+    },
+    {
+      "source": "https://agentskills.io/home.md",
+      "target": "https://agentskills.io/specification.md",
+      "fetch_url": "https://agentskills.io/specification.md"
+    },
+    {
+      "source": "https://agentskills.io/home.md",
+      "target": "https://discord.gg/MKPE9g8aUy",
+      "fetch_url": "https://discord.gg/MKPE9g8aUy"
+    },
+    {
+      "source": "https://agentskills.io/home.md",
+      "target": "https://github.com/agentskills/agentskills",
+      "fetch_url": "https://github.com/agentskills/agentskills"
+    },
+    {
+      "source": "https://agentskills.io/home.md",
+      "target": "https://www.anthropic.com/",
+      "fetch_url": "https://www.anthropic.com/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices.md",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices.md",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices.md",
+      "target": "https://agentskills.io/skill-creation/using-scripts.md",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices.md",
+      "target": "https://agentskills.io/specification.md#progressive-disclosure",
+      "fetch_url": "https://agentskills.io/specification.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "target": "https://agentskills.io/skill-creation/using-scripts.md",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "target": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+      "fetch_url": "https://github.com/anthropics/skills/tree/main/skills/skill-creator"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "target": "https://platform.claude.com/docs/en/agent-sdk/typescript#sdk-task-notification-message",
+      "fetch_url": "https://platform.claude.com/docs/en/agent-sdk/typescript"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "target": "https://agentskills.io/specification.md#description-field",
+      "fetch_url": "https://agentskills.io/specification.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "target": "https://agentskills.io/specification.md#progressive-disclosure",
+      "fetch_url": "https://agentskills.io/specification.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "target": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+      "fetch_url": "https://github.com/anthropics/skills/tree/main/skills/skill-creator"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart.md",
+      "target": "https://agentskills.io/skill-creation/best-practices.md",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart.md",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart.md",
+      "target": "https://agentskills.io/specification.md",
+      "fetch_url": "https://agentskills.io/specification.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart.md",
+      "target": "https://code.visualstudio.com/",
+      "fetch_url": "https://code.visualstudio.com/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart.md",
+      "target": "https://github.com/anthropics/skills",
+      "fetch_url": "https://github.com/anthropics/skills"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart.md",
+      "target": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot",
+      "fetch_url": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://agentskills.io/specification#compatibility-field",
+      "fetch_url": "https://agentskills.io/specification"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://bun.sh/",
+      "fetch_url": "https://bun.sh/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://bun.sh/docs/cli/bunx",
+      "fetch_url": "https://bun.sh/docs/cli/bunx"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://deno.com/",
+      "fetch_url": "https://deno.com/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://docs.astral.sh/uv/",
+      "fetch_url": "https://docs.astral.sh/uv/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://docs.astral.sh/uv/guides/tools/",
+      "fetch_url": "https://docs.astral.sh/uv/guides/tools/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://docs.deno.com/runtime/reference/cli/run/",
+      "fetch_url": "https://docs.deno.com/runtime/reference/cli/run/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://docs.npmjs.com/cli/commands/npx",
+      "fetch_url": "https://docs.npmjs.com/cli/commands/npx"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://peps.python.org/pep-0508/",
+      "fetch_url": "https://peps.python.org/pep-0508/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://peps.python.org/pep-0723/",
+      "fetch_url": "https://peps.python.org/pep-0723/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://pipx.pypa.io/",
+      "fetch_url": "https://pipx.pypa.io/"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://pkg.go.dev/cmd/go#hdr-Compile_and_run_Go_program",
+      "fetch_url": "https://pkg.go.dev/cmd/go"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts.md",
+      "target": "https://rubygems.org",
+      "fetch_url": "https://rubygems.org"
+    },
+    {
+      "source": "https://agentskills.io/specification.md",
+      "target": "https://agentskills.io/llms.txt",
+      "fetch_url": "https://agentskills.io/llms.txt"
+    },
+    {
+      "source": "https://agentskills.io/specification.md",
+      "target": "https://github.com/agentskills/agentskills/tree/main/skills-ref",
+      "fetch_url": "https://github.com/agentskills/agentskills/tree/main/skills-ref"
+    }
+  ],
+  "automatic_rule_activation": false,
+  "review_status": "Captured content requires semantic review; retrieval is not verification or implementation.",
+  "attribution": "Agent Skills contributors. Upstream documentation is CC-BY-4.0; linked sources retain their own licenses. Source URLs and raw-byte hashes are retained.",
+  "supplemental_references": [
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/README.md",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/SKILL.md",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/references/schemas.md",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/grader.md",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/comparator.md",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/agents/analyzer.md",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/run_loop.py",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/run_eval.py",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/improve_description.py",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/aggregate_benchmark.py",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/scripts/generate_report.py",
+    "https://raw.githubusercontent.com/anthropics/skills/ca45fc496a3436251f191354091d557da31c15b5/skills/skill-creator/eval-viewer/generate_review.py",
+    "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref/src/skills_ref/validator.py",
+    "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref/README.md",
+    "https://code.claude.com/docs/en/agent-sdk/typescript.md",
+    "https://specifications.freedesktop.org/basedir/latest/",
+    "https://discord.com/invite/MKPE9g8aUy"
+  ],
+  "semantic_review": {
+    "site_documents": "All nine published documentation pages read in full.",
+    "outbound_references": "Direct link retrieval and primary-source supplements preserved; technical reference review is scoped to the sections relevant to skills, scripts, validation and evaluation. Marketing/community links are not normative scanner requirements."
+  },
+  "fallback_review": [
+    {
+      "url": "https://code.visualstudio.com/",
+      "outcome": "Opened in web tool; product homepage, no Agent Skills normative requirements."
+    },
+    {
+      "url": "https://discord.gg/MKPE9g8aUy",
+      "outcome": "Opened in web tool and captured approved invite destination; JavaScript community invite, no normative requirements."
+    },
+    {
+      "url": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot",
+      "outcome": "Opened in web tool; Copilot product/installation listing, no portable skill format requirement."
+    },
+    {
+      "url": "https://platform.claude.com/docs/en/agent-sdk/typescript",
+      "outcome": "Official redirect to code.claude.com; complete Markdown representation captured as a supplement."
+    },
+    {
+      "url": "https://specifications.freedesktop.org/basedir-spec/latest/",
+      "outcome": "Official redirect upgraded to HTTPS; destination captured as a supplement."
+    }
+  ],
+  "evidence_scope": "Captured source text; byte-identical raw responses are retained in the ingestion evidence directory. Text has its own integrity hash.",
+  "html_links": [
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#the-core-principle-progressive-disclosure",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "The core principle: progressive disclosure"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-1-discover-skills",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 1: Discover skills"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#where-to-scan",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Where to scan"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#what-to-scan-for",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "What to scan for"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#handling-name-collisions",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Handling name collisions"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#trust-considerations",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Trust considerations"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#cloud-hosted-and-sandboxed-agents",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Cloud-hosted and sandboxed agents"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-2-parse-skill-md-files",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 2: Parse SKILL.md files"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#frontmatter-extraction",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Frontmatter extraction"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#handling-malformed-yaml",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Handling malformed YAML"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#lenient-validation",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Lenient validation"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#what-to-store",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "What to store"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-3-disclose-available-skills-to-the-model",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 3: Disclose available skills to the model"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#building-the-skill-catalog",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Building the skill catalog"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#where-to-place-the-catalog",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Where to place the catalog"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#behavioral-instructions",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Behavioral instructions"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#filtering",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Filtering"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#when-no-skills-are-available",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "When no skills are available"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-4-activate-skills",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 4: Activate skills"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#model-driven-activation",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Model-driven activation"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#user-explicit-activation",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "User-explicit activation"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#what-the-model-receives",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "What the model receives"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#structured-wrapping",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Structured wrapping"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#listing-bundled-resources",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Listing bundled resources"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#permission-allowlisting",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Permission allowlisting"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-5-manage-skill-context-over-time",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 5: Manage skill context over time"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#protect-skill-content-from-context-compaction",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Protect skill content from context compaction"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#deduplicate-activations",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Deduplicate activations"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#subagent-delegation-optional",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Subagent delegation (optional)"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/specification",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Agent Skills specification"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#the-core-principle-progressive-disclosure",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-1-discover-skills",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#where-to-scan",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://specifications.freedesktop.org/basedir-spec/latest/",
+      "fetch_url": "https://specifications.freedesktop.org/basedir-spec/latest/",
+      "label": "XDG"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#what-to-scan-for",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#handling-name-collisions",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#trust-considerations",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#cloud-hosted-and-sandboxed-agents",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-2-parse-skill-md-files",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#frontmatter-extraction",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/specification",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "specification"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#handling-malformed-yaml",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#lenient-validation",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/specification",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "specification"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#what-to-store",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-3-disclose-available-skills-to-the-model",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#the-core-principle-progressive-disclosure",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "tier 1 of progressive disclosure"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#building-the-skill-catalog",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-4-activate-skills",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 4"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#structured-wrapping",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Structured wrapping"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#where-to-place-the-catalog",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-4-activate-skills",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 4"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#behavioral-instructions",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-4-activate-skills",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 4"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#filtering",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#when-no-skills-are-available",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-4-activate-skills",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#the-core-principle-progressive-disclosure",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "tier 2 of progressive disclosure"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#model-driven-activation",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-3-disclose-available-skills-to-the-model",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 3"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#what-the-model-receives",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "What the model receives"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#user-explicit-activation",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#what-the-model-receives",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/specification#compatibility-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "compatibility"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#structured-wrapping",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-5-manage-skill-context-over-time",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Step 5"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#listing-bundled-resources",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#permission-allowlisting",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#step-5-manage-skill-context-over-time",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#protect-skill-content-from-context-compaction",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#structured-wrapping",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "structured tags"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#deduplicate-activations",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support#subagent-delegation-optional",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/client-implementation/adding-skills-support",
+      "target": "https://agentskills.io/skill-creation/using-scripts",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Using scripts"
+    },
+    {
+      "source": "https://agentskills.io/clients",
+      "target": "https://agentskills.io/specification",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Specification"
+    },
+    {
+      "source": "https://agentskills.io/clients",
+      "target": "https://agentskills.io/skill-creation/quickstart",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "Quickstart"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#what-are-agent-skills",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "What are Agent Skills?"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#why-agent-skills",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "Why Agent Skills?"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#how-do-agent-skills-work",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "How do Agent Skills work?"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#where-can-i-use-agent-skills",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "Where can I use Agent Skills?"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#open-development",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "Open development"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#get-started-with-agent-skills",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "Get started with Agent Skills"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#what-are-agent-skills",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#why-agent-skills",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#how-do-agent-skills-work",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#where-can-i-use-agent-skills",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/clients",
+      "fetch_url": "https://agentskills.io/clients",
+      "label": "Client Showcase"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#open-development",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://www.anthropic.com/",
+      "fetch_url": "https://www.anthropic.com/",
+      "label": "Anthropic"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://github.com/agentskills/agentskills",
+      "fetch_url": "https://github.com/agentskills/agentskills",
+      "label": "GitHub"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://discord.gg/MKPE9g8aUy",
+      "fetch_url": "https://discord.gg/MKPE9g8aUy",
+      "label": "Discord"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/home#get-started-with-agent-skills",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/home",
+      "target": "https://agentskills.io/specification",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Specification"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#start-from-real-expertise",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Start from real expertise"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#extract-from-a-hands-on-task",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Extract from a hands-on task"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#synthesize-from-existing-project-artifacts",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Synthesize from existing project artifacts"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#refine-with-real-execution",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Refine with real execution"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#spending-context-wisely",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Spending context wisely"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#add-what-the-agent-lacks-omit-what-it-knows",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Add what the agent lacks, omit what it knows"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#design-coherent-units",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Design coherent units"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#aim-for-moderate-detail",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Aim for moderate detail"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#structure-large-skills-with-progressive-disclosure",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Structure large skills with progressive disclosure"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#calibrating-control",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Calibrating control"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#match-specificity-to-fragility",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Match specificity to fragility"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#provide-defaults-not-menus",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Provide defaults, not menus"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#favor-procedures-over-declarations",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Favor procedures over declarations"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#patterns-for-effective-instructions",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Patterns for effective instructions"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#gotchas-sections",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Gotchas sections"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#templates-for-output-format",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Templates for output format"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#checklists-for-multi-step-workflows",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Checklists for multi-step workflows"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#validation-loops",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Validation loops"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#plan-validate-execute",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Plan-validate-execute"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#bundling-reusable-scripts",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Bundling reusable scripts"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#next-steps",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Next steps"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#start-from-real-expertise",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#extract-from-a-hands-on-task",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#synthesize-from-existing-project-artifacts",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#refine-with-real-execution",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Evaluating skill output quality"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#spending-context-wisely",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#add-what-the-agent-lacks-omit-what-it-knows",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Evaluating skill output quality"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#design-coherent-units",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#aim-for-moderate-detail",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#structure-large-skills-with-progressive-disclosure",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/specification#progressive-disclosure",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "specification"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/specification#progressive-disclosure",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "progressive disclosure"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#calibrating-control",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#match-specificity-to-fragility",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#provide-defaults-not-menus",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#favor-procedures-over-declarations",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#templates-for-output-format",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Templates for output format"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#patterns-for-effective-instructions",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#gotchas-sections",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#refine-with-real-execution",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Refine with real execution"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#templates-for-output-format",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#checklists-for-multi-step-workflows",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#validation-loops",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#plan-validate-execute",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#bundling-reusable-scripts",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "iterating on a skill"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/using-scripts",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Using scripts in skills"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/best-practices#next-steps",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Evaluating skill output quality"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Optimizing skill descriptions"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/quickstart",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "Quickstart"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/best-practices",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Optimizing descriptions"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#designing-test-cases",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Designing test cases"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#running-evals",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Running evals"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#workspace-structure",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Workspace structure"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#spawning-runs",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Spawning runs"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#capturing-timing-data",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Capturing timing data"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#writing-assertions",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Writing assertions"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#grading-outputs",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Grading outputs"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#grading-principles",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Grading principles"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#aggregating-results",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Aggregating results"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#analyzing-patterns",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Analyzing patterns"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#reviewing-results-with-a-human",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Reviewing results with a human"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#iterating-on-the-skill",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Iterating on the skill"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#the-loop",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "The loop"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#designing-test-cases",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#running-evals",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#workspace-structure",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#spawning-runs",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#capturing-timing-data",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://platform.claude.com/docs/en/agent-sdk/typescript#sdk-task-notification-message",
+      "fetch_url": "https://platform.claude.com/docs/en/agent-sdk/typescript",
+      "label": "task completion notification"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#writing-assertions",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#reviewing-results-with-a-human",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "human review"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#grading-outputs",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#grading-principles",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#aggregating-results",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#analyzing-patterns",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#reviewing-results-with-a-human",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#iterating-on-the-skill",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "iteration step"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#iterating-on-the-skill",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/using-scripts",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Using scripts"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills#the-loop",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+      "fetch_url": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+      "label": "skill-creator"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Optimizing descriptions"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/evaluating-skills",
+      "target": "https://agentskills.io/skill-creation/using-scripts",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Using scripts"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#how-skill-triggering-works",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "How skill triggering works"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#writing-effective-descriptions",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Writing effective descriptions"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#designing-trigger-eval-queries",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Designing trigger eval queries"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#should-trigger-queries",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Should-trigger queries"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#should-not-trigger-queries",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Should-not-trigger queries"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#tips-for-realism",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Tips for realism"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#testing-whether-a-description-triggers",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Testing whether a description triggers"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#running-multiple-times",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Running multiple times"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#avoiding-overfitting-with-train%2Fvalidation-splits",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Avoiding overfitting with train/validation splits"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#the-optimization-loop",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "The optimization loop"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#applying-the-result",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Applying the result"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#next-steps",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Next steps"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#how-skill-triggering-works",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/specification#progressive-disclosure",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "progressive disclosure"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#writing-effective-descriptions",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/specification#description-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "specification"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#designing-trigger-eval-queries",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#should-trigger-queries",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#should-not-trigger-queries",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#tips-for-realism",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#testing-whether-a-description-triggers",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#running-multiple-times",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#avoiding-overfitting-with-train/validation-splits",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#running-multiple-times",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "above"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#the-optimization-loop",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+      "fetch_url": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+      "label": "skill-creator"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#applying-the-result",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/specification#description-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "1024-character limit"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions#next-steps",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Evaluating skill output quality"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/best-practices",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Best practices"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Evaluating skills"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#prerequisites",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "Prerequisites"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#create-the-skill",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "Create the skill"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#try-it-out",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "Try it out"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#how-it-works",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "How it works"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#next-steps",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "Next steps"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#prerequisites",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://code.visualstudio.com/",
+      "fetch_url": "https://code.visualstudio.com/",
+      "label": "VS Code"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot",
+      "fetch_url": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot",
+      "label": "GitHub Copilot"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#create-the-skill",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#try-it-out",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#how-it-works",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/quickstart#next-steps",
+      "fetch_url": "https://agentskills.io/skill-creation/quickstart",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/best-practices",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Best practices"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "fetch_url": "https://agentskills.io/skill-creation/optimizing-descriptions",
+      "label": "Optimizing skill descriptions"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/specification",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Specification"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://github.com/anthropics/skills",
+      "fetch_url": "https://github.com/anthropics/skills",
+      "label": "Example skills"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/clients",
+      "fetch_url": "https://agentskills.io/clients",
+      "label": "Client Showcase"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/quickstart",
+      "target": "https://agentskills.io/skill-creation/best-practices",
+      "fetch_url": "https://agentskills.io/skill-creation/best-practices",
+      "label": "Best practices"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#one-off-commands",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "One-off commands"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#referencing-scripts-from-skill-md",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Referencing scripts from SKILL.md"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#self-contained-scripts",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Self-contained scripts"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#designing-scripts-for-agentic-use",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Designing scripts for agentic use"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#avoid-interactive-prompts",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Avoid interactive prompts"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#document-usage-with-help",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Document usage with --help"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#write-helpful-error-messages",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Write helpful error messages"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#use-structured-output",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Use structured output"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#further-considerations",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "Further considerations"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#one-off-commands",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://docs.astral.sh/uv/guides/tools/",
+      "fetch_url": "https://docs.astral.sh/uv/guides/tools/",
+      "label": "uvx"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://docs.astral.sh/uv/",
+      "fetch_url": "https://docs.astral.sh/uv/",
+      "label": "uv"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://pipx.pypa.io/",
+      "fetch_url": "https://pipx.pypa.io/",
+      "label": "pipx"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://docs.npmjs.com/cli/commands/npx",
+      "fetch_url": "https://docs.npmjs.com/cli/commands/npx",
+      "label": "npx"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://bun.sh/docs/cli/bunx",
+      "fetch_url": "https://bun.sh/docs/cli/bunx",
+      "label": "bunx"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://bun.sh/",
+      "fetch_url": "https://bun.sh/",
+      "label": "Bun"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://docs.deno.com/runtime/reference/cli/run/",
+      "fetch_url": "https://docs.deno.com/runtime/reference/cli/run/",
+      "label": "deno run"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://deno.com/",
+      "fetch_url": "https://deno.com/",
+      "label": "Deno"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://pkg.go.dev/cmd/go#hdr-Compile_and_run_Go_program",
+      "fetch_url": "https://pkg.go.dev/cmd/go",
+      "label": "go run"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/specification#compatibility-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "compatibility frontmatter field"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#referencing-scripts-from-skill-md",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#self-contained-scripts",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://peps.python.org/pep-0723/",
+      "fetch_url": "https://peps.python.org/pep-0723/",
+      "label": "PEP 723"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://docs.astral.sh/uv/",
+      "fetch_url": "https://docs.astral.sh/uv/",
+      "label": "uv"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://pipx.pypa.io/",
+      "fetch_url": "https://pipx.pypa.io/",
+      "label": "pipx"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://peps.python.org/pep-0508/",
+      "fetch_url": "https://peps.python.org/pep-0508/",
+      "label": "PEP 508"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#designing-scripts-for-agentic-use",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#avoid-interactive-prompts",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#document-usage-with-help",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#write-helpful-error-messages",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#use-structured-output",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/using-scripts#further-considerations",
+      "fetch_url": "https://agentskills.io/skill-creation/using-scripts",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/skill-creation/evaluating-skills",
+      "fetch_url": "https://agentskills.io/skill-creation/evaluating-skills",
+      "label": "Evaluating skills"
+    },
+    {
+      "source": "https://agentskills.io/skill-creation/using-scripts",
+      "target": "https://agentskills.io/client-implementation/adding-skills-support",
+      "fetch_url": "https://agentskills.io/client-implementation/adding-skills-support",
+      "label": "Adding skills support"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#directory-structure",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Directory structure"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#skill-md-format",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "SKILL.md format"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#frontmatter",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Frontmatter"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#name-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "name field"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#description-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "description field"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#license-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "license field"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#compatibility-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "compatibility field"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#metadata-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "metadata field"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#allowed-tools-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "allowed-tools field"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#body-content",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Body content"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#optional-directories",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Optional directories"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#scripts%2F",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "scripts/"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#references%2F",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "references/"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#assets%2F",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "assets/"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#progressive-disclosure",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Progressive disclosure"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#file-references",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "File references"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#validation",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "Validation"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#directory-structure",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#skill-md-format",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#frontmatter",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#name-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#description-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#license-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#compatibility-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#metadata-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#allowed-tools-field",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#body-content",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#optional-directories",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#scripts/",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#references/",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#file-references",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "reference files"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#assets/",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#progressive-disclosure",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#file-references",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/specification#validation",
+      "fetch_url": "https://agentskills.io/specification",
+      "label": "\u200b"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://github.com/agentskills/agentskills/tree/main/skills-ref",
+      "fetch_url": "https://github.com/agentskills/agentskills/tree/main/skills-ref",
+      "label": "skills-ref"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/home",
+      "fetch_url": "https://agentskills.io/home",
+      "label": "Overview"
+    },
+    {
+      "source": "https://agentskills.io/specification",
+      "target": "https://agentskills.io/clients",
+      "fetch_url": "https://agentskills.io/clients",
+      "label": "Client Showcase"
+    }
+  ],
+  "redistribution_scope": "Full Agent Skills documentation and licensed pinned examples with retained notices; other linked pages use attributed excerpts up to 200 words. Complete source responses remain in local ingestion evidence."
+}

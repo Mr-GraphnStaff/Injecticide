@@ -65,17 +65,32 @@
       "ecosystem": "Portable",
       "topics": [
         "skills",
-        "specification"
+        "specification",
+        "authoring",
+        "evaluation",
+        "triggering",
+        "scripts",
+        "client-implementation"
       ],
       "seeds": [
+        "https://agentskills.io/client-implementation/adding-skills-support.md",
+        "https://agentskills.io/clients.md",
+        "https://agentskills.io/home.md",
+        "https://agentskills.io/llms.txt",
+        "https://agentskills.io/sitemap.xml",
+        "https://agentskills.io/skill-creation/best-practices.md",
+        "https://agentskills.io/skill-creation/evaluating-skills.md",
+        "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+        "https://agentskills.io/skill-creation/quickstart.md",
+        "https://agentskills.io/skill-creation/using-scripts.md",
         "https://agentskills.io/specification",
-        "https://agentskills.io/llms.txt"
+        "https://agentskills.io/specification.md"
       ],
       "scopes": [
         "https://agentskills.io/"
       ],
       "discovery": false,
-      "coverage_note": "Explicit official seeds only; broad discovery retired and historical evidence preserved",
+      "coverage_note": "All nine published documentation pages from the matching official llms.txt and sitemap, plus both indexes. Exact seeds only; outbound references are captured by the explicit ingestion tool, never auto-activated.",
       "evidence_policy": "research_only_requires_review_before_enforcement"
     },
     {

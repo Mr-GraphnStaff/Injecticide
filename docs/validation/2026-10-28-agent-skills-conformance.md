@@ -1,5 +1,9 @@
 # Agent Skills conformance — 0.10.0
 
+Historical release record: the 0.12.0 candidate supersedes the permissive
+unknown-field treatment below. See the [complete site and reference review](../research/2026-10-28-agent-skills-full-reference.md)
+for the linked validator's allowlist, source differences and expanded coverage.
+
 The portable baseline is the official Agent Skills specification, retrieved on
 October 28, 2026. Its reviewed byte fingerprint is
 `9a67de89132948b2300b8dc87b93817971d47f9be89b644444965881a8dfde16`.
