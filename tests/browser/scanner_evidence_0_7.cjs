@@ -45,6 +45,33 @@ const report = {
         analysis_coverage:{pattern_detector:{status:'complete',inspected_characters:1500,total_characters:1500}, component_inventory:{status:'partial',inspected_characters:1000,total_characters:1500,reason:'Synthetic detector budget exceeded.'}},
         findings:[{id:'pii_email_address',severity:'medium',tier:'review',category:'data',is_actionable:true,description:'Synthetic contact signal',samples:['person@example.test']}]}],
 };
+// Milestone fixture: synthetic API evidence, not a scan of these local bytes.
+const untrustedLabel = '<img src=x onerror="window.untrustedExecuted=true">';
+report.summary.total_files = 3;
+report.coverage.total_files = 3;
+report.coverage.inspection_summary = {
+    text_or_structured_files_analyzed: 1, assets_with_structural_inspection: 1,
+    files_without_supported_inspection: 0, image_visual_analysis: 'not_performed', font_program_analysis: 'not_performed',
+};
+report.package_analysis.relationship_graph = {
+    status: 'partial', scope: 'Static declared relationships; execution not verified.',
+    edges: Array.from({length: 13}, (_, i) => ({source: 'example/SKILL.md',
+        target: i === 12 ? untrustedLabel : `references/brief-${i}.md`, line: i + 1, status: 'resolved'})),
+    reachable_paths: ['example/SKILL.md'], unreferenced_paths: ['assets/logo.png'],
+    limits: [{kind: 'synthetic_source_limit'}],
+    action_chains: [{path: ['example/SKILL.md', 'scripts/collect.py'], capability: 'file_read', execution_verified: false}],
+    capability_observations: [{source: 'scripts/collect.py', capability: 'network_access', execution_verified: false}],
+    external_references: [{source: 'scripts/collect.py', url: 'https://destination.invalid', verification: 'not_contacted'}],
+};
+report.files.push({path: 'assets/logo.png', size: 1234, skipped: false, assessment_state: 'asset_structure_inspected',
+    artifact_role: 'reference', findings: [], asset_inspection: {format: 'png', status: 'inspected', checks: ['signature', 'chunk_crc'],
+        binary_security_analysis: 'not_performed', limitations: ['Pixels and OCR not assessed.']},
+    analysis_coverage: {asset_structure: {status: 'complete_supported_checks'}}});
+report.files.push({path: 'bundle.zip!/SKILL.md', size: 100, skipped: false, assessment_state: 'text_analyzed',
+    artifact_role: 'active', findings: [], archive_container: 'bundle.zip', archive_depth: 1,
+    archive_inspection: {format: 'zip', status: 'inspected', checks: ['member_crc']}});
+report.inventory = report.files.map(({path, size, assessment_state, archive_container, archive_depth}) =>
+    ({path, size, assessment_state, archive_container, archive_depth}));
 (async () => {
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const browser = await chromium.launch({channel:process.env.INJECTICIDE_TEST_BROWSER || 'msedge',headless:true});
@@ -98,12 +125,37 @@ const report = {
         const detail=page.getByText('Detector coverage for example/SKILL.md',{exact:true});
         await detail.focus(); await page.keyboard.press('Enter');
         await page.getByText('Synthetic detector budget exceeded.',{exact:true}).waitFor();
-        assert.match(await page.locator('[data-skill-file]').innerText(),/Creator mitigation: verified.*EOF marker verified/);
+        assert.match(await page.locator('[data-skill-file]').first().innerText(),/Creator mitigation: verified.*EOF marker verified/);
+        const packageOverview=page.locator('[data-package-overview]');
+        assert.match(await packageOverview.locator('[data-inspection-summary]').innerText(),/1 text\/structured files; 1 assets structurally inspected; 0 files without supported inspection/);
+        const relationships=packageOverview.locator('[data-package-relationships]');
+        const relationshipSummary=relationships.locator('summary');
+        await relationshipSummary.focus(); await page.keyboard.press('Enter');
+        assert.equal(await relationships.evaluate(el=>el.open),true,'native relationship disclosure responds to keyboard');
+        assert.match(await relationships.innerText(),/static declarations, not observed execution/);
+        const sections=page.getByLabel('Package report section',{exact:true});
+        await sections.selectOption('package_relationships');
+        assert.equal(await packageOverview.locator('[data-package-evidence]').count(),10);
+        const pages=page.getByRole('navigation',{name:'Package evidence pages',exact:true});
+        assert.match(await pages.innerText(),/1–10 of 13/);
+        await pages.getByRole('button',{name:'Next',exact:true}).focus(); await page.keyboard.press('Enter');
+        assert.equal(await packageOverview.locator('[data-package-evidence]').count(),3);
+        assert.ok((await packageOverview.innerText()).includes(JSON.stringify(untrustedLabel).slice(1,-1)),'uploaded label is visible as literal JSON text');
+        assert.equal(await packageOverview.locator('img, svg, script').count(),0,'uploaded label never becomes markup');
+        assert.equal(await page.evaluate(()=>window.untrustedExecuted),undefined);
+        await sections.selectOption('action_chains');
+        assert.equal(await pages.count(),0,'changing sections resets paging');
+        assert.match(await packageOverview.locator('[data-package-evidence]').innerText(),/execution_verified.*false/s);
+        await sections.selectOption('asset_inspection');
+        assert.equal(await packageOverview.locator('[data-package-evidence]').count(),2);
+        assert.match(await packageOverview.innerText(),/chunk_crc/);
+        assert.match(await packageOverview.innerText(),/member_crc/);
         await page.getByRole('button',{name:'detailed',exact:true}).click();
         const download=page.waitForEvent('download');
         await page.getByRole('button',{name:'Export Detailed',exact:true}).click();
         const markdown=fs.readFileSync(await (await download).path(),'utf8');
-        for(const token of ['official_validator_results','fixture-revision-123','analysis_coverage','creator_mitigation','header-request-123']) assert.ok(markdown.includes(token));
+        for(const token of ['official_validator_results','fixture-revision-123','analysis_coverage','creator_mitigation','header-request-123',
+            'relationship_graph','inspection_summary','asset_inspection','chunk_crc','archive_container','archive_depth','bundle.zip!/SKILL.md']) assert.ok(markdown.includes(token));
         assert.ok(!markdown.includes('UNEXPORTED_SYNTHETIC_CONTENT'));
         for(const width of [390,1440]) {
             await page.setViewportSize({width,height:1100});
@@ -143,10 +195,12 @@ const report = {
         assert.equal(await file.evaluate(el=>el.files.length),0);
         // Old reports without new fields remain readable.
         await choose('legacy.skill'); await scan.click();
-        const legacy={...report,filename:'legacy-report.skill'}; delete legacy.official_validator_results;
-        legacy.files=legacy.files.map(({analysis_coverage,creator_mitigation,...entry})=>entry);
+        const legacy=structuredClone({...report,filename:'legacy-report.skill'}); delete legacy.official_validator_results;
+        delete legacy.coverage.inspection_summary; delete legacy.package_analysis.relationship_graph;
+        legacy.files=legacy.files.map(({analysis_coverage,creator_mitigation,asset_inspection,archive_inspection,archive_container,archive_depth,...entry})=>entry);
         await reply(legacy);await page.getByText('legacy-report.skill',{exact:true}).waitFor();
         assert.match(await overview.innerText(),/Tag recognition not reported/);
+        assert.equal(await packageOverview.locator('[data-inspection-summary], [data-package-relationships]').count(),0,'legacy reports omit unavailable new evidence');
         // A static format mismatch must not masquerade as incomplete coverage.
         await choose('format.skill'); await scan.click();
         const formatReport={...report,filename:'format-report.skill',coverage:{...report.coverage,status:'complete_supported_content'},
@@ -154,6 +208,6 @@ const report = {
         await reply(formatReport); await page.getByText('Format observations need review',{exact:true}).waitFor();
         assert.equal(await page.getByText('Package review incomplete',{exact:true}).count(),0);
         assert.deepEqual(errors,[]);
-        console.log(JSON.stringify({status:'PASS',checked:['manual retry without reselect','no automatic retry','keyboard submit','double-submit guard','success release','independent evidence axes','verified tag with partial detector coverage','scoped official format failure','source link','correlation export','no upload content in export','390px and 1440px overflow','keyboard disclosure','structured and legacy errors','invalid response','timeout recovery','clear','replacement and stale-response isolation','legacy report compatibility','format mismatch distinct from incomplete coverage'],screenshots:['tmp/scanner-evidence-0-7-desktop.png','tmp/scanner-evidence-0-7-mobile.png']}));
+        console.log(JSON.stringify({status:'PASS',checked:['manual retry without reselect','no automatic retry','keyboard submit','double-submit guard','success release','independent evidence axes','verified tag with partial detector coverage','scoped official format failure','source link','correlation export','no upload content in export','390px and 1440px overflow','keyboard disclosure','relationship keyboard disclosure','relationship pagination and section reset','untrusted relationship labels remain literal text','asset inspection and nested provenance export','legacy reports without new fields','structured and legacy errors','invalid response','timeout recovery','clear','replacement and stale-response isolation','legacy report compatibility','format mismatch distinct from incomplete coverage'],screenshots:['tmp/scanner-evidence-0-7-desktop.png','tmp/scanner-evidence-0-7-mobile.png']}));
     } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());

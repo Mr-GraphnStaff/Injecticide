@@ -378,6 +378,10 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         lines.push(`- Target runtime: ${scanResult.package_analysis.target_runtime}`);
         lines.push(`- Coverage: ${scanResult.coverage.status}; ${scanResult.coverage.analyzed_files}/${scanResult.coverage.total_files} files analyzed`);
         lines.push(`- Coverage note: ${scanResult.coverage.statement}`);
+        if (scanResult.coverage.inspection_summary) {
+            const inspection = scanResult.coverage.inspection_summary;
+            lines.push(`- Inspection stages: ${inspection.text_or_structured_files_analyzed} text/structured files; ${inspection.assets_with_structural_inspection} assets structurally inspected; ${inspection.files_without_supported_inspection} files without supported inspection`);
+        }
         lines.push(`- Artifact SHA-256: ${scanResult.governance_evidence.artifact_sha256}`);
         lines.push(`- Runtime evaluation: ${scanResult.governance_evidence.evaluation.status}`);
         lines.push(`- Scanner: ${scanResult.scanner_metadata.scanner_version}; adapters ${scanResult.scanner_metadata.adapter_version}`);
@@ -393,6 +397,8 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
             scan_request_id: scanResult.scan_request_id,
             file_analysis: (scanResult.files || []).map(file => ({path: file.path, assessment_state: file.assessment_state,
                 analysis_coverage: file.analysis_coverage, creator_mitigation: file.creator_mitigation,
+                asset_inspection: file.asset_inspection, archive_inspection: file.archive_inspection,
+                archive_container: file.archive_container, archive_depth: file.archive_depth,
                 large_file_tagged_chunked_reference: file.large_file_tagged_chunked_reference})) };
         if (reportDepth === 'detailed') evidence.inventory = scanResult.inventory;
         lines.push(JSON.stringify(evidence, null, 2));
@@ -946,8 +952,13 @@ function PackageScanOverview({ result }) {
     const [section, setSection] = useState('format_findings');
     const [page, setPage] = useState(0);
     const analysis = result.package_analysis;
+    const graph = analysis.relationship_graph || {};
+    const inspection = result.coverage.inspection_summary;
     const sections = { format_findings: analysis.format_findings, components: analysis.components,
         execution_references: analysis.execution_references, dependencies: analysis.dependencies,
+        package_relationships: graph.edges, action_chains: graph.action_chains,
+        capability_observations: graph.capability_observations, external_references: graph.external_references,
+        asset_inspection: (result.files || []).filter(file => file.asset_inspection || file.archive_inspection).map(file => ({path: file.path, asset_inspection: file.asset_inspection, archive_inspection: file.archive_inspection})),
         inventory: result.inventory, checks: result.check_results, governance: result.governance_evidence.controls };
     const items = sections[section] || [];
     return <div className="border border-gray-700 rounded p-2 space-y-2" data-package-overview="true">
@@ -955,6 +966,13 @@ function PackageScanOverview({ result }) {
         <p>Runtime indicators: {analysis.runtime_targets.map(item => item.runtime).join(', ') || 'none'}; publisher identity unverified</p>
         <p>Coverage: <strong>{result.coverage.status.replaceAll('_', ' ')}</strong> · {result.coverage.analyzed_files}/{result.coverage.total_files} files analyzed · {result.coverage.total_bytes} original bytes</p>
         <p>{result.coverage.statement}</p>
+        {inspection && <p data-inspection-summary="true">Inspection stages: {inspection.text_or_structured_files_analyzed} text/structured files; {inspection.assets_with_structural_inspection} assets structurally inspected; {inspection.files_without_supported_inspection} files without supported inspection. Image visual analysis and font program analysis: {evidenceLabel(inspection.image_visual_analysis)}.</p>}
+        {graph.status && <details data-package-relationships="true">
+            <summary>Package relationships: {graph.edges?.length || 0} declared links</summary>
+            <p>{graph.scope}</p>
+            <p>Reachable from declared entrypoints: {graph.reachable_paths?.length || 0}; unreferenced: {graph.unreferenced_paths?.length || 0}. These are static declarations, not observed execution.</p>
+            {graph.limits?.length > 0 && <p>Relationship analysis limits: {graph.limits.map(limit => evidenceLabel(limit.kind)).join(', ')}</p>}
+        </details>}
         <p>Signature: {result.governance_evidence.signature_verification.status} · Runtime evaluation: {result.governance_evidence.evaluation.status}</p>
         <p>Scanner {result.scanner_metadata.scanner_version} · {result.scanner_metadata.catalogs.map(item => `${item.name}: ${item.freshness} (${item.last_reviewed || 'unknown'})`).join('; ')}</p>
         <label htmlFor="package-report-section">Package report section</label>

@@ -422,7 +422,7 @@ def _markdown_context_units(text: str) -> List[Dict[str, object]]:
     if current_lines:
         paragraphs.append(current_lines)
 
-    for paragraph in paragraphs:
+    for paragraph_id, paragraph in enumerate(paragraphs):
         stripped = "\n".join(line for _, line in paragraph).strip()
         if not stripped:
             continue
@@ -438,7 +438,8 @@ def _markdown_context_units(text: str) -> List[Dict[str, object]]:
             for segment in segments:
                 normalized = re.sub(r"\s+", " ", segment).strip()
                 if normalized:
-                    units.append({"text": normalized, "line": line_number})
+                    units.append({"text": normalized, "line": line_number, "paragraph": paragraph_id,
+                                  "context_boundary": bool(re.match(r"^ {0,3}(?:#{1,6}\s|`{3,}|~{3,})", line))})
 
     return _unique(units)
 
@@ -446,6 +447,11 @@ def _markdown_context_units(text: str) -> List[Dict[str, object]]:
 def _with_active_windows(units: List[Dict[str, object]]) -> List[Dict[str, object]]:
     expanded = list(units)
     for index in range(len(units) - 1):
+        left, right = units[index], units[index + 1]
+        if (left.get("paragraph") != right.get("paragraph")
+                or left.get("context_boundary") or right.get("context_boundary")
+                or right.get("line", 0) - left.get("line", 0) > 1):
+            continue
         combined = f"{units[index]['text']} {units[index + 1]['text']}"
         expanded.append({"text": combined, "line": units[index].get("line")})
     return _unique(expanded)

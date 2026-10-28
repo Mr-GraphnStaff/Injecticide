@@ -99,11 +99,25 @@ def coverage_report(records):
                       for name, stage in e.get("analysis_coverage", {}).items()
                       if name != "creator_markers"))
     total_bytes = sum(e.get("size", 0) for e in records)
+    assets = [e for e in records if e.get("asset_inspection")]
+    structurally_inspected = [e for e in assets if e["asset_inspection"]["status"] == "inspected"]
+    archives = [e for e in records if e.get("archive_inspection")]
+    unsupported = [e for e in records if e.get("assessment_state") not in covered and not e.get("asset_inspection") and not e.get("archive_inspection")]
     return {"status": "partial" if partial else "complete_supported_content",
             "total_files": len(records), "analyzed_files": len(analyzed), "unassessed_files": len(records) - len(analyzed),
             "total_bytes": total_bytes, "analyzed_file_bytes": sum(e.get("size", 0) for e in analyzed),
             "byte_metric_scope": "Original file sizes represented by analysis; not bytes exhaustively inspected",
             "states": counts, "binary_security_analysis": "not_performed",
+            "inspection_summary": {
+                "text_or_structured_files_analyzed": len(analyzed),
+                "assets_with_structural_inspection": sum(bool(e["asset_inspection"]["checks"]) for e in assets),
+                "assets_passing_supported_structural_checks": len(structurally_inspected),
+                "nested_archives_with_structural_inspection": sum(bool(e["archive_inspection"]["checks"]) for e in archives),
+                "files_without_supported_inspection": len(unsupported) + sum(not bool(e["asset_inspection"]["checks"]) for e in assets) + sum(not bool(e["archive_inspection"]["checks"]) for e in archives),
+                "asset_metadata_files_analyzed": sum(bool(e.get("analysis_coverage", {}).get("text_patterns", {}).get("supplied_characters")) for e in assets),
+                "image_visual_analysis": "not_performed", "font_program_analysis": "not_performed",
+                "scope": "Text analysis and asset structure are separate inspection stages; neither certifies runtime safety.",
+            },
             "detector_coverage": [{"path": e["path"], "detectors": e.get("analysis_coverage", {})} for e in records],
             "creator_mitigation_scope": "Creator reading-convention verification is separate from scanner detector completeness and target runtime acceptance.",
             "statement": "No findings applies only to analyzed content. Binary assets and excluded content are not certified safe.",
@@ -131,7 +145,7 @@ def scanner_metadata():
                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                          "freshness": "unknown" if age is None or age < 0 else "stale" if age > 90 else "current",
                          "age_days": age})
-    return {"scanner_version": "0.3.0", "adapter_version": "2026-10-27", "catalogs": catalogs,
+    return {"scanner_version": "0.4.0", "adapter_version": "2026-10-27", "catalogs": catalogs,
             "engine_source_sha256": engine_digest.hexdigest(),
             "engine_fingerprint_scope": "Sorted local scanner Python modules and shipped validator manifest; excludes uploaded content.",
             "update_policy": "reviewed_application_release", "automatic_research_activation": False,

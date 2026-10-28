@@ -121,7 +121,10 @@ def test_coverage_inventory_binary_and_rejected_paths():
     assert len(result['inventory']) == 4
     assert result['coverage']['analyzed_files'] == 1
     assert result['governance_profile']['approval_required']
-    assert result['readiness']['status'] == 'incomplete'
+    assert result['readiness']['status'] == 'needs_review'
+    logo = next(e for e in result['files'] if e['path'].endswith('logo.png'))
+    assert logo['asset_inspection']['status'] == 'malformed'
+    assert any(f['category'] == 'asset_structure' for f in logo['findings'])
     disguised = next(e for e in result['files'] if e['path'].endswith('disguised.md'))
     assert disguised['content_extension_mismatch']
     assert disguised['assessment_state'] == 'executable_not_analyzed'
