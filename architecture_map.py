@@ -16,6 +16,9 @@ KINDS = {
     "tool": "Tool / API", "skill": "Skill / plugin", "retrieval": "Retrieval / RAG",
     "memory": "Memory / vector store", "code": "Code runner", "data": "Data store",
     "approval": "Human approval", "security": "Security control", "output": "Output / destination",
+    "step": "Documented step", "artifact": "Package file",
+    "capability": "Recognized capability", "external_reference": "External reference",
+    "unresolved_reference": "Unresolved reference",
 }
 TEXT = {"type": "string", "maxLength": 160}
 SCHEMA = {

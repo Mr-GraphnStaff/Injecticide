@@ -20,9 +20,6 @@ function summarizeFileFindings(findings) {
 }
 
 function classifyReviewClass(finding, artifactRole = 'active') {
-    if (finding.id === 'executable_packaged_as_document') {
-        return 'security_risk';
-    }
     if (finding.tier === 'block') {
         return 'security_risk';
     }
@@ -109,7 +106,7 @@ function summarizeAssessment(scanResult) {
     const reviewSummary = summarizeReviewClasses(scanResult);
 
     if ((scanResult.files || []).some(item => (item.findings || []).some(finding => finding.id === 'executable_packaged_as_document'))) {
-        return { tone: 'high', title: 'Executable code packaged as a document', body: 'This can bypass upload controls based on filename extensions. Review organizational policy compliance separately from malware findings.' };
+        return { tone: 'medium', title: 'Executable code packaged as a document', body: 'Source content differs from the document suffix. Review the applicable file-type policy; an actual upload-policy bypass or malicious behavior is not established.' };
     }
 
     if (scanResult.vendor_verification?.compatibility === 'fails_documented_requirement') {
@@ -391,6 +388,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         lines.push('```json');
         const evidence = { package_analysis: scanResult.package_analysis, coverage: scanResult.coverage,
             governance_evidence: scanResult.governance_evidence, scanner_metadata: scanResult.scanner_metadata,
+            process_diagram: scanResult.process_diagram,
             checks: scanResult.check_results, readiness: scanResult.readiness,
             vendor_verification: scanResult.vendor_verification,
             official_validator_results: scanResult.official_validator_results,
@@ -1021,6 +1019,109 @@ function SkillScanFiles({ files, filter, depth }) {
     );
 }
 
+function downloadProcessFile(value, filename, type) {
+    const url = URL.createObjectURL(new Blob([type === 'application/json' ? JSON.stringify(value, null, 2) : value], { type }));
+    const link = document.createElement('a');
+    link.href = url; link.download = filename; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function SkillProcessDiagram({ result, onAddToPlayground }) {
+    const diagram = result.process_diagram;
+    const [selectedId, setSelectedId] = useState(null);
+    const [view, setView] = useState('diagram');
+    const [sourcePath, setSourcePath] = useState(null);
+    const [edgePage, setEdgePage] = useState(0);
+    const evidence = useRef(null);
+    if (!diagram) return null;
+    const nodes = diagram.nodes || [];
+    const edges = diagram.edges || [];
+    const selected = nodes.find(node => node.id === selectedId) || nodes[0];
+    const connected = selected ? edges.filter(edge => edge.source === selected.id || edge.target === selected.id) : [];
+    const file = (result.files || []).find(item => item.path === (sourcePath || selected?.path));
+    const label = id => nodes.find(node => node.id === id)?.label || id;
+    const lanes = [
+        { title: 'Skill entry points', accepts: node => node.entrypoint },
+        { title: 'Documented steps', accepts: node => node.kind === 'step' },
+        { title: 'Package files', accepts: node => node.kind === 'file' && !node.entrypoint },
+        { title: 'Capabilities & destinations', accepts: node => ['capability', 'external'].includes(node.kind) },
+        { title: 'Unresolved references', accepts: node => node.kind === 'unresolved' }
+    ].map(lane => ({ ...lane, nodes: nodes.filter(lane.accepts) })).filter(lane => lane.nodes.length);
+    const positions = new Map();
+    lanes.forEach((lane, column) => lane.nodes.forEach((node, row) => positions.set(node.id, { x: 24 + column * 300, y: 55 + row * 146 })));
+    const width = Math.max(320, lanes.length * 300 + 24);
+    const height = Math.max(270, ...lanes.map(lane => lane.nodes.length * 146 + 65));
+    function select(node) { setSelectedId(node.id); setSourcePath(null); }
+    function showSource(path) {
+        setSourcePath(path);
+        requestAnimationFrame(() => { evidence.current?.focus(); evidence.current?.scrollIntoView({ block: 'nearest' }); });
+    }
+    function citations(items) {
+        return <ul className="process-citations">{(items || []).map((citation, index) => <li key={index}>
+            <button type="button" onClick={() => showSource(citation.path)}>{citation.path}{citation.line_accuracy === 'exact' && citation.line ? `:${citation.line}` : ' (file citation)'}</button>
+        </li>)}</ul>;
+    }
+    return <section className="skill-process" aria-labelledby="skill-process-title" data-process-diagram="true">
+        <div className="process-heading"><div><p className="home-eyebrow">SOURCE → RELATIONSHIPS → REVIEW</p><h3 id="skill-process-title">Skill process diagram</h3><p>See the package's documented connections and recognized capabilities.</p></div><span className="map-tag">Static evidence · runtime unverified</span></div>
+        <p className="process-scope">{diagram.scope}</p>
+        <p className="process-knowledge-legend"><strong>Known:</strong> supported by source evidence. <strong>Inferred:</strong> interpretation, when explicitly labeled. <strong>Unknown:</strong> missing or unresolved evidence. Source evidence does not verify runtime behavior.</p>
+        <div className="process-toolbar">
+            <button type="button" id="skill-process-add-to-playground" className="process-primary" disabled={!nodes.length || !diagram.architecture_map} onClick={() => onAddToPlayground({ ...diagram, draft_id: crypto.randomUUID(), architecture_map: { ...diagram.architecture_map, name: `Skill process: ${result.filename || 'scanned package'}`.slice(0, 160) } })}>Add process diagram to playground</button>
+            <button type="button" disabled={!nodes.length} onClick={() => downloadProcessFile(diagram.mermaid || '', 'injecticide-skill-process.mmd', 'text/plain;charset=utf-8')}>Export Mermaid</button>
+            <button type="button" onClick={() => downloadProcessFile(diagram, 'injecticide-skill-process.json', 'application/json')}>Export diagram evidence</button>
+        </div>
+        <p className="process-note">The playground opens a separate temporary map. Your scan report and existing playground map stay available. Connections show source relationships and explicit documented order; runtime behavior remains unverified.</p>
+        <p className="process-counts">{nodes.length} components · {edges.length} relationships · {diagram.unresolved_nodes || 0} unresolved{diagram.status === 'partial' ? ' · Partial view' : ''}</p>
+        {(diagram.omitted?.nodes > 0 || diagram.omitted?.edges > 0) && <p className="home-warning">Diagram limits omitted {diagram.omitted.nodes || 0} components and {diagram.omitted.edges || 0} relationships. This view is incomplete.</p>}
+        {diagram.limits?.length > 0 && <details className="process-limits"><summary>Inspection and diagram limits ({diagram.limits.length})</summary><ul>{diagram.limits.map((limit, index) => <li key={index}>{typeof limit === 'string' ? limit : `${limit.kind}${limit.path ? `: ${limit.path}` : ''}`}</li>)}</ul></details>}
+        {!nodes.length ? <p>No source relationships are available to diagram. STATUS: UNKNOWN — UNVERIFIED.</p> : <>
+            <div className="process-toolbar" role="group" aria-label="Process view">
+                <button type="button" aria-pressed={view === 'diagram'} onClick={() => setView('diagram')}>Visual diagram</button>
+                <button type="button" aria-pressed={view === 'relationships'} onClick={() => setView('relationships')}>Relationship list</button>
+            </div>
+            {view === 'diagram' && <div className="process-scroll" aria-label="Skill relationships; scroll to explore" tabIndex={0}>
+                <div className="process-surface" style={{ width, height }}>
+                    {lanes.map((lane, index) => <p key={lane.title} className="process-lane" style={{ left: 24 + index * 300 }}>{lane.title}</p>)}
+                    <svg width={width} height={height} aria-hidden="true"><defs><marker id="process-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#b4e6cc" /></marker></defs>{edges.map(edge => {
+                        const a = positions.get(edge.source), b = positions.get(edge.target);
+                        if (!a || !b) return null;
+                        const active = edge.source === selected?.id || edge.target === selected?.id;
+                        const sameColumn = a.x === b.x;
+                        const startX = sameColumn ? a.x + 262 : a.x + (b.x > a.x ? 262 : 0);
+                        const endX = sameColumn ? b.x + 262 : b.x + (b.x > a.x ? 0 : 262);
+                        const direction = sameColumn || b.x > a.x ? 1 : -1;
+                        const routeY = Math.max(a.y, b.y) + 134;
+                        const sourceGutter = startX + 16 * direction;
+                        const targetGutter = endX - (sameColumn ? -16 : 16 * direction);
+                        const path = `M${startX} ${a.y + 61} L${sourceGutter} ${a.y + 61} L${sourceGutter} ${routeY} L${targetGutter} ${routeY} L${targetGutter} ${b.y + 61} L${endX} ${b.y + 61}`;
+                        return <path key={edge.id} className={`process-edge${active ? ' active' : ''}${edge.status !== 'resolved' ? ' unresolved' : ''}`} d={path} markerEnd="url(#process-arrow)" />;
+                    })}</svg>
+                    {nodes.map(node => { const position = positions.get(node.id); if (!position) return null; return <button type="button" key={node.id} className={`process-node ${node.kind}${node.id === selected?.id ? ' selected' : ''}`} style={{ left: position.x, top: position.y }} aria-pressed={node.id === selected?.id} aria-label={`Inspect ${node.label}`} onClick={() => select(node)}>
+                        <span>{node.entrypoint ? 'Skill entry point' : node.kind === 'external' ? 'External origin · not contacted' : node.kind} · {node.knowledge_status || (node.kind === 'unresolved' ? 'unknown' : 'known in source')}</span><strong>{node.label}</strong><small>{node.kind === 'unresolved' ? 'UNKNOWN — UNVERIFIED' : node.finding_ids?.length ? `${node.finding_ids.length} finding types · inspect evidence` : 'Inspect source evidence'}</small>
+                    </button>; })}
+                </div>
+            </div>}
+            {view === 'relationships' && <div className="process-relationship-list">
+                <p>Each row states the relationship supported by its source citation. Unconnected files appear as components in the visual view.</p>
+                <ScanPageControls page={edgePage} total={edges.length} size={10} onChange={setEdgePage} label="Process relationship pages" />
+                <ul>{edges.slice(edgePage * 10, (edgePage + 1) * 10).map(edge => <li key={edge.id}><button type="button" onClick={() => select(nodes.find(node => node.id === edge.source))}>{label(edge.source)}</button><strong> {edge.label} → </strong><button type="button" onClick={() => select(nodes.find(node => node.id === edge.target))}>{label(edge.target)}</button><p>{edge.status === 'resolved' ? 'Static evidence only; execution unverified.' : 'STATUS: UNKNOWN — UNVERIFIED'}</p>{citations(edge.citations)}</li>)}</ul>
+                {!edges.length && <p>No relationships were extracted. File presence does not establish a workflow.</p>}
+            </div>}
+            <div className="process-inspector">
+                <h4>Selected component: {selected?.label}</h4>
+                {selected?.text && <p>{selected.text}</p>}
+                <p>{selected?.kind === 'unresolved' ? 'STATUS: UNKNOWN — UNVERIFIED. The referenced target was not resolved.' : selected?.kind === 'capability' ? 'Recognized source syntax; use at runtime is unverified.' : selected?.kind === 'external' ? 'An origin appears in source. It has not been contacted.' : 'File present in the uploaded package. Runtime use is unverified.'}</p>
+                {selected?.finding_ids?.length > 0 && <p>Finding types: {selected.finding_ids.join(', ')}</p>}
+                {citations(selected?.citations)}
+                <h5>Connected source evidence ({connected.length})</h5>
+                <ul className="process-connections">{connected.map(edge => <li key={edge.id}><p>{label(edge.source)} <strong>{edge.label} →</strong> {label(edge.target)}</p>{edge.status !== 'resolved' && <p>STATUS: UNKNOWN — UNVERIFIED</p>}{citations(edge.citations)}</li>)}</ul>
+                {!connected.length && <p>No supported connections for this component.</p>}
+            </div>
+            <div className="process-source-evidence"><h4 ref={evidence} tabIndex={-1}>Source file evidence{file ? `: ${file.path}` : ''}</h4><p>Citations identify the original package file and, where available, its exact line. Full source bodies are not included in this report.</p>{file ? <><FileAnalysisEvidence file={file} />{file.findings?.length ? <SkillFindingList key={file.path} findings={file.findings} artifactRole={file.artifact_role || 'active'} depth="detailed" /> : <p>No matching scanner findings in this file.</p>}</> : <p>Select a source citation to inspect that file's scan evidence.</p>}</div>
+        </>}
+    </section>;
+}
+
 function App({ onBack, onNavigate, buildInfo }) {
     const [testConfig, setTestConfig] = useState({
         target_service: 'anthropic',
@@ -1052,6 +1153,7 @@ function App({ onBack, onNavigate, buildInfo }) {
     const [skillRuntime, setSkillRuntime] = useState('auto');
     const [skillEvidence, setSkillEvidence] = useState('');
     const [skillScanResult, setSkillScanResult] = useState(null);
+    const [processPlayground, setProcessPlayground] = useState(null);
     const [skillScanError, setSkillScanError] = useState('');
     const [isScanningSkill, setIsScanningSkill] = useState(false);
     const [skillReportDepth, setSkillReportDepth] = useState('summary');
@@ -1518,6 +1620,8 @@ function App({ onBack, onNavigate, buildInfo }) {
         window.URL.revokeObjectURL(url);
     };
     
+    if (processPlayground) return <ArchitectureCanvas initialMap={processPlayground.architecture_map} scanDiagram={processPlayground} onBack={() => { setProcessPlayground(null); requestAnimationFrame(() => { const button = document.getElementById('skill-process-add-to-playground'); button?.focus(); button?.scrollIntoView({ block: 'nearest' }); }); }} onNavigate={onNavigate} buildInfo={buildInfo} />;
+
     return (
         <div className="injecticide-home injecticide-workbench testing-workbench">
             <ProductHeader section="console" buildInfo={buildInfo} onBack={onBack} onNavigate={onNavigate} onClose={closeApp} isClosing={isShuttingDown} />
@@ -1874,6 +1978,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                             {skillScanResult && (
                                 <div className="skill-results-report text-sm text-gray-300 space-y-4">
                                     <ScanEvidenceSummary result={skillScanResult} />
+                                    <SkillProcessDiagram key={skillScanResult.scan_request_id || skillScanResult.filename} result={skillScanResult} onAddToPlayground={setProcessPlayground} />
                                     <OfficialValidatorResults results={skillScanResult.official_validator_results} />
                                     {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
                                     <VendorVerification evidence={skillScanResult.vendor_verification} />
@@ -2189,6 +2294,7 @@ function App({ onBack, onNavigate, buildInfo }) {
 function Root() {
     const [page, setPage] = useState('home');
     const [buildInfo, setBuildInfo] = useState(null);
+    const [architectureDraft, setArchitectureDraft] = useState(null);
 
     useEffect(() => {
         const fetchBuildInfo = async () => {
@@ -2225,7 +2331,7 @@ function Root() {
     }
 
     if (page === 'architecture') {
-        return <ArchitectureCanvas onBack={() => navigate('home')} onNavigate={navigate} buildInfo={buildInfo} />;
+        return <ArchitectureCanvas initialMap={architectureDraft} onMapChange={setArchitectureDraft} onBack={() => navigate('home')} onNavigate={navigate} buildInfo={buildInfo} />;
     }
 
     if (page === 'scenarios') {

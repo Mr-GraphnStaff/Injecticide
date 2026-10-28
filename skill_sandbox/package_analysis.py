@@ -15,6 +15,8 @@ try:
     from .evidence_redaction import redact_result
     from .package_graph import build_package_graph
     from .code_security import analyze_code_security
+    from .process_diagram import build_process_diagram, extract_documented_steps
+    from .disposition import format_observation_sample
 except ImportError:
     from package_formats import inspect_formats, RUNTIMES
     from package_threats import inspect_threats, embedded_blocks
@@ -27,6 +29,8 @@ except ImportError:
     from evidence_redaction import redact_result
     from package_graph import build_package_graph
     from code_security import analyze_code_security
+    from process_diagram import build_process_diagram, extract_documented_steps
+    from disposition import format_observation_sample
 
 
 def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", supplied_evidence=None,
@@ -59,6 +63,14 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                         item["evidence_scope"] = "embedded_source"
                         item["source_language"] = block["language"]
                         item["source_start_line"] = block["line"]
+                        # Rescans use block-relative lines; expose physical lines
+                        # in the original document, including exported samples.
+                        for observation in item.get("observations", []):
+                            if isinstance(observation.get("line"), int):
+                                observation["embedded_line"] = observation["line"]
+                                observation["line"] += block["line"] - 1
+                        if item.get("observations"):
+                            item["samples"] = [format_observation_sample(o) for o in item["observations"]]
                     entry["findings"].extend(embedded)
             for source in text_sources:
                 if source["path"] == path:
@@ -147,4 +159,9 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
     result["readiness"]["vendor_compatibility"] = "unknown"
     result["readiness"]["format_compatibility"] = "explicit_portable_profile_checked" if target_runtime == "generic" else "unverified"
     attach_official_validator_results(result, texts)
-    return redact_result(result, texts)
+    result["documented_process"] = extract_documented_steps(text_sources)
+    redact_result(result, texts)
+    # Diagram labels and exports derive only from sanitized report evidence.
+    # Uploaded content is never executed or sent to a diagram service.
+    result["process_diagram"] = build_process_diagram(result)
+    return result

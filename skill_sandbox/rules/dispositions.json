@@ -191,6 +191,13 @@
           "disposition": "block",
           "is_actionable": true,
           "counts_for_governance": true
+        },
+        "prose_mention": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
         }
       }
     },
@@ -277,6 +284,25 @@
           "tier": "review",
           "severity": "medium",
           "disposition": "warn",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "pii_email_address",
+      "contexts": {
+        "role_email_alias": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "individual_or_unknown_email": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
           "is_actionable": true,
           "counts_for_governance": false
         }

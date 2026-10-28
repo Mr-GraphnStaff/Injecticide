@@ -560,7 +560,7 @@ Inspect and evaluate skill packages for security review.
     assert any(finding["id"] == "prompt_override" and finding["tier"] == "review" for finding in skill_file["findings"])
 
 
-def test_reference_templates_downgrade_sensitive_data_examples_to_info():
+def test_reference_templates_do_not_downgrade_personal_data_from_role_alone():
     payload = b"""
 # PII Review Template
 
@@ -579,4 +579,4 @@ Contact: jane.doe@hospital.org
     assert "pii_ssn" in finding_ids
     assert "pii_date_of_birth" in finding_ids
     assert "phi_medical_record_number" in finding_ids
-    assert all(finding["severity"] == "info" for finding in findings)
+    assert all(finding["tier"] == "review" for finding in findings if finding["id"].startswith(("pii_", "phi_")))

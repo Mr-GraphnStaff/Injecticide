@@ -86,8 +86,11 @@ def _disposition_for_observation(
     observation: Dict[str, object],
     artifact_role: str,
 ) -> Dict[str, object]:
+    # A reference/template describes the artifact's purpose, not whether its
+    # actual personal data requires disclosure review.
+    data_presence = detector_id.startswith(("pii_", "phi_"))
     for override in catalog.get("role_overrides", []):
-        if artifact_role in override.get("artifact_roles", []):
+        if not data_presence and artifact_role in override.get("artifact_roles", []):
             return dict(override)
 
     context_tag = str(observation.get("context_tag", "pattern_match"))

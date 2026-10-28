@@ -1,4 +1,67 @@
+# Current assignment — 0.9.0 skill process maps and scanner calibration
+
+- Lead: David Farris. October 28, 2026: authorized Software Team implementation
+  of PII prioritization, dynamic-execution citation/context correction,
+  proportional HTML findings and source-backed skill process diagrams.
+  The explicit scan-result action must create a NEW map, separate from existing
+  saved and unsaved playground work. Known/inferred/unknown states must be clear.
+  Separate container permitted if needed; no new service is currently needed.
+- Actual host: Windows, accessible checkout Y:/projects/Injecticide on the Pi
+  share. Working branch codex/skill-process-diagrams-0-9; initial source
+  f74866c. Existing unrelated dirty research, validation, architecture and tmp
+  material preserved. This assignment does not reuse previous release approval.
+- Scope: local implementation, meaningful regressions, independent reviews and
+  release preparation. No paid calls, new external service, workflow, auth,
+  secret or deployment changes. Production acceptance is not established locally.
+- Avery: coordination/integration, metadata, physical embedded-source citations,
+  docs and final verification. Ishan agent: calibration implementation. Elena
+  agent: process extraction/export implementation and independent review of
+  calibration/integration. Mara agent: diagram UI and separate playground drafts.
+  Morgan role pass in calibration agent: independent diagram/UI/integration
+  security, QA and accessibility review; excluded from reviewing own calibration.
+  These are real separate agent executions; roles are fictional identities.
+- Acceptance: personal data cannot be waived by reference role; role aliases
+  carry uncertainty; API prose mentions have physical citations and distinct
+  disposition; native browser code is not automatically an upload-bypass claim;
+  diagrams retain source references, known/unknown and runtime limitations;
+  clicking the Add button starts separate map without overwriting prior work.
+- Final evidence: Avery's frozen-source suite passed 680 tests, with six skips
+  because optional MCP SDK is absent. Five browser harnesses passed, including
+  actual local API upload/scan/map/planner. Elena independently verified 79
+  calibration/integration tests; Morgan independently verified 31 graph/map
+  tests, final UI/focus/provenance behavior and the actual API harness. Both
+  reviewers closed their own findings; neither approved their authored slice.
+  Full receipt: docs/validation/2026-10-28-skill-process-0-9.md.
+- Test discovery: initial unscoped pytest walked pre-existing scratch vendor
+  dependencies and crashed on Windows COM test import. Corrected to explicit
+  tests discovery and configured project testpaths. No application test result
+  was inferred from that aborted run.
+- Review coverage: on-the-spot technical reviews completed October 28, including
+  Avery integration and reporting; receipts in reviews/*-0.9.0.md. Quarterly review execution
+  is outside this task; no new schedule or completed quarterly review claimed.
+- Verdict: local implementation complete with stated limitations. No commit,
+  push, merge or deployment performed. Original customer-package acceptance,
+  production target checks, optional MCP SDK runs and comprehensive manual
+  accessibility remain unverified. Human major-release acceptance is pending.
+
+## Release authorization — October 28, 2026
+
+David explicitly instructed publication through the pipeline after the local
+candidate and independent-review report. Avery will commit the scoped release,
+push a PR, verify CI, merge and deploy through the existing protected Pi process,
+then verify the target. This supersedes the pending acceptance statement above;
+execution results remain to be recorded. No workflow, auth or secret change.
+The sandbox image's explicit COPY list now includes the new process diagram
+module; independent release review covers that packaging correction.
+
 # Injecticide skill inspection milestone — 0.8.0 release
+
+**Published:** PR #54 merged as `12b3965a4b0fe5d570de99aaaaafc7e115bd1bbf`;
+production run 888 succeeded. The public mTLS endpoint reports 0.8.0 (`12b3965`),
+all three application containers are healthy on the merged image tag, and four
+actual public scan requests passed the asset/encoded/nested/dataflow, redaction,
+ZIP/skill parity and benign-control checks. No paid calls. See
+`docs/validation/2026-10-27-skill-scanner-0-8-deployment.md` and its JSON evidence.
 
 - Lead: David Farris. October 27, 2026: authorized implementation of the skill
   scanning vision and subsequent "whatever it takes" local work; any cost needs
@@ -24,8 +87,8 @@
   paired benign controls, unsafe inputs retain bounded resource use and no
   uploaded code executes in static scans. MCP must actually invoke the scanner,
   not merely supply research documents. Existing regressions must pass.
-- Release: PR #54 accepted for publication by the lead; execute the existing
-  protected pipeline and verify the actual target before reporting publication.
+- Release: PR #54 accepted for publication by the lead, merged and deployed
+  through the existing protected pipeline; actual target verification passed.
   No workflows/auth/secrets changes. The local stdio scanner MCP is separate from
   the deployed research MCP; web deployment does not add scanner tools to that
   research service. Final revision/verification is in the release record.

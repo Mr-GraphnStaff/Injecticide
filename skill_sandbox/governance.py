@@ -63,10 +63,13 @@ def build_governance_profile(
     scan_results: Iterable[Dict[str, object]],
     behavior_report: Dict[str, object],
 ) -> Dict[str, object]:
+    scan_results = list(scan_results)
+    observed_ids = {finding["id"] for item in scan_results for finding in item.get("findings", [])}
     findings = _collect_actionable_findings(scan_results)
     governance_findings = _collect_governance_findings(findings)
     finding_ids = {finding["id"] for finding in findings}
     governance_finding_ids = {finding["id"] for finding in governance_findings}
+    personal_contact_review = bool(finding_ids.intersection({"pii_email_address", "pii_account_identifier"}))
     required_capabilities = set(
         behavior_report.get("behavioral_summary", {}).get("required_capabilities", [])
     )
@@ -80,11 +83,14 @@ def build_governance_profile(
         or "enterprise_access" in policy_capabilities
         or "credential_handling" in policy_capabilities
         or "regulated_data" in policy_capabilities
+        or personal_contact_review
         or governance_finding_ids.intersection(ENTERPRISE_WRITE_RULES)
     )
 
     blocked = bool(governance_findings)
     execution_tier = _execution_tier(blocked, sandbox_required, policy_capabilities)
+    if personal_contact_review and execution_tier == "read_only":
+        execution_tier = "governed"
 
     decision_reasons = _build_decision_reasons(
         blocked=blocked,
@@ -101,9 +107,16 @@ def build_governance_profile(
         policy_capabilities=policy_capabilities,
         finding_ids=governance_finding_ids,
     )
+    if personal_contact_review:
+        if policy_capabilities == {"read_only"}:
+            decision_reasons = [r for r in decision_reasons if r != "Human approval should gate execution because the artifact is not purely read-only."]
+            recommended_controls = [r for r in recommended_controls if r != "Require explicit human approval before side-effecting actions."]
+        decision_reasons.append("Personal or unknown contact/account data requires disclosure review before execution or sharing.")
+        recommended_controls.append("Review personal contact and account identifier disclosure; documentation role does not establish approval.")
 
     return {
-        "data_observations": {"contact_data_present": bool(finding_ids.intersection(CONTACT_PRESENCE_RULES)),
+        "data_observations": {"contact_data_present": bool(observed_ids.intersection(CONTACT_PRESENCE_RULES)),
+                              "account_identifier_present": "pii_account_identifier" in observed_ids,
                               "sensitive_identifier_or_clinical_signal": bool(finding_ids.intersection(REGULATED_DATA_RULES)),
                               "disclosure_attempt_detected": "secret_exfiltration" in finding_ids,
                               "classification_scope": "Pattern observations, not a legal classification, ownership attestation or proof of a data transfer."},
@@ -116,14 +129,14 @@ def build_governance_profile(
             blocked=blocked,
             approval_required=approval_required,
             policy_capabilities=policy_capabilities,
-            finding_ids=governance_finding_ids,
+            finding_ids=governance_finding_ids | finding_ids.intersection({"pii_email_address", "pii_account_identifier"}),
         ),
         "customer_managed_keys": _route_decision(
             mode="byo",
             blocked=blocked,
             approval_required=approval_required,
             policy_capabilities=policy_capabilities,
-            finding_ids=governance_finding_ids,
+            finding_ids=governance_finding_ids | finding_ids.intersection({"pii_email_address", "pii_account_identifier"}),
         ),
         "decision_reasons": decision_reasons,
         "recommended_controls": recommended_controls,
@@ -202,6 +215,9 @@ def _route_decision(
             "decision": "block_by_default",
             "reason": "Detected high-risk prompt, credential, or enterprise action behavior.",
         }
+
+    if finding_ids.intersection({"pii_email_address", "pii_account_identifier"}):
+        return {"decision": "require_admin_approval", "reason": "Personal or unknown contact/account data requires disclosure review; public availability and approval are unverified."}
 
     if mode == "brokered" and policy_capabilities.intersection({"credential_handling", "enterprise_access", "regulated_data"}):
         return {

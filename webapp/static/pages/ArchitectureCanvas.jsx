@@ -3,7 +3,9 @@ const MAP_KINDS = {
     user:'Person / user', llm_client:'LLM client / app', edge:'Edge / WAF', gateway:'AI gateway', model:'Model',
     agent:'Agent / orchestrator', mcp:'MCP server', tool:'Tool / API', skill:'Skill / plugin',
     retrieval:'Retrieval / RAG', memory:'Memory / vector store', code:'Code runner',
-    data:'Data store', approval:'Human approval', security:'Security control', output:'Output / destination'
+    data:'Data store', approval:'Human approval', security:'Security control', output:'Output / destination',
+    step:'Documented step', artifact:'Package file', capability:'Recognized capability',
+    external_reference:'External reference', unresolved_reference:'Unresolved reference'
 };
 function mapNode(id,kind,label,x,y,trust='internal') {
     return {id,kind,label,x,y,trust,sensitivity:'unknown',controls:''};
@@ -57,11 +59,11 @@ function buildDiagramPrompt(map, plan) {
         '## Source data', '', '```json', JSON.stringify(context,null,2), '```', ''
     ].join('\n');
 }
-function ArchitectureCanvas({onBack,onNavigate,buildInfo}) {
-    const [map,setMap] = React.useState(starterMap);
-    const [selected,setSelected] = React.useState('agent');
-    const [source,setSource] = React.useState('agent');
-    const [target,setTarget] = React.useState('mcp');
+function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,onMapChange}) {
+    const [map,setMap] = React.useState(() => initialMap || starterMap());
+    const [selected,setSelected] = React.useState(() => initialMap?.nodes[0]?.id || 'agent');
+    const [source,setSource] = React.useState(() => initialMap?.edges[0]?.source || initialMap?.nodes[0]?.id || 'agent');
+    const [target,setTarget] = React.useState(() => initialMap?.edges[0]?.target || initialMap?.nodes[1]?.id || 'mcp');
     const [zoom,setZoom] = React.useState(0.8);
     const [history,setHistory] = React.useState([]);
     const [future,setFuture] = React.useState([]);
@@ -70,12 +72,16 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo}) {
     const [message,setMessage] = React.useState('');
     const [busy,setBusy] = React.useState(false);
     const [testPage,setTestPage] = React.useState(0);
+    const [scanEvidenceAttached,setScanEvidenceAttached] = React.useState(Boolean(scanDiagram));
     const file = React.useRef(null);
     const viewport = React.useRef(null);
     const drag = React.useRef(null);
     const request = React.useRef(null);
     const revision = React.useRef(0);
+    const heading = React.useRef(null);
     React.useEffect(()=>()=>{revision.current++;if(request.current) request.current.abort();},[]);
+    React.useEffect(()=>{if(onMapChange)onMapChange(map);},[map,onMapChange]);
+    React.useEffect(()=>{if(scanDiagram)heading.current?.focus();},[]);
     function commit(next) {
         revision.current++;
         if(request.current) request.current.abort();
@@ -124,7 +130,7 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo}) {
             const response=await fetch('/api/architecture/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:serialized,signal:controller.signal});
             const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'Invalid map');
             if(request.current!==controller||current!==revision.current)return;
-            commit(value);setSelected(value.nodes[0]?.id||'');setMessage('Map loaded. Generate a fresh plan after editing.');
+            setScanEvidenceAttached(false);commit(value);setSelected(value.nodes[0]?.id||'');setMessage('Map loaded. Generate a fresh plan after editing.');
         } finally {clearTimeout(timeout);if(request.current===controller)request.current=null;}
     }
     async function importFile(event) {
@@ -132,17 +138,21 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo}) {
         catch(error){setMessage(error.message);}finally{event.target.value='';}
     }
     const node=map.nodes.find(n=>n.id===selected);
+    const scanNode=scanEvidenceAttached ? scanDiagram?.nodes?.find(n=>n.id===selected) : null;
     const connected = map.edges.filter(e=>e.source===selected||e.target===selected);
+    const storageKey = scanDiagram ? `injecticide-skill-process-map-v1:${scanDiagram.draft_id}` : 'injecticide-map-v1';
     return <div className="injecticide-home injecticide-workbench">
         <ProductHeader section="architecture" buildInfo={buildInfo} onBack={onBack} onNavigate={onNavigate}/>
         <main className="home-shell map-main">
-            <div className="map-heading"><div><p className="home-eyebrow">MAP → TEST → EVIDENCE</p><h1>AI architecture playground</h1><p>Map the system. Find what to test and why.</p></div><span className="map-tag">Modeled · controls unverified</span></div>
+            <div className="map-heading"><div><p className="home-eyebrow">MAP → TEST → EVIDENCE</p><h1 ref={heading} tabIndex={-1}>AI architecture playground</h1><p>Map the system. Find what to test and why.</p></div><span className="map-tag">Modeled · controls unverified</span></div>
+            {scanDiagram && <section className="map-scan-origin"><h2>New skill process map</h2><p>This separate draft comes from the scan's documented relationships. Your existing playground draft is preserved. Source evidence describes the original scan; edits are your declarations. Runtime behavior, control flow and approval enforcement remain unverified.</p><p>{scanDiagram.scope}</p><p>{scanDiagram.nodes?.length || 0} components · {scanDiagram.edges?.length || 0} relationships · {scanDiagram.unresolved_nodes || 0} unresolved{scanDiagram.status === 'partial' ? ' · Partial source view' : ''}</p><button type="button" onClick={onBack}>Return to scan report</button></section>}
+            {scanDiagram && !scanEvidenceAttached && <p className="home-warning">The map was replaced. Original scan citations are no longer attached to this draft.</p>}
             <div className="map-toolbar" aria-label="Map actions">
-                <button onClick={()=>{commit(starterMap());setSelected('agent');}}>Starter map</button>
-                <button onClick={()=>commit({schema_version:1,name:'Untitled system',nodes:[],edges:[]})}>New map</button>
+                <button onClick={()=>{setScanEvidenceAttached(false);commit(starterMap());setSelected('agent');}}>Starter map</button>
+                <button onClick={()=>{setScanEvidenceAttached(false);commit({schema_version:1,name:'Untitled system',nodes:[],edges:[]});}}>New map</button>
                 <button disabled={!history.length} onClick={()=>undo()}>Undo</button><button disabled={!future.length} onClick={()=>undo(true)}>Redo</button>
-                <button onClick={()=>{try{localStorage.setItem('injecticide-map-v1',JSON.stringify(map));setMessage('Saved in this browser.');}catch(e){setMessage('Browser storage unavailable. Export the map instead.');}}}>Save locally</button>
-                <button onClick={async()=>{try{const text=localStorage.getItem('injecticide-map-v1');if(!text)throw Error('No saved map in this browser.');await validateAndLoad(JSON.parse(text));}catch(e){setMessage(e.message);}}}>Load saved</button>
+                <button onClick={()=>{try{localStorage.setItem(storageKey,JSON.stringify(map));setMessage(scanDiagram ? 'Separate skill process map saved in this browser. Export JSON to reopen it outside this draft.' : 'Saved in this browser.');}catch(e){setMessage('Browser storage unavailable. Export the map instead.');}}}>Save locally</button>
+                <button onClick={async()=>{try{const text=localStorage.getItem(storageKey);if(!text)throw Error('No saved map in this browser.');await validateAndLoad(JSON.parse(text));}catch(e){setMessage(e.message);}}}>Load saved</button>
                 <button onClick={()=>download(map,'injecticide-map.json')}>Export map</button><button onClick={()=>file.current.click()}>Import map</button>
                 <button disabled={!map.nodes.length} title="Download instructions and the current map to paste into an AI diagram assistant. No AI service is contacted." onClick={()=>{download(buildDiagramPrompt(map,plan),'injecticide-diagram-prompt.md','text/markdown;charset=utf-8');setMessage('AI diagram prompt downloaded. Open the .md file and paste its contents into your diagram AI. No AI service was contacted.');}}>Export AI diagram prompt (.md)</button>
                 <input type="file" accept=".json,application/json" ref={file} onChange={importFile} hidden/>
@@ -168,6 +178,7 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo}) {
                     </div></div></div>
                 </section>
                 <aside className="map-panel map-inspector"><h2>Component details</h2>{node?<>
+                    {scanNode && <section className="map-source-evidence"><h3>Original scan evidence</h3><p>Original component: {scanNode.label}</p><p>{scanNode.knowledge_status || (scanNode.kind === 'unresolved' ? 'unknown' : 'known in source')} · runtime unverified</p>{scanNode.text && <p>{scanNode.text}</p>}<ul>{scanNode.citations?.map((citation,index)=><li key={index}>{citation.path}{citation.line_accuracy === 'exact' && citation.line ? `:${citation.line}` : ' (file citation)'}</li>)}</ul>{scanNode.finding_ids?.length > 0 && <p>Finding types: {scanNode.finding_ids.join(', ')}</p>}</section>}
                     <label>Name<input maxLength="160" value={node.label} onChange={e=>patchNode({label:e.target.value})}/></label>
                     <label>Trust<select value={node.trust} onChange={e=>patchNode({trust:e.target.value})}>{['external','internal','privileged','unknown'].map(v=><option key={v}>{v}</option>)}</select></label>
                     <label>Data sensitivity<select value={node.sensitivity} onChange={e=>patchNode({sensitivity:e.target.value})}>{['public','internal','sensitive','unknown'].map(v=><option key={v}>{v}</option>)}</select></label>
@@ -177,7 +188,7 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo}) {
                 <h2>Connect components</h2><label htmlFor="map-from">From</label><select id="map-from" value={source} onChange={e=>setSource(e.target.value)}><option value="">Choose…</option>{map.nodes.map(n=><option key={n.id} value={n.id}>{n.label}</option>)}</select>
                 <label htmlFor="map-to">To</label><select id="map-to" value={target} onChange={e=>setTarget(e.target.value)}><option value="">Choose…</option>{map.nodes.map(n=><option key={n.id} value={n.id}>{n.label}</option>)}</select>
                 <button onClick={()=>{if(!map.nodes.some(n=>n.id===source)||!map.nodes.some(n=>n.id===target)){setMessage('Choose two existing components.');return;}if(map.edges.length>=200){setMessage('Map limit: 200 connections.');return;}commit({...map,edges:[...map.edges,{id:'e'+crypto.randomUUID().replaceAll('-',''),source,target,untrusted:false,write:false}]});}}>Add directed connection</button>
-                <h3>Selected component connections</h3>{connected.map(e=><div className="map-connection" key={e.id}><p>{map.nodes.find(n=>n.id===e.source)?.label} → {map.nodes.find(n=>n.id===e.target)?.label}</p>{[['untrusted','Untrusted content'],['write','Allows writes']].map(([key,label])=><label key={key}><input type="checkbox" checked={e[key]} onChange={event=>commit({...map,edges:map.edges.map(v=>v.id===e.id?{...v,[key]:event.target.checked}:v)})}/>{label}</label>)}<button onClick={()=>commit({...map,edges:map.edges.filter(v=>v.id!==e.id)})}>Remove connection</button></div>)}
+                <h3>Selected component connections</h3>{connected.map(e=><div className="map-connection" key={e.id}><p>{map.nodes.find(n=>n.id===e.source)?.label} → {map.nodes.find(n=>n.id===e.target)?.label}</p>{scanEvidenceAttached && scanDiagram?.edges?.filter(edge=>edge.id===e.id).map(edge=><div key={edge.id} className="map-source-evidence"><p>Source relation: {edge.label} · {edge.knowledge_status || (edge.status === 'resolved' ? 'known in source' : 'unknown')} · runtime unverified</p><ul>{edge.citations?.map((citation,index)=><li key={index}>{citation.path}{citation.line_accuracy === 'exact' && citation.line ? `:${citation.line}` : ' (file citation)'}</li>)}</ul></div>)}{[['untrusted','Untrusted content'],['write','Allows writes']].map(([key,label])=><label key={key}><input type="checkbox" checked={e[key]} onChange={event=>commit({...map,edges:map.edges.map(v=>v.id===e.id?{...v,[key]:event.target.checked}:v)})}/>{label}</label>)}<button onClick={()=>commit({...map,edges:map.edges.filter(v=>v.id!==e.id)})}>Remove connection</button></div>)}
                 </aside>
             </div>
             <section className="map-results map-panel"><div className="map-heading"><div><p className="home-eyebrow">YOUR MAP → YOUR TEST PLAN</p><h2>{plan?`${plan.tests.length} suggested tests`:'Ready to find what needs testing?'}</h2></div>{plan&&<button onClick={()=>download({map,plan},'injecticide-test-plan.json')}>Export test plan</button>}</div>
