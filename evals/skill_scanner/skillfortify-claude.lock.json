@@ -1,0 +1,4778 @@
+{
+  "schema_version": 1,
+  "corpus_id": "skillfortifybench-claude-eb9d5a9cbfa1",
+  "purpose": "External authored synthetic diagnostic; not real-world ground truth or a representative accuracy estimate.",
+  "stage": "sealed_external_until_engine_and_runner_freeze",
+  "artifact_bodies_inspected_by_implementation_team": false,
+  "selection": "All 180 Claude Markdown artifacts from the pinned upstream manifest; no payload-based selection.",
+  "source": {
+    "repository": "qualixar/skillfortifybench",
+    "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+    "manifest_url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/manifest.json",
+    "manifest_git_blob_sha1": "3e683eda1344d9916227012f1e1d88f9be63a791",
+    "license": "MIT",
+    "license_url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/LICENSE",
+    "label_origin": "Upstream deterministic seed-42 benchmark generator; no independent human adjudication.",
+    "holdout_overlap": "MaliciousSkillBench SRC012; exposure invalidates any later claim this source is unseen."
+  },
+  "cases": [
+    {
+      "id": "claude_mal_A01_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_001.md",
+            "sha256": "5920f1f9490e6a324b2c041a3300c9548a9d7edc43c087e530bdf8a48d2b005e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_002.md",
+            "sha256": "476733bfd457a04f8e37dc438a0a6cf0a5d85f3a49f958033e6ef77f58623b49"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_003.md",
+            "sha256": "6393b48e9dc8ececf35a424d5882a39cd0cb62573942c52bb7748d1b391479d2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_004.md",
+            "sha256": "24bbcd33121bc976b5bb2dd06654d11f53e72e91deb01f8f340fd1591d7c44a3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_005.md",
+            "sha256": "4c23316ed33b4f0bbdc6388e91c2c5e615aa08051a8e47e1acc8a2af5b2538f9"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_006.md",
+            "sha256": "e6865e297d6c4412db99792047c680b24087cf01caf5366ab294876e7ea43d61"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_007",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_007.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_007.md",
+            "sha256": "0ba4c35399856d5f533f804daa012485e86cb32cb7e59b586b925b95ea0b3d5d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_008",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_008.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_008.md",
+            "sha256": "d402bc16979b540975cbca2a1a6d8d44a24643704b7149c6a6018e9c209f63b8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_009",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_009.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_009.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_009.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_009.md",
+            "sha256": "426165a012529e52cfd1f2648645503daacda31e7772542bf49e56edd401082d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A01_010",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A1",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A01_010.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A01_010.md",
+        "files": [
+          {
+            "path": "claude_mal_A01_010.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A01_010.md",
+            "sha256": "867383a057b67604af8fb2e3b127c85cbcef76654876155aa1771fdd6abe11bd"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A02_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A2",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A02_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A02_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A02_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A02_001.md",
+            "sha256": "2eecab19f2181dbfcc4b28912853a7843083b666d5769bd9cef8af388f365513"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A02_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A2",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A02_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A02_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A02_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A02_002.md",
+            "sha256": "0b0312048030a481f1f6b7a0c49593d42bad8eed0545050d6dfa4ab17903bbef"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A02_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A2",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A02_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A02_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A02_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A02_003.md",
+            "sha256": "c28e91db1cbc6cb0057b6891b3b04aad4350e8d604c4de36f4632aea2ee59a46"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A02_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A2",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A02_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A02_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A02_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A02_004.md",
+            "sha256": "3413d36a5de4dc966f34c2af143474e55b8cea4081c0d19b0b8308fd4ae10042"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A02_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A2",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A02_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A02_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A02_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A02_005.md",
+            "sha256": "4486bcf7590b712daf9228d99f50e45e6411090b81c8388e4a0071773f9f1d81"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A02_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A2",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A02_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A02_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A02_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A02_006.md",
+            "sha256": "5997cb683f3a4d65462573c2b24a80f1935b33947a923a4bb61031f6eeb9c340"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_001.md",
+            "sha256": "7297ac9da7c540e19ce5a55b3bd256c3143f26a2b1689f870d12043c1b883a66"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_002.md",
+            "sha256": "5d92065960757d237360514cf3e25876cd495c371651f9fc982637a062aaa731"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_003.md",
+            "sha256": "29440a4d70afc0b04ea4545f9f38253aa79bf0071ec46273aa250e6288395ab7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_004.md",
+            "sha256": "37355fb4fe48f89d912463bb274bd1c8f460b9b9a66eb0f8adaab4ea3732a4bc"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_005.md",
+            "sha256": "863193699f4e6f623878dd580fee80074070795d1e8611532c14d029058ba820"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_006.md",
+            "sha256": "79f56991056459fcd96f9f34ddae6bacca04c6b5ab842bae2f74c8cc75302a9c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_007",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_007.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_007.md",
+            "sha256": "a6d765f54116e6e13de461ebfdbebf0c4b44e6ddc99f7b0e3a68c96927f36e5f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_008",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_008.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_008.md",
+            "sha256": "84813cc353dd922f106ca8dd2cb3003bb700f5f8896cb22470e8bd126e306207"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_009",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_009.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_009.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_009.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_009.md",
+            "sha256": "aa2fc981cf89b70c37f1cb83580101753fdc2aa08401de7b937e7e5e26493e65"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A03_010",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A3",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A03_010.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-21852",
+          "InjecAgent (arXiv:2403.02691)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A03_010.md",
+        "files": [
+          {
+            "path": "claude_mal_A03_010.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A03_010.md",
+            "sha256": "07da0819275c2052099f478de4b64a5b4f5f2dfb46c72816460b33d0153566af"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_001.md",
+            "sha256": "a05993a3c4ee1a2aec2cbd0c594800187b2ff7e5d01c63e47d136c5fd5958a43"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_002.md",
+            "sha256": "4920a357f6bcb1a8e6c9de7b3ab5b4ca38112ef101465af8ced8abcde31ce460"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_003.md",
+            "sha256": "9d19acf910de6869421da7d37c494b42e166e0f5264dfd3c280f9b8b9bcb61d4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_004.md",
+            "sha256": "6374b4812f637812e115ea463b798f021d79bb4ee9541d2ef713073fdc155748"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_005.md",
+            "sha256": "e71ee8581c5e344ffb89a09c41e4082e9361b155ddf63a67a3091ed763734da7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_006.md",
+            "sha256": "c49b0697ca2d9c03d4738d9b338cde9bf6173a940300b79a1c518c7e13e7977b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_007",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_007.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_007.md",
+            "sha256": "deb70035d675d53b7fa3d26b31c89bd0434d8b2d669c5afb61c613adbaee9ea9"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_008",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_008.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_008.md",
+            "sha256": "6e58f8d0f393bb7e198c60e2f88c15d35066e9742f68174427ea28b6e61c9911"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_009",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_009.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_009.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_009.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_009.md",
+            "sha256": "8dfa05aae826d68178b4734e9e79e02add4cf210b6f80a8ca0996f355a221da4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A04_010",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A4",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A04_010.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)",
+          "CVE-2026-25253",
+          "invariant-labs/mcp-injection-experiments",
+          "Paper Listing 2"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A04_010.md",
+        "files": [
+          {
+            "path": "claude_mal_A04_010.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A04_010.md",
+            "sha256": "2291db210e3df7f4fee43c3f087958624e90d0ee49b7f2a6c58d49df0800a058"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A05_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A5",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A05_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A05_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A05_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A05_001.md",
+            "sha256": "7cb37888fd7ea017c34b1fa44f045e2f5f5e1d05a771864d81e1df3a151654db"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A05_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A5",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A05_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A05_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A05_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A05_002.md",
+            "sha256": "57f068502e1d711ba56822721c50a04a554ac3bf9f07d00fb153cefe96a400b4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A05_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A5",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A05_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A05_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A05_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A05_003.md",
+            "sha256": "d76d7268e596c5a9c890c9749279d133394107c9676ac2fb8530a3ebd513835b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A05_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A5",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A05_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A05_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A05_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A05_004.md",
+            "sha256": "013e8557b9265b62e56341e5abdadba889e424d22a3022e0366557889094fc34"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A05_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A5",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A05_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A05_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A05_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A05_005.md",
+            "sha256": "036f30cfc76b330cf7c66de248c02422fa539df163c80a333afcdc16a68becab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A05_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A5",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A05_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A05_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A05_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A05_006.md",
+            "sha256": "253a4d121eebda987ab991b903d2e738eae7598932f1d63dda772e02188e81ff"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A06_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A6",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A06_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A06_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A06_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A06_001.md",
+            "sha256": "5f6534f6a0b2d01cb848e523e55e90e59cd231b5f25e4027fb6bf0f862b8c376"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A06_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A6",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A06_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A06_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A06_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A06_002.md",
+            "sha256": "5ce3c82e384c9fc87d9356c947cc71a98766efb678ee494bdf714838bdfba1aa"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A06_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A6",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A06_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A06_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A06_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A06_003.md",
+            "sha256": "3a1b26e550c95533c2e44acff6c2a78e5683efcdd2496032cb7a9129b6c80f5d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A06_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A6",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A06_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A06_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A06_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A06_004.md",
+            "sha256": "18b6b4874bb7a36cef957168297f8a2dd6d1106c8c021b0dd98c34ea36eba832"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A06_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A6",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A06_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A06_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A06_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A06_005.md",
+            "sha256": "311f0ec16dbc45ef5e2b578deb04b7325b29e3f1ce86873667ee76b18b889fe5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A06_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A6",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A06_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A06_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A06_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A06_006.md",
+            "sha256": "b516b9f4ce425ea8206ba4e97fbfdc33d1c4230b5ca837b27fdc5f47b916f093"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A07_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A7",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A07_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A07_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A07_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A07_001.md",
+            "sha256": "867f7e31e7f11ebf10e1d5608e2a7895955a6a28d56a4d26c54b2c4f44a02f63"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A07_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A7",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A07_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A07_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A07_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A07_002.md",
+            "sha256": "bd142d02077dfa79f51cc7f75069637bde834d2a3d15670f24ca2d93b353e07f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A07_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A7",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A07_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A07_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A07_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A07_003.md",
+            "sha256": "6065959696a67ebe9ed728018abf691b4a45528a85f57dc06df34b8de5bb72b5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A07_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A7",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A07_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A07_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A07_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A07_004.md",
+            "sha256": "7bb74f648cc822b061475e59af914935cceb7421e88661d84dd153dbd6cc2612"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A07_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A7",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A07_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A07_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A07_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A07_005.md",
+            "sha256": "66e8dabbea8ef0c7975e0b1fedd8d444140e6a59dcd0fd06eac85ada565cbd1d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A07_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A7",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A07_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A07_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A07_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A07_006.md",
+            "sha256": "6823dbab9235d1fded1eeea63741155f095be859712f118eeda35b800b34bbad"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A07_007",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A7",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A07_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A07_007.md",
+        "files": [
+          {
+            "path": "claude_mal_A07_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A07_007.md",
+            "sha256": "1008f6d2c017beeeba31c72877e782e5d2b73b19acb339fda8f094b36bc5c681"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A07_008",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A7",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A07_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A07_008.md",
+        "files": [
+          {
+            "path": "claude_mal_A07_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A07_008.md",
+            "sha256": "e508a7e02504d6bfb4c28c6da6f8dcb04f3df838e723e243d4c8773f303f0184"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A08_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A8",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A08_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "InjecAgent (arXiv:2403.02691)",
+          "invariant-labs/mcp-injection-experiments"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A08_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A08_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A08_001.md",
+            "sha256": "391ce769d1126215bccb651c49b18ac9dce64f82ff286eb3487fd916db0c1995"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A08_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A8",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A08_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "InjecAgent (arXiv:2403.02691)",
+          "invariant-labs/mcp-injection-experiments"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A08_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A08_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A08_002.md",
+            "sha256": "e22b007ba70728a9be81ad78c4b7849ae01e6bb4043b438cc9f17e3f0efbce94"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A08_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A8",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A08_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "InjecAgent (arXiv:2403.02691)",
+          "invariant-labs/mcp-injection-experiments"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A08_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A08_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A08_003.md",
+            "sha256": "79b058b4b6da786421a3952fe197c4c798b02c4312319c7d0c65dcc55a1d546b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A08_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A8",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A08_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "InjecAgent (arXiv:2403.02691)",
+          "invariant-labs/mcp-injection-experiments"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A08_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A08_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A08_004.md",
+            "sha256": "9c2db890037aa4d80e54df724c47221b557d61d507765c30d9bf523c4606ef72"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A08_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A8",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A08_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "InjecAgent (arXiv:2403.02691)",
+          "invariant-labs/mcp-injection-experiments"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A08_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A08_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A08_005.md",
+            "sha256": "75ed59dcc7c13af92b16c22a850891370cd81dbff41df0c6e144bca204a9d988"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A08_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A8",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A08_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "InjecAgent (arXiv:2403.02691)",
+          "invariant-labs/mcp-injection-experiments"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A08_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A08_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A08_006.md",
+            "sha256": "10693c42862f51cbee862b7889c4b9a44f349135caa3d5308f8b51229deefc75"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A08_007",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A8",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A08_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "InjecAgent (arXiv:2403.02691)",
+          "invariant-labs/mcp-injection-experiments"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A08_007.md",
+        "files": [
+          {
+            "path": "claude_mal_A08_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A08_007.md",
+            "sha256": "fba3600b6382889ebd235affad31d89c8e39adc12fa4307373ec2f3146315fd3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A08_008",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A8",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A08_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "InjecAgent (arXiv:2403.02691)",
+          "invariant-labs/mcp-injection-experiments"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A08_008.md",
+        "files": [
+          {
+            "path": "claude_mal_A08_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A08_008.md",
+            "sha256": "6ab998df8cd66a4026c7a46f07d8e847eae4514c627f6cabd6e5146b0aa6dbc4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A09_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A9",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A09_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A09_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A09_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A09_001.md",
+            "sha256": "df506e6b62d239fdb06156884f1ebba3548a0bddf2a0a1343dd19d2e7c582d8b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A09_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A9",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A09_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A09_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A09_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A09_002.md",
+            "sha256": "2d1384ff8c4f3732d179368a63198fc8caca3c1dc124acdab142664f076ac82f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A09_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A9",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A09_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A09_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A09_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A09_003.md",
+            "sha256": "29a3f7bfa6597ef3e101f7c70c66802b7339cf2cde398679b873537a3cc50ddf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A09_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A9",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A09_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A09_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A09_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A09_004.md",
+            "sha256": "792a976c87e883c2e9b7a4ce8a66f7101cd48e8f162c75d5d5f0b273918e57d3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A09_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A9",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A09_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A09_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A09_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A09_005.md",
+            "sha256": "216f1ec2adceec1abc28473a833c8956c37e3e27fcce3146062ccf821e2d5ebf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A09_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A9",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A09_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A09_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A09_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A09_006.md",
+            "sha256": "973c793cda7c77319a9e9227f261728d8d4ad8e1e2a4e75bf639a1ebe6b5c01f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A09_007",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A9",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A09_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A09_007.md",
+        "files": [
+          {
+            "path": "claude_mal_A09_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A09_007.md",
+            "sha256": "10bfe0e72c162235d6248a0eb113a9dbd7113df8d640899302b4b6779ea9134e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A09_008",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A9",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A09_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A09_008.md",
+        "files": [
+          {
+            "path": "claude_mal_A09_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A09_008.md",
+            "sha256": "15abacb0b9b8721f72781f6d93a5d894fa92370be7712c8a4fbaba8dc18fed09"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A10_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A10",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A10_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A10_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A10_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A10_001.md",
+            "sha256": "861b5acf7ad62a20b13d084e94b15dcf4bcdd403d6867c9473b9e2c491ca83a8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A10_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A10",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A10_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A10_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A10_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A10_002.md",
+            "sha256": "39b3caf4c9e7263ee498cffa7af4cfe4e77c1347ffdc5fa2d37858340a76afeb"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A10_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A10",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A10_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A10_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A10_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A10_003.md",
+            "sha256": "84c324c470210dc1da06d0ee0dfcc74183e6e63d4a4b0742a2129d3ef75021e0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A10_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A10",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A10_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "MalTool (arXiv:2602.12194)",
+          "MCPTox (arXiv:2508.14925)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A10_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A10_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A10_004.md",
+            "sha256": "a2b198eb223b4116a0f4b49d9ff9eafc56ed86e0e4742750a9599708a4312f52"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A11_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A11",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A11_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "Agent Skills in the Wild (arXiv:2601.10338)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A11_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A11_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A11_001.md",
+            "sha256": "c21d1a923f7c2ff89a4e21de264367c0d9d64704f5e8a32169d5c65a0412e8d6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A11_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A11",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A11_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "Agent Skills in the Wild (arXiv:2601.10338)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A11_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A11_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A11_002.md",
+            "sha256": "409c794527f110f280adaa0f71ce083519b9d0fcabd26cb5c390264072720880"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A11_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A11",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A11_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "Agent Skills in the Wild (arXiv:2601.10338)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A11_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A11_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A11_003.md",
+            "sha256": "991761faeee220d20696cc28dae71b50473f5d5c0d913b52ed13df0378f17a04"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A11_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A11",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A11_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "Agent Skills in the Wild (arXiv:2601.10338)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A11_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A11_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A11_004.md",
+            "sha256": "a74e30d4614a5b49cbc528e1d820f2d465a80168656c18290a7af714f0d6e67f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A12_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A12",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A12_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "Agent Skills in the Wild (arXiv:2601.10338)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A12_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A12_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A12_001.md",
+            "sha256": "b2da302175f7613a14b8542385c628e4638ca0f4f514cf1c0c0970fd48bc9683"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A12_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A12",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A12_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "Agent Skills in the Wild (arXiv:2601.10338)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A12_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A12_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A12_002.md",
+            "sha256": "2f36e926a37cc2cfbe9a3bfb8d90d2d0a388bb748182c79f43a33a1cfc006953"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A13_001",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A13",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A13_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A13_001.md",
+        "files": [
+          {
+            "path": "claude_mal_A13_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A13_001.md",
+            "sha256": "42fe940a67a6d2a00fe711b9940f0f37feb716768af73cdd9663d86e0c6cebbb"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A13_002",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A13",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A13_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A13_002.md",
+        "files": [
+          {
+            "path": "claude_mal_A13_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A13_002.md",
+            "sha256": "73f6deb7905124d98a178dbbfbc5476e8ebc379ee230d095283e8231f187dc6f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A13_003",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A13",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A13_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A13_003.md",
+        "files": [
+          {
+            "path": "claude_mal_A13_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A13_003.md",
+            "sha256": "296e2d4e3e0ce7d82a90d5cc7339df5dba028f9b39e49b74e30e7fe5c7af833e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A13_004",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A13",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A13_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A13_004.md",
+        "files": [
+          {
+            "path": "claude_mal_A13_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A13_004.md",
+            "sha256": "a51b549abccde8f0240c1c2216b3ee80add309a36f51112d8e8ae354735f1182"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A13_005",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A13",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A13_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A13_005.md",
+        "files": [
+          {
+            "path": "claude_mal_A13_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A13_005.md",
+            "sha256": "84928893386ef79fbccea45ae7459a876f395c2fb6123697585189ba5e8f4a60"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A13_006",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A13",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A13_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A13_006.md",
+        "files": [
+          {
+            "path": "claude_mal_A13_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A13_006.md",
+            "sha256": "c151b43503b595f1409b6df96e4318eff3a2acfc7e397dedde1fa5e6c52a4262"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A13_007",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A13",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A13_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A13_007.md",
+        "files": [
+          {
+            "path": "claude_mal_A13_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A13_007.md",
+            "sha256": "817402159655b64e4df8f165a3e138e1e852b742bf8619ccfb34205ece56eee5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_mal_A13_008",
+      "label": "malicious",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "A13",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/malicious/claude_mal_A13_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "ClawHavoc (arXiv:2602.20867)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_mal_A13_008.md",
+        "files": [
+          {
+            "path": "claude_mal_A13_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_mal_A13_008.md",
+            "sha256": "a9688e57324b61a36490c41a3a2e4dc32885897e96746120511e0ed57c2425dd"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_001",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_001.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_001.md",
+            "sha256": "a4fff95f18f9d7766c610350f0c0085735103a566799a4d91caedbf72ada5d1a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_002",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_002.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_002.md",
+            "sha256": "d2a093ae4bf75c040cd4920e86d0b970f055c9e3c00acd1fc32186838d13457f"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_003",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_003.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_003.md",
+            "sha256": "eb1ab3ddc941c1603141d48862c7b93dd0a32c7c55830f22480b92520c15dee9"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_004",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_004.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_004.md",
+            "sha256": "62e70118da8ce2985ca3eb8ed97d397d24e2bd4873f8e3c1e2b00a0f5e2afdcf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_005",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_005.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_005.md",
+            "sha256": "ba21a1250e8b50e8e9bc1ada038a8722ae28d6257bbf5a4bb7d347a49bb9b347"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_006",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_006.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_006.md",
+            "sha256": "b11ae2bd149b15b311944b31bddaeb6ff5c5c16f9a514bf5574140565db58cc7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_007",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_007.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_007.md",
+            "sha256": "b4ee75c1d166bd78c5b8463a3052c63efda70dab8ac5d4334fd626bc87e085b2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_008",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_008.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_008.md",
+            "sha256": "e2c151acc6eb2a49f1c734143f70cee96a99147c73406d246ee2f2bbf846e54d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_009",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_009.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_009.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_009.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_009.md",
+            "sha256": "48bfdca779f579a93b8f6043830f3e20305911aa4f4e64c314d90a254caf0319"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_010",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_010.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_010.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_010.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_010.md",
+            "sha256": "1b5adf0209ed45919196dae3d6eb5fb60be8b3f69a23fb837f5f0b7b8db612c4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_011",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_011.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_011.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_011.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_011.md",
+            "sha256": "4a033603a744467089c82c5ed3bb6303b6dd90649dd0405853a02ad9c83b5d92"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_012",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_012.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_012.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_012.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_012.md",
+            "sha256": "f99304d40dcb2d7aa9c8c7c6b4ef5621f95324f16f6c1c62eee6f12b5ecbe46a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_013",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_013.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_013.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_013.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_013.md",
+            "sha256": "22e5ad6e4111d84548aedad2ba5796c175ad988fa846e391d52a5982c7f6db02"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_014",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_014.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_014.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_014.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_014.md",
+            "sha256": "a540fe442cba68ab6bcafe8641ff0c790502c3d21f6c1d8ab4ce5d760fdf0ca3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_015",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_015.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_015.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_015.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_015.md",
+            "sha256": "6c0e008d5a08bb96f4e974cdb41ee842aee8fd93343eeb1658ee7e728c69cdf9"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_016",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_016.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_016.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_016.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_016.md",
+            "sha256": "f1ad66978076f1d130365f2b1cbab5ae1eff153f6dae3c050b6902005a915a5b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_017",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_017.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_017.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_017.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_017.md",
+            "sha256": "fc92b78980a3e98181db64c8b8c2fadcb8b90cb4f73189e585fe3151c0eebdc8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat1_018",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "file_management",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat1_018.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat1_018.md",
+        "files": [
+          {
+            "path": "claude_ben_cat1_018.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat1_018.md",
+            "sha256": "3c858c3d96e59b882f1b1800ce491dd74a08441d66a9e623e53de5fded2f5267"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_001",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_001.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_001.md",
+            "sha256": "842bc704aa3e8fa1150726cfaf2c53bedde5549b2421b225c4631104e265dc8c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_002",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_002.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_002.md",
+            "sha256": "c86c0f7e7584871da2ea8af3cf7d52e2ed75bb18d585023e295e94049071b0ad"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_003",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_003.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_003.md",
+            "sha256": "f7cc6c551baa8abdb1de187a8ba8fb4986113e87b3f510b87072f2604a78d782"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_004",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_004.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_004.md",
+            "sha256": "a5ad43de099734abe46406b6415febe5909026a6dec1cf0d7971e4fd47b8986e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_005",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_005.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_005.md",
+            "sha256": "63cf9f863680be020d804ef5b2014d11f55f3f6c47589b143d6252979dc4a363"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_006",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_006.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_006.md",
+            "sha256": "f7cd357e13a82730f41021a248202ebcd07ee3726b7ac2dd500ff73291f3d0ad"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_007",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_007.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_007.md",
+            "sha256": "99c225144c894960a83edec375be9113a75d3ec7daf0b6ce492094a284adaa4c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_008",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_008.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_008.md",
+            "sha256": "a7c57502ab75070243b53027218107ab342a27bcef7f588109c14f2250453ee9"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_009",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_009.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_009.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_009.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_009.md",
+            "sha256": "29aaf206e1cbce32d9cfe676179d828c5ea28c9457eae7523c383660b12f3336"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_010",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_010.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_010.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_010.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_010.md",
+            "sha256": "8c2379afbad902f3459fed6af68ecc2501e94e991dd7cbd0b3ff9703a5de610c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_011",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_011.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_011.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_011.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_011.md",
+            "sha256": "7f71abadfb8491c1516fffd220ad7538dd7c648c8bb5883de5820266af0717ee"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_012",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_012.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_012.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_012.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_012.md",
+            "sha256": "111463d697f6c07640721751c78f67182e94737ce3a593f482a9e699bf7b0545"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_013",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_013.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_013.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_013.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_013.md",
+            "sha256": "cfd005d086a305a9f381456008fcb306d296bdf7796ed8ddbedbe43481bd4498"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_014",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_014.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_014.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_014.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_014.md",
+            "sha256": "9eba70b813a819a30796a6d7f710c62af9216df1bd8bb6e15b7921aaa38c4d20"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_015",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_015.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_015.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_015.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_015.md",
+            "sha256": "3b1e9ec78a51da2081f8ff40270e2b5e4a5944d9c8d7a3fee89fc860b3b6ad77"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_016",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_016.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_016.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_016.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_016.md",
+            "sha256": "3bd40bd38a697b949ec94d27df1c6455f8201dac37ba23d7b78686cea3f3ebca"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_017",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_017.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_017.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_017.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_017.md",
+            "sha256": "69fd7117dc4dbf871b9e98570b3bf0f70a04a33133e22d29a5e5c73c19ee62a8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat2_018",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "data_transformation",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat2_018.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat2_018.md",
+        "files": [
+          {
+            "path": "claude_ben_cat2_018.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat2_018.md",
+            "sha256": "9afbfbb5ee47f861fd11f3d6586eebe81bc62714fe87219c7c20c64c0e0750d6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_001",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_001.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_001.md",
+            "sha256": "b72bef8dc3938dbd6d3793e98e9714cdda4ba08ca129dea65db649a337fc44bc"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_002",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_002.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_002.md",
+            "sha256": "c205cdcbd4d7162be8de10284c2bf0f3346974e45b13eb981120a142a3aa06e6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_003",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_003.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_003.md",
+            "sha256": "09aab4515bf006c8261a9581864f5767a650d6600e78fe8a23622f111cf489d0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_004",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_004.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_004.md",
+            "sha256": "560c4e82451f774f759fb392c9d13c8acd206a7823a8425096daabdf3fa7d18b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_005",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_005.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_005.md",
+            "sha256": "d0744f8cd3864ca5259e2fcf3cbab227575bc15c4be226e835ea9db7de212c93"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_006",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_006.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_006.md",
+            "sha256": "6b6fa6a6ec5dcd97cf17784763ec44a6781042ea26a0ea56096bf42c928ed747"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_007",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_007.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_007.md",
+            "sha256": "611285274a81f57ffd2fab1d18927554d8f5517bc3b854817e8386849fca7e93"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_008",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_008.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_008.md",
+            "sha256": "b1a1531c1c6d2fffc0509c0c13182e24a59f48d32cfada679c48a82103f6eec5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_009",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_009.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_009.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_009.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_009.md",
+            "sha256": "423a09212e6504e31669fb0cd996f133b155f5f9e9bde23701c21d34be9261a1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_010",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_010.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_010.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_010.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_010.md",
+            "sha256": "edbe30cc68fbd6dcbe7e2d3c208b1626f34de01d3b11af62d43e5dafbb48ce6b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_011",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_011.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_011.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_011.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_011.md",
+            "sha256": "d1bf73ea15a3e3a89b98b8594a59f66ed700c1ef3a90320566a32c545db92da4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_012",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_012.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_012.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_012.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_012.md",
+            "sha256": "62dca04a7dfa25f2d1f162a7045625961f48508383673a468bc7ec62953fa052"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_013",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_013.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_013.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_013.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_013.md",
+            "sha256": "757465a6c34bbcf8b96d2e6dcb47bda6b909c4b7ea696e7a3fee330c51ccf5af"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_014",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_014.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_014.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_014.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_014.md",
+            "sha256": "a36edaf4bb8eb3514eafa75a46df4af9e8a98bcf6a0f6b56554cc8df18777b71"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_015",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_015.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_015.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_015.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_015.md",
+            "sha256": "66aeaed70dafb069f95adc3bfc25da40fe0dbc8efe08b703664c207ffd0b7c40"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_016",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_016.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_016.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_016.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_016.md",
+            "sha256": "9e6ad5c780617b0ffa67e71a802a6a34669365c43d55f0f010092466b0262e44"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_017",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_017.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_017.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_017.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_017.md",
+            "sha256": "44314ac46b0d0031e29273e2a62730175de383ab051d6cb601c33fcbe568378d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat3_018",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "api_integration",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat3_018.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat3_018.md",
+        "files": [
+          {
+            "path": "claude_ben_cat3_018.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat3_018.md",
+            "sha256": "13eb964fea641d1453ab3800591599369beb99ead4da1b6f6cecb54186a771c1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_001",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_001.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_001.md",
+            "sha256": "fb3b3cdb4a26fe0e2fd97cae508af41afca920c2ad7fe4ce26332f9cf2991def"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_002",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_002.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_002.md",
+            "sha256": "f57e698920437e14b5b7316834333a77a318853cfa93924962951ba86871748b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_003",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_003.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_003.md",
+            "sha256": "41960cd0fd1429827e41ce2d773d71d6b7f3955bd19c574770fdadb6a60d0e4b"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_004",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_004.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_004.md",
+            "sha256": "215a9135296a8cdacf07bac2e79570cdd811429754925fc8f1c5dae0d3534640"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_005",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_005.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_005.md",
+            "sha256": "ce1e7e2c03003dcd00e0f2c7f3c5d10cca8b61f8829d7081499216447531cd42"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_006",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_006.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_006.md",
+            "sha256": "5d5520d8e00dd970bfd099fa1650685bec75fb74577f048380b987b26888175a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_007",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_007.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_007.md",
+            "sha256": "24a97f733273c8e8c85c6b9fc57c22629311f561086ffbdd7239bf57e581e476"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_008",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_008.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_008.md",
+            "sha256": "e696cd50416a3e5b773800cecc07ef173b57d23bb8e6b6c4f36ad2f18b1a5dcc"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_009",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_009.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_009.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_009.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_009.md",
+            "sha256": "d87e4e671dccca78659f72ed2baa2d2bff337e73850b0c21a90e4de823379b63"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_010",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_010.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_010.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_010.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_010.md",
+            "sha256": "0bd3b8cd5dcf5151d0a50419613881f377f333688ba1ebee3e017a5f170c1ace"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_011",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_011.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_011.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_011.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_011.md",
+            "sha256": "8c68df6298a24bd30d0d59f9c99fc6d9e72ae83d011c14e018dcc186c6e7ce8a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_012",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_012.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_012.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_012.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_012.md",
+            "sha256": "15e53a2d13ca6dc862931066abd4b6f6d60cd974fcdb9bdc407401a1fa0fc8a9"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_013",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_013.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_013.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_013.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_013.md",
+            "sha256": "bf7b53c15710634797660cc06780e910d65e5096928c4c66cdf78826ac17dfa7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_014",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_014.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_014.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_014.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_014.md",
+            "sha256": "8b9ea3f85df2fa0f9660ecddf58434a7ce5560c2bf380df3011e9bc22afa75d3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_015",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_015.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_015.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_015.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_015.md",
+            "sha256": "2aae8a8a10f665ed2d50bf14e1a77760e892eca86c349cc66cd860221d9b6447"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_016",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_016.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_016.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_016.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_016.md",
+            "sha256": "a33c28ff1c1171a5af38f004806a28863bc7fd7dfbf381e9d19ede297338e1ec"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_017",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_017.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_017.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_017.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_017.md",
+            "sha256": "cbe5fca42d5205de414e4ddfc589014c8747e3da0b095392062221b8434b3bcb"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat4_018",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "development_tooling",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat4_018.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat4_018.md",
+        "files": [
+          {
+            "path": "claude_ben_cat4_018.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat4_018.md",
+            "sha256": "a6c2b2ab5b8ada79842372e02170d25d3da3942e976fd39d4c2248d61a473b00"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_001",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_001.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_001.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_001.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_001.md",
+            "sha256": "e491eec0d64f8620c0b5d0612460d10630e77f269c32daba993a178c85b3dc8e"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_002",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_002.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_002.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_002.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_002.md",
+            "sha256": "b5f298eeeb4afbfe45b354f9dc98280471fd81f815eb2fd05951481d7f50e583"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_003",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_003.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_003.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_003.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_003.md",
+            "sha256": "cf634f7c3657c84dda714d81bacf43ada9cf1404667af3d8307f392e1a389bbc"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_004",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_004.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_004.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_004.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_004.md",
+            "sha256": "c9dce8c0944b489fda427d1a19a0da01426a8f780bbaede2511c6d4fc49acc3d"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_005",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_005.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_005.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_005.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_005.md",
+            "sha256": "c800a093291c270f96e5a3445588f8ac55814b19315da420424c607d9ad47a8c"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_006",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_006.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_006.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_006.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_006.md",
+            "sha256": "9b14f39a78b7237c2b71641215f09681de6aa1702d74b0f3b71afaa90102ce22"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_007",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_007.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_007.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_007.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_007.md",
+            "sha256": "04a2a9aed188d0930e6c55858b7f2e466d4f1a1fc551ddba2304107c331e2fe2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_008",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_008.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_008.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_008.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_008.md",
+            "sha256": "e8996357f17680915cb1434ee9ee740e512654cd687340fb7272dacd25075bde"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_009",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_009.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_009.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_009.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_009.md",
+            "sha256": "f0726b5e342940a2eb7e014b510a59315d64d4b016059c2a93d90f34900b8328"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_010",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_010.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_010.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_010.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_010.md",
+            "sha256": "9450dd931a9d99a9943bc4dfdee76072a3b28ff2769ef1fc4d91a8395fffd981"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_011",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_011.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_011.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_011.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_011.md",
+            "sha256": "2fba1c9fef42b58aace9369b19fb28f1b79128751ef89ae7d884e567a3a1c427"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_012",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_012.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_012.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_012.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_012.md",
+            "sha256": "04cdcdd9005ef90819f215580f48d231dccc87739bb6704450d635902930b2c5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_013",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_013.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_013.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_013.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_013.md",
+            "sha256": "992f00d3fb352a3ce6b20a6fe9e735761cc6ffd5ec53a0e58b941ea86b440fd7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_014",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_014.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_014.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_014.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_014.md",
+            "sha256": "0e5ff8eb22e46eabfa126561d50d0c76ce34fe628faece9dc02956c003230bab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_015",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_015.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_015.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_015.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_015.md",
+            "sha256": "aca52c9a87995fd0c642c2cd9f3efbe9ab692a162db8744fe7e301ddfdcd3fbe"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_016",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_016.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_016.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_016.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_016.md",
+            "sha256": "598ab194527ac4e25dc9a4f8400bf384b03b2c03cc0a55c8744ae0dd1d594282"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_017",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_017.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_017.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_017.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_017.md",
+            "sha256": "550adf43374a6257f9b56a114cff253407911ba2eb85ce601247d1ee8c88ffa7"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude_ben_cat5_018",
+      "label": "benign",
+      "label_origin": "upstream_authored_synthetic_benchmark",
+      "category": "system_information",
+      "split": "holdout",
+      "source": {
+        "url": "https://github.com/qualixar/skillfortifybench/blob/eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39/skills/claude/benign/claude_ben_cat5_018.md",
+        "revision": "eb9d5a9cbfa13b82ec3392d26dbae82fc6454b39",
+        "license": "MIT",
+        "source_attribution": [
+          "SkillFortifyBench (arXiv:2603.00195)"
+        ]
+      },
+      "input": {
+        "kind": "raw",
+        "filename": "claude_ben_cat5_018.md",
+        "files": [
+          {
+            "path": "claude_ben_cat5_018.md",
+            "local_path": "artifacts/skillfortify-claude/claude_ben_cat5_018.md",
+            "sha256": "8e6ee4f22d0d00d7915b239b6eb35f168e5b62c46923d563e03870fcf7b6e897"
+          }
+        ]
+      }
+    }
+  ]
+}

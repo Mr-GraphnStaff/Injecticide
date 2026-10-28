@@ -1,3 +1,83 @@
+# Release candidate - 0.11.0
+
+Implementation and independent review complete within recorded scopes. Root
+full local run: 877 passed, six optional MCP SDK skips; later focused adapter,
+plan/citation and security checks passed. Actual local API scan-to-map, token
+view, improvement-plan download and return-scope/focus checks passed. Six-view
+keyboard/mobile/hostile-evidence/legacy tests passed. CI will validate final
+source with SDK and image builds before the existing protected Pi deployment.
+
+External fixed-input diagnostics are complete and do not show text-signal gain:
+8/90 upstream malicious labels at review-or-block for both versions; benign
+labels have substantial abstention, so no zero-FPR/leadership claim. Detector
+sources remained frozen through evaluation; scoring adapter v2 correction is
+explicitly recorded. See Lena evaluation results and independent review receipts.
+
+Recognition ballots: Elena won 3 of 4 actual-agent votes. User-authorized app
+spotlight is included. The 100,000 GC symbolic total team award is recorded;
+individual allocations were not invented. Detailed local ballot evidence remains
+in tmp/skill-leadership-0-11/recognition.json. David explicitly instructed pipeline
+publication of this candidate without another permission pause.
+
+# Active assignment - 0.11.0 skill analysis leadership
+
+Lead resumed Software Team implementation on October 28: pursue industry-leading
+skill analysis using external research, inspectable code and public evaluations;
+projects/plugins are future scope. Additional requirements: token-usage guide and
+reports split into familiar scopes, preserving all data and full exports.
+
+Actual host Windows / Y:/projects/Injecticide. Branch
+codex/skill-effect-analysis-0-11 starts at published 58c1c4b.
+Avery owns integration, token footprint, scoped report UI and release checks.
+Ishan owns package-local Python effect analysis; Elena independently challenges
+its semantics and the evaluation runner. Lena/Mara agent owns frozen-input
+evaluation tooling and independent UI QA. Author and reviewer scopes remain
+separate; role names do not establish multiple independent reviewers.
+
+Milestone: bounded source/call/return/sink witnesses plus explicit opaque
+boundaries, paired precision controls and external frozen-input diagnostics.
+No superiority or complete runtime-security claim follows from implementation.
+No paid-provider activation, uploaded-code execution or workflow/auth change.
+Preserve unrelated research edits and earlier local deployment evidence.
+
+Recognition: David authorized a discretionary 100,000 GC award to the team for
+this assignment, plus an app mention for the peer-voted best contributor.
+Record this as one total symbolic team award; individual allocations/balances
+have not been assigned. This is not a monthly salary credit. Collect one ballot
+per actual participating agent after verified contributions and reviews; record
+supporting evidence and ties honestly before adding the winning app credit.
+The award does not lower acceptance criteria or reward invented results.
+
+# Product direction and team initiative - October 28, 2026
+
+The lead's ambition is to make Injecticide the best analyzer of agentic
+packages: skills are the current focus; projects, plugins and other agentic
+package types are intended future scope. Competitive superiority remains a goal,
+not a measured result. Preserve that ambition rather than silently substituting
+a narrower review-workflow product.
+
+Software Team owns original approaches and purposeful use of relevant accessible
+research, tools, code, specialist skills, datasets and experiments. Actively
+explore beyond model training using current external knowledge and observed
+results; training recall does not define the boundary of inquiry. Avery owns
+synthesis and recommended next moves; David owns consequential direction, budget
+and accepted risk. The lead should not have to invent each technical step.
+Current local Software Team instructions updated to 1.0.16 at the user-selected
+.agents skill path; no claim of synchronization to plugin copies or other hosts.
+This direction does not authorize every future package-type implementation,
+paid service, external message or unrelated production change automatically.
+
+# Published — 0.10.0 Agent Skills conformance
+
+PR #57 merged as 58c1c4bb5dbd683de2aed494ca2785305c1d0788. Candidate 895 and
+production 896 each passed 787 tests without skips, Compose and three builds.
+Protected Pi rebuild succeeded without rollback; all application containers
+healthy on merged tag. Actual four-package API, standards UI/Markdown, keyboard/
+reflow and existing current-name/PNG playground regression passed. Evidence:
+docs/validation/2026-10-28-standards-0-10-deployment.md and companion JSON.
+No workflow/auth/secrets changes or paid calls. Static evidence does not certify
+vendor/runtime/security behavior. Source-byte drift flags remain explicit.
+
 # Active assignment â€” 0.10.0 Agent Skills conformance
 
 David explicitly authorized Software Team implementation and prompt publication

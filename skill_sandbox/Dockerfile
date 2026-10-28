@@ -15,6 +15,9 @@ COPY package_graph.py /app/package_graph.py
 COPY process_diagram.py /app/process_diagram.py
 COPY script_launchers.py /app/script_launchers.py
 COPY standards_assessment.py /app/standards_assessment.py
+COPY token_footprint.py /app/token_footprint.py
+COPY package_effects.py /app/package_effects.py
+COPY improvement_plan.py /app/improvement_plan.py
 COPY text_projections.py /app/text_projections.py
 COPY code_security.py /app/code_security.py
 COPY behavior_analysis.py /app/behavior_analysis.py

@@ -45,6 +45,7 @@ class _Value:
     literal: str | None = None
     symbol: str | None = None
     path: str | None = None
+    path_kind: str | None = None
 
 
 class _Budget(Exception):
@@ -135,7 +136,12 @@ class _Flow:
             return _Value(literal=node.value if isinstance(node.value, str) else None)
         if isinstance(node, ast.Attribute):
             owner = self.expr(node.value, env, depth + 1)
-            return _Value(origins=owner.origins, path=owner.path,
+            if owner.path and node.attr == "parent" and owner.path_kind in {"concrete_path", "pure_path"}:
+                return _Value(path=posixpath.dirname(owner.path) or ".", path_kind=owner.path_kind)
+            if owner.path and node.attr == "name" and owner.path_kind in {"concrete_path", "pure_path"}:
+                return _Value(literal=posixpath.basename(owner.path))
+            readable = node.attr in ({"read_text", "read_bytes"} if owner.path_kind == "concrete_path" else {"read", "readline", "readlines"} if owner.path_kind == "file" else set())
+            return _Value(origins=owner.origins, path=owner.path if readable else None, path_kind=owner.path_kind if readable else None,
                           symbol=(owner.symbol + "." + node.attr) if owner.symbol else None)
         if isinstance(node, ast.Subscript):
             owner = self.expr(node.value, env, depth + 1)
@@ -146,8 +152,8 @@ class _Flow:
         if isinstance(node, ast.BinOp):
             left, right = self.expr(node.left, env, depth + 1), self.expr(node.right, env, depth + 1)
             combined = self.combine([left, right])
-            if isinstance(node.op, ast.Div) and (left.path or left.literal) and (right.path or right.literal):
-                return _Value(origins=combined.origins, path=posixpath.join(left.path or left.literal, right.path or right.literal))
+            if isinstance(node.op, ast.Div) and (left.path_kind in {"concrete_path", "pure_path"} or right.path_kind in {"concrete_path", "pure_path"}) and (left.path or left.literal) and (right.path or right.literal):
+                return _Value(origins=combined.origins, path=posixpath.join(left.path or left.literal, right.path or right.literal), path_kind=left.path_kind if left.path_kind in {"concrete_path", "pure_path"} else right.path_kind)
             if isinstance(node.op, ast.Add) and left.literal is not None and right.literal is not None:
                 return _Value(origins=combined.origins, literal=left.literal + right.literal)
             return combined
@@ -156,22 +162,22 @@ class _Flow:
             args = [self.expr(arg, env, depth + 1) for arg in node.args]
             kwargs = {keyword.arg: self.expr(keyword.value, env, depth + 1) for keyword in node.keywords}
             name = function.symbol or ""
-            if name in {"pathlib.Path", "pathlib.PurePath", "pathlib.PosixPath", "pathlib.WindowsPath"}:
+            if name in {"pathlib.Path", "pathlib.PurePath", "pathlib.PosixPath", "pathlib.WindowsPath", "pathlib.PurePosixPath", "pathlib.PureWindowsPath"}:
                 parts = [value.path or value.literal for value in args]
-                return _Value(path=posixpath.join(*parts) if parts and all(part is not None for part in parts) else None)
+                return _Value(path=posixpath.join(*parts) if parts and all(part is not None for part in parts) else None, path_kind="pure_path" if name.startswith("pathlib.Pure") else "concrete_path")
             if name in {"pathlib.Path.home", "pathlib.PosixPath.home", "pathlib.WindowsPath.home"}:
-                return _Value(path="~")
+                return _Value(path="~", path_kind="concrete_path")
             if name in {"os.getenv", "os.environ.get"} and args and args[0].literal and CREDENTIAL_ENV.search(args[0].literal):
                 return _Value(origins=(_Origin("credential_named_environment", node.lineno, args[0].literal),))
             if name in {"os.path.expanduser", "os.path.abspath"} and args:
-                return _Value(path=args[0].path or args[0].literal)
+                return _Value(path=args[0].path or args[0].literal, path_kind="path_string")
             if name == "os.path.join" and args:
                 parts = [value.path or value.literal for value in args]
-                return _Value(path=posixpath.join(*parts) if all(part is not None for part in parts) else None)
+                return _Value(path=posixpath.join(*parts) if all(part is not None for part in parts) else None, path_kind="path_string")
             if name in {"open", "io.open"} and args:
                 mode = args[1].literal if len(args) > 1 else kwargs.get("mode", _Value(literal="r")).literal
                 # Preserve a readable file handle path, not its contents.
-                return _Value(path=(args[0].path or args[0].literal) if mode is not None and not any(c in mode for c in "wax") else None)
+                return _Value(path=(args[0].path or args[0].literal) if mode is not None and not any(c in mode for c in "wax") else None, path_kind="file")
             if isinstance(node.func, ast.Attribute) and node.func.attr in {"read", "read_text", "read_bytes", "readline", "readlines"} and function.path:
                 if _credential_file(function.path):
                     return _Value(origins=(_Origin("credential_file", node.lineno, function.path),))

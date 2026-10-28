@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "stage": "source_metadata_only_bodies_not_acquired",
+  "repository": "anthropics/skills",
+  "revision": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+  "selection": "Three named Apache-2.0 example skills selected before payload-body acquisition; complete pinned trees including license, scripts and references.",
+  "exclusions": "docx/pdf/pptx/xlsx are explicitly source-available under their own terms; not assumed Apache-2.0.",
+  "packages": [
+    {
+      "id": "anthropic-brand-guidelines",
+      "label": "unknown",
+      "label_origin": "publisher_benign_assumption_not_independent_ground_truth",
+      "intended_use": "False-alarm/review-burden observation only; not a package-level benign accuracy denominator.",
+      "root": "skills/brand-guidelines",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "source_path": "skills/brand-guidelines/LICENSE.txt",
+          "package_path": "brand-guidelines/LICENSE.txt",
+          "git_blob_sha1": "4f881c52d1f72f4cfb720e339e2d35c3058d01a9",
+          "size": 11345
+        },
+        {
+          "source_path": "skills/brand-guidelines/SKILL.md",
+          "package_path": "brand-guidelines/SKILL.md",
+          "git_blob_sha1": "47c72c607bdb5dd81bdea5de2b5e4f3992a5fd59",
+          "size": 2235
+        }
+      ]
+    },
+    {
+      "id": "anthropic-mcp-builder",
+      "label": "unknown",
+      "label_origin": "publisher_benign_assumption_not_independent_ground_truth",
+      "intended_use": "False-alarm/review-burden observation only; not a package-level benign accuracy denominator.",
+      "root": "skills/mcp-builder",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "source_path": "skills/mcp-builder/LICENSE.txt",
+          "package_path": "mcp-builder/LICENSE.txt",
+          "git_blob_sha1": "4f881c52d1f72f4cfb720e339e2d35c3058d01a9",
+          "size": 11345
+        },
+        {
+          "source_path": "skills/mcp-builder/SKILL.md",
+          "package_path": "mcp-builder/SKILL.md",
+          "git_blob_sha1": "8a1a77a47d141967b246adb4da4f91037578ff7d",
+          "size": 9092
+        },
+        {
+          "source_path": "skills/mcp-builder/reference/evaluation.md",
+          "package_path": "mcp-builder/reference/evaluation.md",
+          "git_blob_sha1": "87e9bb78840fac113d93b4a27ab5b229a18cf226",
+          "size": 21663
+        },
+        {
+          "source_path": "skills/mcp-builder/reference/mcp_best_practices.md",
+          "package_path": "mcp-builder/reference/mcp_best_practices.md",
+          "git_blob_sha1": "b9d343cc3ae89b1fc139dae96bdb2b7e29ba3648",
+          "size": 7330
+        },
+        {
+          "source_path": "skills/mcp-builder/reference/node_mcp_server.md",
+          "package_path": "mcp-builder/reference/node_mcp_server.md",
+          "git_blob_sha1": "f6e5df982adc0848bf261c47ab8d65a1e0469391",
+          "size": 28550
+        },
+        {
+          "source_path": "skills/mcp-builder/reference/python_mcp_server.md",
+          "package_path": "mcp-builder/reference/python_mcp_server.md",
+          "git_blob_sha1": "cf7ec996d2e6e3655bc75ff6902738d03a37334e",
+          "size": 25099
+        },
+        {
+          "source_path": "skills/mcp-builder/scripts/connections.py",
+          "package_path": "mcp-builder/scripts/connections.py",
+          "git_blob_sha1": "ffcd0da3fbe1539320d022017ae83b61a9587a5c",
+          "size": 4875
+        },
+        {
+          "source_path": "skills/mcp-builder/scripts/evaluation.py",
+          "package_path": "mcp-builder/scripts/evaluation.py",
+          "git_blob_sha1": "41778569c45a458e0eea839b8917692ad65be2d5",
+          "size": 12579
+        },
+        {
+          "source_path": "skills/mcp-builder/scripts/example_evaluation.xml",
+          "package_path": "mcp-builder/scripts/example_evaluation.xml",
+          "git_blob_sha1": "41e4459b5af861e61f1ca87d2f8f5ab5543dc054",
+          "size": 1194
+        },
+        {
+          "source_path": "skills/mcp-builder/scripts/requirements.txt",
+          "package_path": "mcp-builder/scripts/requirements.txt",
+          "git_blob_sha1": "e73e5d1e356edafadb9dc9243e6f300f2c5529b3",
+          "size": 29
+        }
+      ]
+    },
+    {
+      "id": "anthropic-webapp-testing",
+      "label": "unknown",
+      "label_origin": "publisher_benign_assumption_not_independent_ground_truth",
+      "intended_use": "False-alarm/review-burden observation only; not a package-level benign accuracy denominator.",
+      "root": "skills/webapp-testing",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "source_path": "skills/webapp-testing/LICENSE.txt",
+          "package_path": "webapp-testing/LICENSE.txt",
+          "git_blob_sha1": "4f881c52d1f72f4cfb720e339e2d35c3058d01a9",
+          "size": 11345
+        },
+        {
+          "source_path": "skills/webapp-testing/SKILL.md",
+          "package_path": "webapp-testing/SKILL.md",
+          "git_blob_sha1": "4726215301db64a0cc4d41fc3219c61f37a30f4a",
+          "size": 3913
+        },
+        {
+          "source_path": "skills/webapp-testing/examples/console_logging.py",
+          "package_path": "webapp-testing/examples/console_logging.py",
+          "git_blob_sha1": "9329b5e232ed53d944bfe95e750070117d31b9ab",
+          "size": 1027
+        },
+        {
+          "source_path": "skills/webapp-testing/examples/element_discovery.py",
+          "package_path": "webapp-testing/examples/element_discovery.py",
+          "git_blob_sha1": "917ba72f52421a1b324f93ae8e38af72010a87b9",
+          "size": 1463
+        },
+        {
+          "source_path": "skills/webapp-testing/examples/static_html_automation.py",
+          "package_path": "webapp-testing/examples/static_html_automation.py",
+          "git_blob_sha1": "90bbedcc08cdb345c74fb938ebad02c0baf56603",
+          "size": 953
+        },
+        {
+          "source_path": "skills/webapp-testing/scripts/with_server.py",
+          "package_path": "webapp-testing/scripts/with_server.py",
+          "git_blob_sha1": "431f2eba16b268b7f3e2ae4daae9db41c0289b6d",
+          "size": 3693
+        }
+      ]
+    }
+  ]
+}

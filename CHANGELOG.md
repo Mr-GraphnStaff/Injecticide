@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.11.0 - 2026-10-28
+
+- Trace credential origins through bounded package-local Python calls and
+  returns, with source/call/sink witnesses and explicit unresolved boundaries.
+  Refine legacy findings only at completely modeled matching sites.
+- Add a token-usage guide with measured text sizes and clearly labeled rough
+  loading scenarios; actual model/runtime usage remains unassessed.
+- Organize scan reports into Overview, Security, Structure & process, Standards,
+  Token usage and Evidence & coverage; preserve full evidence in exports.
+- Add provenance-bound external evaluation tooling with fixed decision profiles,
+  explicit abstentions and frozen-input comparison requirements.
+- Export a source-linked improvement plan separating mandatory format fixes,
+  contextual security review, advisory improvements and unassessed questions.
+- Credit Elena in the app as the team's peer-voted contributor spotlight.
+
 ## 0.10.0 - 2026-10-28
 
 - Report source-pinned Agent Skills conformance as individual mandatory checks,

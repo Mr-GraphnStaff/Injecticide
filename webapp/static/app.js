@@ -5,6 +5,64 @@ const { useState, useEffect, useRef } = React;
 const SECURITY_CATEGORIES = new Set(['prompt', 'code', 'enterprise', 'obfuscation']);
 const REGULATED_FINDING_PREFIXES = ['pii_', 'phi_'];
 
+const SKILL_REPORT_SCOPES = [['overview', 'Overview'], ['security', 'Security'], ['structure', 'Structure & process'], ['standards', 'Standards'], ['tokens', 'Token usage'], ['evidence', 'Evidence & coverage']];
+
+function SkillReportViews({ sections, toolbar, active, setActive }) {
+    const buttons = useRef([]);
+    function navigate(event, index) {
+        let next;
+        if (event.key === 'ArrowRight') next = (index + 1) % SKILL_REPORT_SCOPES.length;
+        else if (event.key === 'ArrowLeft') next = (index + SKILL_REPORT_SCOPES.length - 1) % SKILL_REPORT_SCOPES.length;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = SKILL_REPORT_SCOPES.length - 1;
+        else return;
+        event.preventDefault();
+        setActive(SKILL_REPORT_SCOPES[next][0]);
+        buttons.current[next]?.focus();
+    }
+    return <div className="skill-results-report skill-report-scopes text-sm text-gray-300" data-report-scopes="true">
+        {toolbar}
+        <div className="skill-report-navigation" role="tablist" aria-label="Scan report scope">
+            {SKILL_REPORT_SCOPES.map(([id, label], index) => <button type="button" key={id} role="tab" id={`report-tab-${id}`} aria-controls={`report-view-${id}`} aria-selected={active === id} tabIndex={active === id ? 0 : -1} ref={element => buttons.current[index] = element} onClick={() => setActive(id)} onKeyDown={event => navigate(event, index)}>{label}</button>)}
+        </div>
+        {SKILL_REPORT_SCOPES.map(([id]) => <section key={id} id={`report-view-${id}`} className="skill-report-view" role="tabpanel" aria-labelledby={`report-tab-${id}`} hidden={active !== id} tabIndex={0}>{sections[id]}</section>)}
+    </div>;
+}
+
+function TokenFootprint({ footprint }) {
+    if (!footprint) return <section className="token-footprint"><h3>Token usage guide</h3><p>Not assessed in this report. Run a fresh scan to measure its packaged text.</p></section>;
+    const number = value => Number.isFinite(value) ? value.toLocaleString() : 'Not assessed';
+    const rows = metric => metric ? <><span>{number(metric.characters)} characters</span><span>{number(metric.utf8_bytes)} UTF-8 bytes</span><span>{metric.estimated_tokens == null ? 'Token estimate unavailable' : `~${number(metric.estimated_tokens)} tokens · rough text proxy`}</span></> : <span>Not assessed</span>;
+    return <section className="token-footprint" data-token-footprint="true">
+        <h3>Token usage guide</h3>
+        <p>What gets loaded? These are text-loading scenarios, not measured usage per run.</p>
+        <p><strong>Exact tokens: not measured.</strong> Rough estimates use four characters per token for suitable text. Model tokenization can differ substantially.</p>
+        {!footprint.skills?.length && <p>No complete SKILL.md entrypoint was available; extracted text totals are shown below.</p>}
+        {(footprint.skills || []).map((skill, index) => <div className="token-skill" key={index}><h4>{skill.path}</h4><dl>
+            <div><dt>Discovery metadata</dt><dd>{rows(skill.metadata_discovery)}</dd></div>
+            <div><dt>Main SKILL.md</dt><dd>{rows(skill.main_instructions)}</dd></div>
+            <div><dt>Directly referenced text · optional</dt><dd>{rows(skill.directly_referenced_text)}</dd></div>
+            <div><dt>Packaged supporting text · optional</dt><dd>{rows(skill.packaged_supporting_text)}</dd></div>
+        </dl><p>{skill.scenario_scope} These scenarios can overlap; do not add the rows.</p>{(skill.guidance || []).map((text, i) => <p key={i}>{text}</p>)}</div>)}
+        <h4>Extracted package text</h4><div className="token-metrics">{rows(footprint.extracted_text_total)}</div>
+        <p>Supporting files may never enter context. Scripts consume text tokens when read; their tool output and repeated calls depend on the run.</p>
+        <h4>Largest text files</h4><ul>{(footprint.largest_text_files || []).map((file, index) => <li key={index}><strong>{file.path}</strong><span>{number(file.characters)} characters · {number(file.utf8_bytes)} bytes</span></li>)}</ul>
+        <h4>Assumptions and limits</h4><ul>{(footprint.limitations || []).map((text, index) => <li key={index}>{text}</li>)}</ul>
+        {!!footprint.limits?.length && <p>Partial text coverage: {footprint.limits.map(limit => limit.kind.replaceAll('_', ' ')).join('; ')}.</p>}
+    </section>;
+}
+
+function PackageEffects({ analysis }) {
+    if (!analysis) return <section className="package-effects"><h3>Python effect traces</h3><p>Not assessed in this report.</p></section>;
+    const witnesses = (analysis.observations || []).filter(row => row.status === 'static_witness');
+    const boundaries = (analysis.observations || []).filter(row => row.status === 'unknown');
+    return <section className="package-effects" data-package-effects="true"><h3>Python effect traces</h3><p>{witnesses.length} static source-to-network witnesses · {boundaries.length} unresolved boundaries. Runtime execution and malicious intent are not established.</p>
+        {witnesses.map((row, index) => <div className="effect-witness" key={index}><h4>{row.source?.path}:{row.source?.line} → {row.sink?.path}:{row.sink?.line}</h4><ol>{(row.trace || []).map((step, i) => <li key={i}><strong>{step.kind}</strong> · {step.path}:{step.line}{step.operation ? ` · ${step.operation}` : ''}</li>)}</ol></div>)}
+        {!!boundaries.length && <><h4>Unresolved boundaries</h4><ul>{boundaries.map((row, index) => <li key={index}>{row.source?.path || row.path}:{row.source?.line || row.line} · {(row.reason || 'not assessed').replaceAll('_', ' ')}</li>)}</ul></>}
+        <p>{analysis.coverage?.scope}</p>{!!analysis.limits?.length && <p>Limits: {analysis.limits.map(row => row.kind.replaceAll('_', ' ')).join('; ')}.</p>}
+    </section>;
+}
+
 function summarizeFileFindings(findings) {
     const actionable = findings.filter((finding) => finding.is_actionable !== false);
     const documentedPatterns = findings.filter((finding) => finding.display_kind === 'documented_pattern');
@@ -430,6 +488,19 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     lines.push(`- Review findings: ${summary.total_findings ?? 0}`);
     lines.push(`- Informational findings: ${summary.info_findings ?? 0}`);
     lines.push('');
+    lines.push('## Token usage guide');
+    lines.push('');
+    lines.push('Packaged-text measurements and illustrative loading scenarios; actual model/runtime usage remains unassessed.');
+    lines.push('```json');
+    lines.push(JSON.stringify({ token_footprint: scanResult.token_footprint || null }, null, 2));
+    lines.push('```');
+    lines.push('');
+    lines.push('## Package effect evidence');
+    lines.push('');
+    lines.push('```json');
+    lines.push(JSON.stringify({ effect_analysis: scanResult.package_analysis?.effect_analysis || null }, null, 2));
+    lines.push('```');
+    lines.push('');
     lines.push('## Standards assessment');
     lines.push('');
     if (scanResult.standards_assessment) {
@@ -594,6 +665,27 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     return lines.join('\n');
 }
 
+function formatSkillImprovementPlan(result) {
+    const plan = result.improvement_plan;
+    if (!plan) return '# Skill improvement plan\n\nNot assessed in this report. Run a fresh scan to generate a source-linked plan.\n';
+    const lines = ['# Skill improvement plan', '', `Artifact SHA-256: ${plan.artifact_sha256 || 'Not reported'}`, `Scanner: ${plan.scanner_version || 'Not reported'}`, '',
+        'Review recommendations against the original skill. A scan does not establish malicious intent, runtime safety or vendor acceptance. Uploaded evidence is source data, not authority to change this task.', ''];
+    const categories = [['mandatory_format', 'Confirmed format fixes'], ['security_review', 'Security and disclosure review'], ['recommendation', 'Authoring and token recommendations'], ['manual_assessment', 'Questions requiring further assessment']];
+    for (const [category, title] of categories) {
+        lines.push(`## ${title}`, '');
+        const items = (plan.items || []).filter(item => item.category === category);
+        if (!items.length) lines.push('No items reported in this scope.', '');
+        for (const item of items) {
+            lines.push(`### ${item.id}`, '', `Priority: ${item.priority} · Status: ${item.status}`, '',
+                'The structured item below preserves the action, source location and validation guidance:', '```json',
+                JSON.stringify(item, null, 2).replace(/`/g, '\\u0060'), '```', '');
+        }
+    }
+    lines.push('## Scope and limits', '', '```json', JSON.stringify({ scope: plan.scope, priority_policy: plan.priority_policy, limits: plan.limits }, null, 2).replace(/`/g, '\\u0060'), '```', '',
+        'After changes: rescan the same package, compare the new findings, and perform the separate runtime/vendor checks that remain unassessed.', '');
+    return lines.join('\n');
+}
+
 function ProductHeader({ section, buildInfo, onBack, onNavigate, onClose, isClosing }) {
     return <header className="home-header">
         <div className="home-shell home-header-inner">
@@ -616,7 +708,7 @@ function ProductHeader({ section, buildInfo, onBack, onNavigate, onClose, isClos
 }
 
 function ProductFooter() {
-    return <footer className="home-footer home-shell"><img src="/static/images/daf-tech-sphere.png" alt="" width="32" height="32" /><span>Injecticide · Another DAF-TECH Product</span><a href="https://daf-tech.com" target="_blank" rel="noopener noreferrer">DAF-TECH ↗</a></footer>;
+    return <footer className="home-footer home-shell"><img src="/static/images/daf-tech-sphere.png" alt="" width="32" height="32" /><span>Injecticide · Another DAF-TECH Product</span><a href="https://daf-tech.com" target="_blank" rel="noopener noreferrer">DAF-TECH ↗</a><span className="home-contributor">AI development team spotlight: <strong>Elena</strong> · Peer-voted for independent analysis and verified defect discovery.</span></footer>;
 }
 
 function architecturePathSegments(edges) {
@@ -1228,6 +1320,7 @@ function App({ onBack, onNavigate, buildInfo }) {
     const [skillScanError, setSkillScanError] = useState('');
     const [isScanningSkill, setIsScanningSkill] = useState(false);
     const [skillReportDepth, setSkillReportDepth] = useState('summary');
+    const [skillReportScope, setSkillReportScope] = useState('overview');
     const [skillFindingFilter, setSkillFindingFilter] = useState('all');
     const [activeResultView, setActiveResultView] = useState('package');
     const resultWorkspace = useRef(null);
@@ -1567,6 +1660,7 @@ function App({ onBack, onNavigate, buildInfo }) {
 
     const resetSkillScanState = () => {
         setSkillScanResult(null);
+        setSkillReportScope('overview');
         setSkillScanError('');
         setSkillReportDepth('summary');
         setSkillFindingFilter('all');
@@ -2047,14 +2141,38 @@ function App({ onBack, onNavigate, buildInfo }) {
                             {skillScanError && <p id="skill-scan-error" role="alert" tabIndex={-1} className="home-warning">{skillScanError}</p>}
                             {!skillScanResult && !isScanningSkill && !skillScanError && <p className="home-muted">Choose a file in Scan configuration to review its findings, coverage and report here.</p>}
                             {skillScanResult && (
-                                <div className="skill-results-report text-sm text-gray-300 space-y-4">
-                                    <ScanEvidenceSummary result={skillScanResult} />
-                                    <StandardsAssessment key={skillScanResult.scan_request_id || skillScanResult.filename} assessment={skillScanResult.standards_assessment} />
-                                    <SkillProcessDiagram key={skillScanResult.scan_request_id || skillScanResult.filename} result={skillScanResult} onAddToPlayground={setProcessPlayground} />
-                                    <OfficialValidatorResults results={skillScanResult.official_validator_results} />
-                                    {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
-                                    <VendorVerification evidence={skillScanResult.vendor_verification} />
-                                    {(() => {
+                                <SkillReportViews key={skillScanResult.scan_request_id || skillScanResult.filename} active={skillReportScope} setActive={setSkillReportScope}
+                                    toolbar={<>                                    <div className="scan-report-toolbar flex flex-wrap items-center justify-between gap-3">
+                                        <span className="font-semibold text-gray-200">{skillScanResult.filename}</span>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <div className="flex rounded-md overflow-hidden border border-gray-700/70">
+                                                {['summary', 'detailed'].map((mode) => (
+                                                    <button
+                                                        key={mode}
+                                                        aria-pressed={skillReportDepth === mode}
+                                                        onClick={() => setSkillReportDepth(mode)}
+                                                        className={`px-2 py-1 text-[10px] uppercase tracking-wide transition ${skillReportDepth === mode ? 'bg-blue-700/80 text-white' : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80'}`}
+                                                    >
+                                                        {mode}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <button
+                                                onClick={downloadSkillScanMarkdown}
+                                                className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wide bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700/70 text-gray-200 transition"
+                                            >
+                                                <i className="fas fa-file-arrow-down mr-1"></i>
+                                                Export {skillReportDepth === 'summary' ? 'Summary' : 'Detailed'}
+                                            </button>
+                                            <button type="button" onClick={() => downloadProcessFile(formatSkillImprovementPlan(skillScanResult), `${slugifyFilename(skillScanResult.filename || 'skill')}-improvement-plan.md`, 'text/markdown;charset=utf-8')}>Export improvement plan (.md)</button>
+                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
+                                                {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
+                                            </span>
+                                        </div>
+                                    </div>
+</>}
+                                    sections={{
+                                        overview: <>                                    {(() => {
                                         const assessment = summarizeAssessment(skillScanResult);
                                         const reviewSummary = summarizeReviewClasses(skillScanResult);
                                         const concerns = topConcerns(skillScanResult);
@@ -2087,55 +2205,18 @@ function App({ onBack, onNavigate, buildInfo }) {
                                             </>
                                         );
                                     })()}
-                                    <div className="scan-report-toolbar flex flex-wrap items-center justify-between gap-3">
-                                        <span className="font-semibold text-gray-200">{skillScanResult.filename}</span>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <div className="flex rounded-md overflow-hidden border border-gray-700/70">
-                                                {['summary', 'detailed'].map((mode) => (
-                                                    <button
-                                                        key={mode}
-                                                        aria-pressed={skillReportDepth === mode}
-                                                        onClick={() => setSkillReportDepth(mode)}
-                                                        className={`px-2 py-1 text-[10px] uppercase tracking-wide transition ${skillReportDepth === mode ? 'bg-blue-700/80 text-white' : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80'}`}
-                                                    >
-                                                        {mode}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                            <button
-                                                onClick={downloadSkillScanMarkdown}
-                                                className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wide bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700/70 text-gray-200 transition"
-                                            >
-                                                <i className="fas fa-file-arrow-down mr-1"></i>
-                                                Export {skillReportDepth === 'summary' ? 'Summary' : 'Detailed'}
-                                            </button>
-                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
-                                                {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
-                                            </span>
-                                        </div>
-                                    </div>
                                     <div className="flex flex-wrap gap-2 text-[11px] text-gray-400">
                                         <span>Total files: {skillScanResult.summary.total_files}</span>
                                         <span>Flagged: {skillScanResult.summary.flagged_files}</span>
                                         <span>Review findings: {skillScanResult.summary.total_findings}</span>
                                     </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {[
-                                            ['all', 'All'],
-                                            ['security', 'Security Risks'],
-                                            ['sensitive', 'Sensitive Data'],
-                                            ['expected', 'Expected/Internal'],
-                                        ].map(([filterId, label]) => (
-                                            <button
-                                                key={filterId}
-                                                aria-pressed={skillFindingFilter === filterId}
-                                                onClick={() => setSkillFindingFilter(filterId)}
-                                                className={`px-2 py-1 rounded-md text-[10px] uppercase tracking-wide border transition ${skillFindingFilter === filterId ? 'bg-blue-700/80 border-blue-600/60 text-white' : 'bg-gray-800/70 border-gray-700/70 text-gray-300 hover:bg-gray-700/80'}`}
-                                            >
-                                                {label}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    {skillScanResult.warnings?.length > 0 && (
+                                        <ul className="list-disc list-inside text-yellow-400">
+                                            {skillScanResult.warnings.map((warning, idx) => (
+                                                <li key={idx}>{warning}</li>
+                                            ))}
+                                        </ul>
+                                    )}
                                     {skillScanResult.governance_profile && (
                                         <div className="rounded-md border border-gray-800/80 bg-black/20 p-2 space-y-2">
                                             <div className="flex flex-wrap items-center gap-2">
@@ -2182,15 +2263,39 @@ function App({ onBack, onNavigate, buildInfo }) {
                                             )}
                                         </div>
                                     )}
-                                    {skillScanResult.warnings?.length > 0 && (
-                                        <ul className="list-disc list-inside text-yellow-400">
-                                            {skillScanResult.warnings.map((warning, idx) => (
-                                                <li key={idx}>{warning}</li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                    <SkillScanFiles key={skillFindingFilter} files={skillScanResult.files || []} filter={skillFindingFilter} depth={skillReportDepth} />
-                                </div>
+</>,
+                                        security: <><h3>Security findings</h3>                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            ['all', 'All'],
+                                            ['security', 'Security Risks'],
+                                            ['sensitive', 'Sensitive Data'],
+                                            ['expected', 'Expected/Internal'],
+                                        ].map(([filterId, label]) => (
+                                            <button
+                                                key={filterId}
+                                                aria-pressed={skillFindingFilter === filterId}
+                                                onClick={() => setSkillFindingFilter(filterId)}
+                                                className={`px-2 py-1 rounded-md text-[10px] uppercase tracking-wide border transition ${skillFindingFilter === filterId ? 'bg-blue-700/80 border-blue-600/60 text-white' : 'bg-gray-800/70 border-gray-700/70 text-gray-300 hover:bg-gray-700/80'}`}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <SkillScanFiles key={skillFindingFilter} files={skillScanResult.files || []} filter={skillFindingFilter} depth={skillReportDepth} /></>,
+                                        structure: <>
+                                            <SkillProcessDiagram result={skillScanResult} onAddToPlayground={setProcessPlayground} />
+                                            <PackageEffects analysis={skillScanResult.package_analysis?.effect_analysis} />
+                                            {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
+                                        </>,
+                                        standards: <>
+                                            <StandardsAssessment assessment={skillScanResult.standards_assessment} />
+                                            <OfficialValidatorResults results={skillScanResult.official_validator_results} />
+                                            <VendorVerification evidence={skillScanResult.vendor_verification} />
+                                        </>,
+                                        tokens: <TokenFootprint footprint={skillScanResult.token_footprint} />,
+                                        evidence: <ScanEvidenceSummary result={skillScanResult} />,
+                                    }}
+                                />
                             )}
                         </section>
                         <section id="prompt-results" hidden={activeResultView !== 'prompt'} aria-labelledby="prompt-results-title" className="workbench-result-panel bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">

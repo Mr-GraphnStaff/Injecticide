@@ -33,12 +33,25 @@ const fixture = execFileSync('python', ['-c', [
         await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();
         const response=await scanResponse;assert.equal(response.status(),200);
         const report=await response.json();
-        assert.equal(report.scanner_metadata.scanner_version,'0.10.0');
+        assert.equal(report.scanner_metadata.scanner_version,'0.11.0');
         assert.ok(report.documented_process.steps.length>=3);
         const diagram=report.process_diagram;
         assert.ok(diagram.nodes.some(node=>node.kind==='step'&&node.step_type==='approval_mention'));
         assert.equal(diagram.runtime_verified,false);
         assert.ok(diagram.edges.some(edge=>edge.kind==='documented_order'));
+        assert.equal(report.improvement_plan.schema_version,1);
+        assert.ok(report.improvement_plan.items.some(item=>item.status==='not_assessed'));
+        assert.equal(report.token_footprint.skills[0].path,'review/SKILL.md');
+        await page.getByRole('tab',{name:'Token usage',exact:true}).click();
+        assert.match(await page.getByRole('tabpanel').innerText(),/Exact tokens: not measured/);
+        const improvementDownload=page.waitForEvent('download');
+        await page.getByRole('button',{name:'Export improvement plan (.md)',exact:true}).click();
+        const improvementMarkdown=fs.readFileSync(await(await improvementDownload).path(),'utf8');
+        const improvementItems=[...improvementMarkdown.matchAll(/```json\n([\s\S]*?)\n```/g)].map(match=>JSON.parse(match[1]));
+        for(const item of report.improvement_plan.items)assert.deepEqual(improvementItems.find(value=>value.id===item.id),item,'download preserves actual API plan item');
+        assert.ok(improvementMarkdown.includes(report.improvement_plan.artifact_sha256));
+        assert.ok(improvementMarkdown.includes(report.improvement_plan.priority_policy));
+        await page.getByRole('tab',{name:'Structure & process',exact:true}).click();
         const panel=page.locator('[data-process-diagram]');await panel.waitFor();
         assert.equal(await panel.locator('.process-node').count(),diagram.nodes.length);
         await panel.getByRole('button',{name:'Add process diagram to playground',exact:true}).click();
@@ -51,11 +64,14 @@ const fixture = execFileSync('python', ['-c', [
         await page.screenshot({path:path.join(root,'tmp/skill-process-api-playground.png'),fullPage:true});
         await page.getByRole('button',{name:'Return to scan report',exact:true}).click();
         await page.locator('[data-process-diagram]').waitFor();
+        assert.equal(await page.getByRole('tab',{name:'Structure & process',exact:true}).getAttribute('aria-selected'),'true');
+        assert.equal(await panel.getByRole('button',{name:'Add process diagram to playground',exact:true}).evaluate(element=>element===document.activeElement),true);
         assert.deepEqual(errors,[]);
         fs.writeFileSync(path.join(root,'tmp/skill-process-api-evidence.json'),JSON.stringify({
             status:'PASS',scope:'Local actual API, synthetic bytes; not production acceptance or uploaded-code execution',
             files:report.summary.total_files,steps:report.documented_process.steps.length,nodes:diagram.nodes.length,edges:diagram.edges.length,
-            artifact_sha256:diagram.artifact_sha256,scanner:report.scanner_metadata
+            artifact_sha256:diagram.artifact_sha256,scanner:report.scanner_metadata,
+            improvement_items:report.improvement_plan.items.length,improvement_download_matches_api:true,token_footprint_available:true
         },null,2));
         console.log('PASS: actual local multipart upload, scan diagram, separate map, real planning API and return to report.');
     } finally {await browser.close();}
