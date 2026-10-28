@@ -14,6 +14,7 @@ def test_skill_sandbox_dockerfile_copies_scanner_modules():
         "code_security.py",
         "nested_archives.py",
         "package_graph.py",
+        "process_diagram.py",
         "text_projections.py",
         "behavior_analysis.py",
         "contextual_rules.py",
