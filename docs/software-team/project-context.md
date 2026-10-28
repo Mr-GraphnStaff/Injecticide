@@ -1,4 +1,61 @@
-# Injecticide scanner evidence release
+# Injecticide skill inspection milestone — 0.8.0 candidate
+
+- Lead: David Farris. October 27, 2026: authorized implementation of the skill
+  scanning vision and subsequent "whatever it takes" local work; any cost needs
+  his prior approval. No paid calls, accounts, installations or service activation
+  are authorized by existing credentials. A separate $5 synthetic provider
+  benchmark budget/account question is pending; silence is not approval.
+- Current outcome: provider-independent skill/package inspection that improves
+  actual detection and content understanding. Skills first; plugins and projects
+  remain the future direction, not accepted as implemented by this milestone.
+- Coordinator/integration: Avery Chen on Windows, checkout on the Pi network
+  share. Branch `codex/skill-inspection-0-8`. Preserve the unrelated dirty
+  research PLAN/VALIDATION, existing architecture files, validation and tmp data.
+- Implementers: Ishan (assets, nested archives, optional scanner MCP); Elena
+  (relationship graph, Python data flow); Avery (integration, decoded projections,
+  CLI, reporting). Lena independently authored the package evaluation and QA;
+  Elena reviewed decoding/assets/evaluation; Morgan independently reviews the
+  combined security boundary and Lena's evaluation. Names are role identities;
+  actual executions and findings are recorded separately.
+- Acceptance: every inventory item has a measured inspection state; structural
+  assets are inspected where supported, metadata is scanned, links/container
+  provenance remain correct, hidden/reference/script scenarios are tested against
+  paired benign controls, unsafe inputs retain bounded resource use and no
+  uploaded code executes in static scans. MCP must actually invoke the scanner,
+  not merely supply research documents. Existing regressions must pass.
+- Release: candidate only, prepared for a draft PR. Major release requires human
+  PR acceptance under AGENTS.md. No workflows/auth/secrets changed. Container
+  COPY changes package the new engine modules; production is not deployed by
+  this implementation assignment. Final revision/verification is in the release
+  handoff and validation record.
+- Evidence/limits: `skill-milestone-evaluation.md` preserves the initial misses
+  and threshold definition. Synthetic regression accuracy is not representative
+  market accuracy. Original customer ZIP bytes were not supplied to this chat;
+  exported Markdown is not a new artifact scan. OCR/rendering, font programs,
+  interprocedural/arbitrary-language analysis, customer workflow execution and
+  direct provider performance remain unverified. The existing operator-managed
+  isolated-runner interface has not become runtime proof through static analysis.
+
+## Verification ledger
+
+- New independent QA package benchmark: six authored hostile cases detected,
+  four benign controls without actionable high/block security alarms; two
+  coverage challenges tracked separately. Original labels unchanged; detection
+  threshold expansion to governance-counted high findings explicitly documented.
+- Independent reviews exposed malformed URL handling, nested archive identity
+  boundaries, iTXt metadata omissions, multiline fence regressions, misleading
+  suffix bypasses, document-contained Python dataflow and control-heavy UTF-8
+  decoding. Fixes require independent retesting, not author self-approval.
+- Both browser harnesses passed, including independent keyboard/responsive,
+  escaping, export, lifecycle and repeated-scan checks. The optional scanner MCP
+  passed 24 SDK tests, including actual separate-process stdio calls. Full
+  final-source suite results are recorded in the validation record.
+- Independently inspected four whole commit-pinned public skill directories
+  (81 files), without executing fetched code. Real-package probes exposed and
+  verified correction of a false password-disclosure block and filename-case
+  graph omissions. These unlabeled observations do not establish accuracy.
+
+# Previous assignment: scanner evidence release 0.7.0
 
 - Team lead: David Farris. On October 27, 2026 explicitly authorized the whole
   agreed scanner update, push and production deployment subject to team processes.

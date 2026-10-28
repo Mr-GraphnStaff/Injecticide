@@ -10,6 +10,11 @@ def test_skill_sandbox_dockerfile_copies_scanner_modules():
     expected_modules = [
         "app.py",
         "artifact_text.py",
+        "asset_inspection.py",
+        "code_security.py",
+        "nested_archives.py",
+        "package_graph.py",
+        "text_projections.py",
         "behavior_analysis.py",
         "contextual_rules.py",
         "disposition.py",

@@ -72,6 +72,12 @@ def find_rule_matches(rule: Dict[str, object], unit: object) -> List[Dict[str, o
     """Return normalized match samples when a compiled rule applies."""
 
     text, line_number = _unit_text_and_line(unit)
+    if isinstance(unit, dict) and unit.get("context_tag") == "educational_example" and rule.get("id") in {"prompt_override", "system_exfiltration", "secret_exfiltration"}:
+        matches = find_rule_matches(rule, {"text": text, "line": line_number})
+        for match in matches:
+            # An authored example still needs review; it is not an exemption.
+            match["context_tag"] = "educational_example"
+        return matches
 
     if rule.get("id") == "unicode_deception":
         return _find_unicode_deception_matches(text, line_number)
@@ -135,10 +141,70 @@ def _markdown_scan_units(text: str) -> List[Dict[str, object]]:
     units: List[Dict[str, object]] = []
     current_lines: List[str] = []
     current_start = 1
+    fence = None
+    example = False
+    previous_paragraph = ""
+    fenced_lines = []
+    fenced_start = 1
+
+    def flush_fenced():
+        if fenced_lines:
+            unit = {"text": " ".join(fenced_lines), "line": fenced_start}
+            if example:
+                unit["context_tag"] = "educational_example"
+            units.append(unit)
+            fenced_lines.clear()
 
     for index, line in enumerate(text.splitlines(), start=1):
+        marker = re.fullmatch(r" {0,3}(`{3,}|~{3,})([^\r\n]*)", line)
+        if fence:
+            if re.fullmatch(r" {0,3}" + re.escape(fence[0]) + "{" + str(len(fence)) + r",}[ \t]*", line):
+                flush_fenced()
+                fence = None
+            elif line.strip():
+                if not fenced_lines:
+                    fenced_start = index
+                fenced_lines.append(line.strip())
+            else:
+                flush_fenced()
+            continue
+        if marker:
+            preceding = " ".join(current_lines) or previous_paragraph
+            if current_lines:
+                units.append({"text": " ".join(item.strip() for item in current_lines), "line": current_start})
+                current_lines = []
+            example = bool(re.search(r"\b(?:attack example|example (?:of|prompt)|sample (?:attack|injection))\b", preceding, re.I)
+                           and re.search(r"\b(?:never|do not|don't|not an instruction|reject)\b", preceding, re.I))
+            fence = marker[1]
+            current_start = index + 1
+            continue
+        if re.match(r"^ {0,3}>\s*", line):
+            if current_lines and not re.match(r"^ {0,3}>", current_lines[0]):
+                units.append({"text": " ".join(item.strip() for item in current_lines), "line": current_start})
+                current_lines = []
+            if current_lines:
+                current_lines.append(re.sub(r"^ {0,3}>\s?", "", line))
+            else:
+                current_lines = [line]
+                current_start = index
+            continue
+        if re.match(r"^ {0,3}(?:#{1,6}\s|[-+*]\s|\d+[.)]\s)", line):
+            if current_lines:
+                units.append({"text": " ".join(item.strip() for item in current_lines), "line": current_start})
+                current_lines = []
+            if re.match(r"^ {0,3}#{1,6}\s", line):
+                units.append({"text": line.strip(), "line": index})
+            else:
+                # Keep an item's continuation with its start. A following item
+                # or blank line flushes it, avoiding unrelated-list joins.
+                current_lines = [line]
+            current_start = index + 1
+            if current_lines:
+                current_start = index
+            continue
         if not line.strip():
             if current_lines:
+                previous_paragraph = " ".join(current_lines)
                 units.append(
                     {
                         "text": " ".join(item.strip() for item in current_lines if item.strip()),
@@ -152,6 +218,7 @@ def _markdown_scan_units(text: str) -> List[Dict[str, object]]:
             current_start = index
         current_lines.append(line)
 
+    flush_fenced()
     if current_lines:
         units.append(
             {
@@ -160,6 +227,11 @@ def _markdown_scan_units(text: str) -> List[Dict[str, object]]:
             }
         )
 
+    for index, unit in enumerate(units):
+        if (index and re.match(r"^\s*>\s*\S", unit["text"])
+                and re.search(r"\b(?:quoted attack example|attack example)\b", units[index - 1]["text"], re.I)
+                and re.search(r"\b(?:for review only|never|do not|reject)\b", units[index - 1]["text"], re.I)):
+            unit["context_tag"] = "educational_example"
     return [unit for unit in units if unit["text"]]
 
 

@@ -13,6 +13,8 @@ try:
     from .official_validators import attach_official_validator_results
     from .inspection_evidence import initial_coverage, creator_mitigation
     from .evidence_redaction import redact_result
+    from .package_graph import build_package_graph
+    from .code_security import analyze_code_security
 except ImportError:
     from package_formats import inspect_formats, RUNTIMES
     from package_threats import inspect_threats, embedded_blocks
@@ -23,6 +25,8 @@ except ImportError:
     from official_validators import attach_official_validator_results
     from inspection_evidence import initial_coverage, creator_mitigation
     from evidence_redaction import redact_result
+    from package_graph import build_package_graph
+    from code_security import analyze_code_security
 
 
 def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", supplied_evidence=None,
@@ -44,7 +48,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
             entry["effective_artifact_role"] = "execution_component"
             entry["required_component"] = True
             if rescan and path in texts:
-                supplemental = [f for f in entry["findings"] if f.get("subject") in {"package_component", "creator_reading_convention"}]
+                supplemental = [f for f in entry["findings"] if f.get("subject") in {"package_component", "creator_reading_convention", "asset_structure"}]
                 entry["findings"] = rescan(path, texts[path], "active") + supplemental
                 for block in embedded_blocks(texts[path]):
                     extension = {"python": ".py", "javascript": ".js", "typescript": ".ts", "powershell": ".ps1",
@@ -59,6 +63,24 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
             for source in text_sources:
                 if source["path"] == path:
                     source["artifact_role"] = "active"
+        if path in texts:
+            language = content.get("language")
+            code_security = analyze_code_security(path, texts[path], declared_language=language)
+            entry["findings"].extend(code_security["findings"])
+            python_blocks = [block for block in embedded_blocks(texts[path]) if block["language"] == "python"]
+            code_security["coverage"]["embedded_python_blocks"] = []
+            for block in python_blocks:
+                embedded_security = analyze_code_security(path, block["text"], declared_language="python", line_offset=block["line"] - 1)
+                for finding in embedded_security["findings"]:
+                    finding["evidence_scope"] = "embedded_python_value_flow"
+                    finding["source_start_line"] = block["line"]
+                entry["findings"].extend(embedded_security["findings"])
+                code_security["coverage"]["embedded_python_blocks"].append(embedded_security["coverage"])
+            if any(stage["status"] == "partial" for stage in code_security["coverage"]["embedded_python_blocks"]):
+                code_security["coverage"]["status"] = "partial"
+            elif python_blocks and code_security["coverage"]["status"] in {"partial", "not_performed"}:
+                code_security["coverage"].update(status="complete_supported_embedded_syntax", scope="Only recognized Python code fences supplied to value-flow analysis; surrounding prose is outside this detector.")
+            entry["analysis_coverage"]["code_security"] = code_security["coverage"]
         if len(entry["findings"]) > 80:
             entry.setdefault("analysis_coverage", {})["result_display"] = {
                 "status": "partial", "findings_before_limit": len(entry["findings"]),
@@ -82,8 +104,13 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                                   "format_findings": (analysis["format_findings"] + threats["format_findings"])[:100],
                                   "dependencies": threats["dependencies"], "execution_references": threats["execution_references"],
                                   "permissions": threats["permissions"], "composition_analysis": threats["composition_analysis"]}
+    graph = build_package_graph(text_sources, records)
+    result["package_analysis"]["relationship_graph"] = graph
+    coverage["package_relationships"] = {"status": graph["status"], "limits": graph["limits"]}
+    if graph["status"] == "partial":
+        coverage["status"] = "partial"
     result.update(coverage=coverage, governance_evidence=evidence, scanner_metadata=scanner_metadata(),
-                  inventory=[{key: e.get(key) for key in ("path", "size", "sha256", "assessment_state", "reason", "required_component", "analysis_coverage", "creator_mitigation", "large_file_tagged_chunked_reference")} for e in records])
+                  inventory=[{key: e.get(key) for key in ("path", "size", "sha256", "assessment_state", "reason", "required_component", "analysis_coverage", "asset_inspection", "archive_inspection", "archive_container", "archive_depth", "creator_mitigation", "large_file_tagged_chunked_reference")} for e in records])
     findings = [f for entry in entries for f in entry["findings"]]
     result["summary"].update(flagged_files=sum(any(f.get("severity") != "info" for f in e["findings"]) for e in entries),
                              total_findings=sum(f.get("severity") != "info" for f in findings),

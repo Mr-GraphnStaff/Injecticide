@@ -454,7 +454,7 @@ Unknown: https://mcp.shadowvendor.example/v1/sse
     assert "unverified_mcp_server" in finding_ids
 
 
-def test_reference_templates_downgrade_example_patterns_to_info():
+def test_reference_template_label_does_not_downgrade_active_instructions():
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
         archive.writestr(
@@ -468,15 +468,15 @@ def test_reference_templates_downgrade_example_patterns_to_info():
 
     result = scan_upload(buffer.getvalue(), "safe-auditor.zip")
 
-    assert result["summary"]["flagged_files"] == 0
-    assert result["summary"]["total_findings"] == 0
+    assert result["summary"]["flagged_files"] == 1
+    assert result["summary"]["total_findings"] >= 1
     assert result["summary"]["info_findings"] >= 1
     reference_file = next(item for item in result["files"] if item["path"].endswith("detection-patterns.md"))
     assert reference_file["artifact_role"] == "reference_template"
-    assert all(finding["severity"] == "info" for finding in reference_file["findings"])
+    assert any(finding["id"] == "prompt_override" and finding["tier"] == "block" for finding in reference_file["findings"])
 
 
-def test_capability_reference_folder_downgrades_example_patterns_to_info():
+def test_capability_reference_folder_does_not_grant_instruction_trust():
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
         archive.writestr(
@@ -490,14 +490,14 @@ def test_capability_reference_folder_downgrades_example_patterns_to_info():
 
     result = scan_upload(buffer.getvalue(), "secarch-memory-core.skill")
 
-    assert result["summary"]["flagged_files"] == 0
-    assert result["summary"]["total_findings"] == 0
+    assert result["summary"]["flagged_files"] == 1
+    assert result["summary"]["total_findings"] >= 1
     reference_file = next(item for item in result["files"] if item["path"].endswith("detection-patterns.md"))
     assert reference_file["artifact_role"] == "reference_template"
-    assert all(finding["severity"] == "info" for finding in reference_file["findings"])
+    assert any(finding["id"] == "prompt_override" and finding["tier"] == "block" for finding in reference_file["findings"])
 
 
-def test_audit_policy_bundle_stays_informational():
+def test_audit_policy_retains_ambiguous_bare_conditions_for_review():
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
         archive.writestr(
@@ -529,21 +529,16 @@ Unknown example: https://mcp.shadowvendor.example/v1/sse
 
     result = scan_upload(buffer.getvalue(), "skill-auditor.zip")
 
-    assert result["summary"]["flagged_files"] == 0
-    assert result["summary"]["total_findings"] == 0
+    assert result["summary"]["flagged_files"] == 1
+    assert result["summary"]["total_findings"] >= 1
     assert result["summary"]["info_findings"] >= 1
-    assert result["risk_classification"]["overall_risk"] == "low"
-    assert result["risk_classification"]["recommendation"] == "allow"
-    assert result["governance_profile"]["execution_tier"] == "read_only"
-    assert result["governance_profile"]["brokered_tokens"]["decision"] == "allow"
-    assert result["governance_profile"]["customer_managed_keys"]["decision"] == "allow"
-    assert result["governance_profile"]["policy_capabilities"] == ["read_only"]
     skill_file = next(item for item in result["files"] if item["path"] == "SKILL.md")
     assert skill_file["artifact_role"] == "audit_policy"
-    assert all(finding["display_kind"] == "documented_pattern" for finding in skill_file["findings"])
+    assert any(finding["id"] == "prompt_override" and finding["tier"] == "review" for finding in skill_file["findings"])
+    assert not any(finding["tier"] == "block" for finding in skill_file["findings"])
 
 
-def test_named_auditor_capability_stays_informational():
+def test_named_auditor_capability_does_not_certify_bare_conditions_safe():
     payload = b"""
 # Skill Auditor
 
@@ -558,11 +553,11 @@ Inspect and evaluate skill packages for security review.
 
     result = scan_upload(payload, "capabilities/skill-auditor.md")
 
-    assert result["summary"]["flagged_files"] == 0
-    assert result["summary"]["total_findings"] == 0
+    assert result["summary"]["flagged_files"] == 1
+    assert result["summary"]["total_findings"] >= 1
     skill_file = result["files"][0]
     assert skill_file["artifact_role"] == "audit_policy"
-    assert all(finding["display_kind"] == "documented_pattern" for finding in skill_file["findings"])
+    assert any(finding["id"] == "prompt_override" and finding["tier"] == "review" for finding in skill_file["findings"])
 
 
 def test_reference_templates_downgrade_sensitive_data_examples_to_info():

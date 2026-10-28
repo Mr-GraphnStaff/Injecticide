@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.8.0 - Unreleased
+
+- Inspect PNG chunk structure, CRCs and bounded text metadata, plus standalone
+  TrueType/OpenType table bounds, overlaps, checksums and name metadata. Scan
+  extracted metadata with normal security detectors and preserve structural
+  findings separately from unperformed visual/font-program/malware analysis.
+- Expand nested ZIP/skill archives under shared file, byte and depth budgets;
+  preserve container provenance and explicit rejected/unsupported members.
+- Follow declared package relationships, resource links, dependencies and
+  source-backed capability chains without claiming observed execution.
+- Analyze bounded Python credential-source-to-network-payload flows, including
+  recognized Python stored in documents and fenced snippets, with source lines.
+- Inspect bounded base64 UTF-8 projections without executing decoded content;
+  retain encoding/hash/line provenance and redact decoded credential evidence.
+- Preserve review observations for clearly labeled educational examples while
+  retaining active and multiline fenced instruction detection.
+- Prevent audit/reference file labels from downgrading unrelated active
+  instruction findings; keep contextual matching within adjacent paragraphs
+  and report bare filename references and case mismatches explicitly.
+- Provide an offline scan CLI and optional local stdio scanner MCP tools using
+  the same engine as the web scanner, with no model or paid-service dependency.
+- Add independently authored package regression scenarios, measured detection,
+  review burden, coverage and timing; prepare hash-bound external-provider
+  comparisons without claiming unperformed model runs or market accuracy.
+
 ## 0.7.0 - 2026-10-27
 
 - Report file/detector inspection limits separately from creator chunk-reading

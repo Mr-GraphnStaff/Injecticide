@@ -9,6 +9,11 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY app.py /app/app.py
 COPY artifact_text.py /app/artifact_text.py
+COPY asset_inspection.py /app/asset_inspection.py
+COPY nested_archives.py /app/nested_archives.py
+COPY package_graph.py /app/package_graph.py
+COPY text_projections.py /app/text_projections.py
+COPY code_security.py /app/code_security.py
 COPY behavior_analysis.py /app/behavior_analysis.py
 COPY contextual_rules.py /app/contextual_rules.py
 COPY disposition.py /app/disposition.py

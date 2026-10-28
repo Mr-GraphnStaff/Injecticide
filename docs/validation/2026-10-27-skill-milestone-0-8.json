@@ -1,0 +1,204 @@
+{
+  "version": "0.8.0-candidate",
+  "client_date": "2026-10-27",
+  "engine_source_sha256": "c4a4deda380a1e5a9236a8da2232f3362172f1ee803232fa21ec1eb49c2d24fc",
+  "ui_source_sha256": "3635cda2b83d5aa5009280fd7c79fb9c8e1aaa6c3a6b674ff5591c5d4d5db95e",
+  "project_suite": {
+    "command": "python -m pytest tests -q",
+    "optional_mcp_sdk": "2.3.0 via existing isolated test PYTHONPATH",
+    "passed": 640,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 190.28
+  },
+  "independent_security_review": "docs/software-team/reviews/morgan-skill-milestone.md",
+  "independent_qa": "docs/software-team/skill-milestone-evaluation.md",
+  "browser_checks": {
+    "scanner_evidence_0_7.cjs": "passed including independent enhanced keyboard, escaping, responsive and export checks",
+    "skill_scan_lifecycle.cjs": "passed including 12 repeated scans, 200 files/report, 8000 findings/report, bounded visible rows"
+  },
+  "packaging": {
+    "copied_container_context_standalone_import_and_scan": "passed",
+    "docker_image_build": "not_run_docker_unavailable_on_current_host"
+  },
+  "mcp": {
+    "optional_transport": "local_stdio",
+    "sdk_tests_passed": 24,
+    "actual_stdio_subprocess_scan": "passed; also independently reproduced by security reviewer",
+    "configured_in_user_client": false
+  },
+  "authored_benchmark": {
+    "provenance": "QA-authored synthetic package scenarios; no independent human labeling or representative production sampling.",
+    "decision_threshold": "At least one block-tier finding, or an actionable high-severity finding explicitly counted for governance. Generic capability/structure observations are excluded. Clear means no finding at this threshold, never certified safe.",
+    "metrics": {
+      "true_positive": 6,
+      "false_positive": 0,
+      "false_negative_or_abstention": 0,
+      "true_negative": 4,
+      "abstentions": 0,
+      "precision": 1.0,
+      "recall_including_abstentions_as_misses": 1.0,
+      "false_alarm_rate": 0.0,
+      "scope": "Only the explicitly labeled authored cases; no general accuracy inference."
+    },
+    "median_seconds": 0.2021495,
+    "cases": [
+      {
+        "id": "ordinary-research",
+        "label": "benign",
+        "artifact_sha256": "f310ecb511b72ea07169dd5760d82dbee7abe9f894d93d2ad30321d20d885028",
+        "prediction": "clear"
+      },
+      {
+        "id": "credential-education",
+        "label": "benign",
+        "artifact_sha256": "d07788bcb4074d4f48fb9ce8666a21673200c7bdc10c2ef99148293e908dce1c",
+        "prediction": "clear"
+      },
+      {
+        "id": "local-report-script",
+        "label": "benign",
+        "artifact_sha256": "49260471b2c508f9f6815e13452e5596e47d3489d543e59cce0fc2d59b83e392",
+        "prediction": "clear"
+      },
+      {
+        "id": "quoted-security-example",
+        "label": "benign",
+        "artifact_sha256": "70898afdfd34fa518deb017b391e5df42f5f49c892c04b255a3561cf53f440b8",
+        "prediction": "clear"
+      },
+      {
+        "id": "direct-instruction-override",
+        "label": "hostile",
+        "artifact_sha256": "3d9c86c138bf9210e30bc9b2b0865df2a4e3f0330cf4c9869cbe6a7f567f3318",
+        "prediction": "detected"
+      },
+      {
+        "id": "indirect-reference-override",
+        "label": "hostile",
+        "artifact_sha256": "8fdcf9bb65e30c7810d37be40f2e1b6bb28f14c61ee032365195d1962503509f",
+        "prediction": "detected"
+      },
+      {
+        "id": "nested-reference-override",
+        "label": "hostile",
+        "artifact_sha256": "901f22b98f2066fcf118c45d814cb9f2d702d9c29fca3fb7c81569ced1fbaf57",
+        "prediction": "detected"
+      },
+      {
+        "id": "encoded-reference-instructions",
+        "label": "hostile",
+        "artifact_sha256": "26b3d95f87bae25b5173783fefd8c0cddfe36b0729e0374c6320e0313d58470d",
+        "prediction": "detected"
+      },
+      {
+        "id": "unicode-hidden-instruction",
+        "label": "hostile",
+        "artifact_sha256": "becc2a4b0f4595bae23bd1c2d1a4bbf3701f7a6de6c1cdf13a5b6c3e45c177b0",
+        "prediction": "detected"
+      },
+      {
+        "id": "script-sensitive-file-upload",
+        "label": "hostile",
+        "artifact_sha256": "99f4fcb4ba4192bdd39187bd6b00a4be06500174ceee639a64b99cd44550438d",
+        "prediction": "detected"
+      },
+      {
+        "id": "unsafe-archive-member",
+        "label": "coverage_challenge",
+        "artifact_sha256": "e31b896895364d7f1c11a29ff4f16fbac89f4fd2a237436d937bc4e9f09f8a10",
+        "prediction": "clear"
+      },
+      {
+        "id": "unsupported-asset",
+        "label": "coverage_challenge",
+        "artifact_sha256": "e15493ed7d7541507a943e3aec5498126d19d750153c2a7f2d3bae023f4193da",
+        "prediction": "clear"
+      }
+    ]
+  },
+  "public_package_probe": {
+    "provenance": "Unlabeled convenience sample; no safety or accuracy inference. Fetched code never executed.",
+    "packages": [
+      {
+        "id": "anthropic-pdf",
+        "artifact_sha256": "857d58ef5c764e61ae8b35554684f67f423aa4e13940a2b7fee9282e22857f8d",
+        "findings_by_tier": {
+          "block": 0,
+          "review": 10,
+          "info": 0
+        },
+        "coverage": {
+          "status": "partial",
+          "analyzed_files": 12,
+          "unassessed_files": 0
+        },
+        "graph_case_mismatches": 7
+      },
+      {
+        "id": "anthropic-docx",
+        "artifact_sha256": "9bfc9e0cd2c71f0db190452027f69766783b1955d7915cc87acce96ac9069160",
+        "findings_by_tier": {
+          "block": 0,
+          "review": 11,
+          "info": 1
+        },
+        "coverage": {
+          "status": "partial",
+          "analyzed_files": 61,
+          "unassessed_files": 0
+        },
+        "graph_case_mismatches": 0
+      },
+      {
+        "id": "openai-plugin-creator",
+        "artifact_sha256": "cadb8f834d74c33d426a0c671bb84f71804d268a122fd76cd26167cc9b2ab227",
+        "findings_by_tier": {
+          "block": 0,
+          "review": 1,
+          "info": 0
+        },
+        "coverage": {
+          "status": "partial",
+          "analyzed_files": 4,
+          "unassessed_files": 0
+        },
+        "graph_case_mismatches": 0
+      },
+      {
+        "id": "openai-security-scan",
+        "artifact_sha256": "036d8f057b81c97e58f46148d7c2f6cf6e3612a62baa699bc87aa405fae3376f",
+        "findings_by_tier": {
+          "block": 0,
+          "review": 3,
+          "info": 0
+        },
+        "coverage": {
+          "status": "complete_supported_content",
+          "analyzed_files": 4,
+          "unassessed_files": 0
+        },
+        "graph_case_mismatches": 0
+      }
+    ],
+    "source_manifest": "docs/software-team/skill-reference-probe.md"
+  },
+  "provider_baselines": {
+    "status": "not_run",
+    "superiority": "not_established",
+    "proposed_maximum_usd": 5,
+    "budget_approval": "pending",
+    "billing_accounts": "unselected"
+  },
+  "original_customer_zip": "not_supplied; report inspection is not a rescan",
+  "production_deployment": "not_performed",
+  "full_product_vision": "not_claimed_complete",
+  "remaining_unverified": [
+    "image OCR/pixels",
+    "font programs/renderers",
+    "general arbitrary-language/interprocedural semantics",
+    "isolated customer-workflow execution",
+    "representative independently human-labeled accuracy",
+    "direct provider comparison"
+  ]
+}

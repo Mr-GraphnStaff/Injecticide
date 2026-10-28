@@ -141,6 +141,14 @@ def inspect_threats(records, texts, analysis):
     inventory_limited = [False]
     generated = {}
 
+    def resolve(source, root, target):
+        resolved = safe_package_path(root, target)
+        if resolved and "!/" in source:
+            boundary = source.rsplit("!/", 1)[0] + "!/"
+            if not resolved.startswith(boundary):
+                return None
+        return resolved
+
     # Link known extraction outputs to packaged sources before resolving launches.
     # This recognizes a literal sed pipeline, not arbitrary shell semantics.
     extraction_re = re.compile(r"\bsed\s+-n\b[^\n]*?\s+(?P<input>[\w./-]+|\"[^\"\n]+\"|'[^'\n]+')\s*\|[^\n]*?\s>\s*(?P<output>[\w./-]+)\b")
@@ -151,10 +159,10 @@ def inspect_threats(records, texts, analysis):
             skill_root = ""
         for match in islice(extraction_re.finditer(text), 64):
             input_name = match.group("input").strip("\"'")
-            candidates = [safe_package_path(base, input_name) for base in (skill_root, source_parent)]
+            candidates = [resolve(source, base, input_name) for base in (skill_root, source_parent)]
             original = next((p for p in candidates if p in paths), None)
             if original:
-                output = safe_package_path(skill_root, match.group("output"))
+                output = resolve(source, skill_root, match.group("output"))
                 if output and PurePosixPath(output).suffix.lower() in EXECUTABLE_SUFFIXES:
                     generated[output] = original
                     invoked.add(original)
@@ -178,7 +186,7 @@ def inspect_threats(records, texts, analysis):
                     continue
                 roots = [base] + sorted({p["root"] for p in analysis["skills"] + analysis["packages"]
                                        if p["root"] not in {"", "."} and source.startswith(p["root"].rstrip("/") + "/")}, key=len, reverse=True)
-                candidates = [safe_package_path(root, token) for root in roots]
+                candidates = [resolve(source, root, token) for root in roots]
                 resolved = next((p for p in candidates if p in paths or p in generated), None)
                 original = resolved if resolved in paths else generated.get(resolved)
                 if original:
@@ -223,7 +231,7 @@ def inspect_threats(records, texts, analysis):
             except ValueError:
                 continue
             if len(tokens) >= 2:
-                source = safe_package_path(base, tokens[0])
+                source = resolve(path, base, tokens[0])
                 destination = tokens[2] if len(tokens) > 2 and tokens[1] == ">" else tokens[1]
                 if source in paths and PurePosixPath(destination).suffix.lower() in EXECUTABLE_SUFFIXES:
                     invoked.add(source)
@@ -235,7 +243,7 @@ def inspect_threats(records, texts, analysis):
         if isinstance(value, dict):
             entry_point = value.get("entry_point")
             if isinstance(entry_point, str):
-                resolved = safe_package_path(root, entry_point)
+                resolved = resolve(source, root, entry_point)
                 components.append({"kind": "declared_entry_point", "path": source, "target": resolved})
                 if resolved in paths:
                     invoked.add(resolved)
@@ -258,7 +266,7 @@ def inspect_threats(records, texts, analysis):
                 if analysis["configurations"].get(source, {}).get("$schema") and re.search(r"[;&|\n]", command):
                     issues.append({"id": "shell_command_in_executable_field", "path": source, "detail": "Portable command must be one executable token", "severity": "error"})
                 if command.startswith(("./", "../", "/")):
-                    resolved = safe_package_path(root, command)
+                    resolved = resolve(source, root, command)
                     if resolved in paths:
                         invoked.add(resolved)
                         references.append({"source": source, "target": resolved, "kind": "configured_executable"})
@@ -283,7 +291,7 @@ def inspect_threats(records, texts, analysis):
                 if key in {"source", "skills", "agents", "hooks", "lspServers", "mcpServers", "outputStyles", "cwd", "extensions"}:
                     for candidate in ([item] if isinstance(item, str) else item if isinstance(item, list) else []):
                         if isinstance(candidate, str) and candidate.startswith(("./", "../", "/")):
-                            resolved = safe_package_path(root, candidate)
+                            resolved = resolve(source, root, candidate)
                             exists = resolved in paths or any(p.startswith((resolved or "<invalid>") + "/") for p in paths)
                             if not resolved or not exists:
                                 issues.append({"id": "component_path", "path": source, "detail": "Escaping or missing component path: " + candidate[:200], "severity": "error"})

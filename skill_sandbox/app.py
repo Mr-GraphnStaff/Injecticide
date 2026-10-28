@@ -5,6 +5,7 @@ import tarfile
 import tempfile
 import zipfile
 import hashlib
+import re
 import threading
 from pathlib import Path, PurePosixPath
 from typing import Dict, Iterable, List, Tuple
@@ -13,7 +14,12 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from starlette.concurrency import run_in_threadpool
 
 if __package__:
-    from .artifact_text import extract_scannable_text, looks_like_sqlite
+    from .asset_inspection import inspect_asset
+    from .nested_archives import NestedArchiveBudget, inspect_nested_zip, is_nested_zip
+    from .text_projections import decoded_projections
+    from .evidence_redaction import redact_result
+    from .disposition import normalize_observations
+    from .artifact_text import extract_scannable_text, looks_like_sqlite, is_probably_text
     from .behavior_analysis import analyze_behavior
     from .contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -23,7 +29,12 @@ if __package__:
     from .package_formats import bounded_data, RUNTIMES
     from .inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
 else:
-    from artifact_text import extract_scannable_text, looks_like_sqlite
+    from asset_inspection import inspect_asset
+    from nested_archives import NestedArchiveBudget, inspect_nested_zip, is_nested_zip
+    from text_projections import decoded_projections
+    from evidence_redaction import redact_result
+    from disposition import normalize_observations
+    from artifact_text import extract_scannable_text, looks_like_sqlite, is_probably_text
     from behavior_analysis import analyze_behavior
     from contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -114,7 +125,7 @@ def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_
         else:
             raise ValueError("Unsupported archive type.")
 
-        results, text_sources = _scan_extracted_files(extracted)
+        results, text_sources = _scan_extracted_files(extracted, excluded)
         result = _assemble_result(filename, archive_type, results, warnings, text_sources)
         return enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text)
 
@@ -251,12 +262,72 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str], excl
     return extracted
 
 
-def _scan_extracted_files(files: Iterable[Tuple[str, Path]]) -> Tuple[List[Dict[str, object]], List[Dict[str, str]]]:
+def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> Tuple[List[Dict[str, object]], List[Dict[str, str]]]:
     results = []
     text_pairs: List[Tuple[str, str | None, str]] = []
     sorted_files = sorted(files, key=_priority_key)
+    excluded = excluded if excluded is not None else []
+    budget = NestedArchiveBudget(
+        max_files=MAX_ARCHIVE_FILES, max_bytes=MAX_ARCHIVE_TOTAL_BYTES,
+        max_member_bytes=MAX_FILE_BYTES,
+        files_used=len(sorted_files) + len(excluded),
+        bytes_used=sum(path.stat().st_size for _, path in sorted_files) + sum(item.get("size", 0) for item in excluded),
+    )
+
+    def container_entry(path, data, inspection, container_path=None):
+        entry = {"path": path, "size": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+                 "skipped": False, "findings": [], "artifact_role": "reference",
+                 "assessment_state": "archive_structure_" + inspection["status"],
+                 "reason": "Nested archive inventoried; descendant inspection and excluded members are reported separately.",
+                 "required_component": False, "creator_mitigation": creator_mitigation(path, None),
+                 "analysis_coverage": initial_coverage(), "archive_inspection": inspection,
+                 "archive_depth": inspection["depth"]}
+        if container_path:
+            entry["archive_container"] = container_path
+        entry["analysis_coverage"]["archive_structure"] = {
+            "status": "complete_supported_checks" if inspection["status"] == "inspected" else "partial",
+            "checks": inspection["checks"], "limitations": inspection["limitations"],
+            "members_seen": inspection["members_seen"],
+        }
+        entry["analysis_coverage"]["extraction"]["reason"] = "Archive container bytes are not text; expanded descendants are analyzed as separate files."
+        if is_probably_text(data):
+            fallback, readable = _scan_file_bytes(path, data)
+            entry["findings"] = fallback["findings"]
+            entry["analysis_coverage"].update(fallback["analysis_coverage"])
+            entry["_readable_text"] = readable
+            entry["reason"] += " Readable original bytes were also supplied to text detectors despite the archive suffix."
+        return entry
+
     for rel_path, path in sorted_files:
         data = path.read_bytes()
+        if is_nested_zip(data, rel_path):
+            expanded = inspect_nested_zip(data, rel_path, budget)
+            root_entry = container_entry(rel_path, data, expanded["container"])
+            text_pairs.append((rel_path, root_entry.pop("_readable_text", None), root_entry["artifact_role"]))
+            results.append(root_entry)
+            containers = {rel_path: root_entry}
+            for descendant in expanded["entries"]:
+                nested_path, raw = descendant["path"], descendant["data"]
+                if "container_inspection" in descendant:
+                    entry = container_entry(nested_path, raw, descendant["container_inspection"], descendant["container_path"])
+                    containers[nested_path] = entry
+                    text = entry.pop("_readable_text", None)
+                else:
+                    entry, text = _scan_file_bytes(nested_path, raw)
+                    entry["archive_container"] = descendant["container_path"]
+                    entry["archive_depth"] = descendant["depth"]
+                results.append(entry)
+                text_pairs.append((nested_path, text, entry["artifact_role"]))
+            for omitted in expanded["excluded"]:
+                if omitted["path"] in containers:
+                    # The existing container already records why its children
+                    # could not be expanded; avoid duplicate inventory identities.
+                    containers[omitted["path"]]["reason"] = omitted["reason"]
+                    continue
+                omitted["required_component"] = Path(omitted["path"]).name in {
+                    "SKILL.md", "plugin.json", "hooks.json", "mcp.json", ".mcp.json", "manifest.json"}
+                excluded.append(omitted)
+            continue
         entry, text = _scan_file_bytes(rel_path, data)
         results.append(entry)
         text_pairs.append((rel_path, text, entry["artifact_role"]))
@@ -301,6 +372,9 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         entry.update(skipped=True, reason="Executable binary content is not analyzed.", assessment_state="executable_not_analyzed")
         entry["analysis_coverage"]["extraction"].update(reason=entry["reason"])
         return entry, None
+    asset = inspect_asset(data, path)
+    if asset is not None:
+        return _scan_asset_entry(entry, asset, data)
     try:
         text, reason = extract_scannable_text(data)
     except ValueError as exc:
@@ -340,14 +414,109 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         "inspected_characters": None, "supplied_range": {"start_character": 0, "end_character": len(text)},
         "reason": "Text supplied to deterministic rules; individual rule matching and displayed evidence are bounded. Exact per-rule inspected character counts are not measured."}
     entry["findings"] = _scan_text(path, text, entry["artifact_role"]) + mitigation_finding(entry["creator_mitigation"])
+    entry["analysis_coverage"]["decoded_text"] = decoded_projections(text)[1]
     entry["analysis_coverage"]["result_display"] = {"status": "complete", "findings_before_limit": len(entry["findings"]),
                                                      "findings_displayed": len(entry["findings"]), "reason": "No file finding display limit reached."}
     return entry, text
 
 
+def _scan_asset_entry(entry, asset, original):
+    """Inspect structure and scan extracted metadata, without claiming pixel safety."""
+    text = asset.pop("text", "")
+    total_text_characters = len(text)
+    original_text, _ = extract_scannable_text(original)
+    scope = "asset_metadata"
+    if original_text is not None:
+        # A misleading extension must add an integrity observation, never
+        # remove ordinary text detection from otherwise readable bytes.
+        text = original_text[:MAX_TEXT_CHARS]
+        total_text_characters = len(original_text)
+        scope = "original_text_with_asset_suffix"
+    entry["asset_inspection"] = asset
+    entry["skipped"] = False
+    entry["assessment_state"] = "asset_structure_" + asset["status"]
+    entry["reason"] = ("Supported asset structural checks performed" if asset["checks"] else "Asset recognized; structural checks could not run") + "; rendering, OCR and malware analysis were not performed."
+    entry["analysis_coverage"]["asset_structure"] = {
+        "status": "complete_supported_checks" if asset["status"] == "inspected" else "partial",
+        "format": asset["format"], "checks": asset["checks"],
+        "bytes_supplied": asset["bytes_supplied"], "limitations": asset["limitations"],
+    }
+    entry["analysis_coverage"]["extraction"] = {
+        "status": "partial", "extracted_characters": len(text),
+        "reason": "Bounded asset metadata projection; pixels and font programs are outside text extraction.",
+        "original_binary_security_analysis": "not_performed",
+    }
+    if text:
+        entry["analysis_coverage"]["text_patterns"] = {
+            "status": "partial" if len(text) < total_text_characters else "complete_input", "total_characters": total_text_characters, "supplied_characters": len(text),
+            "inspected_characters": None, "reason": "Readable original bytes with misleading asset suffix supplied to text detectors." if original_text is not None else "Only extracted asset metadata supplied to text detectors.",
+        }
+        entry["analysis_coverage"]["decoded_text"] = decoded_projections(text)[1]
+        entry["findings"] = _scan_text(entry["path"], text, "active")
+        for item in entry["findings"]:
+            item["evidence_scope"] = scope
+    for issue in asset["findings"]:
+        entry["findings"].append({**issue, "severity": "medium", "tier": "review", "category": "asset_structure",
+            "finding_category": "format_integrity", "subject": "asset_structure", "action_state": "observed",
+            "disposition": "review", "count": 1, "samples": [], "observations": [],
+            "counts_for_governance": False, "status": "verified", "is_actionable": True,
+            "display_kind": "actionable_finding"})
+    return entry, text or None
+
+
 def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
+    findings = _scan_text_plain(path, text, artifact_role)
+    projections, _ = decoded_projections(text)
+    for projection in projections:
+        # Decoded instructions are untrusted even when carried by a reference.
+        derived = _scan_text_plain(path + ".txt", projection["text"], "active")
+        for item in derived:
+            item["evidence_scope"] = "decoded_text"
+            item["projection"] = {k: v for k, v in projection.items() if k != "text"}
+            for observation in item.get("observations", []):
+                observation["derived_line"] = observation.get("line")
+                observation["line"] = projection["source_line"]
+            item["source_start_line"] = projection["source_line"]
+        # Decoded credential literals must not escape through evidence samples.
+        redact_result({"findings": derived}, {path: projection["text"]})
+        findings.extend(derived)
+    return findings
+
+
+def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
     findings = []
     scan_units = build_scan_units(path, text)
+    # Labels such as audit_policy/reference_template are uploaded claims. Only
+    # visibly listed detection examples may use their documentation disposition;
+    # unrelated active instructions retain the ordinary detector disposition.
+    documented_lines, documented_section = {}, False
+    for number, line in enumerate(text.splitlines(), 1):
+        heading = re.match(r"^ {0,3}#{1,6}\s+(.+)", line)
+        if heading:
+            documented_section = bool(re.search(r"automatic high.severity conditions|detection patterns|attack examples|risk indicators", heading[1], re.I))
+        elif documented_section and re.match(r"^\s*(?:[-+*]|\d+[.)])\s+", line):
+            documented_lines[number] = re.sub(r"^\s*(?:[-+*]|\d+[.)])\s+", "", line).strip()
+    role_sensitive = {"prompt_override", "system_exfiltration", "secret_exfiltration", "dynamic_exec", "tool_escape",
+                      "autonomous_authoritative_write", "bulk_enterprise_modification", "workflow_manipulation",
+                      "cross_system_automation", "self_modifying_skill"}
+
+    def contextual_finding(rule, matches, role):
+        observations = normalize_observations(matches)
+        if role in {"audit_policy", "reference_template"} and rule["id"] in role_sensitive:
+            role = "active"
+            for observation in observations:
+                documented = documented_lines.get(observation.get("line"))
+                matched = observation["text"].strip().rstrip(".!?:;").casefold()
+                bare = documented.strip().rstrip(".!?:;").casefold() if documented else ""
+                if bare and re.fullmatch(re.escape(matched) + r"(?:\s+(?:instructions?|rules))?", bare):
+                    # A bare matcher shown in a condition list is ambiguous,
+                    # not trusted: retain review, never silently classify safe.
+                    observation["context_tag"] = "documented_condition"
+        result = build_finding(rule, observations, role)
+        if observations and all(item.get("context_tag") == "documented_condition" for item in observations):
+            result["action_state"] = "ambiguous_documented_condition"
+            result["description"] = "Bare instruction pattern in a detection-condition list; active intent is unverified. Retained for review. " + result["description"]
+        return result
 
     for pattern in PATTERNS:
         if pattern["id"] in CONTEXTUAL_RULE_IDS:
@@ -361,9 +530,9 @@ def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, objec
         if not matches:
             continue
 
-        findings.append(build_finding(pattern, matches, artifact_role))
+        findings.append(contextual_finding(pattern, matches, artifact_role))
 
-    findings.extend(detect_contextual_findings(path, text, artifact_role, build_finding))
+    findings.extend(detect_contextual_findings(path, text, artifact_role, contextual_finding))
     findings.extend(detect_special_findings(path, text, artifact_role))
     return findings
 
@@ -415,7 +584,9 @@ def _sanitize_member_name(name: str) -> str | None:
     normalized = name.replace("\\", "/")
     path = PurePosixPath(normalized)
 
-    if path.is_absolute() or ".." in path.parts or ":" in normalized or "\x00" in normalized:
+    # !/ is reserved for an actual nested archive boundary. A literal member
+    # must not collide with a descendant's path/hash/evidence identity.
+    if path.is_absolute() or ".." in path.parts or ":" in normalized or "\x00" in normalized or "!/" in normalized:
         return None
 
     cleaned = "/".join(part for part in path.parts if part not in ("", "."))

@@ -101,7 +101,9 @@ const server = http.createServer((req, res) => {
         const packageDownload = page.waitForEvent('download');
         await page.getByRole('button', {name:'Export Detailed', exact:true}).click();
         const packageExport = fs.readFileSync(await (await packageDownload).path(), 'utf8');
-        assert.match(packageExport, /binary_asset_inventory_only/);
+        assert.match(packageExport, /asset_structure_malformed/);
+        assert.match(packageExport, /png_truncated_chunk/);
+        assert.match(packageExport, /asset_inspection/);
         assert.match(packageExport, /UPD-01/);
         assert.match(packageExport, /artifact_sha256/);
         assert.match(packageExport, /vendor_verification/);

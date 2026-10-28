@@ -90,7 +90,7 @@ def test_credential_collection_work_budget_fails_closed_including_credentials_in
 
 def test_scanner_engine_identity_is_stable_and_independent_of_uploaded_text():
     first = scanner_metadata()
-    assert first["scanner_version"] == "0.3.0"
+    assert first["scanner_version"] == "0.4.0"
     assert first["adapter_version"] == "2026-10-27"
     assert len(first["engine_source_sha256"]) == 64
     assert first["engine_source_sha256"] == scanner_metadata()["engine_source_sha256"]

@@ -1,0 +1,2 @@
+# Optional local scanner MCP adapter; separate from default scanner dependencies.
+mcp==2.3.0
