@@ -71,6 +71,7 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
     const [highlight,setHighlight] = React.useState(null);
     const [message,setMessage] = React.useState('');
     const [busy,setBusy] = React.useState(false);
+    const [pngBusy,setPngBusy] = React.useState(false);
     const [testPage,setTestPage] = React.useState(0);
     const [scanEvidenceAttached,setScanEvidenceAttached] = React.useState(Boolean(scanDiagram));
     const file = React.useRef(null);
@@ -115,10 +116,14 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
         } catch(error) {if(current===revision.current)setMessage(error.name==='AbortError'?'Planning cancelled or timed out.':error.message);}
         finally {clearTimeout(timeout);if(request.current===controller){request.current=null;setBusy(false);}}
     }
+    function exportFilename(name) {
+        const stem=slugifyFilename(map.name || 'untitled-system').replace(/^\.+|\.+$/g,'').slice(0,120) || 'untitled-system';
+        return `${stem}-${name}`;
+    }
     function download(value,name,type='application/json') {
         const content=type==='application/json'?JSON.stringify(value,null,2):value;
         const url=URL.createObjectURL(new Blob([content],{type}));
-        const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+        const a=document.createElement('a');a.href=url;a.download=exportFilename(name);a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     }
     async function validateAndLoad(value) {
         const serialized=JSON.stringify(value);
@@ -153,8 +158,9 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
                 <button disabled={!history.length} onClick={()=>undo()}>Undo</button><button disabled={!future.length} onClick={()=>undo(true)}>Redo</button>
                 <button onClick={()=>{try{localStorage.setItem(storageKey,JSON.stringify(map));setMessage(scanDiagram ? 'Separate skill process map saved in this browser. Export JSON to reopen it outside this draft.' : 'Saved in this browser.');}catch(e){setMessage('Browser storage unavailable. Export the map instead.');}}}>Save locally</button>
                 <button onClick={async()=>{try{const text=localStorage.getItem(storageKey);if(!text)throw Error('No saved map in this browser.');await validateAndLoad(JSON.parse(text));}catch(e){setMessage(e.message);}}}>Load saved</button>
-                <button onClick={()=>download(map,'injecticide-map.json')}>Export map</button><button onClick={()=>file.current.click()}>Import map</button>
-                <button disabled={!map.nodes.length} title="Download instructions and the current map to paste into an AI diagram assistant. No AI service is contacted." onClick={()=>{download(buildDiagramPrompt(map,plan),'injecticide-diagram-prompt.md','text/markdown;charset=utf-8');setMessage('AI diagram prompt downloaded. Open the .md file and paste its contents into your diagram AI. No AI service was contacted.');}}>Export AI diagram prompt (.md)</button>
+                <button onClick={()=>download(map,'map.json')}>Export map</button><button onClick={()=>file.current.click()}>Import map</button>
+                <button disabled={pngBusy || !map.nodes.length} onClick={async()=>{setPngBusy(true);try{await downloadMapPng(map,exportFilename('diagram.png'),MAP_KINDS);setMessage('PNG downloaded with the current system name. The image includes the full map; relationships and controls remain unverified.');}catch(error){setMessage('PNG export failed. Please retry or export the map JSON.');}finally{setPngBusy(false);}}}>{pngBusy?'Rendering PNG…':'Export PNG'}</button>
+                <button disabled={!map.nodes.length} title="Download instructions and the current map to paste into an AI diagram assistant. No AI service is contacted." onClick={()=>{download(buildDiagramPrompt(map,plan),'diagram-prompt.md','text/markdown;charset=utf-8');setMessage('AI diagram prompt downloaded. Open the .md file and paste its contents into your diagram AI. No AI service was contacted.');}}>Export AI diagram prompt (.md)</button>
                 <input type="file" accept=".json,application/json" ref={file} onChange={importFile} hidden/>
                 <button className="home-button-primary" disabled={busy} onClick={analyze}>{busy?'Planning…':'Generate test plan'}</button>
             </div>
@@ -191,7 +197,7 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
                 <h3>Selected component connections</h3>{connected.map(e=><div className="map-connection" key={e.id}><p>{map.nodes.find(n=>n.id===e.source)?.label} → {map.nodes.find(n=>n.id===e.target)?.label}</p>{scanEvidenceAttached && scanDiagram?.edges?.filter(edge=>edge.id===e.id).map(edge=><div key={edge.id} className="map-source-evidence"><p>Source relation: {edge.label} · {edge.knowledge_status || (edge.status === 'resolved' ? 'known in source' : 'unknown')} · runtime unverified</p><ul>{edge.citations?.map((citation,index)=><li key={index}>{citation.path}{citation.line_accuracy === 'exact' && citation.line ? `:${citation.line}` : ' (file citation)'}</li>)}</ul></div>)}{[['untrusted','Untrusted content'],['write','Allows writes']].map(([key,label])=><label key={key}><input type="checkbox" checked={e[key]} onChange={event=>commit({...map,edges:map.edges.map(v=>v.id===e.id?{...v,[key]:event.target.checked}:v)})}/>{label}</label>)}<button onClick={()=>commit({...map,edges:map.edges.filter(v=>v.id!==e.id)})}>Remove connection</button></div>)}
                 </aside>
             </div>
-            <section className="map-results map-panel"><div className="map-heading"><div><p className="home-eyebrow">YOUR MAP → YOUR TEST PLAN</p><h2>{plan?`${plan.tests.length} suggested tests`:'Ready to find what needs testing?'}</h2></div>{plan&&<button onClick={()=>download({map,plan},'injecticide-test-plan.json')}>Export test plan</button>}</div>
+            <section className="map-results map-panel"><div className="map-heading"><div><p className="home-eyebrow">YOUR MAP → YOUR TEST PLAN</p><h2>{plan?`${plan.tests.length} suggested tests`:'Ready to find what needs testing?'}</h2></div>{plan&&<button onClick={()=>download({map,plan},'test-plan.json')}>Export test plan</button>}</div>
                 <p>{plan?plan.limitations:'Generate a plan to identify applicable tests, their exact component paths and the evidence to collect. Drawing a map does not execute requests.'}</p>
                 {plan&&<><p className="map-hash">Planner {plan.planner_version} · Map SHA-256: {plan.map_hash}</p><div className="map-test-list">{plan.tests.slice(testPage*20,(testPage+1)*20).map(test=><article key={test.id} className="map-test"><span className="map-tag">Not run</span><h3>{test.title}</h3><p>{test.reason}</p><p><strong>Path:</strong> {test.node_ids.map(id=>map.nodes.find(n=>n.id===id)?.label||id).join(' → ')}</p><p><strong>Collect:</strong> {test.expected_evidence}</p><p><strong>Suggested method:</strong> {test.suggested_engine}</p><div className="map-toolbar"><button onClick={()=>setHighlight(test)}>Highlight on map</button><a href={test.reference} target="_blank" rel="noopener noreferrer">Reference ↗</a></div></article>)}</div><p>{plan.omitted_tests>0?`${plan.omitted_tests} additional suggestions omitted by the 500-test budget. Narrow the map for fuller coverage.`:''}</p><div className="map-toolbar"><button disabled={testPage===0} onClick={()=>setTestPage(p=>p-1)}>Previous tests</button><span>Page {testPage+1} of {Math.max(1,Math.ceil(plan.tests.length/20))}</span><button disabled={(testPage+1)*20>=plan.tests.length} onClick={()=>setTestPage(p=>p+1)}>Next tests</button></div>{!plan.tests.length&&<p>No planning rules matched this map. This does not establish safety or coverage.</p>}</>}
             </section>

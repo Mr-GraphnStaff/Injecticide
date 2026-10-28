@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.1 - 2026-10-28
+
+- Name playground map, test-plan and diagram-prompt downloads after the current
+  System name, including renamed maps, with bounded filesystem-safe filenames.
+- Export the complete current playground map directly as PNG, including its
+  title and static-evidence caveat, using bounded local browser rendering.
+
 ## 0.9.0 - 2026-10-28
 
 - Generate bounded, source-linked skill process diagrams from static scan

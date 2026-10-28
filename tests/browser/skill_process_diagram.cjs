@@ -6,7 +6,7 @@ const path = require('node:path');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '../..');
 const assets = path.join(root, 'tmp/scan-resource-regression');
-const script = ['webapp/static/pages/Home.jsx', 'webapp/static/pages/ArchitectureCanvas.jsx', 'webapp/static/app.js'].map(name => fs.readFileSync(path.join(root, name), 'utf8')).join('\n');
+const script = ['webapp/static/pages/Home.jsx', 'webapp/static/pages/ArchitectureCanvas.jsx', 'webapp/static/pages/MapPng.js', 'webapp/static/app.js'].map(name => fs.readFileSync(path.join(root, name), 'utf8')).join('\n');
 const citation = (source, line = null) => ({path:source,line,line_accuracy:line ? 'exact' : 'file_only'});
 const hostile = '<img src=x onerror="window.uploadExecuted=true">';
 const diagram = {
@@ -107,7 +107,8 @@ const server=http.createServer((req,res)=>{
         const skillKeys=await page.evaluate(()=>Object.keys(localStorage).filter(key=>key.startsWith('injecticide-skill-process-map-v1:')));
         assert.equal(skillKeys.length,1);assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),skillKeys[0])).nodes.length,6);
         const mapDownload=page.waitForEvent('download');await page.getByRole('button',{name:'Export map',exact:true}).click();
-        const map=JSON.parse(fs.readFileSync(await (await mapDownload).path(),'utf8'));assert.equal(map.nodes.length,6);assert.equal(map.name,'Skill process: synthetic-process.skill');
+        const mapFile=await mapDownload;assert.equal(mapFile.suggestedFilename(),'skill-process-synthetic-process.skill-map.json');
+        const map=JSON.parse(fs.readFileSync(await mapFile.path(),'utf8'));assert.equal(map.nodes.length,6);assert.equal(map.name,'Skill process: synthetic-process.skill');
         assert.equal(await page.evaluate(()=>window.uploadExecuted),undefined);
         const replacement={...map,name:'Replacement with reused identity',nodes:[{...map.nodes[0],label:'Replacement node'}],edges:[]};
         await page.locator('input[type=file]').setInputFiles({name:'replacement.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(replacement))});
