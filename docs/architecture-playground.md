@@ -38,6 +38,17 @@ prompt, not a native Lucidchart/draw.io import format; output depends on that
 assistant's supported features and must be checked against the source IDs.
 The download works without generating a test plan and contacts no AI service.
 
+Export filenames use the current **System name**, converted to a bounded safe
+filename, followed by `-map.json`, `-test-plan.json` or `-diagram-prompt.md`.
+Renaming the system updates the next download. Blank/unusable names use
+`untitled-system` as the filename prefix.
+
+**Export PNG** saves the complete current map, including off-screen components,
+with its current title, directed connections and a runtime-verification caveat.
+It renders locally in the browser and contacts no image service. Output is
+bounded to 4096 pixels per side and 12 million pixels. Long labels may be shortened
+to fit; use the JSON export for complete editable map data.
+
 ## Contract and limits
 
 ### New maps from a skill scan
