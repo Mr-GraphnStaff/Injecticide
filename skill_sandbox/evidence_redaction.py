@@ -33,6 +33,9 @@ EVIDENCE_FIELDS = {
     "detail", "message", "purpose", "intended_purpose", "filename", "path",
     "source", "target", "root", "manifest", "value", "url", "endpoint", "command",
     "provided_issuer", "issuer", "audience", "author", "owner", "evidence_excerpt",
+    "script", "script_candidate", "external_script", "package_declarations",
+    "dependencies", "requires_python",
+    "reachable_paths", "unreferenced_paths", "entrypoints",
 }
 
 

@@ -14,6 +14,11 @@ import shlex
 from collections import deque
 from urllib.parse import unquote, urlsplit
 
+try:
+    from .script_launchers import COMMAND_START, parse_script_command, inspect_inline_script_metadata
+except ImportError:
+    from script_launchers import COMMAND_START, parse_script_command, inspect_inline_script_metadata
+
 
 MAX_NODES = 500
 MAX_EDGES = 2000
@@ -26,7 +31,7 @@ MAX_JSON_NODES = 10000
 MAX_LINE_CHARACTERS = 16384
 MAX_CHAINS = 200
 MAX_CHAIN_DEPTH = 32
-PATH_EXTENSIONS = r"(?:md|txt|json|ya?ml|toml|py|pyw|js|mjs|cjs|ts|sh|bash|ps1|cmd|bat|sql|csv|png|jpe?g|svg|ttf|otf|woff2?|pdf|docx|xlsx|pptx)"
+PATH_EXTENSIONS = r"(?:md|txt|json|ya?ml|toml|py|pyw|js|mjs|cjs|jsx|ts|tsx|sh|bash|ps1|cmd|bat|rb|pl|php|lua|r|sql|csv|png|jpe?g|svg|ttf|otf|woff2?|pdf|docx|xlsx|pptx)"
 PATH_TOKEN = re.compile(r"(?:\$\{[A-Z_]+\}[/\\])?(?:\.{1,2}[/\\])?(?:[A-Za-z0-9_.@+ -]+[/\\])*[A-Za-z0-9_.@+ -]+\." + PATH_EXTENSIONS + r"(?:#[^\s]*)?$", re.I)
 INLINE_LINK = re.compile(r"!?\[[^\]\n]{0,1024}\]\(\s*(?:<([^>\n]+)>|([^\s)]+))(?:\s+[^)\n]*)?\)")
 REFERENCE_LINK = re.compile(r"^\s{0,3}\[[^\]\n]{1,256}\]:\s*(?:<([^>\n]+)>|([^\s]+))")
@@ -34,7 +39,6 @@ BACKTICK = re.compile(r"`([^`\n]{1,4096})`")
 HTML_LINK = re.compile(r"\b(?:src|href)\s*=\s*[\"']([^\"'\n]{1,4096})[\"']", re.I)
 URL = re.compile(r"(?:https?|wss?)://[^\s<>\"'`]+", re.I)
 BARE_PATH = re.compile(r"(?<![A-Za-z0-9_./:@+\\-])(?:\.{1,2}/)?(?:[A-Za-z0-9_.@+~-]+/)*[A-Za-z0-9_@+~-][A-Za-z0-9_.@+~-]*\." + PATH_EXTENSIONS + r"(?![A-Za-z0-9_-]|\.[A-Za-z0-9_-])", re.I)
-COMMAND = re.compile(r"(?:^|[;&|]\s*|`)(?:python(?:3(?:\.\d+)?)?|bash|sh|node|nodejs|pwsh|powershell)\s+([^\n`]+)", re.I)
 ROOT_FILES = {"skill.md", "plugin.json", "manifest.json", "gemini-extension.json", "openclaw.plugin.json", "hooks.json", "mcp.json", ".mcp.json"}
 
 
@@ -77,6 +81,8 @@ class _Graph:
         self.observations = []
         self.observation_keys = set()
         self.dependencies = []
+        self.launchers = []
+        self.inline_metadata = []
         self.limits = []
         self.limit_keys = set()
         for index, record in enumerate(inventory):
@@ -160,7 +166,14 @@ class _Graph:
                 candidates = None
             else:
                 roots = [posixpath.dirname(source)]
-                roots.extend(root for root in self.skill_roots if source.startswith(root + "/") and root not in roots and inside_boundary(root + "/placeholder"))
+                skill_roots = [root for root in self.skill_roots if source.startswith(root + "/") and root not in roots and inside_boundary(root + "/placeholder")]
+                # Documented script commands resolve from the containing skill
+                # root, including commands written in references/*.md. Ordinary
+                # document links retain their source-relative interpretation.
+                if kind == "execution_reference" and posixpath.splitext(source)[1].lower() in {".md", ".txt"}:
+                    roots = skill_roots + roots
+                else:
+                    roots.extend(skill_roots)
                 if boundary not in roots:
                     roots.append(boundary)
                 candidates = [posixpath.normpath(posixpath.join(root, normalized)) for root in roots]
@@ -187,6 +200,9 @@ class _Graph:
             self.edges.append(edge)
 
     def observe(self, path, line, capability, operation, **details):
+        if operation == "manifest_command_declaration":
+            line = None
+            details["line_accuracy"] = "file_only"
         key = (path, line, capability, operation)
         if key in self.observation_keys:
             return
@@ -199,6 +215,7 @@ class _Graph:
                                   "execution_verified": False, **details})
 
     def inspect_text(self, path, text):
+        suffix = posixpath.splitext(path)[1].lower()
         for line_no, line in enumerate(text.splitlines(), 1):
             if len(line) > MAX_LINE_CHARACTERS:
                 self.limit("line_characters", path)
@@ -207,8 +224,9 @@ class _Graph:
                 for match in pattern.finditer(line):
                     value = next(value for value in match.groups() if value is not None)
                     self.reference(path, value, line_no, "document_reference")
+            commands = list(COMMAND_START.finditer(line))
             for match in BACKTICK.finditer(line):
-                if PATH_TOKEN.fullmatch(match[1].strip()) and not COMMAND.match(match[1]):
+                if PATH_TOKEN.fullmatch(match[1].strip()) and parse_script_command(match[1].strip()) is None:
                     self.reference(path, match[1], line_no, "resource_reference")
             for match in URL.finditer(line):
                 self.external_reference(path, match[0].rstrip(".,;)]}"), line_no, "destination_mention")
@@ -217,21 +235,20 @@ class _Graph:
             # a URL path ending in .md is never a local-file declaration.
             reserved = [match.span() for pattern in (URL, INLINE_LINK, REFERENCE_LINK, HTML_LINK, BACKTICK)
                         for match in pattern.finditer(line)]
-            for match in BARE_PATH.finditer(line):
-                if not any(start <= match.start() < end for start, end in reserved):
-                    self.reference(path, match[0], line_no, "prose_resource_reference")
-            for match in COMMAND.finditer(line):
-                try:
-                    tokens = shlex.split(match[1], posix=True)[:64]
-                except ValueError:
-                    continue
-                for token in tokens:
-                    if PATH_TOKEN.fullmatch(token) and re.search(r"\.(?:py|pyw|js|mjs|cjs|ts|sh|bash|ps1|cmd|bat)$", token, re.I):
-                        self.reference(path, token, line_no, "execution_reference")
-                        self.observe(path, line_no, "process_execution", "interpreter_command")
-                        break
-        suffix = posixpath.splitext(path)[1].lower()
+            reserved.extend(match.span() for match in commands)
+            if suffix in {".md", ".txt", ".skill"}:
+                for match in BARE_PATH.finditer(line):
+                    if not any(start <= match.start() < end for start, end in reserved):
+                        self.reference(path, match[0], line_no, "prose_resource_reference")
+            for match in commands:
+                self.command_argument(path, match["command"], line_no)
         if suffix in {".py", ".pyw"}:
+            metadata = inspect_inline_script_metadata(text)
+            self.inline_metadata.append({"source": path, **metadata})
+            for reason in metadata["limits"]:
+                self.limit(reason, path)
+            for value in metadata["dependencies"]:
+                self.dependency(path, "pep723_dependency", value, metadata["line"], line_accuracy="metadata_block_start")
             self.inspect_python(path, text)
         if suffix == ".json":
             self.inspect_json(path, text)
@@ -286,10 +303,11 @@ class _Graph:
                 if literal:
                     self.command_argument(path, literal, line)
                 elif node.args and isinstance(node.args[0], (ast.List, ast.Tuple)):
-                    for item in node.args[0].elts:
-                        value = _string(item)
-                        if value and PATH_TOKEN.fullmatch(value):
-                            self.reference(path, value, line, "execution_reference")
+                    values = [_string(item) for item in node.args[0].elts]
+                    if all(isinstance(value, str) for value in values):
+                        self.command_argument(path, shlex.join(values), line)
+                    else:
+                        self.limit("dynamic_command_arguments", path)
             elif name.startswith(("requests.", "httpx.", "urllib.request.", "socket.")):
                 self.observe(path, line, "network_access", name)
                 if literal:
@@ -321,14 +339,50 @@ class _Graph:
                 self.reference(path, candidate, line, "local_import")
                 return
 
-    def command_argument(self, path, text, line):
-        try:
-            tokens = shlex.split(text)[:64]
-        except ValueError:
+    def command_argument(self, path, text, line, *, line_accuracy="exact"):
+        parsed = parse_script_command(text)
+        if parsed is None:
             return
-        for token in tokens:
-            if PATH_TOKEN.fullmatch(token):
-                self.reference(path, token, line, "execution_reference")
+        if len(self.launchers) >= MAX_OBSERVATIONS:
+            self.limit("launcher_observation_count", path)
+            return
+        # A bare pipx *.py operand is file-or-package dependent. Resolve only
+        # when the exact file exists inside this package/container; never invent
+        # a missing file finding for a potential package name.
+        candidate = parsed.get("script_candidate")
+        if candidate:
+            boundary = path.rsplit("!/", 1)[0] + "!" if "!/" in path else ""
+            roots = [posixpath.dirname(path), boundary]
+            roots.extend(root for root in self.skill_roots if path.startswith(root + "/"))
+            if any(posixpath.normpath(posixpath.join(root, candidate)) in self.paths
+                   and (not boundary or posixpath.normpath(posixpath.join(root, candidate)).startswith(boundary + "/"))
+                   for root in roots):
+                parsed = {**parsed, "script": candidate, "status": "recognized_static_syntax"}
+                parsed.pop("reason", None)
+                parsed.pop("verification", None)
+        if parsed.get("external_script"):
+            # Keep the same origin-only destination disclosure contract as
+            # other graph references, including remote launcher operands.
+            raw_destination = parsed["external_script"]
+            self.external_reference(path, raw_destination, line if line_accuracy == "exact" else None, "remote_script_declaration")
+            parsed = {**parsed, "external_script": "origin_recorded_in_external_references"}
+        source_line = line if line_accuracy == "exact" else None
+        self.launchers.append({"source": path, "line": source_line, "line_accuracy": line_accuracy, **parsed})
+        if line_accuracy == "exact":
+            self.observe(path, line, "process_execution", "launcher_declaration")
+        if parsed["status"] == "unknown":
+            self.limit(parsed["reason"], path)
+        if parsed.get("script"):
+            self.reference(path, parsed["script"], source_line, "execution_reference")
+        for item in parsed["package_declarations"]:
+            self.dependency(path, item["kind"], item["value"], source_line, line_accuracy=line_accuracy)
+
+    def dependency(self, path, kind, value, line=None, line_accuracy="exact"):
+        if len(self.dependencies) >= MAX_OBSERVATIONS:
+            self.limit("dependency_count", path)
+            return
+        self.dependencies.append({"source": path, "kind": kind, "value": value,
+                                  "line": line, "line_accuracy": line_accuracy, "verification": "declared_not_installed"})
 
     def inspect_json(self, path, text):
         if len(text) > MAX_AST_CHARACTERS:
@@ -359,9 +413,9 @@ class _Graph:
             elif isinstance(value, str):
                 if field in {"command", "script", "install", "postinstall", "preinstall", "prepare", "start", "test"}:
                     self.observe(path, 1, "process_execution", "manifest_command_declaration")
-                    self.command_argument(path, value, 1)
-                if field in {"skills", "commands", "agents", "hooks", "mcpServers", "path", "entry", "main", "module", "script", "args"} and PATH_TOKEN.fullmatch(value):
-                    self.reference(path, value, 1, "manifest_component")
+                    self.command_argument(path, value, 1, line_accuracy="file_only")
+                if field in {"skills", "commands", "agents", "hooks", "mcpServers", "path", "entry", "main", "module", "script"} and PATH_TOKEN.fullmatch(value) and parse_script_command(value) is None:
+                    self.reference(path, value, None, "manifest_component")
 
     def result(self):
         roots = sorted(p for p in self.paths if posixpath.basename(p).lower() in ROOT_FILES)
@@ -394,9 +448,10 @@ class _Graph:
         return {"status": "partial" if self.limits else "complete_supported_syntax", "nodes": self.nodes, "edges": self.edges,
                 "entrypoints": roots, "reachable_paths": sorted(routes), "unreferenced_paths": sorted(self.paths - routes.keys()),
                 "external_references": self.external, "dependency_declarations": self.dependencies,
+                "launcher_observations": self.launchers, "inline_script_metadata": self.inline_metadata,
                 "capability_observations": self.observations, "action_chains": chains, "limits": self.limits,
                 "scope": "Declared references and recognized source syntax only; reachability is not execution or malicious intent. Unreferenced files remain scan inputs; missing/dynamic links require review. No network, imports, dependency installation or package execution performed.",
-                "supported_parsers": ["markdown_links", "inline_resource_paths", "prose_resource_paths", "interpreter_commands", "python_ast", "json_declarations"],
+                "supported_parsers": ["markdown_links", "inline_resource_paths", "prose_resource_paths", "documented_launcher_subset", "python_ast", "json_declarations", "pep723_inline_metadata_when_parsers_available"],
                 "unsupported_analysis": ["runtime_control_flow", "arbitrary_language_semantics", "dynamic_path_resolution"]}
 
 

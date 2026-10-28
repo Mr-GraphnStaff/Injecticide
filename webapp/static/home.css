@@ -248,5 +248,42 @@
 .map-scan-origin p { margin:.5rem 0; color:#d0e4d7; line-height:1.6; }
 .map-source-evidence { font-size:.8rem; border-left:2px solid #92c9ae; padding-left:.6rem; overflow-wrap:anywhere; margin:.6rem 0; }
 .map-source-evidence ul { padding-left:1rem; }
+
+/* Conformance, recommendations and runtime evidence remain separate axes. */
+.skill-standards { border:1px solid #73a997; border-radius:.85rem; background:#102e24; padding:1rem; overflow-wrap:anywhere; }
+.skill-standards h3 { color:#effbf6; font-size:1.3rem; font-weight:750; }
+.skill-standards p { line-height:1.65; margin:.6rem 0; }
+.standards-heading { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:.75rem; }
+.standards-status { display:inline-block; color:#e6f3ec; border:1px solid #96aea0; background:#253e30; border-radius:.5rem; padding:.3rem .55rem; font-size:.8rem; line-height:1.4; }
+.standards-status.status-pass { color:#d9f7e7; border-color:#78b494; background:#1b4a33; }
+.standards-status.status-fail { color:#ffdfd0; border-color:#d2a086; background:#52382c; }
+.standards-status.status-not_assessed { color:#f6e8c7; border-color:#ad9f77; background:#423f27; }
+.standards-scope,.standards-count-note { color:#bed6ca; }
+.standards-counts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.6rem; margin:1rem 0; }
+.standards-counts > div { min-width:0; border:1px solid #476c58; border-radius:.5rem; background:#0b251b; padding:.65rem; }
+.standards-counts dt { font-size:.8rem; color:#b6d6c4; }
+.standards-counts dd { margin:.4rem 0 0; font-size:1.5rem; font-weight:750; color:#f1fbf6; }
+.standards-categories { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.5rem; margin:1rem 0; }
+.standards-categories button { min-height:72px; padding:.7rem; border:1px solid #6c927c; border-radius:.5rem; color:#eef8f1; background:#17392a; text-align:left; cursor:pointer; }
+.standards-categories button[aria-pressed=true] { border-color:#bef1d4; background:#27553a; }
+.standards-categories button span { display:block; margin-top:.35rem; font-size:.75rem; color:#c4ddcb; }
+.skill-standards :is(button,summary):focus-visible { outline:3px solid #b9f0d3; outline-offset:3px; }
+.standards-selected-category { border-top:1px solid #4e735b; padding-top:.8rem; }
+.standards-selected-category h4 { font-size:1.1rem; font-weight:700; }
+.standards-requirements { padding:0; margin:.5rem 0; list-style:none; }
+.standards-requirements > li { padding:.9rem 0; border-bottom:1px solid #3f634c; }
+.standards-row-heading { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+.standards-row-heading h5 { font-size:.95rem; font-weight:700; color:#eaf7ed; }
+.standards-level { color:#c6e4cf; font-size:.8rem; }
+.standards-file { font-family:monospace; color:#b4e8c8; }
+.standards-applicability { color:#b9cfbe; font-size:.8rem; }
+.skill-standards details { border:1px solid #57785e; padding:.6rem; border-radius:.4rem; margin:.65rem 0; }
+.skill-standards summary { cursor:pointer; min-height:28px; }
+.skill-standards ul ul,.standards-reference ul,.standards-sources { padding-left:1.2rem; }
+.skill-standards a { color:#b7efd0; text-decoration:underline; text-underline-offset:.2em; }
+.standards-sources li,.standards-reference li { margin:.5rem 0; }
+@media(max-width:720px) { .standards-counts { grid-template-columns:repeat(2,minmax(0,1fr)); } .standards-categories { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:420px) { .standards-categories { grid-template-columns:minmax(0,1fr); } }
+@media(forced-colors:active) { .standards-status,.standards-categories button { border-color:ButtonText; } }
 @media(max-width:640px) { .skill-process { padding:.75rem; } .process-toolbar > button { flex:1 1 180px; } .process-inspector,.process-source-evidence { padding:.75rem; } .process-scroll { max-height:440px; } }
 @media(forced-colors:active) { .process-edge,.process-edge.active { stroke:CanvasText; } .skill-process .process-node,.skill-process .process-node.selected { border-color:ButtonText; } }

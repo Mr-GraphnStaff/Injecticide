@@ -17,6 +17,7 @@ try:
     from .code_security import analyze_code_security
     from .process_diagram import build_process_diagram, extract_documented_steps
     from .disposition import format_observation_sample
+    from .standards_assessment import build_standards_assessment
 except ImportError:
     from package_formats import inspect_formats, RUNTIMES
     from package_threats import inspect_threats, embedded_blocks
@@ -31,6 +32,7 @@ except ImportError:
     from code_security import analyze_code_security
     from process_diagram import build_process_diagram, extract_documented_steps
     from disposition import format_observation_sample
+    from standards_assessment import build_standards_assessment
 
 
 def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", supplied_evidence=None,
@@ -132,12 +134,16 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                              unassessed_files=coverage["unassessed_files"])
     result.update(analyze_behavior(text_sources))
     result["governance_profile"] = build_governance_profile(entries, result)
-    invalid_format = any(f["severity"] == "error" for f in result["package_analysis"]["format_findings"])
+    result["standards_assessment"] = build_standards_assessment(result, text_sources)
+    portable_status = result["standards_assessment"]["overall_status"]
+    portable_failed = target_runtime == "generic" and portable_status == "fail"
+    portable_unknown = target_runtime == "generic" and portable_status == "not_assessed"
+    invalid_format = portable_failed or any(f["severity"] == "error" for f in result["package_analysis"]["format_findings"])
     failed_evidence = any(c["status"] == "authenticated_issuer_fail" for c in evidence["controls"])
     failed_evidence = failed_evidence or evidence["evaluation"]["status"] == "failed_by_authenticated_issuer"
-    if coverage["status"] == "partial" or invalid_format or failed_evidence:
+    if coverage["status"] == "partial" or invalid_format or failed_evidence or portable_unknown:
         profile = result["governance_profile"]
-        reason = "Authenticated external review or evaluation reports a failure." if failed_evidence else "Coverage is partial; unassessed material is not certified safe." if coverage["status"] == "partial" else "Package format errors require review before execution."
+        reason = "Authenticated external review or evaluation reports a failure." if failed_evidence else "Portable format checks are incomplete; required constraints remain unassessed." if portable_unknown else "Coverage is partial; unassessed material is not certified safe." if coverage["status"] == "partial" else "Package format errors require review before execution."
         profile["decision_reasons"] = [r for r in profile["decision_reasons"] if "read-only" not in r.lower()] + [reason]
         for mode in ("brokered_tokens", "customer_managed_keys"):
             if profile[mode]["decision"] in {"allow", "allow_with_warnings"}:
@@ -147,7 +153,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
             profile["execution_tier"] = "unassessed"
         profile["recommended_controls"] = ["Review unassessed content before execution."]
     review = any(f.get("severity") != "info" for f in findings)
-    result["readiness"] = {"status": "needs_review" if review or invalid_format or failed_evidence else "incomplete" if coverage["status"] == "partial" else "no_static_findings",
+    result["readiness"] = {"status": "needs_review" if review or invalid_format or failed_evidence else "incomplete" if coverage["status"] == "partial" or portable_unknown else "no_static_findings",
                            "statement": "Static analysis is not deployment approval or a guarantee of safe execution.",
                            "tenant_policy_verified": False, "runtime_evaluation": evidence["evaluation"]["status"]}
     result["readiness"]["upload_policy_review_required"] = result["summary"]["upload_policy_review_files"] > 0
@@ -157,7 +163,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
         "reason": "Static sandbox scan; live vendor requirements are checked by the web service through Research MCP.",
         "live_check": False, "runtime_tested": False, "requirements": [], "documents": []}
     result["readiness"]["vendor_compatibility"] = "unknown"
-    result["readiness"]["format_compatibility"] = "explicit_portable_profile_checked" if target_runtime == "generic" else "unverified"
+    result["readiness"]["format_compatibility"] = ({"pass": "explicit_portable_profile_checked", "fail": "portable_format_failed"}.get(portable_status, "unverified") if target_runtime == "generic" else "unverified")
     attach_official_validator_results(result, texts)
     result["documented_process"] = extract_documented_steps(text_sources)
     redact_result(result, texts)
