@@ -22,6 +22,10 @@ CODE_FIELDS = {"argument-hint", "arguments", "disable-model-invocation", "user-i
 MAX_CONFIG_CHARS = 131072
 
 
+class ParserLimitError(ValueError):
+    """Input may be valid YAML/JSON, but exceeds the local safe parser profile."""
+
+
 class UniqueSafeLoader(yaml.SafeLoader):
     """Reject ambiguous duplicate YAML mappings as well as unsafe object tags."""
 
@@ -41,7 +45,7 @@ UniqueSafeLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
 
 def bounded_data(text: str, kind: str = "json"):
     if len(text) > MAX_CONFIG_CHARS:
-        raise ValueError("Configuration exceeds 128 KiB parser budget")
+        raise ParserLimitError("Configuration exceeds 128 KiB parser budget")
     try:
         if kind == "json":
             def reject_constant(value):
@@ -57,7 +61,7 @@ def bounded_data(text: str, kind: str = "json"):
         else:
             tokens = list(yaml.scan(text))
             if any(isinstance(token, (yaml.tokens.AliasToken, yaml.tokens.AnchorToken)) for token in tokens):
-                raise ValueError("YAML anchors/aliases are outside the bounded parser profile")
+                raise ParserLimitError("YAML anchors/aliases are outside the bounded parser profile")
             result = yaml.load(text, Loader=UniqueSafeLoader)
         pending = [(result, 0)]
         nodes = 0
@@ -65,27 +69,64 @@ def bounded_data(text: str, kind: str = "json"):
             item, depth = pending.pop()
             nodes += 1
             if depth > 24 or nodes > 10000:
-                raise ValueError("Configuration nesting/node budget exceeded")
+                raise ParserLimitError("Configuration nesting/node budget exceeded")
             if isinstance(item, dict):
                 pending.extend((value, depth + 1) for value in item.values())
             elif isinstance(item, list):
                 pending.extend((value, depth + 1) for value in item)
         return result
-    except (yaml.YAMLError, RecursionError) as exc:
-        raise ValueError("Invalid or excessively nested configuration") from exc
+    except RecursionError as exc:
+        raise ParserLimitError("Configuration exceeds safe parser recursion limits") from exc
+    except yaml.YAMLError as exc:
+        raise ValueError("Invalid configuration syntax") from exc
 
 
 def frontmatter(text: str):
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
         raise ValueError("Missing YAML frontmatter")
+    header_characters = 0
     for end, line in enumerate(lines[1:], 1):
         if line.strip() == "---":
             data = bounded_data("\n".join(lines[1:end]), "yaml")
             if not isinstance(data, dict):
                 raise ValueError("Skill frontmatter must be a mapping")
             return data
+        header_characters += len(line) + (1 if end > 1 else 0)
+        if header_characters > MAX_CONFIG_CHARS:
+            raise ParserLimitError("Frontmatter exceeds 128 KiB parser budget")
     raise ValueError("Unterminated YAML frontmatter")
+
+
+def portable_skill_checks(data, path):
+    """Measured portable constraints, separate from vendor acceptance/guidance."""
+    name, description = data.get("name"), data.get("description")
+    parent = PurePosixPath(path).parent.name
+    if parent.endswith("!"):
+        # A nested archive's virtual container identity is not the skill's
+        # original directory name.
+        parent = ""
+    checks = []
+
+    def add(rule_id, valid, message, *, applicable=True):
+        checks.append({"id": rule_id, "status": "not_applicable" if not applicable else "pass" if valid else "fail", "message": message})
+
+    add("name_required", isinstance(name, str) and bool(name), "Required name is a nonempty string.")
+    add("name_length", isinstance(name, str) and 1 <= len(name) <= 64, "Name must contain 1–64 characters.")
+    add("name_characters", isinstance(name, str) and bool(name) and name == name.lower() and all(c.isalnum() or c == "-" for c in name), "Name uses lowercase alphanumeric characters and hyphens.")
+    add("name_hyphens", isinstance(name, str) and bool(name) and not name.startswith("-") and not name.endswith("-") and "--" not in name, "Name has no leading, trailing or consecutive hyphens.")
+    if parent:
+        add("name_directory_match", isinstance(name, str) and parent == name, "Name matches the supplied parent directory.")
+    else:
+        checks.append({"id": "name_directory_match", "status": "not_assessed", "message": "The upload does not provide the original parent directory name."})
+    add("description_required", isinstance(description, str) and bool(description.strip()), "Required description is a nonempty string.")
+    add("description_length", isinstance(description, str) and 1 <= len(description) <= 1024, "Description must contain 1–1024 characters.")
+    compatibility = data.get("compatibility")
+    add("compatibility_value", isinstance(compatibility, str) and 1 <= len(compatibility) <= 500, "Optional compatibility must be a string containing 1–500 characters.", applicable="compatibility" in data)
+    metadata = data.get("metadata")
+    add("metadata_value", isinstance(metadata, dict) and all(isinstance(k, str) and isinstance(v, str) for k, v in metadata.items()), "Optional metadata maps string keys to string values.", applicable="metadata" in data)
+    add("allowed_tools_value", isinstance(data.get("allowed-tools"), str), "Experimental allowed-tools is a space-separated string; runtime support is separate.", applicable="allowed-tools" in data)
+    return checks
 
 
 def safe_package_path(base: str, value: str):
@@ -151,6 +192,10 @@ def inspect_formats(records, texts, target_runtime="auto"):
                 if not isinstance(data, dict):
                     raise ValueError("Manifest/configuration must be an object")
                 config_data[path] = data
+            except ParserLimitError as exc:
+                entry.setdefault("analysis_coverage", {})["format_validation"] = {"status": "partial", "reason": str(exc)}
+                issues.append({"id": "configuration_parse_not_assessed", "path": path, "detail": str(exc), "severity": "warning"})
+                continue
             except ValueError as exc:
                 issues.append({"id": "configuration_parse_error", "path": path, "detail": str(exc)[:300], "severity": "error"})
                 continue
@@ -204,31 +249,24 @@ def inspect_formats(records, texts, target_runtime="auto"):
                 skill["frontmatter"] = data
                 metadata = data.get("metadata", {})
                 skill["metadata"] = {str(k): str(v)[:300] for k, v in metadata.items()} if isinstance(metadata, dict) else {}
-                problems = []
-                n, d = data.get("name"), data.get("description")
-                if not isinstance(n, str) or not n or n != n.lower() or not all(c.isalnum() or c == "-" for c in n) or n.startswith("-") or n.endswith("-") or "--" in n or len(n) > 64:
-                    problems.append("Invalid or missing skill name")
-                parent = PurePosixPath(path).parent.name
-                if parent and isinstance(n, str) and parent != n:
-                    problems.append("Skill name differs from parent directory")
-                if not isinstance(d, str) or not d.strip() or len(d) > 1024:
-                    problems.append("Missing or oversized description")
-                if "compatibility" in data and (not isinstance(data["compatibility"], str) or len(data["compatibility"]) > 500):
-                    problems.append("Invalid compatibility field")
-                if "metadata" in data and (not isinstance(metadata, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in metadata.items())):
-                    problems.append("metadata must map strings to strings")
-                if target_runtime in {"generic", "claude-upload"} and set(data) - BASE_FIELDS:
-                    problems.append("Frontmatter fields unsupported by selected upload/portable profile")
-                elif set(data) & CODE_FIELDS:
+                checks = portable_skill_checks(data, path)
+                skill["portable_checks"] = checks
+                problems = [check["message"] for check in checks if check["status"] == "fail"]
+                if set(data) - BASE_FIELDS and target_runtime in {"generic", "claude-upload"}:
+                    issues.append({"id": "skill_frontmatter" if target_runtime == "claude-upload" else "frontmatter_extension",
+                                   "path": path, "detail": "Additional frontmatter fields are assessed separately from portable base constraints; selected vendor acceptance is unverified.",
+                                   "severity": "warning", "authority": {**authority, "enforcement": "advisory_only"}})
+                if set(data) & CODE_FIELDS:
                     indicators.add("claude-code")
                 for problem in problems:
                     issues.append({"id": "skill_frontmatter", "path": path, "detail": problem,
                                    "severity": "error" if portable_selected else "warning", "authority": authority})
                 if problems and portable_selected:
                     skill["validation"] = "invalid"
-                if target_runtime in {"generic", "claude-upload"} and "allowed-tools" in data and not isinstance(data["allowed-tools"], str):
-                    issues.append({"id": "allowed_tools_type", "path": path, "detail": "Portable profile requires a string; selected vendor acceptance must be verified independently.",
-                                   "severity": "error" if portable_selected else "warning", "authority": authority})
+            except ParserLimitError as exc:
+                skill["validation"] = "not_assessed"
+                format_coverage.update(status="partial", reason=str(exc))
+                issues.append({"id": "skill_format_not_assessed", "path": path, "detail": str(exc), "severity": "warning", "authority": {"kind": "local_parser_safety", "applicability": "bounded_parser_limit", "vendor_compatibility_verified": False}})
             except ValueError as exc:
                 skill["validation"] = "invalid"
                 format_coverage.update(status="partial", reason=str(exc))

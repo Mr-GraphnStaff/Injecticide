@@ -1,0 +1,271 @@
+{
+  "catalog_version": "2026-10-28",
+  "standard": "agent-skills",
+  "source": {
+    "id": "agent-skills",
+    "url": "https://agentskills.io/specification.md",
+    "resolved_url": "https://agentskills.io/specification.md",
+    "source_sha256": "9a67de89132948b2300b8dc87b93817971d47f9be89b644444965881a8dfde16",
+    "revision": "sha256:9a67de89132948b2300b8dc87b93817971d47f9be89b644444965881a8dfde16",
+    "retrieved_at": "2026-10-28T14:11:56.900867+00:00",
+    "reviewed_on": "2026-10-28",
+    "verification": "retrieved_official_source_snapshot",
+    "content_type": "text/markdown; charset=utf-8",
+    "bytes": 7608,
+    "title": "Agent Skills specification",
+    "semantic_review": "Directory structure, frontmatter field constraints, unrestricted body, progressive disclosure and file-reference guidance reviewed."
+  },
+  "scope": "Portable syntax constraints and separate guidance/status observations; not vendor, runtime or security certification.",
+  "requirements": [
+    {
+      "id": "skill_entrypoint",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "Directory structure",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "yaml_frontmatter",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "SKILL.md format",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "name_required",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "name field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "name_length",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "name field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "name_characters",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "name field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "name_hyphens",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "name field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "name_directory_match",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "name field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "description_required",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "description field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "description_length",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "description field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "compatibility_value",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "compatibility field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "metadata_value",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "metadata field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "allowed_tools_value",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "allowed-tools field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "markdown_body",
+      "category": "format",
+      "requirement_level": "mandatory",
+      "section": "Body content",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "license_value",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "license field",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "frontmatter_extensions",
+      "category": "vendor_compatibility",
+      "requirement_level": "vendor_extension",
+      "section": "Frontmatter",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "body_line_guidance",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "Progressive disclosure",
+      "implementation_status": "implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "body_token_guidance",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "Progressive disclosure",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "description_trigger_quality",
+      "category": "authoring_guidance",
+      "requirement_level": "recommendation",
+      "section": "description field",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "vendor_runtime_compatibility",
+      "category": "vendor_compatibility",
+      "requirement_level": "status",
+      "section": "Compatibility is implementation-specific",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "security_coverage",
+      "category": "security",
+      "requirement_level": "status",
+      "section": "Security assessment is separate",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "trigger_accuracy",
+      "category": "runtime_evaluation",
+      "requirement_level": "status",
+      "section": "Runtime evaluation is separate",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "output_quality",
+      "category": "runtime_evaluation",
+      "requirement_level": "status",
+      "section": "Runtime evaluation is separate",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "script_behavior",
+      "category": "runtime_evaluation",
+      "requirement_level": "status",
+      "section": "Runtime evaluation is separate",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "runtime_control_enforcement",
+      "category": "runtime_evaluation",
+      "requirement_level": "status",
+      "section": "Runtime evaluation is separate",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    },
+    {
+      "id": "skill_collection_intent",
+      "category": "format",
+      "requirement_level": "status",
+      "section": "Directory structure",
+      "implementation_status": "not_implemented",
+      "test_refs": [
+        "tests/test_skill_standards.py"
+      ]
+    }
+  ]
+}

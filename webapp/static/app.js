@@ -252,6 +252,65 @@ function OfficialValidatorResults({ results }) {
     </section>;
 }
 
+const SKILL_STANDARD_CATEGORIES = [
+    ['format', 'Portable format', 'Measured mandatory requirements from the named Agent Skills specification.'],
+    ['vendor_compatibility', 'Vendor compatibility', 'Product-specific requirements and extensions; portable format checks do not establish vendor acceptance.'],
+    ['authoring_guidance', 'Authoring recommendations', 'Recommendations for skill authors; a recommendation is separate from a mandatory requirement.'],
+    ['security', 'Security review', 'Static observations and explicitly mapped checks; a mapping does not establish complete security coverage.'],
+    ['runtime_evaluation', 'Runtime evaluation', 'Execution, usefulness and control enforcement need separate evaluation evidence.']
+];
+
+function StandardsAssessment({ assessment }) {
+    const [category, setCategory] = useState('format');
+    const [page, setPage] = useState(0);
+    if (!assessment) return <section className="skill-standards" aria-labelledby="skill-standards-title"><h3 id="skill-standards-title">Standards assessment</h3><p>Not assessed — this report does not include a standards assessment. Existing scan findings remain available below.</p></section>;
+    const requirements = Array.isArray(assessment.requirements) ? assessment.requirements : [];
+    const count = key => Number.isFinite(assessment.summary?.[key]) ? assessment.summary[key] : null;
+    const passed = count('mandatory_pass'), failed = count('mandatory_fail'), unassessed = count('mandatory_not_assessed');
+    const status = value => ({ pass: 'Pass', fail: 'Fail', not_assessed: 'Not assessed', not_applicable: 'Not applicable' }[value] || 'Not assessed');
+    const countStatus = (rows, value) => rows.filter(row => row.status === value).length;
+    const selected = SKILL_STANDARD_CATEGORIES.find(([key]) => key === category);
+    const rows = requirements.filter(row => row.category === category);
+    const source = assessment.source || {};
+    const sourcePinned = typeof source.source_sha256 === 'string' && /^[a-fA-F0-9]{64}$/.test(source.source_sha256) && Boolean(source.revision);
+    const sourceSummary = sourcePinned && source.verification === 'reviewed_pinned_primary_source' ? 'Reviewed, pinned primary source' : sourcePinned && source.verification === 'retrieved_official_source_snapshot' ? 'Pinned official source snapshot' : 'STATUS: UNKNOWN — UNVERIFIED';
+    const securityGuidance = assessment.security_guidance;
+    const requirementLabel = value => ({ mandatory: 'Mandatory', recommendation: 'Recommendation', vendor_extension: 'Vendor extension', status: 'Assessment status' }[value] || 'Scope not reported');
+    function renderSource(item, index) {
+        const url = typeof item === 'string' ? item : item?.url;
+        return <li key={index}><EvidenceSourceLink url={url} />{typeof item === 'object' && item.title && <span> · {item.title}</span>}{typeof item === 'object' && item.section && <span> · {item.section}</span>}</li>;
+    }
+    return <section className="skill-standards" aria-labelledby="skill-standards-title" data-standards-assessment="true">
+        <div className="standards-heading"><div><p className="home-eyebrow">REQUIREMENT → MEASUREMENT → EVIDENCE</p><h3 id="skill-standards-title">Standards assessment</h3></div><span className={`standards-status status-${['pass','fail','not_assessed','not_applicable'].includes(assessment.overall_status) ? assessment.overall_status : 'not_assessed'}`}>Portable mandatory checks: {status(assessment.overall_status)}</span></div>
+        <p>{assessment.profile_scope}</p>
+        <p>Specification source: {sourceSummary}</p>
+        <p className="standards-scope">This assessment separates portable format, vendor requirements, authoring guidance, security observations and runtime evaluation. Passing measured format checks is not a certificate of full compliance, safety or runtime acceptance.</p>
+        <dl className="standards-counts"><div><dt>Mandatory checked</dt><dd>{passed !== null && failed !== null ? passed + failed : 'Not reported'}</dd></div><div><dt>Mandatory failed</dt><dd>{failed ?? 'Not reported'}</dd></div><div><dt>Mandatory not assessed</dt><dd>{unassessed ?? 'Not reported'}</dd></div><div><dt>Recommendations needing attention</dt><dd>{count('recommendations_attention') ?? 'Not reported'}</dd></div></dl>
+        <p className="standards-count-note">Mandatory counts apply to portable requirements only. Not assessed means no conformance result was established.</p>
+        {(count('omitted_skills') > 0 || count('omitted_rows') > 0) && <p className="home-warning">Assessment limits omitted {count('omitted_skills') || 0} skills and {count('omitted_rows') || 0} requirement rows. Omitted requirements are not counted as passed.</p>}
+        <div className="standards-categories" role="group" aria-label="Standards assessment category">{SKILL_STANDARD_CATEGORIES.map(([key, title]) => {
+            const entries = requirements.filter(row => row.category === key);
+            return <button type="button" key={key} aria-pressed={category === key} onClick={() => { setCategory(key); setPage(0); }}><strong>{title}</strong><span>{entries.length ? `${countStatus(entries, 'pass')} pass · ${countStatus(entries, 'fail')} fail · ${countStatus(entries, 'not_assessed')} not assessed${countStatus(entries, 'not_applicable') ? ` · ${countStatus(entries, 'not_applicable')} not applicable` : ''}` : 'Not assessed'}</span></button>;
+        })}</div>
+        <div className="standards-selected-category"><h4>{selected[1]}</h4><p>{selected[2]}</p>
+            <ScanPageControls page={page} total={rows.length} size={10} onChange={setPage} label="Standards requirement pages" />
+            <ul className="standards-requirements">{rows.slice(page * 10, (page + 1) * 10).map((row, index) => <li key={`${row.id}:${row.path}:${index}`} data-standards-requirement="true">
+                <div className="standards-row-heading"><h5>{row.id}</h5><span className={`standards-status status-${['pass','fail','not_assessed','not_applicable'].includes(row.status) ? row.status : 'not_assessed'}`}>{status(row.status)}</span><span className="standards-level">{requirementLabel(row.requirement_level)}</span></div>
+                {row.path && <p className="standards-file">{row.path}{Number.isInteger(row.line) && row.line > 0 ? `:${row.line}` : ''}</p>}
+                <p>{row.message}</p>{row.applicability && <p className="standards-applicability">Applies to: {row.applicability}</p>}
+                {row.implementation_status && <p className="standards-applicability">Check implementation: {evidenceLabel(row.implementation_status)}</p>}
+                {row.requirement_level === 'vendor_extension' && <p>Vendor extension: this row does not independently fail the portable format assessment.</p>}
+                {row.evidence?.length > 0 && <details><summary>Source file evidence ({row.evidence.length})</summary><ul>{row.evidence.map((item, i) => <li key={i}><strong>{item.path || row.path || 'File not reported'}{Number.isInteger(item.line) && item.line > 0 ? `:${item.line}` : ''}</strong>{item.text && <p>{item.text}</p>}</li>)}</ul></details>}
+                {row.sources?.length > 0 && <ul className="standards-sources">{row.sources.map(renderSource)}</ul>}
+                {row.test_refs?.length > 0 && <details><summary>Regression check references ({row.test_refs.length})</summary><ul>{row.test_refs.map((ref, i) => <li key={i}>{ref}</li>)}</ul></details>}
+            </li>)}</ul>
+            {!rows.length && <p>No requirement assessment was reported in this category. Not assessed.</p>}
+            {category === 'security' && securityGuidance && <details className="standards-security-guidance"><summary>{securityGuidance.name || 'Security guidance'} · {securityGuidance.project_status || 'Project status not reported'}</summary><p>{securityGuidance.mapping_authority || 'Advisory relevance mapping only.'}</p><p>A related detector observation is a review aid. It does not establish exploitability, control enforcement, absence of risk or complete coverage.</p><EvidenceSourceLink url={securityGuidance.source_url} /><ul>{(securityGuidance.risks || []).map(risk => <li key={risk.id}><strong>{risk.id}: {risk.title}</strong><p>Observed related detector IDs: {risk.observed_detector_ids?.length ? risk.observed_detector_ids.join(', ') : 'None reported; risk remains unassessed.'}</p><p>Risk validation: {evidenceLabel(risk.validation, 'Not assessed')}</p></li>)}</ul></details>}
+        </div>
+        <details className="standards-reference"><summary>Specification source and assessment limits</summary><p>{assessment.standard || 'Standard not reported'} · schema {assessment.schema_version || 'not reported'}</p><p>Source verification: {evidenceLabel(source.verification, 'Not reported')}</p><p>Revision: <span className="scan-revision">{source.revision || 'not reported'}</span></p><p>Source SHA-256: <span className="scan-revision">{source.source_sha256 || 'not reported'}</span></p><EvidenceSourceLink url={source.url} /><ul>{(assessment.limitations || []).concat(assessment.limits || []).map((limit, index) => <li key={index}>{typeof limit === 'string' ? limit : JSON.stringify(limit)}</li>)}</ul></details>
+    </section>;
+}
+
 function FileAnalysisEvidence({ file }) {
     const mitigation = file.creator_mitigation;
     const detectors = Object.entries(file.analysis_coverage || {});
@@ -370,6 +429,18 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     lines.push(`- Flagged files: ${summary.flagged_files ?? 0}`);
     lines.push(`- Review findings: ${summary.total_findings ?? 0}`);
     lines.push(`- Informational findings: ${summary.info_findings ?? 0}`);
+    lines.push('');
+    lines.push('## Standards assessment');
+    lines.push('');
+    if (scanResult.standards_assessment) {
+        const standards = scanResult.standards_assessment;
+        lines.push(`- Portable mandatory status: ${standards.overall_status || 'not_assessed'}`);
+        lines.push('- Scope: measured portable format requirements; vendor compatibility, recommendations, security review and runtime evaluation remain separate. This is not a full compliance or safety certificate.');
+        lines.push('```json');
+        lines.push(JSON.stringify({ standards_assessment: standards }, null, 2));
+        lines.push('```');
+    } else lines.push('Not assessed — this report does not include a standards assessment.');
+    lines.push('');
     if (scanResult.package_analysis) {
         lines.push(`- Package kind: ${scanResult.package_analysis.artifact_kind}`);
         lines.push(`- Target runtime: ${scanResult.package_analysis.target_runtime}`);
@@ -1978,6 +2049,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                             {skillScanResult && (
                                 <div className="skill-results-report text-sm text-gray-300 space-y-4">
                                     <ScanEvidenceSummary result={skillScanResult} />
+                                    <StandardsAssessment key={skillScanResult.scan_request_id || skillScanResult.filename} assessment={skillScanResult.standards_assessment} />
                                     <SkillProcessDiagram key={skillScanResult.scan_request_id || skillScanResult.filename} result={skillScanResult} onAddToPlayground={setProcessPlayground} />
                                     <OfficialValidatorResults results={skillScanResult.official_validator_results} />
                                     {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}

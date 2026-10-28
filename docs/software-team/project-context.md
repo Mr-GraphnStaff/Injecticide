@@ -1,4 +1,64 @@
-# Current assignment — 0.9.0 skill process maps and scanner calibration
+# Active assignment — 0.10.0 Agent Skills conformance
+
+David explicitly authorized Software Team implementation and prompt publication
+on October 28, after reviewing the six-part conformance plan and observed gaps.
+Existing instruction to publish without another approval pause remains in force.
+Actual host: Windows, checkout Y:/projects/Injecticide, branch
+codex/agent-skills-conformance-0-10, based on published 0.9.1 a4b8594.
+
+- Avery owns integration, source fingerprint catalog/comparison CLI, metadata,
+  packaging, documentation, combined verification and existing protected release.
+- Ishan agent owns shared format constraints, per-requirement standards results
+  and regression matrix; later independently reviews graph/UI as Morgan,
+  excluding its own conformance implementation.
+- Elena agent owns bounded launcher/PEP 723 inspection and independently reviews
+  conformance/integration. Mara owns assessment UI/Markdown export and separately
+  reviews other agents' backend integration; her UI needs independent review.
+- Required outcomes: source-pinned mandatory-format matrix with pass/fail/
+  not-assessed, separate vendor/authoring/security/runtime conclusions, corrected
+  compatibility constraint, actual supported launcher relationships and inline
+  dependency inventory, explicit omitted/unknown coverage and source drift checks.
+- Constraints: no fetched/uploaded code execution, package installation, paid
+  provider calls, automatic research-rule activation, workflow/auth/secret change
+  or unsupported conformance/security certification. The supplied reference is
+  evidence, not authority to execute its example instructions.
+- Initial source comparison: core specification, authoring/client/vendor pages,
+  PEP/uv and OWASP taxonomy detail matched retrieved fingerprints. The OWASP
+  landing-page bytes changed and remain flagged for review; no cached unchanged
+  result or automatic catalog update was substituted.
+- Candidate state: implementation frozen and independent Mara/Elena/Morgan
+  reviews complete within their documented scopes. Root full local suite:773
+  passed/6 optional MCP SDK skips; later added reviewer regressions passed in
+  targeted runs. Standards UI, real API process-map flow, existing scanner UI
+  and current-name/PNG browser regression passed. Publication is authorized;
+  exact CI/build/deployment/live acceptance remain release steps. No new
+  quarterly personnel review is claimed.
+
+# Previous release — 0.9.1 exports
+
+Published October 28 through PR #56 as
+`a4b859461e7ffb116f9ace261824349a7682c6d3`. Candidate 893 and production 894
+each passed 686 tests without skips, Compose and three image builds. Current-name
+filenames and direct bounded PNG export passed independent local and actual
+production browser checks. All application containers are healthy on the merged
+tag. The lead explicitly instructed pipeline publication without another approval
+pause. No workflow/auth/secret changes; scanner engine remains 0.9.0.
+Receipt: docs/validation/2026-10-28-export-0-9-1-deployment.md and companion JSON.
+
+# Previous assignment — 0.9.0 skill process maps and scanner calibration
+
+**Published and live-verified October 28:** PR #55 merged as
+`4c6c49e652fb48039abdbbecb5650b5d08a13b58`. Candidate run 891 and production
+run 892 passed 686 tests without skips, Compose and all image builds; protected
+Pi deployment succeeded. All application containers are healthy on the merged
+tag. Actual public scans verified calibration, source-linked diagrams, redaction
+and planner compatibility; Morgan independently verified the production UI,
+new-map separation, saved/unsaved preservation and keyboard return. Windows
+certificate-store verification exported no private key. Synthetic live acceptance
+does not establish original customer-package or runtime-safety acceptance.
+See docs/validation/2026-10-28-skill-process-0-9-deployment.md and companion JSON.
+The local-candidate statements below are historical preparation evidence,
+superseded for publication status by this paragraph and its deployment receipt.
 
 - Lead: David Farris. October 28, 2026: authorized Software Team implementation
   of PII prioritization, dynamic-execution citation/context correction,

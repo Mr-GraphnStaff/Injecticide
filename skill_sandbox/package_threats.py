@@ -17,8 +17,10 @@ from urllib.parse import urlsplit
 
 try:
     from .package_formats import safe_package_path
+    from .script_launchers import COMMAND_START, parse_script_command
 except ImportError:
     from package_formats import safe_package_path
+    from script_launchers import COMMAND_START, parse_script_command
 
 EXECUTABLE_SUFFIXES = {".py", ".pyw", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".sh", ".bash", ".zsh", ".fish", ".ps1", ".psm1", ".bat", ".cmd", ".rb", ".pl", ".php", ".lua", ".r", ".groovy", ".vbs", ".wsf", ".sql", ".exe", ".dll", ".so", ".java", ".go", ".rs", ".c", ".cpp", ".swift"}
 LANGUAGE_ALIASES = {"python": "python", "py": "python", "javascript": "javascript", "js": "javascript", "node": "javascript",
@@ -32,7 +34,7 @@ SOURCES = [
     {"name": "Node.js command-line API", "url": "https://nodejs.org/api/cli.html"},
     {"name": "Microsoft PowerShell CLI", "url": "https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_pwsh"},
 ]
-COMMAND_RE = re.compile(r"\b(?:python(?:3(?:\.\d+)?)?|python\.exe|bash|sh|zsh|fish|node|nodejs|deno|bun|pwsh|powershell|ruby|perl|php|lua|Rscript|groovy|cscript|wscript|cmd(?:\.exe)?)\s+([^\n`]+)", re.I)
+COMMAND_RE = re.compile(r"(?<![\w./:-])(?:python(?:3(?:\.\d+)?)?|python\.exe|bash|sh|zsh|fish|node|nodejs|deno|bun|pwsh|powershell|ruby|perl|php|lua|Rscript|groovy|cscript|wscript|cmd(?:\.exe)?)[ \t]+([^\n`]+)", re.I)
 SECRET_RE = re.compile(r"(?:api[_-]?key|access[_-]?token|password|secret)\s*[=:]\s*['\"]([^'\"\n]{12,})['\"]", re.I)
 
 
@@ -193,31 +195,44 @@ def inspect_threats(records, texts, analysis):
                     invoked.add(original)
                     references.append({"source": source, "target": original, "kind": "declared_fence_extraction", "generated_target": output})
 
-    def command_targets(source, command, base):
+    def command_targets(source, command, base, *, exact_lines=False):
         # Only expand standardized package-root placeholders lexically, never env vars.
         for marker in ("${CLAUDE_PLUGIN_ROOT}/", "${PLUGIN_ROOT}/", "${extensionPath}/"):
             command = command.replace(marker, "./")
-        for index, match in enumerate(islice(COMMAND_RE.finditer(command), 65)):
+        matches = list(islice(COMMAND_START.finditer(command), 65))
+        # Retain the prior direct-interpreter prose recognition. The shared
+        # parser still selects only its script operand, never argument paths.
+        structured_spans = [match.span() for match in matches]
+        matches.extend(match for match in islice(COMMAND_RE.finditer(command), 65)
+                       if not any(start <= match.start() < end for start, end in structured_spans))
+        seen = set()
+        for index, match in enumerate(matches):
             if index == 64:
                 inventory_limited[0] = True
                 break
-            try:
-                tokens = shlex.split(match.group(1).replace("`", ""), posix=True)
-            except ValueError:
+            command_text = match["command"] if "command" in match.re.groupindex else match.group(0).split("`", 1)[0]
+            parsed = parse_script_command(command_text)
+            if parsed is None or parsed["status"] != "recognized_static_syntax" or not parsed.get("script"):
                 continue
-            for token in tokens[:16]:
-                token = token.rstrip(",;)").lstrip("(")
-                if token.startswith("-") or not PurePosixPath(token).suffix:
-                    continue
-                roots = [base] + sorted({p["root"] for p in analysis["skills"] + analysis["packages"]
-                                       if p["root"] not in {"", "."} and source.startswith(p["root"].rstrip("/") + "/")}, key=len, reverse=True)
-                candidates = [resolve(source, root, token) for root in roots]
-                resolved = next((p for p in candidates if p in paths or p in generated), None)
-                original = resolved if resolved in paths else generated.get(resolved)
-                if original:
-                    invoked.add(original)
-                    references.append({"source": source, "target": original, "kind": "declared_interpreter_invocation", **({"generated_target": resolved} if original != resolved else {})})
-                    break
+            token = parsed["script"]
+            roots = sorted({p["root"] for p in analysis["skills"] + analysis["packages"]
+                            if p["root"] not in {"", "."} and source.startswith(p["root"].rstrip("/") + "/")}, key=len, reverse=True)
+            if PurePosixPath(source).suffix.lower() in {".md", ".txt"}:
+                roots = roots + [base]
+            else:
+                roots = [base] + roots
+            candidates = [resolve(source, root, token) for root in roots]
+            resolved = next((p for p in candidates if p in paths or p in generated), None)
+            original = resolved if resolved in paths else generated.get(resolved)
+            line = command.count("\n", 0, match.start()) + 1 if exact_lines else None
+            key = original, resolved, line
+            if original and key not in seen:
+                seen.add(key)
+                invoked.add(original)
+                references.append({"source": source, "target": original, "kind": "declared_interpreter_invocation",
+                                   "line": line, "line_accuracy": "exact" if exact_lines else "file_only",
+                                   "launcher": parsed["launcher"], "execution_verified": False,
+                                   **({"generated_target": resolved} if original != resolved else {})})
 
     for path, text in texts.items():
         entry = entries[path]
@@ -250,7 +265,7 @@ def inspect_threats(records, texts, analysis):
                     entry["findings"].append(finding("executable_packaged_as_document", "Executable source is stored with a document extension. Review its declared invocation and applicable upload policy; an actual policy bypass and malicious behavior are not established.", [path] + evidence["evidence"]))
         base = str(PurePosixPath(path).parent)
         base = "" if base == "." else base
-        command_targets(path, text, base)
+        command_targets(path, text, base, exact_lines=True)
         for index, match in enumerate(islice(re.finditer(r"\b(?:cp|copy|mv|move|ren|rename|base64\s+-d)\s+([^\n`]+)", text), 65)):
             if index == 64:
                 inventory_limited[0] = True

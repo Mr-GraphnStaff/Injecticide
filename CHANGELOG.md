@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.10.0 - 2026-10-28
+
+- Report source-pinned Agent Skills conformance as individual mandatory checks,
+  separate from vendor compatibility, authoring guidance, security and runtime
+  evaluation. Unassessed requirements and inspection limits remain explicit.
+- Correct portable compatibility-field validation and separate extension fields
+  from baseline conformance; parser resource limits do not imply invalid syntax.
+- Recognize bounded documented script-launcher forms and inventory PEP 723 inline
+  dependencies without executing commands, installing packages or fetching code.
+- Preserve standards evidence in the UI and Markdown exports. Add a reviewed
+  requirements matrix, paired regressions and explicit source-drift comparison
+  tooling; source changes never activate detector rules automatically.
+
 ## 0.9.1 - 2026-10-28
 
 - Name playground map, test-plan and diagram-prompt downloads after the current

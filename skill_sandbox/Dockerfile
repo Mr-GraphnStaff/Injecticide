@@ -13,6 +13,8 @@ COPY asset_inspection.py /app/asset_inspection.py
 COPY nested_archives.py /app/nested_archives.py
 COPY package_graph.py /app/package_graph.py
 COPY process_diagram.py /app/process_diagram.py
+COPY script_launchers.py /app/script_launchers.py
+COPY standards_assessment.py /app/standards_assessment.py
 COPY text_projections.py /app/text_projections.py
 COPY code_security.py /app/code_security.py
 COPY behavior_analysis.py /app/behavior_analysis.py

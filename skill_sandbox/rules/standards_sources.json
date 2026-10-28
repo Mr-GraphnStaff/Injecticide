@@ -1,0 +1,271 @@
+{
+  "catalog_version": "2026-10-28",
+  "last_reviewed": "2026-10-28",
+  "scope": "Reviewed source fingerprints for portable format, vendor extensions and security guidance; no certification",
+  "update_policy": "Explicit source comparison; review changed sources before release; no automatic rule activation",
+  "network_during_scan": false,
+  "sources": [
+    {
+      "id": "agent-skills",
+      "url": "https://agentskills.io/specification.md",
+      "resolved_url": "https://agentskills.io/specification.md",
+      "source_sha256": "9a67de89132948b2300b8dc87b93817971d47f9be89b644444965881a8dfde16",
+      "revision": "sha256:9a67de89132948b2300b8dc87b93817971d47f9be89b644444965881a8dfde16",
+      "retrieved_at": "2026-10-28T14:11:56.900867+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 7608
+    },
+    {
+      "id": "authoring",
+      "url": "https://agentskills.io/skill-creation/best-practices.md",
+      "resolved_url": "https://agentskills.io/skill-creation/best-practices.md",
+      "source_sha256": "ab9f3b6091a0f24816b52cd7b90a3fdf53e621f47dba13b36694be272b87fb41",
+      "revision": "sha256:ab9f3b6091a0f24816b52cd7b90a3fdf53e621f47dba13b36694be272b87fb41",
+      "retrieved_at": "2026-10-28T14:11:57.429982+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 15060
+    },
+    {
+      "id": "client-implementation",
+      "url": "https://agentskills.io/client-implementation/adding-skills-support.md",
+      "resolved_url": "https://agentskills.io/client-implementation/adding-skills-support.md",
+      "source_sha256": "07511caadbe1bad84d81477d0efce87bc2c7eaff562179522c083910586dfb06",
+      "revision": "sha256:07511caadbe1bad84d81477d0efce87bc2c7eaff562179522c083910586dfb06",
+      "retrieved_at": "2026-10-28T14:11:57.954563+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 20446
+    },
+    {
+      "id": "openai",
+      "url": "https://learn.chatgpt.com/docs/build-skills.md",
+      "resolved_url": "https://learn.chatgpt.com/docs/build-skills.md",
+      "source_sha256": "ed6e324f747d47adf6f60ee1fca13ba469b3671f55f58c3a78f35947af6919d5",
+      "revision": "sha256:ed6e324f747d47adf6f60ee1fca13ba469b3671f55f58c3a78f35947af6919d5",
+      "retrieved_at": "2026-10-28T14:11:58.445456+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 11035
+    },
+    {
+      "id": "claude",
+      "url": "https://code.claude.com/docs/en/skills.md",
+      "resolved_url": "https://code.claude.com/docs/en/skills.md",
+      "source_sha256": "31623035b25ac7e6bebd8dec6234aa76e31018f0e2eb8b47da6b36cf015712f9",
+      "revision": "sha256:31623035b25ac7e6bebd8dec6234aa76e31018f0e2eb8b47da6b36cf015712f9",
+      "retrieved_at": "2026-10-28T14:11:59.001536+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 117962
+    },
+    {
+      "id": "pep723",
+      "url": "https://peps.python.org/pep-0723/",
+      "resolved_url": "https://peps.python.org/pep-0723/",
+      "source_sha256": "1bb79e5880add2424221e259128a0a8ceeb8f047a159d8a03d8a26b823f22c78",
+      "revision": "sha256:1bb79e5880add2424221e259128a0a8ceeb8f047a159d8a03d8a26b823f22c78",
+      "retrieved_at": "2026-10-28T14:11:59.435600+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 73655
+    },
+    {
+      "id": "uv",
+      "url": "https://docs.astral.sh/uv/guides/scripts/",
+      "resolved_url": "https://docs.astral.sh/uv/guides/scripts/",
+      "source_sha256": "8cf65e514c354993c555f8960a04bbefcb1747a5cad52a24299927818645c8c7",
+      "revision": "sha256:8cf65e514c354993c555f8960a04bbefcb1747a5cad52a24299927818645c8c7",
+      "retrieved_at": "2026-10-28T14:11:59.899568+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 103617
+    },
+    {
+      "id": "owasp-skills",
+      "url": "https://owasp.org/projects/agentic-skills-top-10",
+      "resolved_url": "https://owasp.org/projects/agentic-skills-top-10",
+      "source_sha256": "917559e3080385fa0ba17d0651bb5640581ff39651140382cf438a504dd56e0b",
+      "revision": "sha256:917559e3080385fa0ba17d0651bb5640581ff39651140382cf438a504dd56e0b",
+      "retrieved_at": "2026-10-28T14:12:00.434474+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 69130
+    },
+    {
+      "id": "owasp-skills-details",
+      "url": "https://owasp.github.io/www-project-agentic-skills-top-10/",
+      "source_sha256": "b1569fa99a6eb87889e785b4b85634f4b29eb3c7f54c1c60b54001d4b9499dc7",
+      "revision": "sha256:b1569fa99a6eb87889e785b4b85634f4b29eb3c7f54c1c60b54001d4b9499dc7",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_project_page",
+      "scope": "Risk taxonomy only; incubator proposals are not base format requirements"
+    },
+    {
+      "id": "uv-cli",
+      "url": "https://docs.astral.sh/uv/reference/cli/",
+      "reference_url": "https://docs.astral.sh/uv/reference/cli/",
+      "resolved_url": "https://docs.astral.sh/uv/reference/cli/",
+      "source_sha256": "9db6b709577c07e6aa5a316f788ead8ef79ce66bc6b0c8fe6ec0896013bf9a01",
+      "revision": "sha256:9db6b709577c07e6aa5a316f788ead8ef79ce66bc6b0c8fe6ec0896013bf9a01",
+      "retrieved_at": "2026-10-28T14:30:01.408286+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 1182748
+    },
+    {
+      "id": "pipx-scripts",
+      "url": "https://pipx.pypa.io/stable/how-to/run-scripts.html",
+      "reference_url": "https://pipx.pypa.io/stable/how-to/run-scripts.html",
+      "resolved_url": "https://pipx.pypa.io/stable/how-to/run-scripts.html",
+      "source_sha256": "9e63ab48bdb9f0f74183ecf7e0df5b9074afbd244abdf3d52e840b3f4564351f",
+      "revision": "sha256:9e63ab48bdb9f0f74183ecf7e0df5b9074afbd244abdf3d52e840b3f4564351f",
+      "retrieved_at": "2026-10-28T14:30:01.311980+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 30221
+    },
+    {
+      "id": "npm-npx",
+      "url": "https://docs.npmjs.com/cli/v11/commands/npx/",
+      "reference_url": "https://docs.npmjs.com/cli/v11/commands/npx/",
+      "resolved_url": "https://docs.npmjs.com/cli/v11/commands/npx/",
+      "source_sha256": "659e22822006f1d75d316d554fe1dca141444180325024dcff4ec8bcba673244",
+      "revision": "sha256:659e22822006f1d75d316d554fe1dca141444180325024dcff4ec8bcba673244",
+      "retrieved_at": "2026-10-28T14:30:14.384894+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 527571
+    },
+    {
+      "id": "deno-run",
+      "url": "https://docs.deno.com/runtime/reference/cli/run/",
+      "reference_url": "https://docs.deno.com/runtime/reference/cli/run/",
+      "resolved_url": "https://docs.deno.com/runtime/reference/cli/run/",
+      "source_sha256": "197ef7a8d45b428095c368cb4afbf78d1f6b52bbf540ba70bf12387593c19d75",
+      "revision": "sha256:197ef7a8d45b428095c368cb4afbf78d1f6b52bbf540ba70bf12387593c19d75",
+      "retrieved_at": "2026-10-28T14:30:01.415286+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html; charset=UTF-8",
+      "bytes": 109018
+    },
+    {
+      "id": "bun-runtime",
+      "url": "https://bun.sh/docs/runtime",
+      "reference_url": "https://bun.sh/docs/runtime",
+      "resolved_url": "https://bun.sh/docs/runtime",
+      "source_sha256": "2eeb008c68955a69840558ff3709def376ff4be346ccdd90cdbb07af6de5c630",
+      "revision": "sha256:2eeb008c68955a69840558ff3709def376ff4be346ccdd90cdbb07af6de5c630",
+      "retrieved_at": "2026-10-28T14:30:01.412286+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 255411
+    },
+    {
+      "id": "python-cli",
+      "url": "https://docs.python.org/3/using/cmdline.html",
+      "reference_url": "https://docs.python.org/3/using/cmdline.html",
+      "resolved_url": "https://docs.python.org/3/using/cmdline.html",
+      "source_sha256": "12b9165d570fa560a83cec057825f324d2700cd7b36616e883acfe683f07dd12",
+      "revision": "sha256:12b9165d570fa560a83cec057825f324d2700cd7b36616e883acfe683f07dd12",
+      "retrieved_at": "2026-10-28T14:30:00.711010+00:00",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot",
+      "content_type": "text/html",
+      "bytes": 171073
+    }
+  ],
+  "security_guidance": {
+    "name": "OWASP Agentic Skills Top 10",
+    "project_status": "incubator",
+    "source_url": "https://owasp.github.io/www-project-agentic-skills-top-10/",
+    "authority": "advisory_risk_taxonomy_not_portable_format_standard",
+    "mapping_authority": "Injecticide reviewer-authored relevance mapping; not an OWASP certification or coverage score",
+    "risks": [
+      {
+        "id": "AST01",
+        "title": "Malicious Skills",
+        "related_detector_ids": [
+          "prompt_override",
+          "system_exfiltration",
+          "secret_exfiltration",
+          "credential_source_to_network_payload"
+        ],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST02",
+        "title": "Supply Chain Compromise",
+        "related_detector_ids": [],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST03",
+        "title": "Over-Privileged Skills",
+        "related_detector_ids": [
+          "broad_tool_preapproval",
+          "tool_escape"
+        ],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST04",
+        "title": "Insecure Metadata",
+        "related_detector_ids": [
+          "literal_credential_declaration"
+        ],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST05",
+        "title": "Untrusted External Instructions",
+        "related_detector_ids": [],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST06",
+        "title": "Weak Isolation",
+        "related_detector_ids": [],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST07",
+        "title": "Update Drift",
+        "related_detector_ids": [],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST08",
+        "title": "Poor Scanning",
+        "related_detector_ids": [],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST09",
+        "title": "No Governance",
+        "related_detector_ids": [],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      },
+      {
+        "id": "AST10",
+        "title": "Cross-Platform Reuse",
+        "related_detector_ids": [],
+        "validation": "risk_exploitability_and_runtime_enforcement_not_assessed"
+      }
+    ]
+  }
+}
