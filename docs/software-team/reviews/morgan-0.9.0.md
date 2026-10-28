@@ -114,3 +114,48 @@ No evidence from this review establishes human release acceptance; final suite
 counts must be reconciled by Avery before the handoff. No personnel warning or
 termination was issued by this reviewer; technical findings were handled through
 normal implementation/retest escalation.
+
+## Release packaging addendum — October 28, 2026
+
+Avery reported the lead's explicit authorization to run the existing pipeline,
+merge and publish 0.9.0. This addendum reviews packaging and release integration;
+it does not independently approve this agent's calibration slice or claim that a
+queued pipeline/deployment has succeeded.
+
+Avery's pre-release inspection found that the sandbox Dockerfile's explicit COPY
+list omitted the new `process_diagram.py`, which its copied `package_analysis.py`
+imports. This would prevent flat-container scanner startup despite source-tree
+unit tests passing. Avery added the missing COPY line. Independent checks:
+
+- Parsed the corrected COPY list and AST imports of all copied Python modules:
+  **24 copied Python modules, zero missing local-module dependencies**.
+- `python -m pytest tests/test_skill_sandbox_dockerfile.py tests/test_deployment_assets.py -q`:
+  **6 passed**. Asked Avery to extend the existing Dockerfile regression list with
+  `process_diagram.py` so the exact omission cannot recur unnoticed.
+- Created a preserved scratch tree containing only the Dockerfile's declared COPY
+  sources, changed the child process working directory to that tree, imported the
+  flat `app` module and ran an actual synthetic scan. **PASS:** scanner 0.9.0,
+  documented steps, process nodes and `runtime_verified=False`. This exercises the
+  container's flat fallback-import branch without accidentally importing the
+  source checkout. Scratch evidence is under `tmp/morgan-release-packaging/`.
+  It is **COPY-equivalent local import/scan evidence, not a container run**.
+- No Docker executable is available on this Windows host. Actual Linux image
+  builds and startup remain pipeline/target evidence to collect.
+- Existing pipeline source tests before all three image builds and restricts its
+  production stage to successful non-PR master builds. The protected deploy
+  wrapper validates repository/commit reachability, serializes deployment,
+  rebuilds the stack, waits for service health and attempts previous-commit
+  recovery on failure. These are source-inspected contracts; their current run
+  outcomes are not inferred from YAML or shell text.
+- No diff in workflows, pipeline YAML, compose, deployment wrapper, requirements,
+  auth, secrets, LICENSE or AGENTS.md was observed in this review. The sandbox
+  COPY correction is the only deployment artifact change inspected. New process
+  code uses Python's standard library; there is no new service or dependency.
+
+The staged file list was empty when first checked; Avery owns exact-file staging
+and exclusion of unrelated dirty research, scratch, validation and architecture
+material. Final pipeline/build results, merged commit identity, all-container
+health and a public actual upload returning scanner 0.9.0 plus a source-backed
+process diagram must be verified before reporting production completion. The
+existing sandbox TCP health check alone does not verify that the new diagram
+response is generated; the actual scan smoke check is required.
