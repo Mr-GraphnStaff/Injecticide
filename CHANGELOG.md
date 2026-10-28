@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.0 - 2026-10-28
+
+- Capture the complete nine-page Agent Skills documentation site, its direct
+  reference links and pinned validator/evaluation supplements. Expose captured
+  evidence through read-only research MCP search and paginated document tools.
+- Monitor every published Agent Skills documentation page as an explicit seed;
+  retain source URLs, retrieval timestamps, content hashes and unavailable links.
+- Enforce the linked reference validator's portable frontmatter field allowlist.
+  Reject top-level skill version declarations and non-string metadata.version in
+  every runtime profile, without inventing a required version or SemVer pattern.
+- Represent the full specification and authoring/client/script/evaluation guidance
+  in the assessment matrix. Preserve unimplemented and runtime-only assessments
+  explicitly; captured documents never automatically activate scanner rules.
+
 ## 0.11.0 - 2026-10-28
 
 - Trace credential origins through bounded package-local Python calls and

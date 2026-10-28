@@ -125,6 +125,9 @@ def portable_skill_checks(data, path):
     add("compatibility_value", isinstance(compatibility, str) and 1 <= len(compatibility) <= 500, "Optional compatibility must be a string containing 1–500 characters.", applicable="compatibility" in data)
     metadata = data.get("metadata")
     add("metadata_value", isinstance(metadata, dict) and all(isinstance(k, str) and isinstance(v, str) for k, v in metadata.items()), "Optional metadata maps string keys to string values.", applicable="metadata" in data)
+    # The specification's linked skills-ref validator explicitly checks this
+    # allowlist. Vendor extensions are evaluated separately from portability.
+    add("frontmatter_fields", not (set(data) - BASE_FIELDS), "Portable frontmatter permits only name, description, license, compatibility, metadata and allowed-tools; put additional properties such as version inside metadata.")
     add("allowed_tools_value", isinstance(data.get("allowed-tools"), str), "Experimental allowed-tools is a space-separated string; runtime support is separate.", applicable="allowed-tools" in data)
     return checks
 
@@ -251,7 +254,25 @@ def inspect_formats(records, texts, target_runtime="auto"):
                 skill["metadata"] = {str(k): str(v)[:300] for k, v in metadata.items()} if isinstance(metadata, dict) else {}
                 checks = portable_skill_checks(data, path)
                 skill["portable_checks"] = checks
-                problems = [check["message"] for check in checks if check["status"] == "fail"]
+                # Known Claude Code fields are extensions, not a selected
+                # Claude runtime format error. Their portable check still fails
+                # explicitly in the separate standards assessment.
+                known_code_extensions = target_runtime == "claude-code" and (set(data) - BASE_FIELDS) <= CODE_FIELDS
+                problems = [check["message"] for check in checks if check["status"] == "fail"
+                            and not (check["id"] == "frontmatter_fields" and known_code_extensions)]
+                # Injecticide's version declaration policy applies in every
+                # runtime profile. Markdown/version examples are not parsed as
+                # declarations. No semantic-version format is invented here.
+                invalid_version = "version" in data or (isinstance(metadata, dict)
+                    and "version" in metadata and not isinstance(metadata["version"], str))
+                if invalid_version:
+                    issues.append({"id": "skill_version_declaration", "path": path,
+                        "detail": "Declare the skill version only as a string at metadata.version in YAML frontmatter. Version is optional; no semantic-version pattern is required.",
+                        "severity": "error", "authority": {
+                            "kind": "injecticide_version_declaration_policy",
+                            "source_url": "https://agentskills.io/specification#metadata-field",
+                            "enforcement": "selected_local_format_contract",
+                            "vendor_compatibility_verified": False}})
                 if set(data) - BASE_FIELDS and target_runtime in {"generic", "claude-upload"}:
                     issues.append({"id": "skill_frontmatter" if target_runtime == "claude-upload" else "frontmatter_extension",
                                    "path": path, "detail": "Additional frontmatter fields are assessed separately from portable base constraints; selected vendor acceptance is unverified.",
@@ -261,7 +282,7 @@ def inspect_formats(records, texts, target_runtime="auto"):
                 for problem in problems:
                     issues.append({"id": "skill_frontmatter", "path": path, "detail": problem,
                                    "severity": "error" if portable_selected else "warning", "authority": authority})
-                if problems and portable_selected:
+                if invalid_version or (problems and portable_selected):
                     skill["validation"] = "invalid"
             except ParserLimitError as exc:
                 skill["validation"] = "not_assessed"

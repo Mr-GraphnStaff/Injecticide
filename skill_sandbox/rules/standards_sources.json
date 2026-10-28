@@ -187,6 +187,70 @@
       "verification": "retrieved_official_source_snapshot",
       "content_type": "text/html",
       "bytes": 171073
+    },
+    {
+      "id": "home",
+      "url": "https://agentskills.io/home.md",
+      "source_sha256": "d17b5e7010bf5da5475cad48be33693e1943799aaa3fdb827a521002e2e77140",
+      "revision": "sha256:d17b5e7010bf5da5475cad48be33693e1943799aaa3fdb827a521002e2e77140",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot"
+    },
+    {
+      "id": "clients",
+      "url": "https://agentskills.io/clients.md",
+      "source_sha256": "6dabf4e3f4b39b29c6df9dcc6cff893a59a5cce3740a3a905df2a8b19e183e32",
+      "revision": "sha256:6dabf4e3f4b39b29c6df9dcc6cff893a59a5cce3740a3a905df2a8b19e183e32",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot"
+    },
+    {
+      "id": "quickstart",
+      "url": "https://agentskills.io/skill-creation/quickstart.md",
+      "source_sha256": "7c480b447edac58fd8ff8f250c471dfc7d4621155b91fabed46379075c32bffb",
+      "revision": "sha256:7c480b447edac58fd8ff8f250c471dfc7d4621155b91fabed46379075c32bffb",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot"
+    },
+    {
+      "id": "optimizing-descriptions",
+      "url": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+      "source_sha256": "7cc54fbb6abbcf08c33e7b320fd01a1fb9696426270da3b588a398d243bfd837",
+      "revision": "sha256:7cc54fbb6abbcf08c33e7b320fd01a1fb9696426270da3b588a398d243bfd837",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot"
+    },
+    {
+      "id": "evaluating-skills",
+      "url": "https://agentskills.io/skill-creation/evaluating-skills.md",
+      "source_sha256": "a799805f3a285390c1b6e906b691f56684fa1031b499d177f664f464d99fb684",
+      "revision": "sha256:a799805f3a285390c1b6e906b691f56684fa1031b499d177f664f464d99fb684",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot"
+    },
+    {
+      "id": "using-scripts",
+      "url": "https://agentskills.io/skill-creation/using-scripts.md",
+      "source_sha256": "2cd7727106b423a758b4b6b1ab3545da74845a98e68e6718279846f89d62ad1f",
+      "revision": "sha256:2cd7727106b423a758b4b6b1ab3545da74845a98e68e6718279846f89d62ad1f",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_official_source_snapshot"
+    },
+    {
+      "id": "reference-validator",
+      "url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref/src/skills_ref/validator.py",
+      "revision": "69ef37e9424c0a7ea9dd2293b559e43ec8176379",
+      "source_sha256": "b5ee3d8537c83c959c31c2cb080a5227646ede5aea545f1ac835ed3c4645f6c5",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_primary_source_snapshot"
+    },
+    {
+      "id": "reference-readme",
+      "url": "https://raw.githubusercontent.com/agentskills/agentskills/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref/README.md",
+      "revision": "69ef37e9424c0a7ea9dd2293b559e43ec8176379",
+      "source_sha256": "23945a45bd15d18d7da3652cd4ea6ea66950db464613c4810d7026bd0921eb9f",
+      "reviewed_on": "2026-10-28",
+      "verification": "retrieved_primary_source_snapshot"
     }
   ],
   "security_guidance": {

@@ -15,9 +15,10 @@ import requests
 
 CATALOG = Path(__file__).resolve().parents[1] / "skill_sandbox/rules/standards_sources.json"
 MAX_SOURCE_BYTES = 2 * 1024 * 1024
+MAX_SOURCES = 40
 HOSTS = {"agentskills.io", "learn.chatgpt.com", "code.claude.com", "peps.python.org",
          "docs.astral.sh", "owasp.org", "owasp.github.io", "pipx.pypa.io",
-         "docs.npmjs.com", "docs.deno.com", "bun.sh", "docs.python.org"}
+         "docs.npmjs.com", "docs.deno.com", "bun.sh", "docs.python.org", "raw.githubusercontent.com"}
 
 
 def check_sources(catalog=None, session=None):
@@ -27,7 +28,7 @@ def check_sources(catalog=None, session=None):
             client.trust_env = False
             return check_sources(catalog, client)
     results = []
-    for source in catalog.get("sources", [])[:20]:
+    for source in catalog.get("sources", [])[:MAX_SOURCES]:
         item = {"id": source["id"], "source_url": source["url"],
                 "reviewed_sha256": source["source_sha256"], "status": "unknown_unverified"}
         try:
@@ -50,7 +51,7 @@ def check_sources(catalog=None, session=None):
         except (requests.RequestException, ValueError, TypeError):
             item["reason"] = "Source could not be compared within the reviewed retrieval profile. No cached pass substituted."
         results.append(item)
-    omitted = max(0, len(catalog.get("sources", [])) - 20)
+    omitted = max(0, len(catalog.get("sources", [])) - MAX_SOURCES)
     return {"scope": "Source-byte comparison only; change does not establish semantic incompatibility.",
             "automatic_rule_activation": False, "results": results, "omitted_sources": omitted,
             "review_required": not results or any(r["status"] != "unchanged_reviewed_snapshot" for r in results) or bool(omitted)}

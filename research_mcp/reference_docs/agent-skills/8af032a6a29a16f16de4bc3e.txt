@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+    
+  <url>
+    <loc>https://agentskills.io/client-implementation/adding-skills-support</loc>
+    <lastmod>2026-03-10T13:40:59.504Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://agentskills.io/clients</loc>
+    <lastmod>2026-08-09T20:36:26.133Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://agentskills.io/home</loc>
+    <lastmod>2026-08-09T20:36:26.136Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://agentskills.io/skill-creation/best-practices</loc>
+    <lastmod>2026-04-22T15:20:01.732Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://agentskills.io/skill-creation/evaluating-skills</loc>
+    <lastmod>2026-03-16T14:47:57.395Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://agentskills.io/skill-creation/optimizing-descriptions</loc>
+    <lastmod>2026-04-22T15:20:01.730Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://agentskills.io/skill-creation/quickstart</loc>
+    <lastmod>2026-04-22T15:20:01.734Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://agentskills.io/skill-creation/using-scripts</loc>
+    <lastmod>2026-02-27T21:52:53.772Z</lastmod>
+  </url>
+
+  <url>
+    <loc>https://agentskills.io/specification</loc>
+    <lastmod>2026-08-04T22:53:14.470Z</lastmod>
+  </url>
+</urlset>
