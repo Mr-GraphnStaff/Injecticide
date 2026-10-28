@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.8.0 - Unreleased
+## 0.8.0 - 2026-10-27
 
 - Inspect PNG chunk structure, CRCs and bounded text metadata, plus standalone
   TrueType/OpenType table bounds, overlaps, checksums and name metadata. Scan

@@ -1,10 +1,11 @@
-# Injecticide skill inspection milestone — 0.8.0 candidate
+# Injecticide skill inspection milestone — 0.8.0 release
 
 - Lead: David Farris. October 27, 2026: authorized implementation of the skill
   scanning vision and subsequent "whatever it takes" local work; any cost needs
-  his prior approval. No paid calls, accounts, installations or service activation
-  are authorized by existing credentials. A separate $5 synthetic provider
-  benchmark budget/account question is pending; silence is not approval.
+  his prior approval. He declined paid comparisons: keep all work free and leave
+  those comparisons pending. No paid calls or service activation are authorized.
+  He subsequently explicitly instructed publication of the upgrade; this is the
+  human acceptance/merge and deployment authorization for PR #54.
 - Current outcome: provider-independent skill/package inspection that improves
   actual detection and content understanding. Skills first; plugins and projects
   remain the future direction, not accepted as implemented by this milestone.
@@ -23,11 +24,11 @@
   paired benign controls, unsafe inputs retain bounded resource use and no
   uploaded code executes in static scans. MCP must actually invoke the scanner,
   not merely supply research documents. Existing regressions must pass.
-- Release: candidate only, prepared for a draft PR. Major release requires human
-  PR acceptance under AGENTS.md. No workflows/auth/secrets changed. Container
-  COPY changes package the new engine modules; production is not deployed by
-  this implementation assignment. Final revision/verification is in the release
-  handoff and validation record.
+- Release: PR #54 accepted for publication by the lead; execute the existing
+  protected pipeline and verify the actual target before reporting publication.
+  No workflows/auth/secrets changes. The local stdio scanner MCP is separate from
+  the deployed research MCP; web deployment does not add scanner tools to that
+  research service. Final revision/verification is in the release record.
 - Evidence/limits: `skill-milestone-evaluation.md` preserves the initial misses
   and threshold definition. Synthetic regression accuracy is not representative
   market accuracy. Original customer ZIP bytes were not supplied to this chat;
