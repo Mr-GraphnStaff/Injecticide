@@ -112,20 +112,24 @@ report.inventory = report.files.map(({path, size, assessment_state, archive_cont
         assert.equal(await file.evaluate(el=>el.files.length),1,'active upload keeps selection for recovery');
         assert.equal(await page.getByRole('button',{name:'Scanning…',exact:true}).isDisabled(),true);
         await reply(report,200,{'X-Scan-Request-ID':'header-request-123'});
+        await page.getByRole('tab',{name:'Evidence & coverage',exact:true}).click();
         await page.getByRole('region',{name:'Independent scan evidence'}).waitFor();
         assert.equal(await file.evaluate(el=>el.files.length),0,'success releases local file');
         const overview=page.getByRole('region',{name:'Independent scan evidence'});
         const overviewText=await overview.innerText();
         for(const label of ['Analysis coverage','Static observations','Vendor applicability','Creator mitigation','Policy and runtime evaluation']) assert.ok(overviewText.includes(label));
         assert.match(overviewText,/partial/i);assert.match(overviewText,/1 verified/);assert.match(overviewText,/header-request-123/);
+        await page.getByRole('tab',{name:'Standards',exact:true}).click();
         const validators=page.getByRole('region',{name:'Official format validator results'});
         assert.match(await validators.innerText(),/claude-code.*fail/);
         assert.match(await validators.innerText(),/not a universal security verdict/);
         assert.equal(await validators.getByRole('link').getAttribute('href'),'https://example.org/official-validator');
+        await page.getByRole('tab',{name:'Security',exact:true}).click();
         const detail=page.getByText('Detector coverage for example/SKILL.md',{exact:true});
         await detail.focus(); await page.keyboard.press('Enter');
         await page.getByText('Synthetic detector budget exceeded.',{exact:true}).waitFor();
         assert.match(await page.locator('[data-skill-file]').first().innerText(),/Creator mitigation: verified.*EOF marker verified/);
+        await page.getByRole('tab',{name:'Structure & process',exact:true}).click();
         const packageOverview=page.locator('[data-package-overview]');
         assert.match(await packageOverview.locator('[data-inspection-summary]').innerText(),/1 text\/structured files; 1 assets structurally inspected; 0 files without supported inspection/);
         const relationships=packageOverview.locator('[data-package-relationships]');
@@ -199,7 +203,9 @@ report.inventory = report.files.map(({path, size, assessment_state, archive_cont
         delete legacy.coverage.inspection_summary; delete legacy.package_analysis.relationship_graph;
         legacy.files=legacy.files.map(({analysis_coverage,creator_mitigation,asset_inspection,archive_inspection,archive_container,archive_depth,...entry})=>entry);
         await reply(legacy);await page.getByText('legacy-report.skill',{exact:true}).waitFor();
+        await page.getByRole('tab',{name:'Evidence & coverage',exact:true}).click();
         assert.match(await overview.innerText(),/Tag recognition not reported/);
+        await page.getByRole('tab',{name:'Structure & process',exact:true}).click();
         assert.equal(await packageOverview.locator('[data-inspection-summary], [data-package-relationships]').count(),0,'legacy reports omit unavailable new evidence');
         // A static format mismatch must not masquerade as incomplete coverage.
         await choose('format.skill'); await scan.click();

@@ -1,0 +1,3630 @@
+{
+  "scope": "External authored synthetic native Markdown diagnostic and publisher-assumption package burden; not representative accuracy, runtime exploitability or superiority.",
+  "protocol_amendment": "Post-exposure scoring adapter correction only; v1 receipts retained.",
+  "freeze_id": "0.11.0-f72688e5b2825c8a-eval-7615d8d22f97",
+  "baseline_revision": "58c1c4bb5dbd683de2aed494ca2785305c1d0788",
+  "acquisition": {
+    "files": 199,
+    "bytes": 258317,
+    "source_hashes_verified": true,
+    "samples_executed": false
+  },
+  "runs": {
+    "candidate-fortify": {
+      "receipt_sha256": "42571a4b80c699007c05454f0da2b841b0cabfca8aafecb8d0a06e70a9d3c016",
+      "status": "diagnostic_complete",
+      "runner_sha256": "14e8663721480ffb71a79b7e8d6d950b4aaa13be17654a277b0eba20d81855df",
+      "manifest_sha256": "99bfff12b20843ecddb1f9f02a336af088c4cc947cc98e49ebdf5cf23ef447ff",
+      "scanner_contexts": [
+        {
+          "scanner_version": "0.11.0",
+          "adapter_version": "2026-10-28",
+          "engine_source_sha256": "f72688e5b2825c8ac41db01302b46fbcd9496cce035603cb29137f1d9c8f2991"
+        }
+      ],
+      "coverage_policy": "v1 incorrectly recognized only fixture enum complete",
+      "coverage_counts": {
+        "complete_supported_content": 105,
+        "partial": 75
+      },
+      "metrics": {
+        "security_block": {
+          "profile": "security_block",
+          "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+          "total_cases": 180,
+          "upstream_positive_cases": 90,
+          "upstream_negative_cases": 90,
+          "unlabeled_cases": 0,
+          "counts": {
+            "malicious_abstain": 87,
+            "malicious_positive": 3,
+            "benign_abstain": 90
+          },
+          "positive_signal_recall_lower_bound": 0.03333333333333333,
+          "positive_signal_recall_upper_bound": 1.0,
+          "negative_signal_rate_lower_bound": 0.0,
+          "negative_signal_rate_upper_bound": 1.0,
+          "positive_label_fraction_among_signaled_cases": 1.0,
+          "unresolved_positive_cases": 87,
+          "unresolved_negative_cases": 90,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        },
+        "security_review": {
+          "profile": "security_review",
+          "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+          "total_cases": 180,
+          "upstream_positive_cases": 90,
+          "upstream_negative_cases": 90,
+          "unlabeled_cases": 0,
+          "counts": {
+            "malicious_abstain": 82,
+            "malicious_positive": 8,
+            "benign_abstain": 90
+          },
+          "positive_signal_recall_lower_bound": 0.08888888888888889,
+          "positive_signal_recall_upper_bound": 1.0,
+          "negative_signal_rate_lower_bound": 0.0,
+          "negative_signal_rate_upper_bound": 1.0,
+          "positive_label_fraction_among_signaled_cases": 1.0,
+          "unresolved_positive_cases": 82,
+          "unresolved_negative_cases": 90,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        }
+      },
+      "by_category": {
+        "A1": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 10,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 9,
+              "malicious_positive": 1
+            },
+            "positive_signal_recall_lower_bound": 0.1,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 9,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A10": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 4,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 4,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A11": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 4,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 4,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A12": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 2,
+            "upstream_positive_cases": 2,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 2
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 2,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 2,
+            "upstream_positive_cases": 2,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 2
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 2,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A13": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_positive": 3,
+              "malicious_abstain": 5
+            },
+            "positive_signal_recall_lower_bound": 0.375,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 5,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A2": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A3": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 10,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 10,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A4": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 7,
+              "malicious_positive": 3
+            },
+            "positive_signal_recall_lower_bound": 0.3,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 7,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 7,
+              "malicious_positive": 3
+            },
+            "positive_signal_recall_lower_bound": 0.3,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 7,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A5": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A6": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A7": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 7,
+              "malicious_positive": 1
+            },
+            "positive_signal_recall_lower_bound": 0.125,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 7,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A8": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A9": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "api_integration": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "data_transformation": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "development_tooling": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "file_management": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "system_information": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        }
+      }
+    },
+    "candidate-fortify-v2": {
+      "receipt_sha256": "8ea45aa0e3b5ba48d810bd1c7b0cff82bcc0fa43cfd81eefba4d191571bf52d1",
+      "status": "diagnostic_complete",
+      "runner_sha256": "7615d8d22f973570302de05ba5f8ef859bb8875461b150d57fb3b0b9bef1d822",
+      "manifest_sha256": "99bfff12b20843ecddb1f9f02a336af088c4cc947cc98e49ebdf5cf23ef447ff",
+      "scanner_contexts": [
+        {
+          "scanner_version": "0.11.0",
+          "adapter_version": "2026-10-28",
+          "engine_source_sha256": "f72688e5b2825c8ac41db01302b46fbcd9496cce035603cb29137f1d9c8f2991"
+        }
+      ],
+      "coverage_policy": {
+        "version": "2",
+        "complete_top_level_statuses": [
+          "complete_supported_content"
+        ],
+        "source": "skill_sandbox.package_evidence.coverage_report",
+        "scope": "Supported static content only; not exhaustive security or runtime coverage."
+      },
+      "coverage_counts": {
+        "complete_supported_content": 105,
+        "partial": 75
+      },
+      "metrics": {
+        "security_block": {
+          "profile": "security_block",
+          "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+          "total_cases": 180,
+          "upstream_positive_cases": 90,
+          "upstream_negative_cases": 90,
+          "unlabeled_cases": 0,
+          "counts": {
+            "malicious_negative": 84,
+            "malicious_positive": 3,
+            "malicious_abstain": 3,
+            "benign_abstain": 72,
+            "benign_negative": 18
+          },
+          "positive_signal_recall_lower_bound": 0.03333333333333333,
+          "positive_signal_recall_upper_bound": 0.06666666666666667,
+          "negative_signal_rate_lower_bound": 0.0,
+          "negative_signal_rate_upper_bound": 0.8,
+          "positive_label_fraction_among_signaled_cases": 1.0,
+          "unresolved_positive_cases": 3,
+          "unresolved_negative_cases": 72,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        },
+        "security_review": {
+          "profile": "security_review",
+          "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+          "total_cases": 180,
+          "upstream_positive_cases": 90,
+          "upstream_negative_cases": 90,
+          "unlabeled_cases": 0,
+          "counts": {
+            "malicious_negative": 79,
+            "malicious_positive": 8,
+            "malicious_abstain": 3,
+            "benign_abstain": 72,
+            "benign_negative": 18
+          },
+          "positive_signal_recall_lower_bound": 0.08888888888888889,
+          "positive_signal_recall_upper_bound": 0.12222222222222222,
+          "negative_signal_rate_lower_bound": 0.0,
+          "negative_signal_rate_upper_bound": 0.8,
+          "positive_label_fraction_among_signaled_cases": 1.0,
+          "unresolved_positive_cases": 3,
+          "unresolved_negative_cases": 72,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        }
+      },
+      "by_category": {
+        "A1": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 9,
+              "malicious_positive": 1
+            },
+            "positive_signal_recall_lower_bound": 0.1,
+            "positive_signal_recall_upper_bound": 0.1,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A10": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A11": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A12": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 2,
+            "upstream_positive_cases": 2,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 2
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 2,
+            "upstream_positive_cases": 2,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 2
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A13": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_positive": 3,
+              "malicious_negative": 5
+            },
+            "positive_signal_recall_lower_bound": 0.375,
+            "positive_signal_recall_upper_bound": 0.375,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A2": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A3": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A4": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4,
+              "malicious_positive": 3,
+              "malicious_abstain": 3
+            },
+            "positive_signal_recall_lower_bound": 0.3,
+            "positive_signal_recall_upper_bound": 0.6,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 3,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4,
+              "malicious_positive": 3,
+              "malicious_abstain": 3
+            },
+            "positive_signal_recall_lower_bound": 0.3,
+            "positive_signal_recall_upper_bound": 0.6,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 3,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A5": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A6": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A7": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 7,
+              "malicious_positive": 1
+            },
+            "positive_signal_recall_lower_bound": 0.125,
+            "positive_signal_recall_upper_bound": 0.125,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A8": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A9": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "api_integration": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "data_transformation": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "development_tooling": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_negative": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 0.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_negative": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 0.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "file_management": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "system_information": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        }
+      }
+    },
+    "baseline-fortify": {
+      "receipt_sha256": "665dc97632f995a159e6373ea870c541e90db73ff1c8907b15dafe6af7cfbf48",
+      "status": "diagnostic_complete",
+      "runner_sha256": "14e8663721480ffb71a79b7e8d6d950b4aaa13be17654a277b0eba20d81855df",
+      "manifest_sha256": "99bfff12b20843ecddb1f9f02a336af088c4cc947cc98e49ebdf5cf23ef447ff",
+      "scanner_contexts": [
+        {
+          "scanner_version": "0.10.0",
+          "adapter_version": "2026-10-28",
+          "engine_source_sha256": "2bfac7aaa1e2ec75b0c9508b87c7d8c2ed3e61babe1660cfa5355589b4f5a932"
+        }
+      ],
+      "coverage_policy": "v1 incorrectly recognized only fixture enum complete",
+      "coverage_counts": {
+        "complete_supported_content": 105,
+        "partial": 75
+      },
+      "metrics": {
+        "security_block": {
+          "profile": "security_block",
+          "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+          "total_cases": 180,
+          "upstream_positive_cases": 90,
+          "upstream_negative_cases": 90,
+          "unlabeled_cases": 0,
+          "counts": {
+            "malicious_abstain": 87,
+            "malicious_positive": 3,
+            "benign_abstain": 90
+          },
+          "positive_signal_recall_lower_bound": 0.03333333333333333,
+          "positive_signal_recall_upper_bound": 1.0,
+          "negative_signal_rate_lower_bound": 0.0,
+          "negative_signal_rate_upper_bound": 1.0,
+          "positive_label_fraction_among_signaled_cases": 1.0,
+          "unresolved_positive_cases": 87,
+          "unresolved_negative_cases": 90,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        },
+        "security_review": {
+          "profile": "security_review",
+          "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+          "total_cases": 180,
+          "upstream_positive_cases": 90,
+          "upstream_negative_cases": 90,
+          "unlabeled_cases": 0,
+          "counts": {
+            "malicious_abstain": 82,
+            "malicious_positive": 8,
+            "benign_abstain": 90
+          },
+          "positive_signal_recall_lower_bound": 0.08888888888888889,
+          "positive_signal_recall_upper_bound": 1.0,
+          "negative_signal_rate_lower_bound": 0.0,
+          "negative_signal_rate_upper_bound": 1.0,
+          "positive_label_fraction_among_signaled_cases": 1.0,
+          "unresolved_positive_cases": 82,
+          "unresolved_negative_cases": 90,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        }
+      },
+      "by_category": {
+        "A1": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 10,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 9,
+              "malicious_positive": 1
+            },
+            "positive_signal_recall_lower_bound": 0.1,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 9,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A10": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 4,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 4,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A11": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 4,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 4,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A12": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 2,
+            "upstream_positive_cases": 2,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 2
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 2,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 2,
+            "upstream_positive_cases": 2,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 2
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 2,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A13": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_positive": 3,
+              "malicious_abstain": 5
+            },
+            "positive_signal_recall_lower_bound": 0.375,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 5,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A2": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A3": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 10,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 10,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A4": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 7,
+              "malicious_positive": 3
+            },
+            "positive_signal_recall_lower_bound": 0.3,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 7,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 7,
+              "malicious_positive": 3
+            },
+            "positive_signal_recall_lower_bound": 0.3,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 7,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A5": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A6": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 6,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A7": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 7,
+              "malicious_positive": 1
+            },
+            "positive_signal_recall_lower_bound": 0.125,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 7,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A8": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A9": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_abstain": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 1.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 8,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "api_integration": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "data_transformation": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "development_tooling": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "file_management": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "system_information": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        }
+      }
+    },
+    "baseline-fortify-v2": {
+      "receipt_sha256": "cbfb1de4417942e61f97c9d7be69418482bc775f649b82b3aacd8e823ec42fd8",
+      "status": "diagnostic_complete",
+      "runner_sha256": "7615d8d22f973570302de05ba5f8ef859bb8875461b150d57fb3b0b9bef1d822",
+      "manifest_sha256": "99bfff12b20843ecddb1f9f02a336af088c4cc947cc98e49ebdf5cf23ef447ff",
+      "scanner_contexts": [
+        {
+          "scanner_version": "0.10.0",
+          "adapter_version": "2026-10-28",
+          "engine_source_sha256": "2bfac7aaa1e2ec75b0c9508b87c7d8c2ed3e61babe1660cfa5355589b4f5a932"
+        }
+      ],
+      "coverage_policy": {
+        "version": "2",
+        "complete_top_level_statuses": [
+          "complete_supported_content"
+        ],
+        "source": "skill_sandbox.package_evidence.coverage_report",
+        "scope": "Supported static content only; not exhaustive security or runtime coverage."
+      },
+      "coverage_counts": {
+        "complete_supported_content": 105,
+        "partial": 75
+      },
+      "metrics": {
+        "security_block": {
+          "profile": "security_block",
+          "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+          "total_cases": 180,
+          "upstream_positive_cases": 90,
+          "upstream_negative_cases": 90,
+          "unlabeled_cases": 0,
+          "counts": {
+            "malicious_negative": 84,
+            "malicious_positive": 3,
+            "malicious_abstain": 3,
+            "benign_abstain": 72,
+            "benign_negative": 18
+          },
+          "positive_signal_recall_lower_bound": 0.03333333333333333,
+          "positive_signal_recall_upper_bound": 0.06666666666666667,
+          "negative_signal_rate_lower_bound": 0.0,
+          "negative_signal_rate_upper_bound": 0.8,
+          "positive_label_fraction_among_signaled_cases": 1.0,
+          "unresolved_positive_cases": 3,
+          "unresolved_negative_cases": 72,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        },
+        "security_review": {
+          "profile": "security_review",
+          "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+          "total_cases": 180,
+          "upstream_positive_cases": 90,
+          "upstream_negative_cases": 90,
+          "unlabeled_cases": 0,
+          "counts": {
+            "malicious_negative": 79,
+            "malicious_positive": 8,
+            "malicious_abstain": 3,
+            "benign_abstain": 72,
+            "benign_negative": 18
+          },
+          "positive_signal_recall_lower_bound": 0.08888888888888889,
+          "positive_signal_recall_upper_bound": 0.12222222222222222,
+          "negative_signal_rate_lower_bound": 0.0,
+          "negative_signal_rate_upper_bound": 0.8,
+          "positive_label_fraction_among_signaled_cases": 1.0,
+          "unresolved_positive_cases": 3,
+          "unresolved_negative_cases": 72,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        }
+      },
+      "by_category": {
+        "A1": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 9,
+              "malicious_positive": 1
+            },
+            "positive_signal_recall_lower_bound": 0.1,
+            "positive_signal_recall_upper_bound": 0.1,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A10": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A11": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 4,
+            "upstream_positive_cases": 4,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A12": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 2,
+            "upstream_positive_cases": 2,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 2
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 2,
+            "upstream_positive_cases": 2,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 2
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A13": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_positive": 3,
+              "malicious_negative": 5
+            },
+            "positive_signal_recall_lower_bound": 0.375,
+            "positive_signal_recall_upper_bound": 0.375,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A2": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A3": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 10
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A4": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4,
+              "malicious_positive": 3,
+              "malicious_abstain": 3
+            },
+            "positive_signal_recall_lower_bound": 0.3,
+            "positive_signal_recall_upper_bound": 0.6,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 3,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 10,
+            "upstream_positive_cases": 10,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 4,
+              "malicious_positive": 3,
+              "malicious_abstain": 3
+            },
+            "positive_signal_recall_lower_bound": 0.3,
+            "positive_signal_recall_upper_bound": 0.6,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 3,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A5": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A6": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 6,
+            "upstream_positive_cases": 6,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 6
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A7": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 7,
+              "malicious_positive": 1
+            },
+            "positive_signal_recall_lower_bound": 0.125,
+            "positive_signal_recall_upper_bound": 0.125,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": 1.0,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A8": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "A9": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 8,
+            "upstream_positive_cases": 8,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 0,
+            "counts": {
+              "malicious_negative": 8
+            },
+            "positive_signal_recall_lower_bound": 0.0,
+            "positive_signal_recall_upper_bound": 0.0,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "api_integration": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "data_transformation": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "development_tooling": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_negative": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 0.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_negative": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 0.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "file_management": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        },
+        "system_information": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 18,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 18,
+            "unlabeled_cases": 0,
+            "counts": {
+              "benign_abstain": 18
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": 0.0,
+            "negative_signal_rate_upper_bound": 1.0,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 18,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        }
+      }
+    },
+    "candidate-publisher": {
+      "receipt_sha256": "0a60f88f40612effc426c7f6c090c8425a7d17abbf87b1640077f6ca9d8f609c",
+      "status": "diagnostic_complete",
+      "runner_sha256": "14e8663721480ffb71a79b7e8d6d950b4aaa13be17654a277b0eba20d81855df",
+      "manifest_sha256": "c350c207d95cd3ad9555de2c187b44aaba8a1c8d867e62ade45000c8e4af0fac",
+      "scanner_contexts": [
+        {
+          "scanner_version": "0.11.0",
+          "adapter_version": "2026-10-28",
+          "engine_source_sha256": "f72688e5b2825c8ac41db01302b46fbcd9496cce035603cb29137f1d9c8f2991"
+        }
+      ],
+      "coverage_policy": "v1 incorrectly recognized only fixture enum complete",
+      "coverage_counts": {
+        "complete_supported_content": 1,
+        "partial": 2
+      },
+      "metrics": {
+        "security_block": {
+          "profile": "security_block",
+          "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+          "total_cases": 3,
+          "upstream_positive_cases": 0,
+          "upstream_negative_cases": 0,
+          "unlabeled_cases": 3,
+          "counts": {
+            "unknown_abstain": 3
+          },
+          "positive_signal_recall_lower_bound": null,
+          "positive_signal_recall_upper_bound": null,
+          "negative_signal_rate_lower_bound": null,
+          "negative_signal_rate_upper_bound": null,
+          "positive_label_fraction_among_signaled_cases": null,
+          "unresolved_positive_cases": 0,
+          "unresolved_negative_cases": 0,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        },
+        "security_review": {
+          "profile": "security_review",
+          "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+          "total_cases": 3,
+          "upstream_positive_cases": 0,
+          "upstream_negative_cases": 0,
+          "unlabeled_cases": 3,
+          "counts": {
+            "unknown_abstain": 3
+          },
+          "positive_signal_recall_lower_bound": null,
+          "positive_signal_recall_upper_bound": null,
+          "negative_signal_rate_lower_bound": null,
+          "negative_signal_rate_upper_bound": null,
+          "positive_label_fraction_among_signaled_cases": null,
+          "unresolved_positive_cases": 0,
+          "unresolved_negative_cases": 0,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        }
+      },
+      "by_category": {
+        "publisher_example_review_burden": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 3,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 3,
+            "counts": {
+              "unknown_abstain": 3
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 3,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 3,
+            "counts": {
+              "unknown_abstain": 3
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        }
+      }
+    },
+    "candidate-publisher-v2": {
+      "receipt_sha256": "d8baa557a80b3524f8366e8802511c76e3f88e9602c3ac4f8efe82eadc11ea0c",
+      "status": "diagnostic_complete",
+      "runner_sha256": "7615d8d22f973570302de05ba5f8ef859bb8875461b150d57fb3b0b9bef1d822",
+      "manifest_sha256": "c350c207d95cd3ad9555de2c187b44aaba8a1c8d867e62ade45000c8e4af0fac",
+      "scanner_contexts": [
+        {
+          "scanner_version": "0.11.0",
+          "adapter_version": "2026-10-28",
+          "engine_source_sha256": "f72688e5b2825c8ac41db01302b46fbcd9496cce035603cb29137f1d9c8f2991"
+        }
+      ],
+      "coverage_policy": {
+        "version": "2",
+        "complete_top_level_statuses": [
+          "complete_supported_content"
+        ],
+        "source": "skill_sandbox.package_evidence.coverage_report",
+        "scope": "Supported static content only; not exhaustive security or runtime coverage."
+      },
+      "coverage_counts": {
+        "complete_supported_content": 1,
+        "partial": 2
+      },
+      "metrics": {
+        "security_block": {
+          "profile": "security_block",
+          "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+          "total_cases": 3,
+          "upstream_positive_cases": 0,
+          "upstream_negative_cases": 0,
+          "unlabeled_cases": 3,
+          "counts": {
+            "unknown_negative": 1,
+            "unknown_abstain": 2
+          },
+          "positive_signal_recall_lower_bound": null,
+          "positive_signal_recall_upper_bound": null,
+          "negative_signal_rate_lower_bound": null,
+          "negative_signal_rate_upper_bound": null,
+          "positive_label_fraction_among_signaled_cases": null,
+          "unresolved_positive_cases": 0,
+          "unresolved_negative_cases": 0,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        },
+        "security_review": {
+          "profile": "security_review",
+          "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+          "total_cases": 3,
+          "upstream_positive_cases": 0,
+          "upstream_negative_cases": 0,
+          "unlabeled_cases": 3,
+          "counts": {
+            "unknown_negative": 1,
+            "unknown_abstain": 2
+          },
+          "positive_signal_recall_lower_bound": null,
+          "positive_signal_recall_upper_bound": null,
+          "negative_signal_rate_lower_bound": null,
+          "negative_signal_rate_upper_bound": null,
+          "positive_label_fraction_among_signaled_cases": null,
+          "unresolved_positive_cases": 0,
+          "unresolved_negative_cases": 0,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        }
+      },
+      "by_category": {
+        "publisher_example_review_burden": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 3,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 3,
+            "counts": {
+              "unknown_negative": 1,
+              "unknown_abstain": 2
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 3,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 3,
+            "counts": {
+              "unknown_negative": 1,
+              "unknown_abstain": 2
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        }
+      }
+    },
+    "baseline-publisher": {
+      "receipt_sha256": "e1fc4f32a034483f9f3d40603b2515a8584302c1d3c3848d590dd1bf3e40d2be",
+      "status": "diagnostic_complete",
+      "runner_sha256": "14e8663721480ffb71a79b7e8d6d950b4aaa13be17654a277b0eba20d81855df",
+      "manifest_sha256": "c350c207d95cd3ad9555de2c187b44aaba8a1c8d867e62ade45000c8e4af0fac",
+      "scanner_contexts": [
+        {
+          "scanner_version": "0.10.0",
+          "adapter_version": "2026-10-28",
+          "engine_source_sha256": "2bfac7aaa1e2ec75b0c9508b87c7d8c2ed3e61babe1660cfa5355589b4f5a932"
+        }
+      ],
+      "coverage_policy": "v1 incorrectly recognized only fixture enum complete",
+      "coverage_counts": {
+        "complete_supported_content": 1,
+        "partial": 2
+      },
+      "metrics": {
+        "security_block": {
+          "profile": "security_block",
+          "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+          "total_cases": 3,
+          "upstream_positive_cases": 0,
+          "upstream_negative_cases": 0,
+          "unlabeled_cases": 3,
+          "counts": {
+            "unknown_abstain": 3
+          },
+          "positive_signal_recall_lower_bound": null,
+          "positive_signal_recall_upper_bound": null,
+          "negative_signal_rate_lower_bound": null,
+          "negative_signal_rate_upper_bound": null,
+          "positive_label_fraction_among_signaled_cases": null,
+          "unresolved_positive_cases": 0,
+          "unresolved_negative_cases": 0,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        },
+        "security_review": {
+          "profile": "security_review",
+          "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+          "total_cases": 3,
+          "upstream_positive_cases": 0,
+          "upstream_negative_cases": 0,
+          "unlabeled_cases": 3,
+          "counts": {
+            "unknown_abstain": 3
+          },
+          "positive_signal_recall_lower_bound": null,
+          "positive_signal_recall_upper_bound": null,
+          "negative_signal_rate_lower_bound": null,
+          "negative_signal_rate_upper_bound": null,
+          "positive_label_fraction_among_signaled_cases": null,
+          "unresolved_positive_cases": 0,
+          "unresolved_negative_cases": 0,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        }
+      },
+      "by_category": {
+        "publisher_example_review_burden": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 3,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 3,
+            "counts": {
+              "unknown_abstain": 3
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 3,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 3,
+            "counts": {
+              "unknown_abstain": 3
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        }
+      }
+    },
+    "baseline-publisher-v2": {
+      "receipt_sha256": "413da386eaec85331425dfba3f259f9f49cc801c98e001e59c750f2506eae368",
+      "status": "diagnostic_complete",
+      "runner_sha256": "7615d8d22f973570302de05ba5f8ef859bb8875461b150d57fb3b0b9bef1d822",
+      "manifest_sha256": "c350c207d95cd3ad9555de2c187b44aaba8a1c8d867e62ade45000c8e4af0fac",
+      "scanner_contexts": [
+        {
+          "scanner_version": "0.10.0",
+          "adapter_version": "2026-10-28",
+          "engine_source_sha256": "2bfac7aaa1e2ec75b0c9508b87c7d8c2ed3e61babe1660cfa5355589b4f5a932"
+        }
+      ],
+      "coverage_policy": {
+        "version": "2",
+        "complete_top_level_statuses": [
+          "complete_supported_content"
+        ],
+        "source": "skill_sandbox.package_evidence.coverage_report",
+        "scope": "Supported static content only; not exhaustive security or runtime coverage."
+      },
+      "coverage_counts": {
+        "complete_supported_content": 1,
+        "partial": 2
+      },
+      "metrics": {
+        "security_block": {
+          "profile": "security_block",
+          "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+          "total_cases": 3,
+          "upstream_positive_cases": 0,
+          "upstream_negative_cases": 0,
+          "unlabeled_cases": 3,
+          "counts": {
+            "unknown_negative": 1,
+            "unknown_abstain": 2
+          },
+          "positive_signal_recall_lower_bound": null,
+          "positive_signal_recall_upper_bound": null,
+          "negative_signal_rate_lower_bound": null,
+          "negative_signal_rate_upper_bound": null,
+          "positive_label_fraction_among_signaled_cases": null,
+          "unresolved_positive_cases": 0,
+          "unresolved_negative_cases": 0,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        },
+        "security_review": {
+          "profile": "security_review",
+          "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+          "total_cases": 3,
+          "upstream_positive_cases": 0,
+          "upstream_negative_cases": 0,
+          "unlabeled_cases": 3,
+          "counts": {
+            "unknown_negative": 1,
+            "unknown_abstain": 2
+          },
+          "positive_signal_recall_lower_bound": null,
+          "positive_signal_recall_upper_bound": null,
+          "negative_signal_rate_lower_bound": null,
+          "negative_signal_rate_upper_bound": null,
+          "positive_label_fraction_among_signaled_cases": null,
+          "unresolved_positive_cases": 0,
+          "unresolved_negative_cases": 0,
+          "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+        }
+      },
+      "by_category": {
+        "publisher_example_review_burden": {
+          "security_block": {
+            "profile": "security_block",
+            "declared_threshold": "Actionable governance-counted security findings with tier=block.",
+            "total_cases": 3,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 3,
+            "counts": {
+              "unknown_negative": 1,
+              "unknown_abstain": 2
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          },
+          "security_review": {
+            "profile": "security_review",
+            "declared_threshold": "Actionable governance-counted security findings with tier=review or block.",
+            "total_cases": 3,
+            "upstream_positive_cases": 0,
+            "upstream_negative_cases": 0,
+            "unlabeled_cases": 3,
+            "counts": {
+              "unknown_negative": 1,
+              "unknown_abstain": 2
+            },
+            "positive_signal_recall_lower_bound": null,
+            "positive_signal_recall_upper_bound": null,
+            "negative_signal_rate_lower_bound": null,
+            "negative_signal_rate_upper_bound": null,
+            "positive_label_fraction_among_signaled_cases": null,
+            "unresolved_positive_cases": 0,
+            "unresolved_negative_cases": 0,
+            "scope": "Relative to declared upstream labels; not a representative safety, accuracy or exploitability claim."
+          }
+        }
+      }
+    }
+  },
+  "comparisons": {
+    "fortify": {
+      "same_inputs": true,
+      "total_cases": 180,
+      "changed_decisions": 0
+    },
+    "publisher": {
+      "same_inputs": true,
+      "total_cases": 3,
+      "changed_decisions": 0
+    }
+  }
+}

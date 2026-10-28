@@ -54,6 +54,7 @@
 .home-references li span { display:block; color:var(--home-muted); font-size:12px; margin-top:4px; }
 .home-footer { display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding-block:24px; border-top:1px solid var(--home-border); color:var(--home-muted); font-size:12px; }
 .home-footer a { margin-left:auto; }
+.home-contributor { flex-basis:100%; overflow-wrap:anywhere; }
 .injecticide-home a:focus-visible, .injecticide-home button:focus-visible { outline:3px solid #a5e0d2; outline-offset:5px; }
 .home-skip { position:absolute; left:16px; top:-100px; background:#a5e0d2; color:#09251c; padding:12px; z-index:10; border-radius:8px; }
 .home-skip:focus { top:12px; }
@@ -197,6 +198,27 @@
 .scan-file-evidence li { margin-block:.4rem; }
 .scan-request-id, .scan-revision { font-family:monospace; overflow-wrap:anywhere; }
 .scan-evidence-summary + .scan-evidence-panel { margin-top:1rem; }
+.skill-report-scopes { min-width:0; }
+.skill-report-navigation { display:flex; flex-wrap:wrap; gap:.25rem; padding-block:1rem; margin-block:.75rem; border-block:1px solid var(--home-border,#496e65); }
+.skill-report-navigation [role="tab"] { padding:.65rem .85rem; border:1px solid transparent; border-radius:.35rem; background:transparent; color:var(--home-muted,#bad0c9); font-weight:600; }
+.skill-report-navigation [role="tab"][aria-selected="true"] { color:var(--home-text,#e6f3ee); background:var(--home-surface,#173b32); border-color:var(--home-border,#496e65); }
+.skill-report-navigation [role="tab"]:focus-visible,.skill-report-view:focus-visible { outline:3px solid #79d5bd; outline-offset:3px; }
+.skill-report-view { min-width:0; overflow-wrap:anywhere; display:grid; gap:1.35rem; padding-block:.5rem 1rem; }
+.skill-report-view[hidden] { display:none; }
+.skill-report-view h3 { font-size:1.2rem; font-weight:700; }
+.skill-report-view h4 { font-size:1rem; font-weight:650; margin-block:.8rem .4rem; }
+.skill-report-view :is(.scan-evidence-summary,.scan-evidence-panel,.skill-standards) { border:0; border-radius:0; padding:.5rem 0; }
+.skill-report-view .scan-evidence-summary dl > div { background:transparent; border:0; border-inline-start:2px solid var(--home-border,#496e65); border-radius:0; }
+.token-footprint,.package-effects { line-height:1.65; min-width:0; }
+.token-skill { padding-block:1rem; border-bottom:1px solid var(--home-border,#496e65); }
+.token-skill dl > div { display:grid; grid-template-columns:minmax(10rem,1fr) minmax(0,2fr); gap:1rem; padding-block:.6rem; }
+.token-skill dt { font-weight:650; }
+.token-skill dd,.token-metrics { display:flex; flex-wrap:wrap; gap:.35rem 1rem; margin:0; }
+.token-footprint ul,.package-effects ul,.package-effects ol { padding-inline-start:1.3rem; }
+.token-footprint li { margin-block:.45rem; }
+.token-footprint li > span { display:block; color:var(--home-muted,#bad0c9); }
+.effect-witness { border-inline-start:3px solid var(--home-border,#496e65); padding-inline-start:1rem; margin-block:1rem; }
+@media(max-width:650px) { .token-skill dl > div { grid-template-columns:minmax(0,1fr); gap:.2rem; } .skill-report-navigation [role="tab"] { padding:.6rem; } }
 @media(max-width:640px) { .scan-evidence-summary dl { grid-template-columns:minmax(0,1fr); } }
 
 /* Skill diagrams show evidence relationships, never implied execution order. */

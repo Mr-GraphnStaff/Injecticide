@@ -18,6 +18,9 @@ try:
     from .process_diagram import build_process_diagram, extract_documented_steps
     from .disposition import format_observation_sample
     from .standards_assessment import build_standards_assessment
+    from .token_footprint import build_token_footprint
+    from .package_effects import analyze_package_effects
+    from .improvement_plan import build_improvement_plan
 except ImportError:
     from package_formats import inspect_formats, RUNTIMES
     from package_threats import inspect_threats, embedded_blocks
@@ -33,6 +36,49 @@ except ImportError:
     from process_diagram import build_process_diagram, extract_documented_steps
     from disposition import format_observation_sample
     from standards_assessment import build_standards_assessment
+    from token_footprint import build_token_footprint
+    from package_effects import analyze_package_effects
+    from improvement_plan import build_improvement_plan
+
+
+def _reconcile_effect_findings(entry, effects, additions):
+    """Refine only exact legacy sites with complete package analysis evidence."""
+    if effects["status"] != "complete_supported_syntax":
+        entry["findings"].extend(additions)
+        return []
+    path = entry["path"]
+    coverage = effects["coverage"]
+    sites = {(site["line"], site["operation"]): site["outcome"]
+             for site in coverage["modeled_sink_sites"] if site["path"] == path}
+    ranges = [row for row in coverage["pruned_ranges"] if row["path"] == path]
+    reconciled, retained = [], []
+    for finding in entry["findings"]:
+        observations = finding.get("observations", [])
+        if finding.get("id") != "credential_source_to_network_payload" or not observations:
+            retained.append(finding)
+            continue
+        decisions = []
+        for observation in observations:
+            if observation.get("evidence_scope") != "conservative_intraprocedural_value_flow":
+                decisions.append(None)
+                continue
+            line, operation = observation.get("line"), observation.get("operation")
+            outcome = sites.get((line, operation))
+            if isinstance(line, int) and any(row["start_line"] <= line <= row["end_line"] for row in ranges):
+                decisions.append("literal_constant_guard")
+            elif outcome == "no_source_flow":
+                decisions.append("resolved_local_return_has_no_credential_origin")
+            elif outcome == "source_flow" and any(any(o.get("line") == line and o.get("operation") == operation for o in new.get("observations", [])) for new in additions):
+                decisions.append("replaced_by_package_witness")
+            else:
+                decisions.append(None)
+        if decisions and all(decisions):
+            reconciled.append({"path": path, "rule_id": finding["id"], "source_lines": [o.get("line") for o in observations],
+                               "reasons": sorted(set(decisions)), "evidence_scope": "complete_modeled_package_python_sites"})
+        else:
+            retained.append(finding)
+    entry["findings"] = retained + additions
+    return reconciled
 
 
 def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", supplied_evidence=None,
@@ -47,6 +93,10 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
             record["analysis_coverage"]["extraction"]["reason"] = record.get("reason", "Not extracted")
     analysis = inspect_formats(entries, texts, target_runtime)
     threats = inspect_threats(entries, texts, analysis)
+    effects = analyze_package_effects(text_sources, records)
+    effect_findings = effects.pop("findings_by_path")
+    effects["artifact_sha256"] = hashlib.sha256(upload_bytes).hexdigest()
+    effects["reconciled_legacy_sites"] = []
     for entry in entries:
         path = entry["path"]
         content = entry.get("content_analysis", {})
@@ -95,6 +145,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
             elif python_blocks and code_security["coverage"]["status"] in {"partial", "not_performed"}:
                 code_security["coverage"].update(status="complete_supported_embedded_syntax", scope="Only recognized Python code fences supplied to value-flow analysis; surrounding prose is outside this detector.")
             entry["analysis_coverage"]["code_security"] = code_security["coverage"]
+        effects["reconciled_legacy_sites"].extend(_reconcile_effect_findings(entry, effects, effect_findings.get(path, [])))
         if len(entry["findings"]) > 80:
             entry.setdefault("analysis_coverage", {})["result_display"] = {
                 "status": "partial", "findings_before_limit": len(entry["findings"]),
@@ -106,6 +157,9 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                 "status": "complete", "findings_before_limit": len(entry["findings"]),
                 "findings_displayed": len(entry["findings"]), "reason": "No per-file finding display limit reached."}
     coverage = coverage_report(records)
+    coverage["package_effects"] = {"status": effects["status"], "limits": effects["limits"], "scope": effects["coverage"]["scope"]}
+    if effects["status"] == "partial":
+        coverage["status"] = "partial"
     if threats["inventory_limited"]:
         coverage.update(status="partial", component_inventory_limited=True)
     hash_value = hashlib.sha256(upload_bytes).hexdigest()
@@ -118,8 +172,10 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                                   "format_findings": (analysis["format_findings"] + threats["format_findings"])[:100],
                                   "dependencies": threats["dependencies"], "execution_references": threats["execution_references"],
                                   "permissions": threats["permissions"], "composition_analysis": threats["composition_analysis"]}
+    result["package_analysis"]["effect_analysis"] = effects
     graph = build_package_graph(text_sources, records)
     result["package_analysis"]["relationship_graph"] = graph
+    result["token_footprint"] = build_token_footprint(text_sources, records, graph)
     coverage["package_relationships"] = {"status": graph["status"], "limits": graph["limits"]}
     if graph["status"] == "partial":
         coverage["status"] = "partial"
@@ -167,6 +223,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
     attach_official_validator_results(result, texts)
     result["documented_process"] = extract_documented_steps(text_sources)
     redact_result(result, texts)
+    result["improvement_plan"] = build_improvement_plan(result)
     # Diagram labels and exports derive only from sanitized report evidence.
     # Uploaded content is never executed or sent to a diagram service.
     result["process_diagram"] = build_process_diagram(result)

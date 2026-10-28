@@ -59,7 +59,7 @@ const server = http.createServer((req,res)=>{
         const errors=[];page.on('pageerror',error=>{errors.push(error.message);console.error('Browser error:',error.message);});
         page.on('console',message=>{if(message.type()==='error' && !message.text().startsWith('Failed to load resource:'))errors.push(message.text());});
         await page.goto(`http://127.0.0.1:${server.address().port}`);
-        async function scan(){await page.getByLabel('Skill file',{exact:true}).setInputFiles({name:'standards-fixture.skill',mimeType:'text/markdown',buffer:Buffer.from('SYNTHETIC_ONLY')});await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();try{await page.getByRole('heading',{name:'Standards assessment',exact:true}).waitFor();}catch(error){console.error((await page.locator('body').innerText()).slice(-5000));throw error;}}
+        async function scan(){await page.getByLabel('Skill file',{exact:true}).setInputFiles({name:'standards-fixture.skill',mimeType:'text/markdown',buffer:Buffer.from('SYNTHETIC_ONLY')});await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();await page.getByRole('tab',{name:'Standards',exact:true}).click();try{await page.getByRole('heading',{name:'Standards assessment',exact:true}).waitFor();}catch(error){console.error((await page.locator('body').innerText()).slice(-5000));throw error;}}
         await scan();
         const panel=page.locator('[data-standards-assessment]');
         assert.match(await panel.innerText(),/Portable mandatory checks: Fail/);

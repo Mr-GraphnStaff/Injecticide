@@ -67,6 +67,7 @@ const server=http.createServer((req,res)=>{
         await page.getByRole('button',{name:'Testing & scanning',exact:true}).click();
         await page.getByLabel('Skill file',{exact:true}).setInputFiles({name:'synthetic-process.skill',mimeType:'text/markdown',buffer:Buffer.from('SYNTHETIC_NOT_EXECUTED')});
         await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();
+        await page.getByRole('tab',{name:'Structure & process',exact:true}).click();
         const process=page.locator('[data-process-diagram]');await process.waitFor();
         assert.equal(await process.locator('.process-node').count(),6);
         assert.equal(await process.locator('.process-edge').count(),5);

