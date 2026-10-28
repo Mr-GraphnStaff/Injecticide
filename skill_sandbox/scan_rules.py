@@ -86,7 +86,9 @@ def find_rule_matches(rule: Dict[str, object], unit: object) -> List[Dict[str, o
     if rule.get("id") == "secret_exfiltration":
         return _find_secret_exfiltration_matches(text, line_number)
     if rule.get("id") == "dynamic_exec":
-        return _find_dynamic_exec_matches(text, line_number)
+        if isinstance(unit, dict) and "source_text" in unit:
+            text = str(unit["source_text"])
+        return _find_dynamic_exec_matches(text, line_number, prose=isinstance(unit, dict) and "source_text" in unit and not unit.get("code_fence"))
     if rule.get("id") == "runtime_dependency_install":
         return _find_runtime_dependency_matches(text, line_number)
 
@@ -149,7 +151,7 @@ def _markdown_scan_units(text: str) -> List[Dict[str, object]]:
 
     def flush_fenced():
         if fenced_lines:
-            unit = {"text": " ".join(fenced_lines), "line": fenced_start}
+            unit = {"text": " ".join(fenced_lines), "line": fenced_start, "code_fence": True}
             if example:
                 unit["context_tag"] = "educational_example"
             units.append(unit)
@@ -232,6 +234,13 @@ def _markdown_scan_units(text: str) -> List[Dict[str, object]]:
                 and re.search(r"\b(?:quoted attack example|attack example)\b", units[index - 1]["text"], re.I)
                 and re.search(r"\b(?:for review only|never|do not|reject)\b", units[index - 1]["text"], re.I)):
             unit["context_tag"] = "educational_example"
+    # Retain the original line layout for detectors that cite individual calls.
+    # Other matchers still receive the paragraph projection for wrapped prose.
+    original_lines = text.splitlines()
+    for index, unit in enumerate(units):
+        start = int(unit["line"]) - 1
+        end = int(units[index + 1]["line"]) - 1 if index + 1 < len(units) else len(original_lines)
+        unit["source_text"] = "\n".join(original_lines[start:end])
     return [unit for unit in units if unit["text"]]
 
 
@@ -305,9 +314,14 @@ def _find_secret_exfiltration_matches(text: str, line_number: int | None) -> Lis
     return matches[:3]
 
 
-def _find_dynamic_exec_matches(text: str, line_number: int | None) -> List[Dict[str, object]]:
+def _find_dynamic_exec_matches(text: str, line_number: int | None, *, prose=False) -> List[Dict[str, object]]:
     matches: List[Dict[str, object]] = []
+    execution_context = "decoded_or_fetched_exec" if _has_decoded_or_fetched_context(text) else "direct_dynamic_exec"
+    empty_arguments = re.compile(r"\s*\)")
+    previous_offset, line_offset = 0, 0
     for match in re.finditer(r"\b(exec|eval|compile)\s*\(", text, re.IGNORECASE):
+        line_offset += text.count("\n", previous_offset, match.start())
+        previous_offset = match.start()
         previous = match.start() - 1
         if previous >= 0 and (text[previous].isalnum() or text[previous] == "_"):
             continue
@@ -316,10 +330,16 @@ def _find_dynamic_exec_matches(text: str, line_number: int | None) -> List[Dict[
             cursor -= 1
         if cursor >= 0 and text[cursor] == ".":
             continue
-        context_tag = "decoded_or_fetched_exec" if _has_decoded_or_fetched_context(text) else "direct_dynamic_exec"
-        matches.append(_observation(match.group(0), line_number, context_tag, "high"))
-        if len(matches) >= 3:
-            break
+        context_tag = execution_context
+        # Bare API names such as `eval()/exec()` are mentions, not executable
+        # calls with a payload. Keep the observation without asserting use.
+        if prose and empty_arguments.match(text, match.end()):
+            context_tag = "prose_mention"
+        match_line = line_number + line_offset if isinstance(line_number, int) else None
+        matches.append(_observation(match.group(0), match_line, context_tag, "high"))
+        # Display budgets must not let early mentions suppress a later call.
+        matches.sort(key=lambda item: {"decoded_or_fetched_exec": 0, "direct_dynamic_exec": 1, "prose_mention": 2}.get(item["context_tag"], 3))
+        del matches[3:]
     return matches
 
 

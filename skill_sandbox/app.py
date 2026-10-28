@@ -524,6 +524,10 @@ def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str,
         matches = []
         for unit in scan_units:
             matches.extend(find_rule_matches(pattern, unit))
+            if pattern["id"] == "dynamic_exec":
+                matches.sort(key=lambda item: {"decoded_or_fetched_exec": 0, "direct_dynamic_exec": 1, "prose_mention": 2}.get(item.get("context_tag"), 3))
+                matches = matches[:3]
+                continue
             if len(matches) >= 3:
                 matches = matches[:3]
                 break

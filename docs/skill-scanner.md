@@ -56,6 +56,47 @@ unsupported compression and budget exclusions remain visible.
 The web package overview exposes relationship, action-chain, capability and
 asset sections. Detailed Markdown/JSON exports retain these evidence stages.
 
+## Skill process diagrams (0.9.0)
+
+Each static scan includes `process_diagram` and `documented_process`. The
+diagram joins explicit numbered steps and workflow headings in `SKILL.md`
+with recognized package references, capabilities and external origins.
+Select **Add process diagram to playground** on the scan result to create
+a new separate map. Existing playground drafts and saved maps are preserved;
+the generated map is not merged with them. Return to the report to inspect
+the evidence or generate another new map.
+
+Known means source evidence exists, not that a command ran. Unknown references
+remain `STATUS: UNKNOWN — UNVERIFIED`. Any future inference must identify its
+basis and stay distinct from known evidence. Consecutive numbered steps describe
+documented order only; no arbitrary conditional branches, approval enforcement,
+runtime tool calls or complete process understanding are claimed. Unrecognized
+workflows fall back to a relationship view with explicit uncertainty.
+
+Nodes and connections retain file/line evidence where available. A citation
+opens the corresponding file's scan evidence, not an uploaded executable or
+external destination. Manifest field locations without exact parser evidence
+remain file-only. File findings are separate from step-specific attribution.
+
+Export diagram JSON or Mermaid for reuse. The playground map export uses the
+existing strict map schema; source-linked diagram JSON remains the provenance
+record. Labels are derived after credential redaction, and rendering uses
+escaped text. No model call, uploaded-code execution or external diagram
+service is involved. Diagram limits and omissions remain visible.
+
+### Calibration boundaries
+
+Reference/template location does not downgrade actual contact or labeled
+account-identifier presence. Role-style local parts are lexical contact
+observations; they are not proof of public availability, organizational
+approval or low disclosure impact in every context. Neither contact presence
+nor an account identifier alone establishes exfiltration or legal status.
+
+Empty API-name mentions in Markdown prose are informational; active call
+syntax remains reviewable. Native HTML scripts are capability observations,
+separate from measurable code hidden behind a document suffix. An actual
+upload-policy bypass requires additional policy and behavior evidence.
+
 ## Local MCP
 
 The existing research MCP collects research; it is not the skill scanner. The

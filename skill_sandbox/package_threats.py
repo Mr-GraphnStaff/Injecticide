@@ -10,6 +10,7 @@ import hashlib
 import posixpath
 import re
 import shlex
+from html.parser import HTMLParser
 from itertools import islice
 from pathlib import PurePosixPath
 from urllib.parse import urlsplit
@@ -33,6 +34,27 @@ SOURCES = [
 ]
 COMMAND_RE = re.compile(r"\b(?:python(?:3(?:\.\d+)?)?|python\.exe|bash|sh|zsh|fish|node|nodejs|deno|bun|pwsh|powershell|ruby|perl|php|lua|Rscript|groovy|cscript|wscript|cmd(?:\.exe)?)\s+([^\n`]+)", re.I)
 SECRET_RE = re.compile(r"(?:api[_-]?key|access[_-]?token|password|secret)\s*[=:]\s*['\"]([^'\"\n]{12,})['\"]", re.I)
+
+
+class _BrowserScriptParser(HTMLParser):
+    """Recognize declared browser script syntax without rendering the document."""
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.script_capable = False
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        script_type = (attributes.get("type") or "").strip().lower()
+        if tag == "script" and script_type in {"", "module", "text/javascript", "application/javascript", "text/ecmascript", "application/ecmascript"}:
+            self.script_capable = True
+        if any(name.startswith("on") and value for name, value in attrs):
+            self.script_capable = True
+
+
+def _html_script_capable(text):
+    parser = _BrowserScriptParser()
+    parser.feed(text)
+    return parser.script_capable
 
 
 def embedded_blocks(text):
@@ -79,6 +101,9 @@ def code_evidence(path, text):
     if text.startswith("#!"):
         result.update(code_like=True, language="shebang")
         result["evidence"].append("interpreter_shebang")
+    if PurePosixPath(path).suffix.lower() in {".html", ".htm", ".xhtml"} and _html_script_capable(text):
+        result.update(code_like=True, language="browser_script")
+        result["evidence"].append("html_script_element")
     if len(text) <= 131072:
         try:
             tree = ast.parse(text)
@@ -212,12 +237,17 @@ def inspect_threats(records, texts, analysis):
             inventory_limited[0] = True
         if evidence["code_like"]:
             components.append({"kind": "code", "path": path, "evidence": evidence["evidence"]})
-            if PurePosixPath(path).suffix.lower() not in EXECUTABLE_SUFFIXES:
+            native_browser_script = PurePosixPath(path).suffix.lower() in {".html", ".htm", ".xhtml"} and not evidence["mixed_executable_suffix"]
+            if native_browser_script:
+                item = finding("embedded_browser_script", "HTML contains script-capable content. Browser execution, external access and organizational approval are not verified; this observation does not establish an upload-policy bypass.", [path] + evidence["evidence"], severity="info")
+                item.update(tier="info", disposition="info", is_actionable=False, display_kind="informational_signal", finding_category="capability_observation")
+                entry["findings"].append(item)
+            elif PurePosixPath(path).suffix.lower() not in EXECUTABLE_SUFFIXES:
                 entry["findings"].append(finding("code_in_text_artifact", "Code-like content is stored in a text/documentation file; inspect its invocation before use.", [path] + evidence["evidence"]))
                 if evidence["mixed_executable_suffix"] or evidence["code_like"]:
                     entry["file_type_policy"] = {"signal": "executable_packaged_as_document", "potential_upload_control_bypass": True,
                                                  "organization_policy_verified": False, "malware_determination": "not_established"}
-                    entry["findings"].append(finding("executable_packaged_as_document", "Executable source is packaged behind a document extension. This may bypass filename-based executable-upload restrictions even when its function is legitimate; assess organizational policy separately from malware.", [path] + evidence["evidence"]))
+                    entry["findings"].append(finding("executable_packaged_as_document", "Executable source is stored with a document extension. Review its declared invocation and applicable upload policy; an actual policy bypass and malicious behavior are not established.", [path] + evidence["evidence"]))
         base = str(PurePosixPath(path).parent)
         base = "" if base == "." else base
         command_targets(path, text, base)
@@ -328,7 +358,7 @@ def inspect_threats(records, texts, analysis):
             if not any(f["id"] == "executable_packaged_as_document" for f in entries[path]["findings"]):
                 entries[path]["file_type_policy"] = {"signal": "executable_packaged_as_document", "potential_upload_control_bypass": True,
                                                      "organization_policy_verified": False, "malware_determination": "not_established"}
-                entries[path]["findings"].append(finding("executable_packaged_as_document", "Packaged document contains declared script source and extraction or execution instructions. Review potential file-type upload policy bypass separately from malware.", [path]))
+                entries[path]["findings"].append(finding("executable_packaged_as_document", "Packaged document contains declared script source and extraction or execution instructions. Review the applicable file-type policy; an actual policy bypass and malicious behavior are not established.", [path]))
         entries[path]["findings"].append(finding("declared_execution_target", "Another packaged artifact declares execution or conversion of this file; reference-directory naming does not establish trust.", [r["source"] for r in references if r["target"] == path]))
     for path in texts:
         if PurePosixPath(path).name in {"requirements.txt", "package.json", "pyproject.toml", "uv.lock", "package-lock.json"}:

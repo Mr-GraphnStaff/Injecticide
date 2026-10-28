@@ -40,6 +40,27 @@ The download works without generating a test plan and contacts no AI service.
 
 ## Contract and limits
 
+### New maps from a skill scan
+
+**Add process diagram to playground** on a completed scan starts a new separate
+temporary skill map. It does not merge into or replace the ordinary playground
+draft. Existing unsaved architecture edits are retained across navigation;
+saved architecture maps use their original storage key. Each new skill-map
+draft has a separate save key. Use export to retain a portable copy before
+leaving a temporary draft.
+
+Documented steps, package files, recognized capabilities, external references
+and unresolved references have distinct component kinds. Original scan evidence
+remains available in the inspector with source locations and knowledge status.
+It describes the original scan, not subsequent user edits. Replacing/importing
+or loading a different map detaches those citations to prevent reused IDs from
+inheriting unrelated evidence. Return to the scan report restores keyboard focus
+to the Add button.
+
+Static relationships and explicit documented order are not verified runtime
+behavior. Unknown destinations, missing references and omissions remain visible.
+No source citation opens uploaded code or contacts a named external origin.
+
 Schema version 1 contains `name`, `nodes` and `edges`; see `architecture_map.py`
 for its strict schema. Limits: 256 KiB request, 100 components, 200 connections,
 500 suggestions and 20 rendered suggestions per page. Additional suggestions

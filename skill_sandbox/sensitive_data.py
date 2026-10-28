@@ -120,6 +120,14 @@ PHI_STRONG_RULE_IDS = {
     "phi_medical_record_number",
 }
 
+# These are lexical role aliases, not a claim of public availability or safety.
+ROLE_EMAIL_ALIASES = {"security", "support", "info", "contact", "privacy", "help", "abuse", "noreply", "no-reply", "sales", "billing", "legal"}
+ACCOUNT_IDENTIFIER = re.compile(
+    r"\b(?:account[ _-]?(?:id|guid)|atlassian[ _-]?(?:account[ _-]?)?(?:id|guid)|user[ _-]?(?:id|guid))\b"
+    r"[^\n]{0,60}?\b(?:[a-f0-9]{6,}:)?[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\b",
+    re.I,
+)
+
 
 def detect_sensitive_data_findings(
     text: str,
@@ -130,11 +138,34 @@ def detect_sensitive_data_findings(
     matched_rule_ids = set()
 
     for rule in SENSITIVE_DATA_RULES:
-        matches = _observations_for_pattern(rule["compiled_pattern"], text)
+        if rule["id"] == "pii_email_address":
+            matches, contact_counts = _email_observations(rule["compiled_pattern"], text)
+        else:
+            matches = _observations_for_pattern(rule["compiled_pattern"], text)
         if not matches:
             continue
-        findings.append(build_finding(rule, matches, artifact_role))
+        finding = build_finding(rule, matches, artifact_role)
+        if rule["id"] == "pii_email_address":
+            finding["count"] = sum(contact_counts.values())
+            finding["observation_display"] = {"retained": len(matches), "total_matches": finding["count"], "selection": "At most ten strongest contact observations; all supplied text counted."}
+            finding["contact_context"] = {
+                "classification": "role_alias_syntax_only" if not contact_counts["individual_or_unknown"] else "individual_or_unknown_contact",
+                "role_alias_matches": contact_counts["role_alias"],
+                "individual_or_unknown_matches": contact_counts["individual_or_unknown"],
+                "public_availability": "unknown", "organizational_approval": "not_verified",
+                "priority_basis": "Role-style local-part syntax receives informational priority; individual or unknown addresses require disclosure review regardless of documentation role.",
+            }
+        findings.append(finding)
         matched_rule_ids.add(rule["id"])
+
+    identifiers = _observations_for_pattern(ACCOUNT_IDENTIFIER, text)
+    if identifiers:
+        findings.append(build_finding({
+            "id": "pii_account_identifier", "category": "data", "finding_category": "data_presence",
+            "subject": "account_identifier", "action_state": "present", "status": "verified",
+            "description": "Account/user identifier label alongside a UUID-shaped value; disclosure review is required. Identity and public availability are unverified.",
+            "sources": SENSITIVE_DATA_RULES[0]["sources"],
+        }, identifiers, artifact_role))
 
     if MEDICAL_CONTEXT_REGEX.search(text) and matched_rule_ids.intersection(PHI_STRONG_RULE_IDS):
         findings.append(
@@ -170,6 +201,25 @@ def detect_sensitive_data_findings(
         )
 
     return findings
+
+
+def _email_observations(pattern, text):
+    """Count all input matches with bounded evidence and incremental line scans."""
+    aliases, individual = [], []
+    counts = {"role_alias": 0, "individual_or_unknown": 0}
+    previous, line = 0, 1
+    for match in pattern.finditer(text):
+        line += text.count("\n", previous, match.start())
+        previous = match.start()
+        value = match.group(0)
+        is_alias = value.split("@", 1)[0].casefold() in ROLE_EMAIL_ALIASES
+        counts["role_alias" if is_alias else "individual_or_unknown"] += 1
+        retained = aliases if is_alias else individual
+        if len(retained) < 10:
+            retained.append({"text": value, "line": line,
+                             "context_tag": "role_email_alias" if is_alias else "individual_or_unknown_email",
+                             "confidence": "medium"})
+    return (individual + aliases)[:10], counts
 
 
 def _observations_for_pattern(pattern: re.Pattern[str], text: str) -> List[Dict[str, object]]:

@@ -115,15 +115,18 @@ def build_finding(
     action_state = str(rule.get("action_state", "present"))
     disposition = str(disposition_result["disposition"])
 
-    if severity == "info" and artifact_role in {"reference_template", "audit_policy"} and detector_id in REFERENCE_TEMPLATE_RULE_IDS:
+    if severity == "info" and artifact_role in {"reference_template", "audit_policy"} and detector_id in REFERENCE_TEMPLATE_RULE_IDS and finding_category != "data_presence":
         action_state = "documented"
+
+    if detector_id == "dynamic_exec" and observations and all(item.get("context_tag") == "prose_mention" for item in observations):
+        action_state = "mentioned"
 
     fixture_only = bool(observations) and all(observation.get("context_tag") == "test_fixture" for observation in observations)
     if fixture_only:
         action_state = "declared_test_input"
 
     is_actionable = bool(disposition_result["is_actionable"])
-    display_kind = _display_kind(artifact_role, severity)
+    display_kind = _display_kind("active" if finding_category == "data_presence" else artifact_role, severity)
     samples = _unique_samples(format_observation_sample(observation) for observation in observations)
 
     return {

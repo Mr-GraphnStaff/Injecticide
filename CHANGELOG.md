@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.0 - 2026-10-28
+
+- Generate bounded, source-linked skill process diagrams from static scan
+  evidence, including explicit documented steps, references, capabilities and
+  unresolved relationships. Export JSON and Mermaid without executing uploads
+  or contacting an external diagram or model service.
+- Add an explicit **Add process diagram to playground** action that opens a
+  new separate map, preserving existing playground work and scan evidence.
+- Keep personal-contact and labeled account-identifier observations under
+  review regardless of reference-directory classification. Distinguish
+  role-address syntax without claiming public availability or approval.
+- Separate empty API-name mentions in prose from executable call
+  syntax and retain physical source lines in paragraph and embedded evidence.
+- Describe browser scripts in HTML as capabilities and avoid claiming a
+  filename-upload-policy bypass without evidence of the applicable policy.
+- Align scanner/MCP release metadata with the application version.
+
 ## 0.8.0 - 2026-10-27
 
 - Inspect PNG chunk structure, CRCs and bounded text metadata, plus standalone
