@@ -34,7 +34,7 @@ EVIDENCE_FIELDS = {
     "source", "target", "root", "manifest", "value", "url", "endpoint", "command",
     "provided_issuer", "issuer", "audience", "author", "owner", "evidence_excerpt",
     "script", "script_candidate", "external_script", "package_declarations",
-    "dependencies", "requires_python",
+    "dependencies", "requires_python", "candidate_context", "json_path",
     "reachable_paths", "unreferenced_paths", "entrypoints", "reference_paths", "operation",
 }
 
@@ -144,6 +144,13 @@ def redact_result(result, texts):
         elif isinstance(node, str) and parent is not None:
             user_metadata = "metadata" in path
             semantic_key = next((part for part in reversed(path) if isinstance(part, str)), "")
+            if (semantic_key == "target" and isinstance(parent, dict)
+                    and "observations" in path
+                    and parent.get("speech_act") in {"request", "described_risk", "example", "ambiguous"}
+                    and node in {"model_or_system", "third_party", "unspecified"} and not user_metadata):
+                # Speech-act targets are computed enums; graph targets remain
+                # upload-derived paths and still require ordinary redaction.
+                continue
             # Machine decisions, rule identities and hash bindings are computed
             # before redaction and must never be changed by an attacker choosing
             # a credential equal to 'blocked', 'prompt_override' or one hex digit.

@@ -3,6 +3,11 @@ from __future__ import annotations
 import re
 from typing import Dict, Iterable, List, Tuple
 
+try:
+    from .package_formats import frontmatter
+except ImportError:
+    from package_formats import frontmatter
+
 URL_REGEX = re.compile(r"https?://[^\s)>\"]+", re.IGNORECASE)
 
 PURPOSE_PATTERNS = (
@@ -82,6 +87,8 @@ def analyze_behavior(text_sources: Iterable[Dict[str, str]]) -> Dict[str, object
         "behavioral_summary": {
             "declared_purpose": declared_purpose,
             "observed_behaviors": behaviors,
+            "behavior_evidence_scope": "Static text indicators of declared capabilities; no runtime behavior was observed.",
+            "runtime_verified": False,
             "required_capabilities": capabilities,
             "external_dependencies": dependencies,
             "ux_manipulation": ux_manipulation,
@@ -96,10 +103,26 @@ def analyze_behavior(text_sources: Iterable[Dict[str, str]]) -> Dict[str, object
 
 
 def _extract_declared_purpose(text_sources: Iterable[Dict[str, str]]) -> str:
-    for source in text_sources:
+    sources = list(text_sources)
+    # Entrypoint metadata is the declared purpose, including folded/literal YAML.
+    # Reuse the bounded parser; malformed metadata is never regex-reinterpreted.
+    ordered = sorted(sources, key=lambda source: source.get("path", "").replace("\\", "/").rsplit("/", 1)[-1].lower() != "skill.md")
+    for source in ordered:
+        text = source.get("text", "")
+        if text.startswith("---\n") or text.startswith("---\r\n"):
+            try:
+                description = frontmatter(text).get("description")
+                if isinstance(description, str) and description.strip():
+                    return _clean_sentence(description)
+            except (ValueError, RecursionError):
+                pass
+    for source in ordered:
         text = source.get("text", "")
         if not text:
             continue
+        if text.startswith("---\n") or text.startswith("---\r\n"):
+            parts = re.split(r"(?m)^---\s*$", text, maxsplit=2)
+            text = parts[2] if len(parts) == 3 else ""
         for pattern, group_index in PURPOSE_PATTERNS:
             match = pattern.search(text)
             if match:
@@ -145,7 +168,7 @@ def _infer_capabilities(text: str) -> Tuple[List[str], List[str], List[str], boo
         observed_behaviors.append("Claims access to enterprise systems.")
         required_capabilities.append("enterprise_access")
 
-    ux_manipulation = flags["auto_open"] or flags["ux_manipulation"]
+    ux_manipulation = flags["ux_manipulation"]
 
     external_dependencies.extend(_unique_preserve_order(URL_REGEX.findall(text)))
     if flags["enterprise_access"]:
@@ -188,7 +211,7 @@ def _classify_instructions(
             any_unknown = True
 
     if capability_flags.get("credentials"):
-        any_bad = True
+        any_risky = True
     if any_bad:
         overall_risk = "high"
     elif (
@@ -208,7 +231,7 @@ def _classify_instructions(
 
 def _classify_block(block: str) -> Tuple[str, str]:
     if _detect_credential_handling(block):
-        return "bad", "Handles credentials or secrets."
+        return "risky", "Text indicates credential handling; disclosure or misuse requires separate contextual evidence."
 
     risky_reasons = []
     if EXTERNAL_EMBED_REGEX.search(block):
@@ -241,7 +264,7 @@ def _recommend_action(overall_risk: str, capability_flags: Dict[str, bool]) -> s
     if overall_risk == "high":
         return "block_by_default"
     if overall_risk == "medium":
-        if capability_flags.get("external_embed") or capability_flags.get("auto_open") or capability_flags.get("ux_manipulation"):
+        if capability_flags.get("external_embed") or capability_flags.get("auto_open") or capability_flags.get("ux_manipulation") or capability_flags.get("credentials"):
             return "require_admin_approval"
         return "allow_with_warnings"
     return "allow"

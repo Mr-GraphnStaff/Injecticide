@@ -29,7 +29,7 @@ RELATIONS = {
 }
 
 
-def extract_documented_steps(text_sources):
+def extract_documented_steps(text_sources, relationship_graph=None):
     """Extract explicit Markdown steps, preserving source lines and uncertainty.
 
     This recognizes syntax rather than interpreting prose. Approval/condition
@@ -37,16 +37,38 @@ def extract_documented_steps(text_sources):
     numbered entries (allowing blank lines) establish documented ordering.
     """
     steps, limits = [], []
+    sources = [source for source in text_sources if isinstance(source.get("path"), str)
+               and isinstance(source.get("text"), str)]
+    by_path = {source["path"]: source for source in sources}
+    selected = {path for path in by_path if posixpath.basename(path).lower() == "skill.md"}
+    # Follow only resolved packaged document links. No uploaded URL is fetched,
+    # and an unrelated file's numbered list is not silently called the process.
+    edges = (relationship_graph or {}).get("edges", [])[:MAX_INPUT_ITEMS]
+    for _ in range(8):
+        linked = {edge.get("target") for edge in edges
+                  if edge.get("source") in selected and edge.get("status") == "resolved"
+                  and edge.get("kind") in {"document_reference", "resource_reference", "prose_resource_reference"}
+                  and edge.get("target") in by_path
+                  and edge.get("target", "").lower().endswith((".md", ".txt"))}
+        if linked <= selected:
+            break
+        selected.update(linked)
+    else:
+        limits.append({"kind": "documented_reference_depth"})
+    sources = [source for source in sources if source["path"] in selected]
+    workflow_name = re.compile(r"workflow|process|procedure|load[-_ ]order|runbook|boot", re.I)
+    sources.sort(key=lambda source: (posixpath.basename(source["path"]).lower() != "skill.md",
+                                     not bool(workflow_name.search(source["path"])), source["path"]))
     remaining = MAX_STEP_SOURCE_CHARACTERS
-    for source in text_sources:
+    for source in sources:
         path, original = source.get("path"), source.get("text")
-        if not isinstance(path, str) or not isinstance(original, str) or posixpath.basename(path).lower() != "skill.md":
-            continue
+        companion = posixpath.basename(path).lower() != "skill.md"
         bounded = original[:remaining]
         remaining -= len(bounded)
         if len(bounded) < len(original):
             limits.append({"kind": "documented_step_source_characters", "path": path})
         previous, previous_number, fence = None, None, None
+        documented_text_fence = False
         frontmatter, comment = False, False
         for line_no, raw in enumerate(bounded.splitlines(), 1):
             if line_no == 1 and raw.strip() == "---":
@@ -65,18 +87,21 @@ def extract_documented_steps(text_sources):
                 marker = fence_match[1]
                 if fence is None:
                     fence = marker[0], len(marker)
+                    language = raw[fence_match.end():].strip().lower()
+                    documented_text_fence = companion and language in {"", "text", "plaintext", "markdown", "md"}
                 elif marker[0] == fence[0] and len(marker) >= fence[1]:
                     fence = None
+                    documented_text_fence = False
                 previous, previous_number = None, None
                 continue
-            if fence is not None:
+            if fence is not None and not documented_text_fence:
                 continue
             if "<!--" in raw:
                 # Hidden author notes are not visible documented process steps.
                 comment = "-->" not in raw
                 previous, previous_number = None, None
                 continue
-            numbered = re.match(r"^\s{0,3}(\d{1,3})[.)]\s+(.+)$", raw)
+            numbered = re.match(r"^\s{0,3}(\d{1,3})([a-z]?)[.)]\s+(.+)$", raw)
             heading = re.match(r"^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$", raw)
             section = heading and re.search(r"\b(?:workflow|process|procedure|steps?|phases?|stages?)\b", heading[1], re.I)
             if not numbered and not section:
@@ -87,10 +112,10 @@ def extract_documented_steps(text_sources):
                 limits.append({"kind": "documented_step_count", "path": path})
                 return {"status": "partial", "scope": "Explicit Markdown steps; runtime, branches and approval enforcement unverified.",
                         "steps": steps, "limits": limits}
-            text = numbered[2] if numbered else heading[1]
+            text = numbered[3] if numbered else heading[1]
             if len(text) > 500:
                 limits.append({"kind": "documented_step_text_characters", "path": path})
-            number = int(numbered[1]) if numbered else None
+            number = int(numbered[1]) if numbered and not numbered[2] else None
             step_type = "section" if section and not numbered else "approval_mention" if re.search(
                 r"\b(?:approval|approve|permission|confirmation|confirm)\b", text, re.I) else "condition_mention" if re.match(
                 r"(?:if|when|unless|otherwise)\b", text, re.I) else "instruction"
@@ -98,6 +123,10 @@ def extract_documented_steps(text_sources):
             item = {"id": "step_" + str(len(steps)), "path": path, "line": line_no,
                     "text": text[:500], "step_type": step_type, "number": number,
                     "previous_step_id": predecessor}
+            if numbered and numbered[2]:
+                item["documented_number"] = numbered[1] + numbered[2]
+            if documented_text_fence:
+                item["evidence_scope"] = "documented_text_block_not_executed"
             steps.append(item)
             previous, previous_number = (item["id"], number) if numbered else (None, None)
         if remaining <= 0:

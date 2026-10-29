@@ -265,10 +265,12 @@ function EvidenceSourceLink({ url }) {
 function mitigationSummary(result) {
     const records = (result.files || []).map(file => file.creator_mitigation).filter(Boolean);
     const verified = records.filter(item => item.status === 'verified').length;
-    const unresolved = records.filter(item => ['invalid', 'unverifiable'].includes(item.status)).length;
-    return { records, verified, unresolved,
+    const declared = records.filter(item => item.status === 'declared').length;
+    const unresolved = records.filter(item => item.start_marker_found && ['invalid', 'unverifiable'].includes(item.status)).length;
+    const unavailable = records.filter(item => !item.start_marker_found && ['invalid', 'unverifiable'].includes(item.status)).length;
+    return { records, verified, declared, unresolved, unavailable,
         text: !records.length ? 'Tag recognition not reported by this scanner version' :
-            `${verified} verified; ${unresolved} invalid or unverifiable; ${records.filter(item => item.status === 'absent').length} absent` };
+            `${verified} verified; ${declared} reading declarations; ${unresolved} invalid or unverifiable claims; ${records.filter(item => item.status === 'absent').length} absent; ${unavailable} not assessable` };
 }
 
 function ScanEvidenceSummary({ result }) {
@@ -376,7 +378,7 @@ function FileAnalysisEvidence({ file }) {
     return <div className="scan-file-evidence">
         {mitigation && <p><strong>Creator mitigation: {evidenceLabel(mitigation.status)}</strong>
             {mitigation.convention ? ` · convention ${mitigation.convention}` : ''}
-            {mitigation.status !== 'absent' && ` · EOF marker ${mitigation.eof_verified ? 'verified' : 'not verified'}`}
+            {(mitigation.eof_claimed || mitigation.eof_verified) && ` · EOF marker ${mitigation.eof_verified ? 'verified' : 'not verified'}`}
             {mitigation.satisfies_tagging_convention ? ' · tagging convention satisfied' : ''}
             {mitigation.policy_scope && <span> · {evidenceLabel(mitigation.policy_scope)}</span>}
         </p>}
@@ -386,6 +388,9 @@ function FileAnalysisEvidence({ file }) {
                 <strong>{evidenceLabel(name)}: {evidenceLabel(coverage.status)}</strong>
                 {Number.isFinite(coverage.inspected_characters) && <span> · {coverage.inspected_characters} of {coverage.total_characters ?? 'unknown'} characters inspected</span>}
                 {coverage.reason && <p>{coverage.reason}</p>}
+                {coverage.sampling && <div><p>Database sampling: {coverage.sampling.sampled_rows ?? 'unknown'} rows projected. Values may be shortened; BLOBs are omitted.</p>
+                    <ul>{(coverage.sampling.tables || []).map((table, i) => <li key={i}>{table.table}: {table.sampled_rows} of {Number.isInteger(table.total_rows) ? table.total_rows : 'unknown total'} rows sampled.</li>)}</ul>
+                </div>}
             </li>)}</ul>
         </details>}
     </div>;
@@ -529,6 +534,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         lines.push('');
         lines.push('```json');
         const evidence = { package_analysis: scanResult.package_analysis, coverage: scanResult.coverage,
+            analysis_context: scanResult.analysis_context, governance_profile: scanResult.governance_profile,
             governance_evidence: scanResult.governance_evidence, scanner_metadata: scanResult.scanner_metadata,
             process_diagram: scanResult.process_diagram,
             checks: scanResult.check_results, readiness: scanResult.readiness,
@@ -536,6 +542,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
             official_validator_results: scanResult.official_validator_results,
             scan_request_id: scanResult.scan_request_id,
             file_analysis: (scanResult.files || []).map(file => ({path: file.path, assessment_state: file.assessment_state,
+                ...(reportDepth === 'detailed' ? {findings: file.findings} : {}),
                 analysis_coverage: file.analysis_coverage, creator_mitigation: file.creator_mitigation,
                 asset_inspection: file.asset_inspection, archive_inspection: file.archive_inspection,
                 archive_container: file.archive_container, archive_depth: file.archive_depth,
@@ -598,6 +605,15 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         governance.decision_reasons.forEach((reason) => lines.push(`- ${reason}`));
         lines.push('');
     }
+    if (governance.blocking_findings?.length) {
+        lines.push('### Blocking evidence');
+        lines.push('');
+        governance.blocking_findings.forEach(item => {
+            const locations = (item.observations || []).map(observation => `${observation.line ? `line ${observation.line}` : 'line unknown'} (${observation.context_tag || 'context not reported'})`).join('; ');
+            lines.push(`- ${item.id} in ${item.path || 'unknown file'}: ${locations || 'See finding evidence.'} · source ${item.source_channel || 'not reported'}`);
+        });
+        lines.push('');
+    }
 
     if (scanResult.warnings?.length) {
         lines.push('## Warnings');
@@ -653,6 +669,10 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
             lines.push(`  - Category: ${finding.finding_category || finding.category || 'signal'}`);
             lines.push(`  - Subject: ${finding.subject || 'unknown'}`);
             lines.push(`  - Action state: ${finding.action_state || 'present'}`);
+            if (finding.policy_evaluation) {
+                lines.push(`  - Policy response: ${finding.policy_evaluation.action} · source ${finding.policy_evaluation.source_channel}`);
+                (finding.policy_evaluation.observations || []).forEach(observation => lines.push(`  - Speech act: ${observation.speech_act}; target: ${observation.target}; evidence strength: ${observation.confidence}; response: ${observation.action}; ${observation.reason}`));
+            }
             lines.push(`  - Tier: ${finding.tier || 'review'}`);
             lines.push(`  - Disposition: ${finding.disposition || 'unknown'}`);
             if (finding.samples?.length) {
@@ -1088,6 +1108,13 @@ function SkillFindingList({ findings, artifactRole, depth }) {
                                 </span>
                             </div>
                             ({finding.severity}) - {finding.description}
+                            {finding.policy_evaluation && <details><summary>Instruction evidence and policy</summary>
+                                <p>Source channel: {evidenceLabel(finding.policy_evaluation.source_channel)} · Policy response: {evidenceLabel(finding.policy_evaluation.action)}</p>
+                                <ul>{(finding.policy_evaluation.observations || []).map((observation, i) => <li key={i}>
+                                    {evidenceLabel(observation.speech_act)} · Target: {evidenceLabel(observation.target)} · {observation.confidence} evidence strength · {evidenceLabel(observation.action)}
+                                    <p>{observation.reason}</p>
+                                </li>)}</ul>
+                            </details>}
                             {String(finding.id || '').startsWith('pii_') && <p>Presence of contact or personal data is an observation. Disclosure or misuse is not established by this match.</p>}
                             <div className="text-[10px] text-gray-500">
                                 {finding.finding_category} / {finding.subject} / {finding.action_state} / {finding.disposition}
@@ -2265,6 +2292,17 @@ function App({ onBack, onNavigate, buildInfo }) {
                                                     ))}
                                                 </ul>
                                             )}
+                                            {skillScanResult.governance_profile.blocking_findings?.length > 0 && <details>
+                                                <summary>Blocking evidence ({skillScanResult.governance_profile.blocking_findings.length})</summary>
+                                                <ul>{skillScanResult.governance_profile.blocking_findings.map((item, index) => <li key={index}>
+                                                    <strong>{item.id}</strong> · {item.path || 'Unknown file'}
+                                                    {item.source_channel && <p>Source channel: {evidenceLabel(item.source_channel)}</p>}
+                                                    <ul>{(item.observations || []).map((observation, i) => <li key={i}>
+                                                        {Number.isInteger(observation.line) ? `Line ${observation.line}` : 'Line unknown'} · {evidenceLabel(observation.context_tag, 'Context not reported')}
+                                                        {observation.speech_act && ` · ${evidenceLabel(observation.speech_act)} · ${evidenceLabel(observation.target)} · ${observation.confidence} evidence strength`}
+                                                    </li>)}</ul>
+                                                </li>)}</ul>
+                                            </details>}
                                         </div>
                                     )}
 </>,

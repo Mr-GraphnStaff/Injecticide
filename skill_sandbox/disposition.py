@@ -48,14 +48,24 @@ def normalize_observations(matches: Iterable[object]) -> List[Dict[str, object]]
     observations: List[Dict[str, object]] = []
     for match in matches:
         if isinstance(match, dict):
-            observations.append(
-                {
-                    "text": str(match.get("text", "")).strip(),
-                    "line": match.get("line"),
-                    "context_tag": str(match.get("context_tag", "pattern_match")),
-                    "confidence": str(match.get("confidence", "medium")),
-                }
-            )
+            observation = {
+                "text": str(match.get("text", "")).strip(),
+                "line": match.get("line"),
+                "context_tag": str(match.get("context_tag", "pattern_match")),
+                "confidence": str(match.get("confidence", "medium")),
+            }
+            for key in ("speech_act", "target", "language_scope", "candidate_context", "context_limit"):
+                if isinstance(match.get(key), str):
+                    observation[key] = match[key]
+            for key in ("imperative_evidence", "structured_value"):
+                if isinstance(match.get(key), bool):
+                    observation[key] = match[key]
+            for key in ("fixture_id", "line_end"):
+                if isinstance(match.get(key), int):
+                    observation[key] = match[key]
+            if isinstance(match.get("activation_evidence"), list):
+                observation["activation_evidence"] = match["activation_evidence"][:2]
+            observations.append(observation)
             continue
 
         text = str(match).strip()

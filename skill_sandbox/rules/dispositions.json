@@ -1,5 +1,5 @@
 {
-  "catalog_version": "2026-06-26",
+  "catalog_version": "2026-10-29",
   "tiers": [
     "block",
     "review",
@@ -80,6 +80,27 @@
           "disposition": "info",
           "is_actionable": false,
           "counts_for_governance": false
+        },
+        "descriptive_security_language": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "documented_attack_pattern": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "ambiguous_disclosure": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
         }
       }
     },
@@ -115,6 +136,27 @@
           "counts_for_governance": false
         },
         "test_fixture": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        },
+        "descriptive_security_language": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "documented_attack_pattern": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "ambiguous_disclosure": {
           "tier": "review",
           "severity": "medium",
           "disposition": "require_approval",
@@ -314,6 +356,18 @@
           "counts_for_governance": false
         },
         "individual_or_unknown_email": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "declared_tool_execution",
+      "contexts": {
+        "execution_capability": {
           "tier": "review",
           "severity": "medium",
           "disposition": "require_approval",

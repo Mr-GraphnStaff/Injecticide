@@ -18,7 +18,9 @@ Instructions:
     summary = result["behavioral_summary"]
     classification = result["risk_classification"]
 
-    assert summary["ux_manipulation"] is True
+    assert summary["ux_manipulation"] is False
+    assert "auto_open" in summary["required_capabilities"]
+    assert summary["runtime_verified"] is False
     assert any("external" in item for item in summary["observed_behaviors"])
     assert classification["overall_risk"] in {"medium", "high"}
     assert classification["recommendation"] in {"require_admin_approval", "block_by_default"}

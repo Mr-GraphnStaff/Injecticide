@@ -60,19 +60,30 @@ def looks_like_zip(data: bytes) -> bool:
 
 
 def extract_sqlite_text(data: bytes) -> str | None:
+    return extract_sqlite_projection(data)[0]
+
+
+def extract_sqlite_projection(data: bytes):
+    """Return the bounded projection with measured sampling, never full-DB claims."""
+    evidence = {"status": "partial", "tables": [], "table_limit": MAX_SQLITE_TABLES,
+                "row_limit_per_table": MAX_SQLITE_ROWS_PER_TABLE,
+                "text_character_limit": MAX_SQLITE_TEXT_CHARS,
+                "value_character_limit": 200, "blob_values": "omitted",
+                "scope": "Sampled row text only; original database bytes are not exhaustively analyzed."}
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as handle:
         db_path = handle.name
         handle.write(data)
 
     try:
-        return _read_sqlite_rows(db_path)
+        return _read_sqlite_rows(db_path, evidence), evidence
     except sqlite3.DatabaseError:
-        return None
+        evidence["reason"] = "SQLite projection unavailable within the safe parser and operation budget."
+        return None, evidence
     finally:
         os.unlink(db_path)
 
 
-def _read_sqlite_rows(db_path: str) -> str:
+def _read_sqlite_rows(db_path: str, evidence=None) -> str:
     lines = []
     total_chars = 0
     connection = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
@@ -92,9 +103,16 @@ def _read_sqlite_rows(db_path: str) -> str:
                 (MAX_SQLITE_TABLES,),
             )
         ]
+        if evidence is not None:
+            evidence["tables_seen"] = connection.execute(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").fetchone()[0]
 
         for table in tables:
             quoted_table = table.replace('"', '""')
+            table_evidence = {"table": table, "sampled_rows": 0, "total_rows": None,
+                              "total_rows_status": "not_measured"}
+            if evidence is not None:
+                evidence["tables"].append(table_evidence)
             columns = [row[1] for row in connection.execute(f'PRAGMA table_info("{quoted_table}")')]
             if not columns:
                 continue
@@ -118,6 +136,7 @@ def _read_sqlite_rows(db_path: str) -> str:
             query = (f'SELECT {", ".join(projections)} FROM "{quoted_table}" '
                      f'LIMIT {MAX_SQLITE_ROWS_PER_TABLE}')
             for row in connection.execute(query):
+                table_evidence["sampled_rows"] += 1
                 values = []
                 for column, value in zip(columns, row):
                     rendered = _render_sqlite_value(value)
@@ -132,6 +151,19 @@ def _read_sqlite_rows(db_path: str) -> str:
                     break
             if total_chars >= MAX_SQLITE_TEXT_CHARS:
                 break
+        if evidence is not None:
+            # Counts are independently bounded; an expensive count does not erase
+            # a successful projection or turn an unknown total into zero.
+            operations[0] = 0
+            for table_evidence in evidence["tables"]:
+                quoted_table = table_evidence["table"].replace('"', '""')
+                try:
+                    table_evidence["total_rows"] = connection.execute(f'SELECT count(*) FROM "{quoted_table}"').fetchone()[0]
+                    table_evidence["total_rows_status"] = "measured"
+                except sqlite3.DatabaseError:
+                    table_evidence["total_rows_status"] = "unavailable_within_budget"
+            evidence["sampled_rows"] = sum(row["sampled_rows"] for row in evidence["tables"])
+            evidence["projection_characters"] = len("\n".join(lines))
     finally:
         connection.close()
 

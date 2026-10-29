@@ -6,8 +6,8 @@ import hashlib
 try:
     from .package_formats import inspect_formats, RUNTIMES
     from .package_threats import inspect_threats, embedded_blocks
-    from .package_evidence import evidence_profile, coverage_report, scanner_metadata
-    from .governance import build_governance_profile
+    from .package_evidence import evidence_profile, coverage_report, scanner_metadata, version_observations
+    from .governance import build_governance_profile, apply_instruction_policy
     from .behavior_analysis import analyze_behavior
     from .package_checks import check_results
     from .official_validators import attach_official_validator_results
@@ -24,8 +24,8 @@ try:
 except ImportError:
     from package_formats import inspect_formats, RUNTIMES
     from package_threats import inspect_threats, embedded_blocks
-    from package_evidence import evidence_profile, coverage_report, scanner_metadata
-    from governance import build_governance_profile
+    from package_evidence import evidence_profile, coverage_report, scanner_metadata, version_observations
+    from governance import build_governance_profile, apply_instruction_policy
     from behavior_analysis import analyze_behavior
     from package_checks import check_results
     from official_validators import attach_official_validator_results
@@ -82,7 +82,7 @@ def _reconcile_effect_findings(entry, effects, additions):
 
 
 def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", supplied_evidence=None,
-                  extraction_root=None, excluded=(), rescan=None):
+                  extraction_root=None, excluded=(), rescan=None, *, source_channel="uploaded_artifact"):
     entries = result["files"]
     texts = {source["path"]: source["text"] for source in text_sources}
     records = list(entries) + list(excluded)
@@ -156,6 +156,14 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
             entry.setdefault("analysis_coverage", {})["result_display"] = {
                 "status": "complete", "findings_before_limit": len(entry["findings"]),
                 "findings_displayed": len(entry["findings"]), "reason": "No per-file finding display limit reached."}
+    apply_instruction_policy(entries, source_channel)
+    result["analysis_context"] = {"source_channel": source_channel,
+                                   "provenance": "adapter_supplied_analysis_context",
+                                   "runtime_source_verified": False,
+                                   "confidence_meaning": "syntax_evidence_strength_not_calibrated_probability",
+                                   "instruction_semantics": {"supported_recognizers": "bounded_english_patterns_and_supported_code_syntax",
+                                                             "other_languages": "not_assessed", "completeness": "not_established"},
+                                   "scope": "Uploaded text cannot set the source channel. This is a static policy scenario, not authenticated runtime provenance."}
     coverage = coverage_report(records)
     coverage["package_effects"] = {"status": effects["status"], "limits": effects["limits"], "scope": effects["coverage"]["scope"]}
     if effects["status"] == "partial":
@@ -173,6 +181,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                                   "dependencies": threats["dependencies"], "execution_references": threats["execution_references"],
                                   "permissions": threats["permissions"], "composition_analysis": threats["composition_analysis"]}
     result["package_analysis"]["effect_analysis"] = effects
+    result["package_analysis"]["version_observations"] = version_observations(analysis["skills"], texts, result["filename"])
     graph = build_package_graph(text_sources, records)
     result["package_analysis"]["relationship_graph"] = graph
     result["token_footprint"] = build_token_footprint(text_sources, records, graph)
@@ -190,6 +199,15 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                              unassessed_files=coverage["unassessed_files"])
     result.update(analyze_behavior(text_sources))
     result["governance_profile"] = build_governance_profile(entries, result)
+    # The capability summary cannot independently claim a policy block. Keep the
+    # headline recommendation aligned with the contextual finding disposition.
+    profile = result["governance_profile"]
+    classification = result["risk_classification"]
+    classification["scope"] = "Static capability and finding assessment; runtime behavior is unverified."
+    if profile["execution_tier"] == "blocked":
+        classification.update(overall_risk="high", recommendation="block_by_default")
+    elif profile["approval_required"]:
+        classification["recommendation"] = "require_admin_approval"
     result["standards_assessment"] = build_standards_assessment(result, text_sources)
     portable_status = result["standards_assessment"]["overall_status"]
     portable_failed = target_runtime == "generic" and portable_status == "fail"
@@ -221,7 +239,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
     result["readiness"]["vendor_compatibility"] = "unknown"
     result["readiness"]["format_compatibility"] = ({"pass": "explicit_portable_profile_checked", "fail": "portable_format_failed"}.get(portable_status, "unverified") if target_runtime == "generic" else "unverified")
     attach_official_validator_results(result, texts)
-    result["documented_process"] = extract_documented_steps(text_sources)
+    result["documented_process"] = extract_documented_steps(text_sources, graph)
     redact_result(result, texts)
     result["improvement_plan"] = build_improvement_plan(result)
     # Diagram labels and exports derive only from sanitized report evidence.

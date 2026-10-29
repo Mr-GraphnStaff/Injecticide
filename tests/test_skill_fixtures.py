@@ -28,7 +28,7 @@ def test_jira_governance_fixture_has_no_findings():
     assert result["summary"]["flagged_files"] == 0
     assert result["summary"]["total_findings"] == 0
     assert result["risk_classification"]["overall_risk"] == "medium"
-    assert result["risk_classification"]["recommendation"] == "allow_with_warnings"
+    assert result["risk_classification"]["recommendation"] == "require_admin_approval"
     assert "enterprise_access" in result["governance_profile"]["policy_capabilities"]
     assert result["governance_profile"]["brokered_tokens"]["decision"] == "require_admin_approval"
 
@@ -76,7 +76,7 @@ def test_bad_red_team_fixture_triggers_expected_findings():
 
     assert "prompt_override" in finding_ids
     assert "system_exfiltration" in finding_ids
-    assert "tool_escape" in finding_ids
+    assert "declared_tool_execution" in finding_ids
     assert "subprocess_spawn" in finding_ids
     assert result["governance_profile"]["brokered_tokens"]["decision"] == "block_by_default"
     assert result["governance_profile"]["customer_managed_keys"]["decision"] == "block_by_default"

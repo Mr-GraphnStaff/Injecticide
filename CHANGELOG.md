@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.15.0 - 2026-10-29
+
+- Separate retained speech-act, confidence and target evidence from governance
+  policy, with adapter-supplied source channels and inspectable per-observation
+  responses. Uploaded source/channel claims grant no authority.
+- Keep illustrative/quoted/fenced/decoded candidates scanned and flagged; treat
+  activated examples and spoofed-authority commands as operative requests.
+- Add source-channel minimal pairs, adversarial framing and separately reported
+  benign-discussion false positives and operative-attack detections, including
+  source-pinned project documentation regression inputs.
+
+- Classify disclosure requests separately from grammatical status descriptions,
+  defensive risk statements and documented attack patterns. Preserve operative
+  requests in mixed content and passive forms without trusting document labels.
+- Separate declared tool execution from evidence of a tool-boundary escape;
+  retain sandbox and approval requirements for execution capabilities.
+- Bind blocking recommendations to source finding references and align the
+  capability summary with the contextual governance decision.
+- Parse folded YAML purposes, distinguish reading declarations from EOF claims,
+  report bounded SQLite row samples/totals and partial source extraction, and
+  include linked documents' explicit workflow steps with source locations.
+- Add paired independent contextual acceptance cases and report regression checks.
+
 ## 0.14.1 - 2026-10-29
 
 - Include the literal-signature module in the isolated scanner image.

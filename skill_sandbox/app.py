@@ -19,11 +19,12 @@ if __package__:
     from .text_projections import decoded_projections
     from .evidence_redaction import redact_result
     from .disposition import normalize_observations
-    from .artifact_text import extract_scannable_text, looks_like_sqlite, is_probably_text
+    from .artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
     from .behavior_analysis import analyze_behavior
     from .contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
-    from .governance import build_governance_profile
+    from .governance import build_governance_profile, SOURCE_CHANNELS
+    from .speech_acts import annotate_observation_facts, prepare_observation_context, observation_fact_priority, FACT_DETECTORS
     from .scan_rules import build_scan_units, compile_patterns, find_rule_matches
     from .package_analysis import enrich_result
     from .package_formats import bounded_data, RUNTIMES
@@ -34,11 +35,12 @@ else:
     from text_projections import decoded_projections
     from evidence_redaction import redact_result
     from disposition import normalize_observations
-    from artifact_text import extract_scannable_text, looks_like_sqlite, is_probably_text
+    from artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
     from behavior_analysis import analyze_behavior
     from contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
-    from governance import build_governance_profile
+    from governance import build_governance_profile, SOURCE_CHANNELS
+    from speech_acts import annotate_observation_facts, prepare_observation_context, observation_fact_priority, FACT_DETECTORS
     from scan_rules import build_scan_units, compile_patterns, find_rule_matches
     from package_analysis import enrich_result
     from package_formats import bounded_data, RUNTIMES
@@ -96,7 +98,10 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
         await file.close()
 
 
-def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None) -> Dict[str, object]:
+def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None,
+                *, source_channel="uploaded_artifact") -> Dict[str, object]:
+    if not isinstance(source_channel, str) or source_channel not in SOURCE_CHANNELS:
+        raise ValueError("Unsupported source channel")
     if len(upload_bytes) > MAX_UPLOAD_BYTES:
         raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit.")
 
@@ -105,15 +110,15 @@ def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", gover
     lower_name = filename.lower()
 
     if lower_name.endswith(".zip") or zipfile.is_zipfile(io.BytesIO(upload_bytes)):
-        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence)
+        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel)
 
     if lower_name.endswith((".tar", ".tar.gz", ".tgz")):
-        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence)
+        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel)
 
-    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence)
+    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence, source_channel)
 
 
-def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None) -> Dict[str, object]:
+def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact") -> Dict[str, object]:
     warnings: List[str] = []
     excluded = []
     with tempfile.TemporaryDirectory() as temp_root:
@@ -127,15 +132,15 @@ def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_
 
         results, text_sources = _scan_extracted_files(extracted, excluded)
         result = _assemble_result(filename, archive_type, results, warnings, text_sources)
-        return enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text)
+        return enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text, source_channel=source_channel)
 
 
-def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None) -> Dict[str, object]:
+def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact") -> Dict[str, object]:
     entry, text = _scan_file_bytes(filename, upload_bytes)
     results = [entry]
     text_sources = _build_text_sources([(filename, text, entry["artifact_role"])])
     return enrich_result(_assemble_result(filename, "skill", results, [], text_sources), text_sources,
-                         upload_bytes, target_runtime, governance_evidence, rescan=_scan_text)
+                         upload_bytes, target_runtime, governance_evidence, rescan=_scan_text, source_channel=source_channel)
 
 
 def _max_scannable_file_bytes(path: str, header: bytes = b"") -> int:
@@ -375,13 +380,20 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
     asset = inspect_asset(data, path)
     if asset is not None:
         return _scan_asset_entry(entry, asset, data)
+    sampling = None
     try:
-        text, reason = extract_scannable_text(data)
+        if looks_like_sqlite(data):
+            text, sampling = extract_sqlite_projection(data)
+            reason = "Scanned SQLite database content." if text is not None else "Binary or non-text content"
+        else:
+            text, reason = extract_scannable_text(data)
     except ValueError as exc:
         entry.update(skipped=True, reason=str(exc), assessment_state="limited_or_truncated")
         entry["analysis_coverage"]["extraction"].update(status="partial", reason=entry["reason"])
         return entry, None
     if text is None:
+        if sampling is not None:
+            entry["analysis_coverage"]["extraction"]["sampling"] = sampling
         entry["skipped"] = True
         entry["reason"] = reason
         entry["assessment_state"] = "binary_asset_inventory_only"
@@ -402,6 +414,8 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         "reason": reason or "Supported text decoded; this is extraction coverage, not exhaustive detector coverage.",
         "original_binary_security_analysis": "not_performed" if reason else "not_applicable"}
     entry["assessment_state"] = "structured_content_analyzed" if reason else "text_analyzed"
+    if sampling is not None:
+        entry["analysis_coverage"]["extraction"]["sampling"] = sampling
     if reason:
         entry["analysis_scope"] = "Bounded text projection; binary contents and omitted records are not certified safe."
     if len(text) > MAX_TEXT_CHARS:
@@ -467,6 +481,7 @@ def _scan_asset_entry(entry, asset, original):
 def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
     findings = _scan_text_plain(path, text, artifact_role)
     projections, _ = decoded_projections(text)
+    projection_context = None
     for projection in projections:
         # Decoded instructions are untrusted even when carried by a reference.
         derived = _scan_text_plain(path + ".txt", projection["text"], "active")
@@ -476,6 +491,12 @@ def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, objec
             for observation in item.get("observations", []):
                 observation["derived_line"] = observation.get("line")
                 observation["line"] = projection["source_line"]
+            if item.get("id") in FACT_DETECTORS and item.get("observations"):
+                if projection_context is None:
+                    projection_context = prepare_observation_context(text,
+                        projected_candidate_lines=[candidate["source_line"] for candidate in projections])
+                item["observations"] = annotate_observation_facts(item["id"], item["observations"], text,
+                                                                   prepared_context=projection_context)
             item["source_start_line"] = projection["source_line"]
         # Decoded credential literals must not escape through evidence samples.
         redact_result({"findings": derived}, {path: projection["text"]})
@@ -485,6 +506,12 @@ def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, objec
 
 def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
     findings = []
+    fact_context = None
+    def get_fact_context():
+        nonlocal fact_context
+        if fact_context is None:
+            fact_context = prepare_observation_context(text)
+        return fact_context
     scan_units = build_scan_units(path, text)
     # Labels such as audit_policy/reference_template are uploaded claims. Only
     # visibly listed detection examples may use their documentation disposition;
@@ -501,6 +528,7 @@ def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str,
                       "cross_system_automation", "self_modifying_skill"}
 
     def contextual_finding(rule, matches, role):
+        nonlocal fact_context
         observations = normalize_observations(matches)
         if role in {"audit_policy", "reference_template"} and rule["id"] in role_sensitive:
             role = "active"
@@ -512,6 +540,10 @@ def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str,
                     # A bare matcher shown in a condition list is ambiguous,
                     # not trusted: retain review, never silently classify safe.
                     observation["context_tag"] = "documented_condition"
+        if rule["id"] in FACT_DETECTORS and observations:
+            if fact_context is None:
+                fact_context = prepare_observation_context(text)
+            observations = annotate_observation_facts(rule["id"], observations, text, prepared_context=fact_context)
         result = build_finding(rule, observations, role)
         if observations and all(item.get("context_tag") == "documented_condition" for item in observations):
             result["action_state"] = "ambiguous_documented_condition"
@@ -523,7 +555,16 @@ def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str,
             continue
         matches = []
         for unit in scan_units:
-            matches.extend(find_rule_matches(pattern, unit))
+            candidates = find_rule_matches(pattern, unit, fact_context_provider=get_fact_context)
+            if pattern["id"] in FACT_DETECTORS:
+                if candidates:
+                    if fact_context is None:
+                        fact_context = prepare_observation_context(text)
+                    matches.extend(annotate_observation_facts(pattern["id"], candidates, text, prepared_context=fact_context))
+                    matches.sort(key=observation_fact_priority)
+                    del matches[3:]
+                continue
+            matches.extend(candidates)
             if pattern["id"] == "dynamic_exec":
                 matches.sort(key=lambda item: {"decoded_or_fetched_exec": 0, "direct_dynamic_exec": 1, "prose_mention": 2}.get(item.get("context_tag"), 3))
                 matches = matches[:3]

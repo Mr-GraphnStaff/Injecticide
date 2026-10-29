@@ -41,6 +41,8 @@ def _sum_measures(rows):
 
 def build_token_footprint(text_sources, inventory=None, relationship_graph=None):
     files, texts, limits = [], {}, []
+    extraction_by_path = {row.get("path"): row.get("analysis_coverage", {}).get("extraction", {})
+                          for row in inventory or []}
     remaining = MAX_CHARACTERS
     for index, source in enumerate(text_sources):
         if index >= MAX_FILES:
@@ -54,7 +56,14 @@ def build_token_footprint(text_sources, inventory=None, relationship_graph=None)
         if len(supplied) != len(text):
             limits.append({"kind": "footprint_character_budget", "path": path})
         texts[path] = supplied
-        files.append({"path": path, "complete_text": len(supplied) == len(text), **_measure(supplied)})
+        extraction = extraction_by_path.get(path, {})
+        projection_complete = len(supplied) == len(text)
+        source_complete = extraction.get("status") not in {"partial", "not_performed"}
+        files.append({"path": path, "complete_text": projection_complete and source_complete,
+                      "complete_extracted_projection": projection_complete,
+                      "source_extraction_status": extraction.get("status", "not_reported"), **_measure(supplied)})
+        if not source_complete:
+            limits.append({"kind": "partial_source_extraction", "path": path})
         if remaining == 0:
             limits.append({"kind": "footprint_character_budget"})
             break
