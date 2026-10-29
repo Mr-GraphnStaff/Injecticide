@@ -941,13 +941,15 @@
         "vulnerabilities"
       ],
       "seeds": [
-        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+        "https://raw.githubusercontent.com/cisagov/kev-data/main/known_exploited_vulnerabilities.json"
       ],
       "scopes": [
-        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+        "https://raw.githubusercontent.com/cisagov/kev-data/main/known_exploited_vulnerabilities.json"
       ],
       "max_response_bytes": 4194304,
-      "coverage_note": "Daily bounded public JSON download. Search projection capped at 100000 characters; not proof a local dependency is affected.",
+      "coverage_note": "Daily bounded public JSON download. Search projection capped at 100000 characters; not proof a local dependency is affected. Includes the publisher-owned cisagov/kev-data mirror; original URL failures stay visible.",
       "discovery": false,
       "evidence_policy": "research_only_requires_review_before_enforcement"
     },

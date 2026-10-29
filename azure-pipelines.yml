@@ -11,6 +11,11 @@ pr:
     include:
       - master
 
+parameters:
+  - name: obsessionPreflight
+    type: boolean
+    default: false
+
 schedules:
   - cron: "0 11 * * *"
     displayName: Daily bounded Obsession evidence delivery
@@ -25,7 +30,7 @@ variables:
 stages:
   - stage: Validate
     displayName: Validate candidate
-    condition: ne(variables['Build.Reason'], 'Schedule')
+    condition: and(ne(variables['Build.Reason'], 'Schedule'), eq('${{ parameters.obsessionPreflight }}', 'False'))
     jobs:
       - job: Tests
         displayName: Tests and container builds
@@ -165,8 +170,11 @@ stages:
     displayName: Daily no-model research-to-PR bridge
     dependsOn: []
     condition: >-
-      and(eq(variables['Build.Reason'], 'Schedule'),
-          eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      or(and(eq(variables['Build.Reason'], 'Schedule'),
+             eq(variables['Build.SourceBranch'], 'refs/heads/master')),
+         and(eq(variables['Build.Reason'], 'Manual'),
+             eq('${{ parameters.obsessionPreflight }}', 'True'),
+             in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/codex/obsession-mcp-0-14')))
     jobs:
       - job: ScopedDelivery
         pool:
@@ -192,7 +200,11 @@ stages:
             displayName: Reuse isolated requirements-keyed Python runtime
           - bash: |
               set -euo pipefail
-              flock -n "$(Agent.TempDirectory)/injecticide-obsession-delivery.lock" \
-                python3 tools/obsession_delivery.py daily \
-                  --required-check "Injecticide-CI-CD (Validate candidate Tests and container builds)"
+              if [ "${{ parameters.obsessionPreflight }}" = "True" ]; then
+                python3 tools/obsession_delivery.py preflight
+              else
+                flock -n "$(Agent.TempDirectory)/injecticide-obsession-delivery.lock" \
+                  python3 tools/obsession_delivery.py daily \
+                    --required-check "Injecticide-CI-CD (Validate candidate Tests and container builds)"
+              fi
             displayName: Fixed local tests, scoped PR and exact-SHA CI merge gate

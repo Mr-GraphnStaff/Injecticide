@@ -59,10 +59,17 @@ only after the exact head SHA has the successful validation-job check from
 Azure Pipelines application ID 9426, pipeline definition 9, the configured
 DAF-TECH project GUID and matching build URL. Queued/in-progress, missing, failed,
 wrong-producer or wrong-revision checks cannot qualify. Published commit statuses
-must also succeed. The bridge additionally requires strict up-to-date master branch protection,
-enforced for admins, with the exact named check bound to Azure application ID
-9426. Missing protection or an unreadable protection policy blocks automatic
-merge; a successful standalone check is insufficient. The merge request pins the
+must also succeed. The bridge additionally reads effective master branch rules and requires the
+active repository ruleset `Injecticide-validated-master`, scoped exactly to
+`refs/heads/master`, with an empty bypass actor list and strict up-to-date checks
+bound to Azure application ID 9426. Both effective rule and owning ruleset must
+agree. This uses the existing App's metadata-read permission; classic branch
+protection administration permission is not requested. Missing bypass data,
+evaluate-only enforcement or unreadable policy blocks automatic merge. GitHub
+only returns bypass actors to a requester with ruleset write access, so the
+existing installation token may be unable to supply the required explicit empty
+list; this is a live acceptance prerequisite, not assumed from metadata read
+permission alone (see [GitHub ruleset API documentation](https://docs.github.com/en/rest/repos/rules#get-a-repository-ruleset)); a successful standalone check is insufficient. The merge request pins the
 head SHA and respects repository protection; base movement detected before merge stops delivery.
 
 After merge, the regular full validation stage still runs the complete tests and
@@ -100,3 +107,20 @@ gates. These tests neither publish a PR nor prove live credentials, approval
 configuration, scheduled execution or runtime effectiveness. Live acceptance
 requires observing one exact candidate through PR CI, merge, qualification and
 trusted deployment, with durable outcomes retained.
+
+## Existing-token read-only preflight
+
+Queue the existing pipeline manually with `obsessionPreflight: true` on master or
+`codex/obsession-mcp-0-14` to exercise only the self-hosted bridge preflight.
+Ordinary validation/deployment stages do not run in this mode. The default is
+false; regular scheduled daily behavior stays unchanged.
+
+The preflight invokes `python3 tools/obsession_delivery.py preflight`, reads the
+existing checkout authorization header in memory, and makes only GitHub GET
+requests for repository capabilities, effective master rules and the selected
+ruleset. Output contains safe booleans for reported pull/push/admin capabilities,
+strict-check presence, bypass-list visibility and final ruleset-gate satisfaction.
+Missing permission fields are not affirmed. It performs no push, merge, policy
+write, research-container control operation or new credential setup. A false
+bypass visibility/gate result is an acceptance gap requiring an explicit remedy;
+it is not silently treated as an empty bypass list.

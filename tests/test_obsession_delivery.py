@@ -137,9 +137,13 @@ class FakeGitHub(delivery.GitHub):
         self.status = {"total_count": 0}
         self.files = [{"filename": INDEX, "status": "modified"}]
         self.merged = False
-        self.protection = {"required_status_checks": {"strict": True, "checks": [{"context": CHECK, "app_id": 9426}]}, "enforce_admins": {"enabled": True}}
+        parameters = {"strict_required_status_checks_policy": True, "required_status_checks": [{"context": CHECK, "integration_id": 9426}]}
+        self.effective = [{"type": "required_status_checks", "ruleset_id": 123, "ruleset_source_type": "Repository", "ruleset_source": delivery.REPOSITORY, "parameters": parameters}]
+        self.protection = {"id": 123, "name": "Injecticide-validated-master", "target": "branch", "enforcement": "active", "source_type": "Repository", "source": delivery.REPOSITORY,
+            "bypass_actors": [], "conditions": {"ref_name": {"include": ["refs/heads/master"], "exclude": []}}, "rules": [{"type": "required_status_checks", "parameters": deepcopy(parameters)}]}
     def api(self, route, data=None, method=None):
-        if route == "/branches/master/protection": return self.protection
+        if route == "/rules/branches/master": return self.effective
+        if route == "/rulesets/123": return self.protection
         if route.endswith("/merge"):
             self.merged = True
             assert data["sha"] == SHA
@@ -271,15 +275,21 @@ def test_loopback_client_disables_environment_proxies(monkeypatch):
     assert any(isinstance(handler, delivery.urllib.request.ProxyHandler) and handler.proxies == {} for handler in observed)
 
 
-@pytest.mark.parametrize("mutation", ["strict", "admin", "context", "app", "missing"])
+@pytest.mark.parametrize("mutation", ["strict", "bypass", "context", "app", "missing", "branch", "evaluate", "source", "missing_bypass", "mismatched_definition"])
 def test_automatic_merge_requires_protected_up_to_date_checks(mutation):
     github = FakeGitHub()
-    if mutation == "strict": github.protection["required_status_checks"]["strict"] = False
-    elif mutation == "admin": github.protection["enforce_admins"]["enabled"] = False
-    elif mutation == "context": github.protection["required_status_checks"]["checks"][0]["context"] = "Other check"
-    elif mutation == "app": github.protection["required_status_checks"]["checks"][0]["app_id"] = 1
+    parameters = github.effective[0]["parameters"]
+    if mutation == "strict": parameters["strict_required_status_checks_policy"] = False
+    elif mutation == "bypass": github.protection["bypass_actors"] = [{"actor_id": 1, "actor_type": "RepositoryRole", "bypass_mode": "always"}]
+    elif mutation == "context": parameters["required_status_checks"][0]["context"] = "Other check"
+    elif mutation == "app": parameters["required_status_checks"][0]["integration_id"] = 1
+    elif mutation == "branch": github.protection["conditions"]["ref_name"]["include"] = ["refs/heads/other"]
+    elif mutation == "evaluate": github.protection["enforcement"] = "evaluate"
+    elif mutation == "source": github.protection["source"] = "Other/repo"
+    elif mutation == "missing_bypass": del github.protection["bypass_actors"]
+    elif mutation == "mismatched_definition": github.protection["rules"][0]["parameters"]["strict_required_status_checks_policy"] = False
     else: github.protection = {}
-    with pytest.raises(delivery.DeliveryError, match="strict up-to-date branch protection"):
+    with pytest.raises(delivery.DeliveryError, match="active exact-master ruleset"):
         github.merge_if_verified({"number": 1, "head": {"sha": SHA}}, CHECK, BASE)
     assert not github.merged
 
@@ -311,3 +321,35 @@ def test_checkout_authorization_header_exact_supported_scopes(monkeypatch, capsy
     assert calls[-1] == key
     assert synthetic not in capsys.readouterr().out
     assert all(scope in {"http.https://github.com/Mr-GraphnStaff/Injecticide.git.extraheader", "http.https://github.com/Mr-GraphnStaff/Injecticide.extraheader", "http.https://github.com/.extraheader"} for scope in calls)
+
+
+def test_readonly_preflight_reports_only_capability_booleans(monkeypatch):
+    github = FakeGitHub()
+    original = github.api
+    def api(route, data=None, method=None):
+        assert data is None and method is None
+        return {"permissions": {"pull": True, "push": True, "admin": False}} if route == "" else original(route)
+    github.api = api
+    monkeypatch.setattr(delivery, "github_headers", lambda: {})
+    monkeypatch.setattr(delivery, "GitHub", lambda headers: github)
+    outcome = delivery.preflight()
+    assert outcome["state"] == "readonly_preflight"
+    assert outcome["repository_push"] is True
+    assert outcome["repository_admin"] is False
+    assert outcome["bypass_actor_visibility"] is True
+    assert outcome["automatic_ruleset_gate_satisfied"] is True
+    assert all(type(value) is bool for key, value in outcome.items() if key != "state")
+    assert github.merged is False
+
+
+def test_readonly_preflight_exposes_hidden_bypass_without_approving(monkeypatch):
+    github = FakeGitHub()
+    del github.protection["bypass_actors"]
+    original = github.api
+    github.api = lambda route, data=None, method=None: {"permissions": {}} if route == "" else original(route)
+    monkeypatch.setattr(delivery, "github_headers", lambda: {})
+    monkeypatch.setattr(delivery, "GitHub", lambda headers: github)
+    outcome = delivery.preflight()
+    assert outcome["bypass_actor_visibility"] is False
+    assert outcome["automatic_ruleset_gate_satisfied"] is False
+    assert not github.merged

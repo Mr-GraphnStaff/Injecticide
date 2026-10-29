@@ -85,3 +85,24 @@ The merge request pins the PR head SHA. The bridge additionally checks the curre
 The pre-existing production wrapper's untracked build-context limitation recorded above remains. Daily history is bounded: 256 evidence-index entries, a 5000-item delivery enumeration ceiling and the configured active queue/database limits require future maintenance rather than unlimited unattended growth. The initial signature recipe allowlist is empty; this release automatically records qualifying reference changes, not arbitrary invented detectors. Community issues/comments remain review material, not publisher endorsement or complete issue-history synchronization.
 
 There were no new paid/model calls, private uploads, commits, outbound publication or remote mutations by this reviewer. New automatic PRs can consume existing GitHub/Azure quotas and Pi resources; live billing capacity and any need for purchased capacity are unverified. New paid activation still requires David's advance notice and approval. Full-suite, container, live MCP and pipeline evidence must be supplied separately by the coordinator/CI, with their actual revision and result.
+
+## Final source/architecture and SDK addendum
+
+Reviewed the small final changes at commit `7cf7f38f10ed2af4961d8668c1b4816f8bae02f4`: source assessment, architecture, bounded GitHub issues/comments connector and new source configuration; the fresh-304 evidence check; and the delivery remote/header scope correction. The exact approved GitHub origin is accepted with or without `.git`, with separate negative tests for lookalike repository/host URLs. Source credentials remain in memory and do not enter research content.
+
+The new connector hardpins the OWASP repository and allowed query/count contracts, retains issue versus pull-request versus comment identity, and labels community content as not publisher endorsement. New standards/threat sources remain outside the automatic source allowlist. The source assessment correctly separates voluntary guidance, interchange schemas, vulnerability applicability, review-only community statements, bounded feed projections and unsuccessful retrieval. I did not repeat the coordinator's primary-source web collection or claim a complete live source synchronization. The architecture's reviewed-human PR lane now passes through shared CI before the human production gate; it no longer visually bypasses validation.
+
+The freshness amendment preserves the immutable original snapshot retrieval/hash while using the latest successful fetch timestamp, including a valid unchanged 304, for freshness admission. Current source scope, latest snapshot identity, retained body hash and fetch error checks still apply. Offline structural validation alone is explicitly insufficient and must match a fresh service-side admitted export.
+
+Independent final focused run: `python -m pytest tests/test_obsession_mcp.py tests/test_obsession_delivery.py tests/test_obsession_signatures.py tests/test_deployment_assets.py tests/test_research_mcp.py -q -rs` produced **140 passed, 2 skipped in 36.06 seconds**. Both skips were the missing MCP SDK in that interpreter. I then executed each skipped case against the existing isolated pinned-SDK interpreter `tmp/obsession-validation-venv/Scripts/python.exe`: Obsession read-only tool exposure **1 passed in 1.20 seconds**; existing research discovery/query/refresh transport case **1 passed in 2.30 seconds**. These use the SDK client against an authored local server fixture with the collector disabled, not a live production service. No tests remain skipped within this focused set after those separate reruns. The coordinator's full-suite/live-local-HTTP results are separate evidence and were not independently repeated here.
+
+Updated reviewed hashes supersede the earlier core/bridge identities:
+
+| File | SHA-256 |
+| --- | --- |
+| `research_mcp/obsession.py` | `dc890c6576fd671e3c54d0325579b3846d2ebc9040fcf1b09e2ae7497de5761a` |
+| `tools/obsession_delivery.py` | `ad0721c653139e14dc8ea3d33fb72e2dd9de6a104e053629aabb008ace8ce682` |
+| `research_mcp/apis.py` | `57d998691122185f5a01891a96be6704036111d786ca2fd9d589b1ed089cc7b1` |
+| `research_mcp/sources.json` | `2232e3a95aed7f4006c2dd8b782902208f013ec352d6cd4b922718ef6c5ba480` |
+
+`git diff --check` passed after these checks. No new blocking code issue was observed in this extension of the review. Earlier operational boundaries remain: automatic merge needs an actually readable strict branch-protection policy; production/scheduled execution and actual credential permissions are not established by these fixtures. No paid service, remote publication, merge or configuration mutation was performed by this reviewer.

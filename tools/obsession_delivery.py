@@ -134,16 +134,38 @@ class GitHub:
         return self.api("/pulls", {"title": "Obsession: verified scoped evidence update" if automatic else "Obsession review required: locally approved evidence", "head": branch, "base": BASE,
             "body": ("HIGH AUTOMATIC LANE. " if automatic else "HUMAN REVIEW REQUIRED. Locally reviewed Implement decision prepares this PR; automatic merge/deployment is forbidden. ") + "Updates only the bounded reference index or approved literal signatures. Local fixed tests passed. Automatic eligibility is revalidated independently before merge and deployment; medium/low proposals remain research-only."}, "POST")
 
+    def protected_ruleset(self, required_check):
+        """Read effective rules using the existing App's metadata permission."""
+        effective = self.api("/rules/branches/master")
+        if not isinstance(effective, list) or len(effective) > 100:
+            return False
+        for rule in effective:
+            parameters = rule.get("parameters", {})
+            checks = parameters.get("required_status_checks", [])
+            if (rule.get("type") != "required_status_checks"
+                    or parameters.get("strict_required_status_checks_policy") is not True
+                    or not any(check.get("context") == required_check and check.get("integration_id") == 9426 for check in checks)):
+                continue
+            ruleset_id = rule.get("ruleset_id")
+            if type(ruleset_id) is not int or ruleset_id <= 0 or rule.get("ruleset_source_type") != "Repository" or rule.get("ruleset_source") != REPOSITORY:
+                continue
+            policy = self.api("/rulesets/" + str(ruleset_id))
+            if (policy.get("id") != ruleset_id or policy.get("name") != "Injecticide-validated-master"
+                    or policy.get("target") != "branch" or policy.get("enforcement") != "active"
+                    or policy.get("source_type") != "Repository" or policy.get("source") != REPOSITORY
+                    or policy.get("bypass_actors") != []
+                    or policy.get("conditions") != {"ref_name": {"include": ["refs/heads/master"], "exclude": []}}):
+                continue
+            for definition in policy.get("rules", []):
+                if (definition.get("type") == "required_status_checks" and definition.get("parameters") == parameters):
+                    return True
+        return False
+
     def merge_if_verified(self, pull, required_check, base_sha):
         """No bypass: require exact head, scoped diff and the named trusted CI success."""
         sha = pull["head"]["sha"]
-        protection = self.api("/branches/master/protection")
-        required = protection.get("required_status_checks") or {}
-        bound = required.get("checks") or []
-        if (required.get("strict") is not True
-                or protection.get("enforce_admins", {}).get("enabled") is not True
-                or not any(check.get("context") == required_check and check.get("app_id") == 9426 for check in bound)):
-            raise DeliveryError("Automatic merge requires strict up-to-date branch protection, enforced for admins, with the exact Azure check bound to app 9426")
+        if not self.protected_ruleset(required_check):
+            raise DeliveryError("Automatic merge requires an active exact-master ruleset without bypass actors and a strict Azure check bound to app 9426")
         latest = self.api("/pulls/" + str(pull["number"]))
         if latest["head"]["sha"] != sha or latest["base"]["ref"] != BASE or latest["base"]["sha"] != base_sha:
             raise DeliveryError("PR changed during verification")
@@ -353,15 +375,44 @@ def write_receipt(result, directory=None):
     return directory / name
 
 
+def preflight():
+    """Read existing installation capabilities without publication or mutation."""
+    github = GitHub(github_headers())
+    repository = github.api("")
+    permissions = repository.get("permissions", {})
+    effective = github.api("/rules/branches/master")
+    required_check = "Injecticide-CI-CD (Validate candidate Tests and container builds)"
+    visible = False
+    strict = False
+    selected = False
+    for rule in effective if isinstance(effective, list) else []:
+        parameters = rule.get("parameters", {})
+        checks = parameters.get("required_status_checks", [])
+        if (rule.get("type") != "required_status_checks" or rule.get("ruleset_source_type") != "Repository"
+                or rule.get("ruleset_source") != REPOSITORY or type(rule.get("ruleset_id")) is not int):
+            continue
+        if parameters.get("strict_required_status_checks_policy") is not True or not any(check.get("context") == required_check and check.get("integration_id") == 9426 for check in checks):
+            continue
+        strict = True
+        policy = github.api("/rulesets/" + str(rule["ruleset_id"]))
+        if policy.get("name") == "Injecticide-validated-master":
+            selected = True
+            visible = isinstance(policy.get("bypass_actors"), list)
+    return {"state": "readonly_preflight", "repository_pull": permissions.get("pull") is True,
+            "repository_push": permissions.get("push") is True, "repository_admin": permissions.get("admin") is True,
+            "strict_validation_present": strict, "selected_ruleset_present": selected,
+            "bypass_actor_visibility": visible, "automatic_ruleset_gate_satisfied": github.protected_ruleset(required_check)}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["daily", "qualify-commit"])
+    parser.add_argument("command", choices=["daily", "qualify-commit", "preflight"])
     parser.add_argument("--required-check", default="")
     parser.add_argument("--require-eligible", action="store_true")
     args = parser.parse_args()
     try:
         write_receipt({"state": "started", "command": args.command, "sha": git("rev-parse", "HEAD")})
-        result = deliver(args.required_check) if args.command == "daily" else qualify_commit(args.require_eligible)
+        result = preflight() if args.command == "preflight" else deliver(args.required_check) if args.command == "daily" else qualify_commit(args.require_eligible)
         write_receipt(result)
         print(json.dumps(result, sort_keys=True))
     except (DeliveryError, ValueError, OSError) as error:
