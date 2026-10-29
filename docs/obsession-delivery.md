@@ -137,7 +137,13 @@ empty `bypass_actors`, `verified_at`, method
 The fingerprint is SHA-256 of canonical UTF-8 JSON (`sort_keys=True`, separators
 `,` and `:`, Unicode retained) containing exactly `id`, `name`, `target`,
 `enforcement`, `source_type`, `source`, `conditions`, `rules`, `updated_at` from
-the authenticated GitHub ruleset response. The bridge compares every fingerprint
+the authenticated GitHub ruleset response, after `normalized_ruleset_visible`
+normalizes its aware `updated_at` timestamp to UTC with six fractional digits and
+`Z`. Offset representations of the same instant compare equally; naive times
+and real version changes fail. No other visible field is normalized. Attested
+`ruleset_updated_at` uses the same instant comparison. Earlier raw-timestamp
+fingerprints are invalid until the owner explicitly regenerates the record;
+there is no automatic migration. The bridge compares every fingerprint
 and version, checks the verification timestamp, and never creates or refreshes
 this attestation automatically. Missing/changed timestamps, rules, source, owner
 or fingerprints fail closed. A visible nonempty bypass list always fails, even

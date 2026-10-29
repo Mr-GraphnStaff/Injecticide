@@ -120,6 +120,18 @@ ATTESTATION_PATH = ROOT / "research_mcp" / "obsession_delivery_policy.json"
 VISIBLE_RULESET_FIELDS = ("id", "name", "target", "enforcement", "source_type", "source", "conditions", "rules", "updated_at")
 
 
+def normalized_ruleset_visible(policy):
+    """Keep visible fields exact, normalizing aware ruleset time to one UTC form."""
+    visible = {field: policy[field] for field in VISIBLE_RULESET_FIELDS}
+    if not isinstance(visible["updated_at"], str):
+        raise ValueError("Ruleset timestamp must be an aware ISO string")
+    updated = datetime.fromisoformat(visible["updated_at"].replace("Z", "+00:00"))
+    if updated.tzinfo is None:
+        raise ValueError("Ruleset timestamp requires an explicit UTC offset")
+    visible["updated_at"] = updated.astimezone(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
+    return visible
+
+
 def bypass_attestation_valid(policy, path=None):
     """Version-bound owner readback; never refreshed by the automatic lane."""
     path = ATTESTATION_PATH if path is None else Path(path)
@@ -135,14 +147,16 @@ def bypass_attestation_valid(policy, path=None):
                 or attestation["verification_method"] != "owner_authenticated_ruleset_readback"
                 or attestation["verified_by"] != "Mr-GraphnStaff"
                 or not isinstance(policy["updated_at"], str) or not policy["updated_at"]
-                or attestation["ruleset_updated_at"] != policy["updated_at"]
                 or not re.fullmatch(r"[a-f0-9]{64}", attestation["visible_sha256"])):
             return False
-        updated = datetime.fromisoformat(policy["updated_at"].replace("Z", "+00:00"))
+        visible = normalized_ruleset_visible(policy)
+        attested_visible = normalized_ruleset_visible({**policy, "updated_at": attestation["ruleset_updated_at"]})
+        if visible["updated_at"] != attested_visible["updated_at"]:
+            return False
+        updated = datetime.fromisoformat(visible["updated_at"].replace("Z", "+00:00"))
         verified = datetime.fromisoformat(attestation["verified_at"].replace("Z", "+00:00"))
         if updated.tzinfo is None or verified.tzinfo is None or verified < updated or verified > datetime.now(timezone.utc):
             return False
-        visible = {field: policy[field] for field in VISIBLE_RULESET_FIELDS}
         return hashlib.sha256(canonical(visible)).hexdigest() == attestation["visible_sha256"]
     except (OSError, ValueError, TypeError, KeyError, AttributeError):
         return False

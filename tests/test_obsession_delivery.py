@@ -359,7 +359,7 @@ def test_readonly_preflight_exposes_hidden_bypass_without_approving(monkeypatch)
 
 
 def attestation(policy):
-    visible = {field: policy[field] for field in delivery.VISIBLE_RULESET_FIELDS}
+    visible = delivery.normalized_ruleset_visible(policy)
     return {"schema_version": 1, "ruleset_id": policy["id"], "ruleset_updated_at": policy["updated_at"],
             "visible_sha256": hashlib.sha256(delivery.canonical(visible)).hexdigest(), "bypass_actors": [],
             "verified_at": "2026-01-02T00:00:00Z", "verification_method": "owner_authenticated_ruleset_readback", "verified_by": "Mr-GraphnStaff"}
@@ -400,4 +400,30 @@ def test_visible_bypass_overrides_previously_valid_attestation(tmp_path, monkeyp
     assert delivery.bypass_attestation_valid(github.protection)
     github.protection["bypass_actors"] = [{"actor_id": 1, "actor_type": "Integration", "bypass_mode": "always"}]
     assert delivery.bypass_attestation_valid(github.protection)
+    assert not github.protected_ruleset(CHECK)
+
+
+def test_owner_offset_equivalent_to_public_utc_version(tmp_path, monkeypatch):
+    github = FakeGitHub(); del github.protection["bypass_actors"]
+    owner = {**github.protection, "updated_at": "2026-01-01T08:06:50.189-05:00"}
+    github.protection["updated_at"] = "2026-01-01T13:06:50.189Z"
+    proof = attestation(owner)
+    path = tmp_path / "attestation.json"; path.write_text(json.dumps(proof), encoding="utf-8")
+    monkeypatch.setattr(delivery, "ATTESTATION_PATH", path)
+    assert delivery.normalized_ruleset_visible(owner) == delivery.normalized_ruleset_visible(github.protection)
+    assert delivery.bypass_attestation_valid(github.protection)
+    assert github.protected_ruleset(CHECK)
+    github.protection["updated_at"] = "2026-01-01T13:06:50.190Z"
+    assert not delivery.bypass_attestation_valid(github.protection)
+    assert not github.protected_ruleset(CHECK)
+
+
+def test_naive_ruleset_time_is_not_normalized_or_attested(tmp_path, monkeypatch):
+    github = FakeGitHub(); del github.protection["bypass_actors"]
+    proof = attestation(github.protection)
+    github.protection["updated_at"] = "2026-01-01T00:00:00"
+    with pytest.raises(ValueError, match="explicit UTC offset"):
+        delivery.normalized_ruleset_visible(github.protection)
+    path = tmp_path / "attestation.json"; path.write_text(json.dumps(proof), encoding="utf-8")
+    monkeypatch.setattr(delivery, "ATTESTATION_PATH", path)
     assert not github.protected_ruleset(CHECK)
