@@ -1,3 +1,25 @@
+# Active assignment - Obsession MCP 0.14.0
+
+David authorized implementation, PR/push/pipeline delivery and a final Injecticide
+architecture diagram. Daily research is independent of scans. High useful signals
+can enter the scoped automatic release lane; medium/low receive Implement,
+Investigate or Reject review. New external costs require prior notice/approval.
+The user's supplied standards/intelligence brief and OWASP issue tracker are
+included in source assessment; no publisher endorsement is inferred for issues.
+
+Base includes scanner/map PR60 (94637c0) over published 0.12.0. Current isolated
+branch codex/obsession-mcp-0-14; original Y: changes remain preserved. Avery owns
+integration, source coverage, signature template, diagram and live release.
+Ishan owns durable research gate/MCP. Mara owns trusted bridge/pipeline. Lena
+independently reviews final authority, provenance and delivery boundaries.
+
+Reference updates are evidence-only. Shipped signature recipes are empty;
+novel detectors require reviewed local policy and paired controls. Arbitrary
+new code remains review work. No new paid model/search service or private upload.
+Actual test, PR, protection and pipeline/deployment states follow in validation.
+
+---
+
 # Active assignment - 0.13.0 generic scanner context and readable maps
 
 David authorized research and implementation on October 29, with advance notice

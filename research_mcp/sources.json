@@ -825,6 +825,212 @@
       "max_response_bytes": 4194304,
       "evidence_policy": "research_only_requires_review_before_enforcement",
       "publisher_verified_on": "2026-10-27"
+    },
+    {
+      "id": "owasp-skills-issues",
+      "ecosystem": "OWASP community",
+      "topics": [
+        "skills",
+        "plugins",
+        "research"
+      ],
+      "connector": "github_issues",
+      "seeds": [
+        "https://api.github.com/repos/OWASP/www-project-agentic-skills-top-10/issues?state=all&sort=updated&direction=desc&per_page=100"
+      ],
+      "scopes": [
+        "https://api.github.com/repos/OWASP/www-project-agentic-skills-top-10/issues?state=all&sort=updated&direction=desc&per_page=100"
+      ],
+      "max_response_bytes": 2097152,
+      "authority": "community_review_only",
+      "coverage_note": "Latest 100 updated issues and pull requests, including closed. Not complete historical synchronization.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "owasp-skills-comments",
+      "ecosystem": "OWASP community",
+      "topics": [
+        "skills",
+        "plugins",
+        "research"
+      ],
+      "connector": "github_issue_comments",
+      "seeds": [
+        "https://api.github.com/repos/OWASP/www-project-agentic-skills-top-10/issues/comments?sort=updated&direction=desc&per_page=100"
+      ],
+      "scopes": [
+        "https://api.github.com/repos/OWASP/www-project-agentic-skills-top-10/issues/comments?sort=updated&direction=desc&per_page=100"
+      ],
+      "max_response_bytes": 2097152,
+      "authority": "community_review_only",
+      "coverage_note": "Latest 100 updated issue/PR comments; high activity can exceed this window.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "nist-playbook",
+      "ecosystem": "NIST",
+      "topics": [
+        "skills",
+        "plugins",
+        "governance",
+        "standards"
+      ],
+      "seeds": [
+        "https://airc.nist.gov/airmf-resources/playbook/",
+        "https://airc.nist.gov/docs/playbook.json"
+      ],
+      "scopes": [
+        "https://airc.nist.gov/airmf-resources/playbook/",
+        "https://airc.nist.gov/docs/playbook.json"
+      ],
+      "max_response_bytes": 2097152,
+      "coverage_note": "Voluntary playbook suggestions; no invented mandatory compliance mappings. Text search projection is bounded.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "nist-oscal",
+      "ecosystem": "NIST",
+      "topics": [
+        "skills",
+        "plugins",
+        "governance",
+        "standards"
+      ],
+      "seeds": [
+        "https://pages.nist.gov/OSCAL/",
+        "https://raw.githubusercontent.com/usnistgov/OSCAL/main/README.md"
+      ],
+      "scopes": [
+        "https://pages.nist.gov/OSCAL/",
+        "https://raw.githubusercontent.com/usnistgov/OSCAL/main/README.md"
+      ],
+      "coverage_note": "OSCAL is a control interchange language, not an AI control catalog or compliance certification.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "nist-nvd",
+      "ecosystem": "NIST",
+      "topics": [
+        "skills",
+        "plugins",
+        "dependencies",
+        "vulnerabilities"
+      ],
+      "seeds": [
+        "https://nvd.nist.gov/developers/vulnerabilities",
+        "https://nvd.nist.gov/developers/start-here"
+      ],
+      "scopes": [
+        "https://nvd.nist.gov/developers/"
+      ],
+      "coverage_note": "API publication watch; full NVD synchronization and credential registration are not activated.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "cisa-kev",
+      "ecosystem": "CISA",
+      "topics": [
+        "skills",
+        "plugins",
+        "dependencies",
+        "vulnerabilities"
+      ],
+      "seeds": [
+        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+      ],
+      "scopes": [
+        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+      ],
+      "max_response_bytes": 4194304,
+      "coverage_note": "Daily bounded public JSON download. Search projection capped at 100000 characters; not proof a local dependency is affected.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "first-epss",
+      "ecosystem": "FIRST",
+      "topics": [
+        "skills",
+        "plugins",
+        "dependencies",
+        "vulnerabilities"
+      ],
+      "seeds": [
+        "https://www.first.org/epss/data.html",
+        "https://api.first.org/epss/"
+      ],
+      "scopes": [
+        "https://www.first.org/epss/",
+        "https://api.first.org/epss/"
+      ],
+      "coverage_note": "Publication/API contract watch. Full daily gzip CSV import requires a separate bounded bulk adapter; not activated or simulated using lookup API.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "osv-docs",
+      "ecosystem": "OSV",
+      "topics": [
+        "skills",
+        "plugins",
+        "dependencies",
+        "vulnerabilities"
+      ],
+      "seeds": [
+        "https://google.github.io/osv.dev/",
+        "https://google.github.io/osv.dev/api/"
+      ],
+      "scopes": [
+        "https://google.github.io/osv.dev/"
+      ],
+      "coverage_note": "Official schema/API guidance watch. No private dependency upload, POST lookup or full vulnerability mirror is performed.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "csa-ai-controls",
+      "ecosystem": "CSA",
+      "topics": [
+        "skills",
+        "plugins",
+        "governance",
+        "standards"
+      ],
+      "seeds": [
+        "https://cloudsecurityalliance.org/artifacts/ai-controls-matrix",
+        "https://cloudsecurityalliance.org/csai-foundation"
+      ],
+      "scopes": [
+        "https://cloudsecurityalliance.org/artifacts/ai-controls-matrix",
+        "https://cloudsecurityalliance.org/csai-foundation"
+      ],
+      "coverage_note": "Public publication watch only; gated spreadsheet access and redistribution terms require separate review.",
+      "discovery": false,
+      "evidence_policy": "research_only_requires_review_before_enforcement"
+    },
+    {
+      "id": "mitre-atlas-releases",
+      "ecosystem": "MITRE",
+      "topics": [
+        "skills",
+        "plugins",
+        "threats"
+      ],
+      "connector": "github_releases",
+      "seeds": [
+        "https://api.github.com/repos/mitre-atlas/atlas-data/releases?per_page=5"
+      ],
+      "scopes": [
+        "https://api.github.com/repos/mitre-atlas/atlas-data/releases?per_page=5"
+      ],
+      "discovery": false,
+      "coverage_note": "Latest five official release records; release asset URLs are evidence, not executed or automatically imported.",
+      "evidence_policy": "research_only_requires_review_before_enforcement"
     }
   ]
 }

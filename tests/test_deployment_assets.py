@@ -11,14 +11,36 @@ def test_pipeline_deploys_only_after_validation() -> None:
 
     assert [stage["stage"] for stage in pipeline["stages"]] == [
         "Validate",
+        "QualifyAutomatic",
+        "DeployAutomatic",
         "DeployProduction",
+        "ObsessionDaily",
     ]
-    deployment = pipeline["stages"][1]
-    assert deployment["dependsOn"] == "Validate"
+    deployment = next(stage for stage in pipeline["stages"] if stage["stage"] == "DeployProduction")
+    assert deployment["dependsOn"] == ["Validate", "QualifyAutomatic"]
+    assert "dependencies.Validate.result, 'Succeeded'" in deployment["condition"]
+    assert "eligibility.eligible'], 'false'" in deployment["condition"]
     assert "refs/heads/master" in deployment["condition"]
     job = deployment["jobs"][0]
     assert job["environment"] == "injecticide-pi-production"
     assert job["pool"]["name"] == "Injecticide Pi Private"
+
+
+def test_automatic_delivery_requalifies_sha_and_schedule_uses_existing_pi():
+    pipeline = yaml.safe_load((ROOT / "azure-pipelines.yml").read_text(encoding="utf-8"))
+    stages = {stage["stage"]: stage for stage in pipeline["stages"]}
+    automatic = stages["DeployAutomatic"]
+    assert automatic["dependsOn"] == ["Validate", "QualifyAutomatic"]
+    assert "eligibility.qualified_sha'], variables['Build.SourceVersion']" in automatic["condition"]
+    assert "eligibility.eligible'], 'true'" in automatic["condition"]
+    script = automatic["jobs"][0]["steps"][-1]["bash"]
+    assert "qualify-commit --require-eligible" in script
+    assert 'injecticide-deploy "${BUILD_SOURCEVERSION}"' in script
+    daily = stages["ObsessionDaily"]
+    assert "Build.Reason'], 'Schedule'" in daily["condition"]
+    assert daily["jobs"][0]["pool"]["name"] == "Injecticide Pi Private"
+    assert pipeline["schedules"][0]["always"] is True
+    assert pipeline["schedules"][0]["cron"] == "0 11 * * *"
 
 
 def test_deploy_wrapper_restricts_source_and_commit() -> None:

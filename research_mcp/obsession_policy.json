@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "gate_algorithm_version": 1,
+  "interval_seconds": 86400,
+  "snapshot_budget": 100,
+  "max_evidence_age_seconds": 604800,
+  "max_queue_items": 5000,
+  "useful_terms": [
+    "skill",
+    "skills",
+    "plugin",
+    "plugins",
+    "extension",
+    "extensions",
+    "prompt injection",
+    "agentic"
+  ],
+  "auto_reference_sources": [
+    "agent-skills",
+    "agent-plugins",
+    "openai-plugins",
+    "openai-codex",
+    "claude-code",
+    "claude-platform",
+    "gemini-cli",
+    "copilot",
+    "cursor",
+    "kiro",
+    "owasp-skills",
+    "requirements-openai",
+    "requirements-claude-code",
+    "requirements-claude-upload",
+    "requirements-gemini",
+    "requirements-copilot",
+    "requirements-openai-mcp-import"
+  ],
+  "signature_recipes": []
+}

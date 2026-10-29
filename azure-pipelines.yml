@@ -11,12 +11,21 @@ pr:
     include:
       - master
 
+schedules:
+  - cron: "0 11 * * *"
+    displayName: Daily bounded Obsession evidence delivery
+    branches:
+      include:
+        - master
+    always: true
+
 variables:
   pythonVersion: "3.11"
 
 stages:
   - stage: Validate
     displayName: Validate candidate
+    condition: ne(variables['Build.Reason'], 'Schedule')
     jobs:
       - job: Tests
         displayName: Tests and container builds
@@ -47,12 +56,88 @@ stages:
               docker build --tag injecticide-research-mcp:ci ./research_mcp
             displayName: Build container candidates
 
-  - stage: DeployProduction
-    displayName: Deploy to Raspberry Pi
+  - stage: QualifyAutomatic
+    displayName: Independently qualify scoped automatic update
     dependsOn: Validate
     condition: >-
+      and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+          ne(variables['Build.Reason'], 'Schedule'), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: ScopeGate
+        pool:
+          name: Injecticide Pi Private
+          demands:
+            - Agent.Name -equals injecticide-pi-arm64
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+          - bash: |
+              set -euo pipefail
+              runtime_key="$(sha256sum requirements.txt research_mcp/requirements.txt | sha256sum | cut -d ' ' -f1)"
+              runtime_dir="$(Agent.ToolsDirectory)/injecticide-obsession-${runtime_key}"
+              if [ ! -f "${runtime_dir}/ready" ]; then
+                python3 -m venv "${runtime_dir}"
+                "${runtime_dir}/bin/python" -m pip install --disable-pip-version-check -r requirements.txt -r research_mcp/requirements.txt
+                touch "${runtime_dir}/ready"
+              fi
+              echo "##vso[task.prependpath]${runtime_dir}/bin"
+            displayName: Reuse isolated requirements-keyed Python runtime
+          - bash: python3 tools/obsession_delivery.py qualify-commit
+            name: eligibility
+            displayName: Revalidate exact JSON payload against current local policy and evidence
+
+  - stage: DeployAutomatic
+    displayName: Deploy independently qualified evidence-only update
+    dependsOn:
+      - Validate
+      - QualifyAutomatic
+    condition: >-
+      and(eq(dependencies.Validate.result, 'Succeeded'),
+          eq(dependencies.QualifyAutomatic.result, 'Succeeded'),
+          eq(dependencies.QualifyAutomatic.outputs['ScopeGate.eligibility.qualified_sha'], variables['Build.SourceVersion']),
+          eq(dependencies.QualifyAutomatic.outputs['ScopeGate.eligibility.eligible'], 'true'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+          ne(variables['Build.Reason'], 'Schedule'), ne(variables['Build.Reason'], 'PullRequest'))
+    lockBehavior: sequential
+    jobs:
+      - job: DeployScopedEvidence
+        pool:
+          name: Injecticide Pi Private
+          demands:
+            - Agent.Name -equals injecticide-pi-arm64
+        timeoutInMinutes: 45
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+          - bash: |
+              set -euo pipefail
+              runtime_key="$(sha256sum requirements.txt research_mcp/requirements.txt | sha256sum | cut -d ' ' -f1)"
+              runtime_dir="$(Agent.ToolsDirectory)/injecticide-obsession-${runtime_key}"
+              if [ ! -f "${runtime_dir}/ready" ]; then
+                python3 -m venv "${runtime_dir}"
+                "${runtime_dir}/bin/python" -m pip install --disable-pip-version-check -r requirements.txt -r research_mcp/requirements.txt
+                touch "${runtime_dir}/ready"
+              fi
+              echo "##vso[task.prependpath]${runtime_dir}/bin"
+            displayName: Reuse isolated requirements-keyed Python runtime
+          - bash: |
+              set -euo pipefail
+              python3 tools/obsession_delivery.py qualify-commit --require-eligible
+              sudo -n /usr/local/sbin/injecticide-deploy "${BUILD_SOURCEVERSION}"
+            displayName: Revalidate exact payload then invoke existing trusted deployment wrapper
+
+  - stage: DeployProduction
+    displayName: Deploy to Raspberry Pi
+    dependsOn:
+      - Validate
+      - QualifyAutomatic
+    condition: >-
       and(
-        succeeded(),
+        eq(dependencies.Validate.result, 'Succeeded'),
+        eq(dependencies.QualifyAutomatic.result, 'Succeeded'),
+        eq(dependencies.QualifyAutomatic.outputs['ScopeGate.eligibility.eligible'], 'false'),
         eq(variables['Build.SourceBranch'], 'refs/heads/master'),
         ne(variables['Build.Reason'], 'PullRequest')
       )
@@ -75,3 +160,39 @@ stages:
                     set -euo pipefail
                     sudo -n /usr/local/sbin/injecticide-deploy "${BUILD_SOURCEVERSION}"
                   displayName: Deploy and verify on Pi
+
+  - stage: ObsessionDaily
+    displayName: Daily no-model research-to-PR bridge
+    dependsOn: []
+    condition: >-
+      and(eq(variables['Build.Reason'], 'Schedule'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    jobs:
+      - job: ScopedDelivery
+        pool:
+          name: Injecticide Pi Private
+          demands:
+            - Agent.Name -equals injecticide-pi-arm64
+        timeoutInMinutes: 45
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            persistCredentials: true
+          - bash: |
+              set -euo pipefail
+              runtime_key="$(sha256sum requirements.txt research_mcp/requirements.txt | sha256sum | cut -d ' ' -f1)"
+              runtime_dir="$(Agent.ToolsDirectory)/injecticide-obsession-${runtime_key}"
+              if [ ! -f "${runtime_dir}/ready" ]; then
+                python3 -m venv "${runtime_dir}"
+                "${runtime_dir}/bin/python" -m pip install --disable-pip-version-check -r requirements.txt -r research_mcp/requirements.txt
+                touch "${runtime_dir}/ready"
+              fi
+              echo "##vso[task.prependpath]${runtime_dir}/bin"
+            displayName: Reuse isolated requirements-keyed Python runtime
+          - bash: |
+              set -euo pipefail
+              flock -n "$(Agent.TempDirectory)/injecticide-obsession-delivery.lock" \
+                python3 tools/obsession_delivery.py daily \
+                  --required-check "Injecticide-CI-CD (Validate candidate Tests and container builds)"
+            displayName: Fixed local tests, scoped PR and exact-SHA CI merge gate

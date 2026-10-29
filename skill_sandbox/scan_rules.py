@@ -9,6 +9,11 @@ from io import StringIO
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
+if __package__:
+    from .obsession_signatures import load_rules as load_obsession_rules
+else:
+    from obsession_signatures import load_rules as load_obsession_rules
+
 
 RULE_CATALOG_PATH = Path(__file__).resolve().parent / "rules" / "violations.json"
 
@@ -18,7 +23,9 @@ def load_rule_catalog() -> Dict[str, object]:
     """Load the local structured rule catalog used for skill scanning."""
 
     with RULE_CATALOG_PATH.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+        catalog = json.load(handle)
+    catalog["rules"].extend(load_obsession_rules())
+    return catalog
 
 
 def compile_patterns() -> Tuple[Dict[str, object], ...]:
