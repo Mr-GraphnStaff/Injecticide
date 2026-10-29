@@ -106,3 +106,19 @@ Updated reviewed hashes supersede the earlier core/bridge identities:
 | `research_mcp/sources.json` | `2232e3a95aed7f4006c2dd8b782902208f013ec352d6cd4b922718ef6c5ba480` |
 
 `git diff --check` passed after these checks. No new blocking code issue was observed in this extension of the review. Earlier operational boundaries remain: automatic merge needs an actually readable strict branch-protection policy; production/scheduled execution and actual credential permissions are not established by these fixtures. No paid service, remote publication, merge or configuration mutation was performed by this reviewer.
+
+## Bounded ruleset-attestation fallback review
+
+The final ruleset fallback supersedes the earlier requirement that the publisher App itself read a fresh complete bypass list. GitHub's metadata-readable ruleset response can omit that field for a least-privilege installation. The implementation now accepts an omitted field only when a trusted setup receipt matches the exact ruleset identity, `updated_at` and canonical visible policy fingerprint. It does not interpret an omitted field as empty. Any explicitly visible nonempty bypass list still rejects automatic merge, regardless of the receipt.
+
+Inspected the new helper, fixed attestation path, integration into the effective-rule check, negative tests and trust-boundary documentation. `research_mcp/obsession_delivery_policy.json` is outside both automatically editable paths. The receipt records `owner_authenticated_ruleset_readback`, not human acceptance; it requires the configured owner account, explicit empty bypass array, timezone-aware timestamps in order, an exact policy version and SHA-256 of all agreed visible policy fields. The automatic lane cannot renew this evidence. Owner/host trust and GitHub timestamp granularity remain explicit limits; this is not a cryptographic guarantee against the privileged owner changing policy.
+
+Independent bounded validation:
+
+- Existing isolated SDK interpreter ran `tests/test_obsession_delivery.py`: **61 passed in 0.30 seconds**.
+- Independently compared the actual locally retained owner-readback artifact with the pinned receipt after removing the private bypass field: matching identity/version/fingerprint passed. Changed version, ID or name failed. Future, pre-policy or timezone-naive verification timestamps, a fake human-approval method, and nonempty attested bypass actors all failed. These probes made no network requests.
+- `git diff --check` passed.
+
+Current reviewed SHA-256 values: `tools/obsession_delivery.py` = `8d10f48ba7d21b60fc06c5c1218731ae043261735942f6e0ad145cd5ebd457af`; `research_mcp/obsession_delivery_policy.json` = `650663ccf5161ee9eed93f29b885906901a42b0a3fe3b69d0e1f41d5c406eb88`.
+
+No new blocking code issue was observed in this bounded review. This confirms local fallback behavior and receipt consistency, not the current publisher App's successful preflight, CI or autonomous merge/deployment. Those actual operational results must still be recorded by the coordinator. No new token permissions, paid service, private upload or remote mutation was performed by this reviewer.

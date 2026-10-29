@@ -116,6 +116,38 @@ def trusted_ci(run, sha):
                 and parse_qs(url.query).get("buildId") == [match.group(1)])
 
 
+ATTESTATION_PATH = ROOT / "research_mcp" / "obsession_delivery_policy.json"
+VISIBLE_RULESET_FIELDS = ("id", "name", "target", "enforcement", "source_type", "source", "conditions", "rules", "updated_at")
+
+
+def bypass_attestation_valid(policy, path=None):
+    """Version-bound owner readback; never refreshed by the automatic lane."""
+    path = ATTESTATION_PATH if path is None else Path(path)
+    try:
+        raw = path.read_bytes()
+        if len(raw) > 16_384 or any(field not in policy for field in VISIBLE_RULESET_FIELDS):
+            return False
+        attestation = json.loads(raw)
+        if (set(attestation) != {"schema_version", "ruleset_id", "ruleset_updated_at", "visible_sha256", "bypass_actors", "verified_at", "verification_method", "verified_by"}
+                or type(attestation["schema_version"]) is not int or attestation["schema_version"] != 1
+                or type(attestation["ruleset_id"]) is not int or attestation["ruleset_id"] != policy.get("id")
+                or attestation["bypass_actors"] != []
+                or attestation["verification_method"] != "owner_authenticated_ruleset_readback"
+                or attestation["verified_by"] != "Mr-GraphnStaff"
+                or not isinstance(policy["updated_at"], str) or not policy["updated_at"]
+                or attestation["ruleset_updated_at"] != policy["updated_at"]
+                or not re.fullmatch(r"[a-f0-9]{64}", attestation["visible_sha256"])):
+            return False
+        updated = datetime.fromisoformat(policy["updated_at"].replace("Z", "+00:00"))
+        verified = datetime.fromisoformat(attestation["verified_at"].replace("Z", "+00:00"))
+        if updated.tzinfo is None or verified.tzinfo is None or verified < updated or verified > datetime.now(timezone.utc):
+            return False
+        visible = {field: policy[field] for field in VISIBLE_RULESET_FIELDS}
+        return hashlib.sha256(canonical(visible)).hexdigest() == attestation["visible_sha256"]
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        return False
+
+
 class GitHub:
     def __init__(self, headers):
         self.headers = headers
@@ -153,7 +185,8 @@ class GitHub:
             if (policy.get("id") != ruleset_id or policy.get("name") != "Injecticide-validated-master"
                     or policy.get("target") != "branch" or policy.get("enforcement") != "active"
                     or policy.get("source_type") != "Repository" or policy.get("source") != REPOSITORY
-                    or policy.get("bypass_actors") != []
+                    or ("bypass_actors" in policy and policy["bypass_actors"] != [])
+                    or ("bypass_actors" not in policy and not bypass_attestation_valid(policy))
                     or policy.get("conditions") != {"ref_name": {"include": ["refs/heads/master"], "exclude": []}}):
                 continue
             for definition in policy.get("rules", []):
@@ -385,6 +418,7 @@ def preflight():
     visible = False
     strict = False
     selected = False
+    attested = False
     for rule in effective if isinstance(effective, list) else []:
         parameters = rule.get("parameters", {})
         checks = parameters.get("required_status_checks", [])
@@ -398,10 +432,11 @@ def preflight():
         if policy.get("name") == "Injecticide-validated-master":
             selected = True
             visible = isinstance(policy.get("bypass_actors"), list)
-    return {"state": "readonly_preflight", "repository_pull": permissions.get("pull") is True,
-            "repository_push": permissions.get("push") is True, "repository_admin": permissions.get("admin") is True,
+            attested = bypass_attestation_valid(policy)
+    return {"state": "readonly_preflight", "repository_pull": permissions.get("pull") if type(permissions.get("pull")) is bool else None,
+            "repository_push": permissions.get("push") if type(permissions.get("push")) is bool else None, "repository_admin": permissions.get("admin") if type(permissions.get("admin")) is bool else None,
             "strict_validation_present": strict, "selected_ruleset_present": selected,
-            "bypass_actor_visibility": visible, "automatic_ruleset_gate_satisfied": github.protected_ruleset(required_check)}
+            "bypass_actor_visibility": visible, "bypass_attestation_valid": attested, "automatic_ruleset_gate_satisfied": github.protected_ruleset(required_check)}
 
 
 def main():

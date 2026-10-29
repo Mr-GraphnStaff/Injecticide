@@ -63,13 +63,13 @@ must also succeed. The bridge additionally reads effective master branch rules a
 active repository ruleset `Injecticide-validated-master`, scoped exactly to
 `refs/heads/master`, with an empty bypass actor list and strict up-to-date checks
 bound to Azure application ID 9426. Both effective rule and owning ruleset must
-agree. This uses the existing App's metadata-read permission; classic branch
-protection administration permission is not requested. Missing bypass data,
-evaluate-only enforcement or unreadable policy blocks automatic merge. GitHub
-only returns bypass actors to a requester with ruleset write access, so the
-existing installation token may be unable to supply the required explicit empty
-list; this is a live acceptance prerequisite, not assumed from metadata read
-permission alone (see [GitHub ruleset API documentation](https://docs.github.com/en/rest/repos/rules#get-a-repository-ruleset)); a successful standalone check is insufficient. The merge request pins the
+agree. The existing App uses metadata-read permission; classic branch protection
+administration permission is not requested. If GitHub returns bypass actors,
+the list must be explicitly empty. GitHub hides that list from callers without
+ruleset write access ([official API documentation](https://docs.github.com/en/rest/repos/rules#get-a-repository-ruleset)).
+In that case only a matching owner-authenticated attestation can fill the hidden
+field. Missing evidence or evaluate-only enforcement blocks automatic merge;
+a successful standalone check is insufficient. The merge request pins the
 head SHA and respects repository protection; base movement detected before merge stops delivery.
 
 After merge, the regular full validation stage still runs the complete tests and
@@ -118,9 +118,34 @@ false; regular scheduled daily behavior stays unchanged.
 The preflight invokes `python3 tools/obsession_delivery.py preflight`, reads the
 existing checkout authorization header in memory, and makes only GitHub GET
 requests for repository capabilities, effective master rules and the selected
-ruleset. Output contains safe booleans for reported pull/push/admin capabilities,
+ruleset. Output contains reported pull/push/admin capability booleans (null when absent), and booleans for
 strict-check presence, bypass-list visibility and final ruleset-gate satisfaction.
-Missing permission fields are not affirmed. It performs no push, merge, policy
+Missing permission fields remain null/unknown, rather than being reported as denied. It performs no push, merge, policy
 write, research-container control operation or new credential setup. A false
 bypass visibility/gate result is an acceptance gap requiring an explicit remedy;
-it is not silently treated as an empty bypass list.
+it is not silently treated as an empty bypass list. The separate `bypass_attestation_valid` boolean reports whether a pinned owner readback matches the currently visible ruleset version.
+
+## Hidden-bypass owner attestation
+
+`research_mcp/obsession_delivery_policy.json` is an optional, human-controlled
+setup record outside the two-file automatic update allowlist. The owner reads
+the ruleset with existing authorized access, verifies an empty bypass actor list,
+and records schema version 1, ruleset ID, `ruleset_updated_at`, `visible_sha256`,
+empty `bypass_actors`, `verified_at`, method
+`owner_authenticated_ruleset_readback` and verifier `Mr-GraphnStaff`.
+
+The fingerprint is SHA-256 of canonical UTF-8 JSON (`sort_keys=True`, separators
+`,` and `:`, Unicode retained) containing exactly `id`, `name`, `target`,
+`enforcement`, `source_type`, `source`, `conditions`, `rules`, `updated_at` from
+the authenticated GitHub ruleset response. The bridge compares every fingerprint
+and version, checks the verification timestamp, and never creates or refreshes
+this attestation automatically. Missing/changed timestamps, rules, source, owner
+or fingerprints fail closed. A visible nonempty bypass list always fails, even
+with an otherwise matching attestation.
+
+This relies on trusted owner setup, GitHub's version metadata and its timestamp
+granularity. It is not a cryptographic proof against a malicious repository
+owner or undetectable changes within the same reported timestamp/version.
+Changes to attestation authority require normal human review. Preflight reports
+visibility, attestation validity and effective gate satisfaction separately;
+host receipts retain those diagnostic outcomes.

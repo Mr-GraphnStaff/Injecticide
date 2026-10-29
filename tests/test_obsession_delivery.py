@@ -139,7 +139,7 @@ class FakeGitHub(delivery.GitHub):
         self.merged = False
         parameters = {"strict_required_status_checks_policy": True, "required_status_checks": [{"context": CHECK, "integration_id": 9426}]}
         self.effective = [{"type": "required_status_checks", "ruleset_id": 123, "ruleset_source_type": "Repository", "ruleset_source": delivery.REPOSITORY, "parameters": parameters}]
-        self.protection = {"id": 123, "name": "Injecticide-validated-master", "target": "branch", "enforcement": "active", "source_type": "Repository", "source": delivery.REPOSITORY,
+        self.protection = {"id": 123, "name": "Injecticide-validated-master", "target": "branch", "enforcement": "active", "source_type": "Repository", "source": delivery.REPOSITORY, "updated_at": "2026-01-01T00:00:00Z",
             "bypass_actors": [], "conditions": {"ref_name": {"include": ["refs/heads/master"], "exclude": []}}, "rules": [{"type": "required_status_checks", "parameters": deepcopy(parameters)}]}
     def api(self, route, data=None, method=None):
         if route == "/rules/branches/master": return self.effective
@@ -351,5 +351,53 @@ def test_readonly_preflight_exposes_hidden_bypass_without_approving(monkeypatch)
     monkeypatch.setattr(delivery, "GitHub", lambda headers: github)
     outcome = delivery.preflight()
     assert outcome["bypass_actor_visibility"] is False
+    assert outcome["repository_pull"] is None
+    assert outcome["repository_push"] is None
+    assert outcome["repository_admin"] is None
     assert outcome["automatic_ruleset_gate_satisfied"] is False
     assert not github.merged
+
+
+def attestation(policy):
+    visible = {field: policy[field] for field in delivery.VISIBLE_RULESET_FIELDS}
+    return {"schema_version": 1, "ruleset_id": policy["id"], "ruleset_updated_at": policy["updated_at"],
+            "visible_sha256": hashlib.sha256(delivery.canonical(visible)).hexdigest(), "bypass_actors": [],
+            "verified_at": "2026-01-02T00:00:00Z", "verification_method": "owner_authenticated_ruleset_readback", "verified_by": "Mr-GraphnStaff"}
+
+
+def test_hidden_bypass_requires_matching_owner_attestation(tmp_path, monkeypatch):
+    github = FakeGitHub()
+    del github.protection["bypass_actors"]
+    path = tmp_path / "attestation.json"
+    path.write_text(json.dumps(attestation(github.protection)), encoding="utf-8")
+    monkeypatch.setattr(delivery, "ATTESTATION_PATH", path)
+    assert delivery.bypass_attestation_valid(github.protection)
+    assert github.protected_ruleset(CHECK)
+    assert "research_mcp/obsession_delivery_policy.json" not in delivery.ALLOWED
+
+
+@pytest.mark.parametrize("mutation", ["version", "fingerprint", "id", "owner", "method", "bypass", "missing_updated", "rule_changed"])
+def test_hidden_bypass_attestation_drift_fails_closed(tmp_path, monkeypatch, mutation):
+    github = FakeGitHub(); del github.protection["bypass_actors"]
+    proof = attestation(github.protection)
+    if mutation == "version": proof["ruleset_updated_at"] = "2026-01-03T00:00:00Z"
+    elif mutation == "fingerprint": proof["visible_sha256"] = "0" * 64
+    elif mutation == "id": proof["ruleset_id"] = 999
+    elif mutation == "owner": proof["verified_by"] = "Other"
+    elif mutation == "method": proof["verification_method"] = "unverified"
+    elif mutation == "bypass": proof["bypass_actors"] = [{"actor_id": 1}]
+    elif mutation == "missing_updated": del github.protection["updated_at"]
+    elif mutation == "rule_changed": github.protection["rules"].append({"type": "creation"})
+    path = tmp_path / "attestation.json"; path.write_text(json.dumps(proof), encoding="utf-8")
+    monkeypatch.setattr(delivery, "ATTESTATION_PATH", path)
+    assert not github.protected_ruleset(CHECK)
+
+
+def test_visible_bypass_overrides_previously_valid_attestation(tmp_path, monkeypatch):
+    github = FakeGitHub()
+    path = tmp_path / "attestation.json"; path.write_text(json.dumps(attestation(github.protection)), encoding="utf-8")
+    monkeypatch.setattr(delivery, "ATTESTATION_PATH", path)
+    assert delivery.bypass_attestation_valid(github.protection)
+    github.protection["bypass_actors"] = [{"actor_id": 1, "actor_type": "Integration", "bypass_mode": "always"}]
+    assert delivery.bypass_attestation_valid(github.protection)
+    assert not github.protected_ruleset(CHECK)
