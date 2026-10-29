@@ -85,3 +85,7 @@ review disagreements feed new research questions. Retrieved content remains
 untrusted evidence and cannot directly activate detectors, policy or executable
 content. Costed search/model/infrastructure activation requires advance notice,
 account/upload details, an estimate and a cap before approval.
+
+Proposed initial cadence: once every 24 hours, checking source revisions before
+analysis. Retain the last validated snapshot on failure; notify on meaningful
+findings or failures. This cadence is recorded but no scheduler was activated.
