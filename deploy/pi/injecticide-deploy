@@ -8,6 +8,7 @@ readonly REPO_DIR="${DEPLOY_ROOT}/${APP_NAME}"
 readonly DATA_DIR="/mnt/nvme/injecticide-data"
 readonly REPORTS_DIR="${DATA_DIR}/reports"
 readonly LOCK_FILE="/run/lock/injecticide-deploy.lock"
+readonly HEALTHY_MARKER="${DEPLOY_ROOT}/injecticide-last-healthy"
 readonly HEALTH_URLS=(
   "http://127.0.0.1:8000/"
   "http://127.0.0.1/"
@@ -41,6 +42,16 @@ compose() {
     docker compose --project-name injecticide --file "$REPO_DIR/docker-compose.yml" "${@:2}"
 }
 
+stack_healthy() {
+  local container state
+  for container in injecticide-web injecticide-skill-sandbox injecticide-research-mcp; do
+    state="$(docker inspect --format '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' "$container")" || return 1
+    [[ "$state" == "running healthy" ]] || return 1
+  done
+  state="$(docker inspect --format '{{.State.Status}}' injecticide-nginx)" || return 1
+  [[ "$state" == "running" ]]
+}
+
 wait_for_health() {
   local attempt url
   for attempt in $(seq 1 30); do
@@ -50,26 +61,30 @@ wait_for_health() {
         continue 2
       fi
     done
-    log "Application health checks passed."
-    return 0
+    if stack_healthy; then
+      log "All application services and HTTP health checks passed."
+      return 0
+    fi
+    sleep 2
   done
   return 1
 }
 
 remove_injecticide_images() {
-  local image_id repository
+  local image_id repository listing
   local -A image_ids=()
 
+  listing="$(docker image ls --format '{{.Repository}} {{.ID}}')" || return 1
   while read -r repository image_id; do
     case "$repository" in
       injecticide-web|injecticide-skill-sandbox|injecticide-injecticide|injecticide-skill_sandbox)
         image_ids["$image_id"]=1
         ;;
     esac
-  done < <(docker image ls --format '{{.Repository}} {{.ID}}')
+  done <<< "$listing"
 
   if (( ${#image_ids[@]} > 0 )); then
-    docker image rm --force "${!image_ids[@]}"
+    docker image rm --force "${!image_ids[@]}" || return 1
   fi
 }
 
@@ -77,15 +92,17 @@ deploy_commit() {
   local commit="$1"
   local image_tag="${commit:0:12}"
 
-  git -C "$REPO_DIR" checkout --detach "$commit"
-  compose "$image_tag" config --quiet
+  # This function is invoked by an if-statement: Bash errexit is not a guard
+  # inside that call chain. Propagate every critical failure explicitly.
+  git -C "$REPO_DIR" checkout --detach "$commit" || return 1
+  compose "$image_tag" config --quiet || return 1
   log "Stopping the Injecticide stack for a clean rebuild."
-  compose "$image_tag" down --remove-orphans --timeout 30
-  compose "$image_tag" pull nginx
-  remove_injecticide_images
+  compose "$image_tag" down --remove-orphans --timeout 30 || return 1
+  compose "$image_tag" pull nginx || return 1
+  remove_injecticide_images || return 1
   log "Rebuilding application images without Docker build cache."
-  compose "$image_tag" build --no-cache --pull
-  compose "$image_tag" up --detach --remove-orphans --wait --wait-timeout 180
+  compose "$image_tag" build --no-cache --pull || return 1
+  compose "$image_tag" up --detach --remove-orphans --wait --wait-timeout 180 || return 1
   wait_for_health
 }
 
@@ -118,11 +135,19 @@ main() {
     fail "Requested commit is not reachable from origin/master."
 
   local previous_commit=""
-  previous_commit="$(git -C "$REPO_DIR" rev-parse --verify HEAD 2>/dev/null || true)"
+  if [[ -f "$HEALTHY_MARKER" ]]; then
+    read -r previous_commit < "$HEALTHY_MARKER"
+    [[ "$previous_commit" =~ ^[0-9a-f]{40}$ ]] || fail "Healthy rollback marker is invalid."
+    git -C "$REPO_DIR" merge-base --is-ancestor "$previous_commit" origin/master || \
+      fail "Healthy rollback revision is outside approved master history."
+  else
+    log "No verified rollback marker; checkout HEAD is not assumed to identify healthy running images."
+  fi
 
   log "Deploying ${requested_commit}."
   if deploy_commit "$requested_commit"; then
     printf '%s\n' "$requested_commit" >"${DEPLOY_ROOT}/injecticide-current"
+    printf '%s\n' "$requested_commit" >"$HEALTHY_MARKER"
     log "Deployment completed successfully."
     return 0
   fi
@@ -132,6 +157,7 @@ main() {
     log "Rolling back to ${previous_commit}."
     deploy_commit "$previous_commit" || fail "Rollback failed; operator intervention is required."
     printf '%s\n' "$previous_commit" >"${DEPLOY_ROOT}/injecticide-current"
+    printf '%s\n' "$previous_commit" >"$HEALTHY_MARKER"
     fail "Candidate was rolled back after failed validation."
   fi
 

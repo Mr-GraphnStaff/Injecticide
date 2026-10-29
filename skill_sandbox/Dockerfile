@@ -26,6 +26,7 @@ COPY disposition.py /app/disposition.py
 COPY finding_enrichment.py /app/finding_enrichment.py
 COPY governance.py /app/governance.py
 COPY scan_rules.py /app/scan_rules.py
+COPY obsession_signatures.py /app/obsession_signatures.py
 COPY sensitive_data.py /app/sensitive_data.py
 COPY package_formats.py /app/package_formats.py
 COPY package_threats.py /app/package_threats.py

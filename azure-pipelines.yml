@@ -61,6 +61,28 @@ stages:
               docker build --tag injecticide-research-mcp:ci ./research_mcp
             displayName: Build container candidates
 
+          - bash: |
+              set -euo pipefail
+              expected_version="$(python -c 'import pathlib, tomllib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
+              docker run --rm --network none --read-only \
+                --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+                --env "EXPECTED_SCANNER_VERSION=${expected_version}" \
+                --entrypoint python injecticide-skill-sandbox:ci -c '
+              import json, os
+              import app
+              from obsession_signatures import load_rules
+              assert app.PATTERNS, "Packaged rule catalog did not load"
+              assert isinstance(load_rules(), list), "Packaged literal catalog did not load"
+              sample = b"---\nname: container-smoke\ndescription: Read local source and summarize it.\n---\n# Container smoke\nRead SKILL.md and summarize its documented purpose.\n"
+              result = app.scan_upload(sample, "SKILL.md")
+              version = result["scanner_metadata"]["scanner_version"]
+              assert version == os.environ["EXPECTED_SCANNER_VERSION"], "Packaged scanner metadata is stale"
+              assert result["summary"]["total_files"] == 1, "Packaged scanner did not inspect the sample"
+              assert result["files"][0]["path"] == "SKILL.md", "Packaged scanner omitted source evidence"
+              assert result["process_diagram"]["nodes"], "Packaged scanner did not construct process evidence"
+              print(json.dumps({"state": "scanner_startup_and_scan_passed", "scanner_version": version, "files": 1}))'
+            displayName: Smoke packaged scanner startup and static scan without network
+
   - stage: QualifyAutomatic
     displayName: Independently qualify scoped automatic update
     dependsOn: Validate

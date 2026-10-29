@@ -24,6 +24,20 @@ replace them.
 The wrapper and sudoers rule are installed manually as root. Pipeline jobs must
 not install or update either file.
 
+From 0.14.1, each critical deployment command explicitly returns failure even
+when invoked inside the candidate/rollback conditional. HTTP root responses alone
+cannot establish readiness: all three application containers must be running and
+healthy, and Nginx running. CI also imports and scans inside the built sandbox
+image with network access disabled.
+
+`/mnt/nvme/deploy/injecticide-last-healthy` is a root-owned recovery marker,
+written only after full health acceptance. It must identify a full SHA reachable
+from the approved master history. An operator bootstraps it from verified release
+evidence; checkout HEAD is never assumed to identify healthy running images.
+The 0.14.1 repair uses the last independently verified 0.12.0 revision
+`bf10a4bb45ccc1152eb3ae2e52498ae21bb93d1c` as its initial recovery target,
+because 0.14.0's apparent deployment success did not establish scanner health.
+
 Cache removal is intentionally scoped to Injecticide images. The wrapper does
 not run a global Docker cache prune because the Pi also hosts unrelated
 services.
