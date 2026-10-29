@@ -102,3 +102,21 @@ The browser test uses real planning and scenario APIs with synthetic maps. It
 checks branding, escaped labels, import/export, movement, connections, undo/redo,
 plan invalidation, navigation and narrow layouts. It does not establish vendor
 control effectiveness or external scanner interoperability.
+
+## Trace a component's connections
+
+Select a process box in the scan diagram or playground to highlight its incoming
+and outgoing connections and dim unrelated lines. The status text reports each
+direction and how many other connections are dimmed. Enable **Only selected
+connections** to hide those other lines while keeping every component visible.
+Clear selection or press Escape in the diagram/canvas to show all connections.
+Enter and Space select focused component buttons; playground arrow keys still
+move cards. Suggested test paths keep their gold highlights even when connection
+focus is active, so the two kinds of evidence remain distinguishable.
+
+Focus is a view setting. JSON, PNG, Mermaid and prompt exports retain the complete
+map or original scan evidence; selecting or hiding connections never deletes them.
+Original scan evidence remains separate from edits, trust and sensitivity fields.
+For imported scans, cards summarize source resolution rather than repeating two
+unqualified “unknown” labels; the inspector retains explicit unknown trust and
+sensitivity values. Static source presence never establishes runtime execution.

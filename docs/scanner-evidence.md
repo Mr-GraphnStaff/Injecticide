@@ -14,7 +14,16 @@ assert that every character was exhaustively evaluated by every detector.
 
 `creator_mitigation` recognizes two local reading conventions: a header/frontmatter
 `read_pattern: chunked-reference` declaration, and a large-file REVIEW TAG comment
-or top-level JSON `_review_tag`. Matching EOF evidence is verified against complete
+or top-level JSON `_review_tag`. A canonical `read_pattern` alone has status
+`declared`, `declaration_recognized: true`, and `eof_claimed: false`; it produces
+`recognized_chunk_reading` as informational, non-actionable evidence. It does not
+promise an EOF marker, verify completeness, or set either tagging-verification
+boolean. `declaration_recognized` specifically describes the literal read-pattern
+declaration; it is not an independent claim about other conventions.
+
+An explicit EOF-marker attempt (including malformed or fenced markers), a
+header instruction to read through an EOF marker, or a REVIEW TAG creates an
+`eof_claimed` obligation. Matching EOF evidence is verified against complete
 original text, outside code fences. Markdown/script EOF names must match the file;
 JSON requires a final top-level `_end_of_file` marker. Duplicate/malformed JSON,
 forged/fenced markers, omitted EOF and parser limits cannot receive verified
@@ -26,6 +35,24 @@ actual target-model reading limits remain unknown unless independently evidenced
 Claimed but unverified markers produce `unverifiable_chunk_marker` at review tier.
 Verification uses a bounded header probe and at most 2 MiB of claimed text; it
 never removes the existing 1 MiB text detector input limit or Office/XML limits.
+
+## Protective language and disclosure context
+
+Explicit prohibitions and refusals directly governing a disclosure verb remain
+informational with `action_state: protective_guidance`. This recognizes authored
+language; it does not establish runtime refusal enforcement. Sensitive-topic
+mentions remain informational. Literal sensitive identifiers and credential data
+continue through their independent detectors.
+
+Disclosure context is scoped to the matched action and local clause. Contrast,
+sequence, sentence boundaries and independently commanded conjunctions stop an
+earlier prohibition from immunizing a later instruction. Unrelated words such as
+`definition`, `means` or `is not` do not downgrade an instruction. A completed
+unrelated quote does not place later unquoted actions inside that quote. Direct
+disclosure evidence takes priority over informational observations within the
+three-sample display limit. These deterministic syntax rules do not prove general
+natural-language intent. Unrecognized or ambiguous phrasing retains review/block
+behavior rather than receiving a blanket protective exemption.
 
 ## Compatibility and official reference checks
 

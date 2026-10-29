@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.13.0 - 2026-10-29
+
+- Distinguish chunk-reading declarations from explicit whole-file EOF claims;
+  declarations remain informational without certifying complete inspection.
+- Calibrate protective credential language separately from disclosure instructions,
+  retaining independent review of mixed clauses and actual sensitive data.
+- Focus selected skill-map connections in both the scan and playground views,
+  with dimming, optional connection filtering, clearing and keyboard support.
+- Explain source resolution separately from runtime, trust and sensitivity
+  uncertainty; preserve complete relationships and citations in exports.
+- Record primary-source scanner research and a frozen comparison protocol;
+  these changes do not establish comparative detection leadership.
+
 ## 0.12.0 - 2026-10-28
 
 - Capture the complete nine-page Agent Skills documentation site, its direct

@@ -107,7 +107,7 @@ def create_server():
     # Keep MCP optional for ordinary scanner imports and default installation.
     from mcp.server import MCPServer
 
-    server = MCPServer("injecticide_skill_scanner", version="0.12.0")
+    server = MCPServer("injecticide_skill_scanner", version="0.13.0")
     annotations = {"readOnlyHint": True, "destructiveHint": False,
                    "idempotentHint": True, "openWorldHint": False}
     server.tool(annotations=annotations, structured_output=True)(skill_scan_package)

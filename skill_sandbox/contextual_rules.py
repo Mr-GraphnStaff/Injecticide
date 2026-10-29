@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Dict, Iterable, List
 
 if __package__:
-    from .scan_rules import load_rule_catalog
+    from .scan_rules import load_rule_catalog, _disclosure_clauses, _disclosure_context_tag
 else:
-    from scan_rules import load_rule_catalog
+    from scan_rules import load_rule_catalog, _disclosure_clauses, _disclosure_context_tag
 
 
 CONTEXTUAL_RULE_IDS = {
@@ -34,23 +34,11 @@ HIGH_CONFIDENCE_DISCLOSURE_VERB_REGEX = re.compile(
     re.IGNORECASE,
 )
 SECRET_TARGET_REGEX = re.compile(
-    r"\b(api\s*key|access\s+token|bearer\s+token|password|credential|secret|access\s+key|private\s+key|ssh\s+key|pem)\b",
-    re.IGNORECASE,
-)
-POLICY_SECRET_CONTEXT_REGEX = re.compile(
-    r"\b(confidential(?:ity| information)?|trade\s+secrets?|proprietary\s+information|non-public information)\b",
-    re.IGNORECASE,
-)
-AUTHENTICATION_CONTEXT_REGEX = re.compile(
-    r"\b(temporary|initial|your|my|change|reset|enter|login|log in|sign in|username|single sign-on|sso)\b",
+    r"\b(api\s*key|access\s+token|bearer\s+token|passwords?|credentials?|secrets?|access\s+key|private\s+key|ssh\s+key|pem)\b",
     re.IGNORECASE,
 )
 SAFE_SECRET_DISCUSSION_REGEX = re.compile(
     r"\b(token\s+lifecycle|credential\s+exposure|key\s+management|risk\s+statements?|control\s+gap|governance\s+artifacts?|threat\s+model(?:ing)?|security\s+architecture|best\s+practices?)\b",
-    re.IGNORECASE,
-)
-NEGATED_DISCLOSURE_REGEX = re.compile(
-    r"\b(do\s+not|don't|never|must\s+not|should\s+not|not\s+allowed\s+to)\b",
     re.IGNORECASE,
 )
 
@@ -141,59 +129,45 @@ def detect_contextual_findings(
 def _match_secret_exfiltration(units: Iterable[Dict[str, object]], artifact_role: str) -> List[Dict[str, object]]:
     matches: List[Dict[str, object]] = []
     reference_like = artifact_role in {"reference", "reference_template"}
-
     for unit in units:
-        text = str(unit.get("text", ""))
         line = unit.get("line") if isinstance(unit.get("line"), int) else None
-        target_match = SECRET_TARGET_REGEX.search(text)
-        if not target_match:
-            continue
-
-        if POLICY_SECRET_CONTEXT_REGEX.search(text):
-            continue
-
-        if SAFE_SECRET_DISCUSSION_REGEX.search(text):
-            matches.append(
-                {
-                    "text": text,
-                    "line": line,
-                    "context_tag": "topic_discussion",
-                    "confidence": "medium",
-                }
-            )
-            continue
-
-        if target_match.group(0).lower() == "password" and AUTHENTICATION_CONTEXT_REGEX.search(text):
-            continue
-
-        if reference_like:
-            verb_match = HIGH_CONFIDENCE_DISCLOSURE_VERB_REGEX.search(text)
-        else:
-            verb_match = DISCLOSURE_VERB_REGEX.search(text)
-
-        if not verb_match:
-            continue
-
-        following_target = SECRET_TARGET_REGEX.search(text, verb_match.end())
-        reverse_link = text[target_match.end():verb_match.start()] if target_match.end() <= verb_match.start() else None
-        if following_target and following_target.start() - verb_match.end() <= 100:
-            target_match = following_target
-        elif reverse_link is None or not re.fullmatch(r"\s*(?:(?:must|should|will|can)\s+(?:be\s+)?)?[:,]?\s*", reverse_link, re.I):
-            continue
-        sample = _source_span(text, verb_match, target_match)
-        context_tag = "topic_discussion" if NEGATED_DISCLOSURE_REGEX.search(text) else "imperative_disclosure"
-        if not any(match["text"] == sample and match.get("line") == line for match in matches):
-            matches.append(
-                {
-                    "text": sample,
-                    "line": line,
-                    "context_tag": "test_fixture" if unit.get("test_fixture") else context_tag,
-                    "confidence": "high" if context_tag == "imperative_disclosure" else "medium",
-                }
-            )
-        if len(matches) >= 3:
-            break
-
+        for text in _disclosure_clauses(str(unit.get("text", ""))):
+            target_match = SECRET_TARGET_REGEX.search(text)
+            if not target_match:
+                continue
+            verbs = HIGH_CONFIDENCE_DISCLOSURE_VERB_REGEX if reference_like else DISCLOSURE_VERB_REGEX
+            linked_action = False
+            for verb_match in verbs.finditer(text):
+                following_target = SECRET_TARGET_REGEX.search(text, verb_match.end())
+                reverse_link = text[target_match.end():verb_match.start()] if target_match.end() <= verb_match.start() else None
+                if following_target and following_target.start() - verb_match.end() <= 100:
+                    linked_target = following_target
+                elif reverse_link is not None and re.fullmatch(r"\s*(?:(?:must|should|will|can)\s+(?:be\s+)?)?[:,]?\s*", reverse_link, re.I):
+                    linked_target = target_match
+                else:
+                    continue
+                # A topic phrase elsewhere in this clause cannot exempt a direct
+                # disclosure request. Summaries/evidence about credentials remain
+                # topic observations when the verb is not directed at the secret.
+                gap = text[verb_match.end():linked_target.start()] if following_target else ""
+                discussion = verb_match.group(0).lower() in {"return", "output", "show", "display"} and bool(re.search(
+                    r"\b(?:summary|report|analysis|evidence|statements?)\b[^.;!?]{0,30}\b(?:about|of|on)\s*$", gap, re.I)) and bool(re.match(
+                    r"(?:credential\s+exposure|token\s+lifecycle|key\s+management)\b", text[linked_target.start():], re.I))
+                context = "topic_discussion" if discussion else _disclosure_context_tag(text[:verb_match.end()])
+                sample = _source_span(text, verb_match, linked_target)
+                observation = {"text": sample, "line": line,
+                               "context_tag": "test_fixture" if unit.get("test_fixture") else context,
+                               "confidence": "high" if context == "imperative_disclosure" else "medium"}
+                if observation not in matches:
+                    matches.append(observation)
+                linked_action = True
+            if not linked_action and SAFE_SECRET_DISCUSSION_REGEX.search(text):
+                observation = {"text": text, "line": line, "context_tag": "topic_discussion", "confidence": "medium"}
+                if observation not in matches:
+                    matches.append(observation)
+            # Keep the strongest evidence even after many benign observations.
+            matches.sort(key=lambda item: item["context_tag"] != "imperative_disclosure")
+            del matches[3:]
     return matches
 
 

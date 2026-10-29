@@ -62,6 +62,8 @@ function buildDiagramPrompt(map, plan) {
 function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,onMapChange}) {
     const [map,setMap] = React.useState(() => initialMap || starterMap());
     const [selected,setSelected] = React.useState(() => initialMap?.nodes[0]?.id || 'agent');
+    const [connectionFocus,setConnectionFocus] = React.useState(null);
+    const [focusedOnly,setFocusedOnly] = React.useState(false);
     const [source,setSource] = React.useState(() => initialMap?.edges[0]?.source || initialMap?.nodes[0]?.id || 'agent');
     const [target,setTarget] = React.useState(() => initialMap?.edges[0]?.target || initialMap?.nodes[1]?.id || 'mcp');
     const [zoom,setZoom] = React.useState(0.8);
@@ -102,7 +104,7 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
     function add(kind) {
         if(map.nodes.length>=100){setMessage('Map limit: 100 components.');return;}
         const id='n'+crypto.randomUUID().replaceAll('-','');
-        commit({...map,nodes:[...map.nodes,mapNode(id,kind,MAP_KINDS[kind],80+(map.nodes.length%5)*260,650)]});setSelected(id);
+        commit({...map,nodes:[...map.nodes,mapNode(id,kind,MAP_KINDS[kind],80+(map.nodes.length%5)*260,650)]});setSelected(id);setConnectionFocus(id);
     }
     async function analyze() {
         if(request.current)request.current.abort();
@@ -135,26 +137,34 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
             const response=await fetch('/api/architecture/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:serialized,signal:controller.signal});
             const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'Invalid map');
             if(request.current!==controller||current!==revision.current)return;
-            setScanEvidenceAttached(false);commit(value);setSelected(value.nodes[0]?.id||'');setMessage('Map loaded. Generate a fresh plan after editing.');
+            setScanEvidenceAttached(false);setConnectionFocus(null);commit(value);setSelected(value.nodes[0]?.id||'');setMessage('Map loaded. Generate a fresh plan after editing.');
         } finally {clearTimeout(timeout);if(request.current===controller)request.current=null;}
     }
     async function importFile(event) {
         try {const f=event.target.files[0];if(!f)return;if(f.size>262144)throw Error('Map exceeds 256 KiB');await validateAndLoad(JSON.parse(await f.text()));}
         catch(error){setMessage(error.message);}finally{event.target.value='';}
     }
+    function componentKind(id, kind) {
+        const original = scanEvidenceAttached && scanDiagram?.nodes?.find(item=>item.id===id);
+        return original ? (original.entrypoint ? 'Skill entry point' : {file:'Package file',step:'Documented step',capability:'Recognized capability',external:'External origin',unresolved:'Unresolved reference'}[original.kind] || MAP_KINDS[kind]) : MAP_KINDS[kind];
+    }
     const node=map.nodes.find(n=>n.id===selected);
     const scanNode=scanEvidenceAttached ? scanDiagram?.nodes?.find(n=>n.id===selected) : null;
     const connected = map.edges.filter(e=>e.source===selected||e.target===selected);
+    const focusNode = map.nodes.find(n=>n.id===connectionFocus);
+    const focusEdges = focusNode ? map.edges.filter(e=>e.source===focusNode.id||e.target===focusNode.id) : [];
+    function clearSelection() {setSelected('');setConnectionFocus(null);}
+    const otherFocusEdges = focusNode ? map.edges.filter(e=>e.source!==focusNode.id&&e.target!==focusNode.id&&!highlight?.edge_ids.includes(e.id)) : [];
     const storageKey = scanDiagram ? `injecticide-skill-process-map-v1:${scanDiagram.draft_id}` : 'injecticide-map-v1';
     return <div className="injecticide-home injecticide-workbench">
         <ProductHeader section="architecture" buildInfo={buildInfo} onBack={onBack} onNavigate={onNavigate}/>
         <main className="home-shell map-main">
             <div className="map-heading"><div><p className="home-eyebrow">MAP → TEST → EVIDENCE</p><h1 ref={heading} tabIndex={-1}>AI architecture playground</h1><p>Map the system. Find what to test and why.</p></div><span className="map-tag">Modeled · controls unverified</span></div>
-            {scanDiagram && <section className="map-scan-origin"><h2>New skill process map</h2><p>This separate draft comes from the scan's documented relationships. Your existing playground draft is preserved. Source evidence describes the original scan; edits are your declarations. Runtime behavior, control flow and approval enforcement remain unverified.</p><p>{scanDiagram.scope}</p><p>{scanDiagram.nodes?.length || 0} components · {scanDiagram.edges?.length || 0} relationships · {scanDiagram.unresolved_nodes || 0} unresolved{scanDiagram.status === 'partial' ? ' · Partial source view' : ''}</p><button type="button" onClick={onBack}>Return to scan report</button></section>}
+            {scanDiagram && <section className="map-scan-origin"><h2>New skill process map</h2><p>This separate draft comes from the scan's documented relationships. Your existing playground draft is preserved. Source evidence describes the original scan; edits are your declarations. Runtime behavior, control flow and approval enforcement remain unverified.</p><p>{scanDiagram.scope}</p><details className="process-uncertainty"><summary>Why some fields remain unknown</summary><p>Source gaps: {scanDiagram.unresolved_nodes || 0} referenced targets could not be resolved. Other source components retain their original citations.</p><p>Trust and data sensitivity are unassessed declarations. Runtime execution and control enforcement need separate test evidence. These unknowns do not mean every source file is missing.</p>{scanDiagram.uncertainty_reasons?.length > 0 && <ul>{scanDiagram.uncertainty_reasons.map(reason=><li key={reason.code}>{reason.message}{reason.count ? ` (${reason.count})` : ''}</li>)}</ul>}</details><p>{scanDiagram.nodes?.length || 0} components · {scanDiagram.edges?.length || 0} relationships · {scanDiagram.unresolved_nodes || 0} unresolved{scanDiagram.status === 'partial' ? ' · Partial source view' : ''}</p><button type="button" onClick={onBack}>Return to scan report</button></section>}
             {scanDiagram && !scanEvidenceAttached && <p className="home-warning">The map was replaced. Original scan citations are no longer attached to this draft.</p>}
             <div className="map-toolbar" aria-label="Map actions">
-                <button onClick={()=>{setScanEvidenceAttached(false);commit(starterMap());setSelected('agent');}}>Starter map</button>
-                <button onClick={()=>{setScanEvidenceAttached(false);commit({schema_version:1,name:'Untitled system',nodes:[],edges:[]});}}>New map</button>
+                <button onClick={()=>{setScanEvidenceAttached(false);setConnectionFocus(null);commit(starterMap());setSelected('agent');}}>Starter map</button>
+                <button onClick={()=>{setScanEvidenceAttached(false);clearSelection();commit({schema_version:1,name:'Untitled system',nodes:[],edges:[]});}}>New map</button>
                 <button disabled={!history.length} onClick={()=>undo()}>Undo</button><button disabled={!future.length} onClick={()=>undo(true)}>Redo</button>
                 <button onClick={()=>{try{localStorage.setItem(storageKey,JSON.stringify(map));setMessage(scanDiagram ? 'Separate skill process map saved in this browser. Export JSON to reopen it outside this draft.' : 'Saved in this browser.');}catch(e){setMessage('Browser storage unavailable. Export the map instead.');}}}>Save locally</button>
                 <button onClick={async()=>{try{const text=localStorage.getItem(storageKey);if(!text)throw Error('No saved map in this browser.');await validateAndLoad(JSON.parse(text));}catch(e){setMessage(e.message);}}}>Load saved</button>
@@ -168,22 +178,23 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
             <label className="map-name">System name<input maxLength="160" value={map.name} onChange={e=>commit({...map,name:e.target.value})}/></label>
             <div className="map-layout">
                 <aside className="map-panel map-palette"><h2>Add component</h2><p>Choose a component, then move it on the map.</p>{Object.entries(MAP_KINDS).map(([kind,label])=><button key={kind} onClick={()=>add(kind)}>＋ {label}</button>)}</aside>
-                <section className="map-panel map-workspace" aria-label="Architecture canvas">
+                <section className="map-panel map-workspace" aria-label="Architecture canvas" onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();clearSelection();}}}>
                     <div className="map-toolbar"><button aria-label="Zoom out" onClick={()=>setZoom(z=>Math.max(.3,z-.1))}>−</button><span>{Math.round(zoom*100)}%</span><button aria-label="Zoom in" onClick={()=>setZoom(z=>Math.min(1.5,z+.1))}>＋</button><button onClick={()=>{const width=Math.max(500,...map.nodes.map(n=>n.x+250));setZoom(Math.max(.15,Math.min(1,viewport.current.clientWidth/width)));viewport.current.scrollTo(0,0);}}>Fit map</button><span>Scroll to pan · select a card to edit · arrow keys move cards</span></div>
+                    <div className="process-focus-controls"><button type="button" disabled={!selected && !focusNode} onClick={clearSelection}>Clear selection</button><label><input type="checkbox" checked={focusedOnly} onChange={e=>setFocusedOnly(e.target.checked)}/>Only selected connections</label><p role="status">{focusNode ? `${focusNode.label}: ${focusEdges.filter(e=>e.target===focusNode.id).length} incoming · ${focusEdges.filter(e=>e.source===focusNode.id).length} outgoing · ${otherFocusEdges.length} other connections ${focusedOnly ? 'hidden' : 'dimmed'}${highlight ? '  - gold test path remains visible' : ''}` : `All ${map.edges.length} connections shown. Enter or Space selects a component; Escape clears. Arrow keys move cards.`}</p></div>
                     <div className="map-scroll" ref={viewport} tabIndex="0" aria-label="Scrollable system map"><div style={{width:3260*zoom,height:2040*zoom}}><div className="map-surface" style={{transform:`scale(${zoom})`}}>
-                        <svg width="3260" height="2040" aria-hidden="true"><defs><marker id="map-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8" fill="#86cfc2"/></marker></defs>{map.edges.map(e=>{const a=map.nodes.find(n=>n.id===e.source),b=map.nodes.find(n=>n.id===e.target);if(!a||!b)return null;return <path key={e.id} className={highlight?.edge_ids.includes(e.id)?'map-edge active':'map-edge'} d={`M${a.x+220} ${a.y+50} C${a.x+275} ${a.y+50},${b.x-55} ${b.y+50},${b.x} ${b.y+50}`} markerEnd="url(#map-arrow)"/>;})}</svg>
-                        {map.nodes.map(n=><button key={n.id} className={`map-node ${n.id===selected?'selected':''} ${highlight?.node_ids.includes(n.id)?'highlighted':''}`} style={{left:n.x,top:n.y}} aria-label={`${n.label}, ${MAP_KINDS[n.kind]}. Arrow keys to move.`}
-                            onClick={()=>setSelected(n.id)}
+                        <svg width="3260" height="2040" aria-hidden="true"><defs><marker id="map-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8" fill="#86cfc2"/></marker></defs>{map.edges.map(e=>{const a=map.nodes.find(n=>n.id===e.source),b=map.nodes.find(n=>n.id===e.target);if(!a||!b)return null;return <path key={e.id} className={`map-edge${highlight?.edge_ids.includes(e.id)?' active':''}${focusNode && (e.source===focusNode.id||e.target===focusNode.id)?' connection-selected':focusNode && !highlight?.edge_ids.includes(e.id)?' dimmed':''}${focusNode && focusedOnly && e.source!==focusNode.id && e.target!==focusNode.id && !highlight?.edge_ids.includes(e.id)?' connection-hidden':''}`} d={`M${a.x+220} ${a.y+50} C${a.x+275} ${a.y+50},${b.x-55} ${b.y+50},${b.x} ${b.y+50}`} markerEnd="url(#map-arrow)"/>;})}</svg>
+                        {map.nodes.map(n=><button key={n.id} className={`map-node ${n.id===selected?'selected':''} ${highlight?.node_ids.includes(n.id)?'highlighted':''}`} style={{left:n.x,top:n.y}} aria-label={`${n.label}, ${componentKind(n.id,n.kind)}. Arrow keys to move.`}
+                            aria-pressed={n.id===selected} onClick={()=>{setSelected(n.id);setConnectionFocus(n.id);}}
                             onKeyDown={e=>{const delta={ArrowLeft:[-20,0],ArrowRight:[20,0],ArrowUp:[0,-20],ArrowDown:[0,20]}[e.key];if(delta){e.preventDefault();commit({...map,nodes:map.nodes.map(v=>v.id===n.id?{...v,x:Math.max(0,Math.min(3000,v.x+delta[0])),y:Math.max(0,Math.min(1800,v.y+delta[1]))}:v)});}}}
-                            onPointerDown={e=>{if(e.button!==0)return;setSelected(n.id);e.currentTarget.setPointerCapture(e.pointerId);drag.current={id:n.id,x:n.x,y:n.y,cx:e.clientX,cy:e.clientY,before:map,moved:false};}}
+                            onPointerDown={e=>{if(e.button!==0)return;setSelected(n.id);setConnectionFocus(n.id);e.currentTarget.setPointerCapture(e.pointerId);drag.current={id:n.id,x:n.x,y:n.y,cx:e.clientX,cy:e.clientY,before:map,moved:false};}}
                             onPointerMove={e=>{const d=drag.current;if(!d||d.id!==n.id)return;if(!d.moved&&Math.hypot(e.clientX-d.cx,e.clientY-d.cy)<4)return;if(!d.moved){invalidate();d.moved=true;}move(n.id,d.x+(e.clientX-d.cx)/zoom,d.y+(e.clientY-d.cy)/zoom);}}
                             onLostPointerCapture={()=>{const d=drag.current;if(d?.moved){setHistory(h=>[...h.slice(-29),d.before]);setFuture([]);}drag.current=null;}}
                             onPointerUp={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);}}>
-                            <span>{MAP_KINDS[n.kind]}</span><strong>{n.label||'Unnamed component'}</strong><small>{n.trust} · {n.sensitivity}</small>
+                            <span>{componentKind(n.id,n.kind)}</span><strong>{n.label||'Unnamed component'}</strong><small>{scanEvidenceAttached ? (scanDiagram?.nodes?.find(item=>item.id===n.id)?.kind === 'unresolved' ? 'Source target unresolved' : 'Source evidence available') : `Trust: ${n.trust} · Data: ${n.sensitivity}`}</small>
                         </button>)}
                     </div></div></div>
                 </section>
-                <aside className="map-panel map-inspector"><h2>Component details</h2>{node?<>
+                <aside className="map-panel map-inspector"><h2>Component details</h2>{scanEvidenceAttached && <p>Source resolution is separate from trust and data sensitivity. Unknown trust or sensitivity means the scan has not established it; runtime behavior is unverified.</p>}{node?<>
                     {scanNode && <section className="map-source-evidence"><h3>Original scan evidence</h3><p>Original component: {scanNode.label}</p><p>{scanNode.knowledge_status || (scanNode.kind === 'unresolved' ? 'unknown' : 'known in source')} · runtime unverified</p>{scanNode.text && <p>{scanNode.text}</p>}<ul>{scanNode.citations?.map((citation,index)=><li key={index}>{citation.path}{citation.line_accuracy === 'exact' && citation.line ? `:${citation.line}` : ' (file citation)'}</li>)}</ul>{scanNode.finding_ids?.length > 0 && <p>Finding types: {scanNode.finding_ids.join(', ')}</p>}</section>}
                     <label>Name<input maxLength="160" value={node.label} onChange={e=>patchNode({label:e.target.value})}/></label>
                     <label>Trust<select value={node.trust} onChange={e=>patchNode({trust:e.target.value})}>{['external','internal','privileged','unknown'].map(v=><option key={v}>{v}</option>)}</select></label>

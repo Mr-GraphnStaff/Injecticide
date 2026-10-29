@@ -296,6 +296,30 @@ def build_process_diagram(report):
     result["documented_step_status"] = documented.get("status", "unknown")
     result["process_understanding"] = ("Explicit documented steps extracted; completeness unverified."
                                        if step_ids else UNKNOWN + ": No explicit documented steps recognized; showing static relationships only.")
+    # Counts describe the bounded visible graph, never complete package coverage.
+    result["source_evidence_summary"] = {
+        label: sum(n["kind"] == kind for n in nodes)
+        for label, kind in (("present_files", "file"), ("documented_steps", "step"),
+                            ("recognized_capabilities", "capability"),
+                            ("external_origins", "external"),
+                            ("unresolved_references", "unresolved"))
+    }
+    result["uncertainty_reasons"] = [
+        {"code": "runtime_unverified", "message": "Source evidence is available; execution, conditions, approvals and outputs were not tested."},
+        {"code": "trust_unassessed", "message": "Playground trust and sensitivity are unassessed; this does not mean the source relationship is missing."},
+    ]
+    if unresolved:
+        result["uncertainty_reasons"].append({
+            "code": "unresolved_references", "count": unresolved,
+            "message": "Referenced targets could not be resolved. Select each target for its recorded reason."})
+    if not step_ids:
+        result["uncertainty_reasons"].append({
+            "code": "documented_steps_unrecognized",
+            "message": "No explicit documented steps were recognized; references do not establish a workflow."})
+    if limits:
+        result["uncertainty_reasons"].append({
+            "code": "analysis_limits", "count": len(limits),
+            "message": "Recorded analysis limits make this view partial; consult limits and omissions for coverage."})
     mermaid = ["flowchart LR", "  %% Static references and capabilities; runtime and execution order unverified."]
     for item in nodes:
         label = item["label"] + (" - " + UNKNOWN if item["kind"] == "unresolved" else "")
@@ -312,9 +336,12 @@ def build_process_diagram(report):
                        "external": "external_reference", "unresolved": "unresolved_reference"}[n["kind"]],
                    "label": n["label"], "x": 40 + (i % 6) * 480, "y": 30 + (i // 6) * 110,
                    "trust": "unknown", "sensitivity": "unknown",
-                   "controls": ("Imported static scan evidence; runtime unverified. " +
-                                ("STATUS: UNKNOWN — UNVERIFIED. " if n["kind"] == "unresolved" else "") +
-                                "Source: " + (n["path"] or "; ".join(c["path"] for c in n["citations"][:3])))[:1000]}
+                   "controls": ("Source evidence: " + {
+                       "file": "package file present", "step": "documented step; completeness unverified",
+                       "capability": "recognized capability syntax", "external": "origin named in source; not contacted",
+                       "unresolved": "target unresolved (" + n.get("status", "unknown") + ")",
+                   }[n["kind"]] + ". Runtime: unverified. Trust and sensitivity: unassessed. " +
+                       "Source: " + (n["path"] or "; ".join(c["path"] for c in n["citations"][:3])))[:1000]}
                   for i, n in enumerate(nodes)],
         "edges": [{"id": e["id"], "source": e["source"], "target": e["target"], "untrusted": False, "write": False}
                   for e in edges],

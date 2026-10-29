@@ -118,7 +118,12 @@ def build_governance_profile(
         "data_observations": {"contact_data_present": bool(observed_ids.intersection(CONTACT_PRESENCE_RULES)),
                               "account_identifier_present": "pii_account_identifier" in observed_ids,
                               "sensitive_identifier_or_clinical_signal": bool(finding_ids.intersection(REGULATED_DATA_RULES)),
-                              "disclosure_attempt_detected": "secret_exfiltration" in finding_ids,
+                              "disclosure_attempt_detected": any(
+                                  finding.get("id") == "secret_exfiltration"
+                                  and finding.get("action_state") == "requested"
+                                  and any(observation.get("context_tag") == "imperative_disclosure"
+                                          for observation in finding.get("observations", []))
+                                  for finding in findings),
                               "classification_scope": "Pattern observations, not a legal classification, ownership attestation or proof of a data transfer."},
         "policy_capabilities": sorted(policy_capabilities),
         "execution_tier": execution_tier,

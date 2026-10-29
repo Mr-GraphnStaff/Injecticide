@@ -1,3 +1,29 @@
+# Active assignment - 0.13.0 generic scanner context and readable maps
+
+David authorized research and implementation on October 29, with advance notice
+and approval before any new external cost. No paid provider, comparator API,
+private upload, sample execution or new infrastructure was activated.
+
+Candidate branch codex/scanner-context-map-0-13 starts at published 0.12.0,
+bf10a4bb45ccc1152eb3ae2e52498ae21bb93d1c. Original Y: checkout changes remain
+preserved. Avery coordinates/integrates; Ishan owns generic context and chunk
+handling; Mara owns both map interfaces; Lena owns primary-source comparison
+research and independent final review. These are actual separate agent
+assignments, not independent human approvals.
+
+Acceptance requires paired mixed refusal/disclosure controls, declaration vs
+forged/invalid EOF evidence, direct sensitive-data preservation, dense-map
+selection/filter/clear/keyboard behavior, full export and existing-draft
+preservation, and a real local API-to-map check. Results follow verification.
+Human PR acceptance remains required for this major release.
+
+The previous external corpus is exposed diagnostic evidence, not a new holdout.
+No perfect scanner or industry-leadership claim is supported. See
+../research/2026-10-29-scanner-quality-evidence.md for primary-source practices,
+coverage/threshold distinctions and the no-new-cost evaluation protocol.
+
+---
+
 # Release candidate - 0.11.0
 
 Implementation and independent review complete within recorded scopes. Root

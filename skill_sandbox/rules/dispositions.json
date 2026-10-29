@@ -41,6 +41,13 @@
     {
       "detector_id": "sensitive_topic",
       "contexts": {
+        "protective_language": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
         "pattern_match": {
           "tier": "info",
           "severity": "info",
@@ -79,6 +86,13 @@
     {
       "detector_id": "secret_exfiltration",
       "contexts": {
+        "negated_or_defined": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
         "imperative_disclosure": {
           "tier": "block",
           "severity": "high",

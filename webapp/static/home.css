@@ -309,3 +309,15 @@
 @media(forced-colors:active) { .standards-status,.standards-categories button { border-color:ButtonText; } }
 @media(max-width:640px) { .skill-process { padding:.75rem; } .process-toolbar > button { flex:1 1 180px; } .process-inspector,.process-source-evidence { padding:.75rem; } .process-scroll { max-height:440px; } }
 @media(forced-colors:active) { .process-edge,.process-edge.active { stroke:CanvasText; } .skill-process .process-node,.skill-process .process-node.selected { border-color:ButtonText; } }
+
+/* Connection focus is view state; exports retain the complete map. */
+.process-edge.dimmed,.map-edge.dimmed { opacity:.12; }
+.map-edge.connection-selected { stroke:#c3f8e5; stroke-width:4; opacity:1; }
+.map-edge.active { opacity:1; stroke:#ffc966; }
+.process-edge.connection-hidden,.map-edge.connection-hidden { display:none; }
+.process-focus-controls { display:flex; align-items:center; flex-wrap:wrap; gap:.7rem; margin:.6rem 0; }
+.process-focus-controls label { display:flex; align-items:center; gap:.4rem; margin:0; }
+.process-focus-controls input { width:auto; }
+.process-focus-controls p { flex-basis:100%; margin:.1rem 0; overflow-wrap:anywhere; font-size:.85rem; }
+.process-node:focus-visible,.map-node:focus-visible { outline:3px solid #ffc966; outline-offset:4px; }
+@media(forced-colors:active) { .map-edge.connection-selected { stroke:Highlight; } .process-edge.dimmed,.map-edge.dimmed { opacity:.25; } }
