@@ -1195,11 +1195,12 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
     const [view, setView] = useState('diagram');
     const [sourcePath, setSourcePath] = useState(null);
     const [edgePage, setEdgePage] = useState(0);
+    const [focusedOnly, setFocusedOnly] = useState(false);
     const evidence = useRef(null);
     if (!diagram) return null;
     const nodes = diagram.nodes || [];
     const edges = diagram.edges || [];
-    const selected = nodes.find(node => node.id === selectedId) || nodes[0];
+    const selected = nodes.find(node => node.id === selectedId);
     const connected = selected ? edges.filter(edge => edge.source === selected.id || edge.target === selected.id) : [];
     const file = (result.files || []).find(item => item.path === (sourcePath || selected?.path));
     const label = id => nodes.find(node => node.id === id)?.label || id;
@@ -1214,7 +1215,8 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
     lanes.forEach((lane, column) => lane.nodes.forEach((node, row) => positions.set(node.id, { x: 24 + column * 300, y: 55 + row * 146 })));
     const width = Math.max(320, lanes.length * 300 + 24);
     const height = Math.max(270, ...lanes.map(lane => lane.nodes.length * 146 + 65));
-    function select(node) { setSelectedId(node.id); setSourcePath(null); }
+    function select(node) { if (!node) return; setSelectedId(node.id); setSourcePath(null); }
+    function clearSelection() { setSelectedId(null); setSourcePath(null); }
     function showSource(path) {
         setSourcePath(path);
         requestAnimationFrame(() => { evidence.current?.focus(); evidence.current?.scrollIntoView({ block: 'nearest' }); });
@@ -1224,7 +1226,7 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
             <button type="button" onClick={() => showSource(citation.path)}>{citation.path}{citation.line_accuracy === 'exact' && citation.line ? `:${citation.line}` : ' (file citation)'}</button>
         </li>)}</ul>;
     }
-    return <section className="skill-process" aria-labelledby="skill-process-title" data-process-diagram="true">
+    return <section className="skill-process" aria-labelledby="skill-process-title" data-process-diagram="true" onKeyDown={event => { if (event.key === 'Escape' && selected) { event.preventDefault(); clearSelection(); } }}>
         <div className="process-heading"><div><p className="home-eyebrow">SOURCE → RELATIONSHIPS → REVIEW</p><h3 id="skill-process-title">Skill process diagram</h3><p>See the package's documented connections and recognized capabilities.</p></div><span className="map-tag">Static evidence · runtime unverified</span></div>
         <p className="process-scope">{diagram.scope}</p>
         <p className="process-knowledge-legend"><strong>Known:</strong> supported by source evidence. <strong>Inferred:</strong> interpretation, when explicitly labeled. <strong>Unknown:</strong> missing or unresolved evidence. Source evidence does not verify runtime behavior.</p>
@@ -1234,6 +1236,7 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
             <button type="button" onClick={() => downloadProcessFile(diagram, 'injecticide-skill-process.json', 'application/json')}>Export diagram evidence</button>
         </div>
         <p className="process-note">The playground opens a separate temporary map. Your scan report and existing playground map stay available. Connections show source relationships and explicit documented order; runtime behavior remains unverified.</p>
+        <details className="process-uncertainty"><summary>What the scan establishes and what still needs evidence</summary><p>Source evidence: {nodes.filter(node => node.kind === 'file').length} files present · {nodes.filter(node => node.kind === 'step').length} documented steps · {nodes.filter(node => node.kind === 'capability').length} recognized capabilities · {nodes.filter(node => node.kind === 'external').length} external origins. An external origin appearing in source does not establish a network request.</p><p>Source gaps: {nodes.filter(node => node.kind === 'unresolved').length} unresolved references. Runtime execution, trust and data sensitivity are separate questions and remain unverified by this static scan.</p>{diagram.uncertainty_reasons?.length > 0 && <ul>{diagram.uncertainty_reasons.map(reason => <li key={reason.code}>{reason.message}{reason.count ? ` (${reason.count})` : ''}</li>)}</ul>}</details>
         <p className="process-counts">{nodes.length} components · {edges.length} relationships · {diagram.unresolved_nodes || 0} unresolved{diagram.status === 'partial' ? ' · Partial view' : ''}</p>
         {(diagram.omitted?.nodes > 0 || diagram.omitted?.edges > 0) && <p className="home-warning">Diagram limits omitted {diagram.omitted.nodes || 0} components and {diagram.omitted.edges || 0} relationships. This view is incomplete.</p>}
         {diagram.limits?.length > 0 && <details className="process-limits"><summary>Inspection and diagram limits ({diagram.limits.length})</summary><ul>{diagram.limits.map((limit, index) => <li key={index}>{typeof limit === 'string' ? limit : `${limit.kind}${limit.path ? `: ${limit.path}` : ''}`}</li>)}</ul></details>}
@@ -1242,6 +1245,7 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
                 <button type="button" aria-pressed={view === 'diagram'} onClick={() => setView('diagram')}>Visual diagram</button>
                 <button type="button" aria-pressed={view === 'relationships'} onClick={() => setView('relationships')}>Relationship list</button>
             </div>
+            <div className="process-focus-controls"><button type="button" disabled={!selected} onClick={clearSelection}>Clear selection</button><label><input type="checkbox" checked={focusedOnly} onChange={event => setFocusedOnly(event.target.checked)} />Only selected connections</label><p role="status">{selected ? `${selected.label}: ${connected.filter(edge => edge.target === selected.id).length} incoming · ${connected.filter(edge => edge.source === selected.id).length} outgoing · ${edges.length - connected.length} other relationships ${focusedOnly ? 'hidden' : 'dimmed'}` : `All ${edges.length} relationships shown. Select a component to trace its connections. Enter or Space selects; Escape clears.`}</p></div>
             {view === 'diagram' && <div className="process-scroll" aria-label="Skill relationships; scroll to explore" tabIndex={0}>
                 <div className="process-surface" style={{ width, height }}>
                     {lanes.map((lane, index) => <p key={lane.title} className="process-lane" style={{ left: 24 + index * 300 }}>{lane.title}</p>)}
@@ -1257,7 +1261,7 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
                         const sourceGutter = startX + 16 * direction;
                         const targetGutter = endX - (sameColumn ? -16 : 16 * direction);
                         const path = `M${startX} ${a.y + 61} L${sourceGutter} ${a.y + 61} L${sourceGutter} ${routeY} L${targetGutter} ${routeY} L${targetGutter} ${b.y + 61} L${endX} ${b.y + 61}`;
-                        return <path key={edge.id} className={`process-edge${active ? ' active' : ''}${edge.status !== 'resolved' ? ' unresolved' : ''}`} d={path} markerEnd="url(#process-arrow)" />;
+                        return <path key={edge.id} className={`process-edge${active ? ' active' : selected ? ' dimmed' : ''}${selected && focusedOnly && !active ? ' connection-hidden' : ''}${edge.status !== 'resolved' ? ' unresolved' : ''}`} d={path} markerEnd="url(#process-arrow)" />;
                     })}</svg>
                     {nodes.map(node => { const position = positions.get(node.id); if (!position) return null; return <button type="button" key={node.id} className={`process-node ${node.kind}${node.id === selected?.id ? ' selected' : ''}`} style={{ left: position.x, top: position.y }} aria-pressed={node.id === selected?.id} aria-label={`Inspect ${node.label}`} onClick={() => select(node)}>
                         <span>{node.entrypoint ? 'Skill entry point' : node.kind === 'external' ? 'External origin · not contacted' : node.kind} · {node.knowledge_status || (node.kind === 'unresolved' ? 'unknown' : 'known in source')}</span><strong>{node.label}</strong><small>{node.kind === 'unresolved' ? 'UNKNOWN — UNVERIFIED' : node.finding_ids?.length ? `${node.finding_ids.length} finding types · inspect evidence` : 'Inspect source evidence'}</small>
@@ -1271,9 +1275,9 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
                 {!edges.length && <p>No relationships were extracted. File presence does not establish a workflow.</p>}
             </div>}
             <div className="process-inspector">
-                <h4>Selected component: {selected?.label}</h4>
+                <h4>{selected ? `Selected component: ${selected.label}` : 'Select a component to inspect its evidence'}</h4>
                 {selected?.text && <p>{selected.text}</p>}
-                <p>{selected?.kind === 'unresolved' ? 'STATUS: UNKNOWN — UNVERIFIED. The referenced target was not resolved.' : selected?.kind === 'capability' ? 'Recognized source syntax; use at runtime is unverified.' : selected?.kind === 'external' ? 'An origin appears in source. It has not been contacted.' : 'File present in the uploaded package. Runtime use is unverified.'}</p>
+                <p>{!selected ? 'Select a box or a relationship endpoint. Original evidence and exports remain available.' : selected.kind === 'step' ? 'Documented instruction in source. Execution and order at runtime are unverified.' : selected.kind === 'unresolved' ? 'STATUS: UNKNOWN — UNVERIFIED. The referenced target was not resolved.' : selected?.kind === 'capability' ? 'Recognized source syntax; use at runtime is unverified.' : selected?.kind === 'external' ? 'An origin appears in source. It has not been contacted.' : 'File present in the uploaded package. Runtime use is unverified.'}</p>
                 {selected?.finding_ids?.length > 0 && <p>Finding types: {selected.finding_ids.join(', ')}</p>}
                 {citations(selected?.citations)}
                 <h5>Connected source evidence ({connected.length})</h5>

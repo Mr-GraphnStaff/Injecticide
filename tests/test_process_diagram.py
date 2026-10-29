@@ -170,3 +170,34 @@ def test_frontmatter_and_hidden_comments_are_not_visible_workflow():
     result = extract_documented_steps([{"path": "SKILL.md", "text": "---\ndescription: |\n  1. YAML description.\n---\n<!--\n1. Hidden author note.\n-->\n1. Visible instruction."}])
     assert [s["text"] for s in result["steps"]] == ["Visible instruction."]
     assert result["steps"][0]["line"] == 8
+
+
+def test_source_evidence_and_runtime_uncertainty_remain_separate_in_exports():
+    source = report({"SKILL.md": "1. Read [instructions](missing.md).\n2. Save output."})
+    source["documented_process"] = extract_documented_steps([
+        {"path": "SKILL.md", "text": "1. Read instructions.\n2. Save output."}])
+    result = build_process_diagram(source)
+    assert result["source_evidence_summary"] == {
+        "present_files": 1, "documented_steps": 2, "recognized_capabilities": 0,
+        "external_origins": 0, "unresolved_references": 1}
+    reasons = {item["code"]: item for item in result["uncertainty_reasons"]}
+    assert reasons["unresolved_references"]["count"] == 1
+    assert "runtime_unverified" in reasons and "trust_unassessed" in reasons
+    assert "documented_steps_unrecognized" not in reasons
+    exported = result["architecture_map"]
+    assert all(n["trust"] == n["sensitivity"] == "unknown" for n in exported["nodes"])
+    step = next(n for n in exported["nodes"] if n["kind"] == "step")
+    assert "documented step" in step["controls"]
+    unresolved = next(n for n in exported["nodes"] if n["kind"] == "unresolved_reference")
+    assert "target unresolved (missing)" in unresolved["controls"]
+    assert "Source: SKILL.md" in unresolved["controls"]
+    assert all("Runtime: unverified" in n["controls"] for n in exported["nodes"])
+    validate_map(exported)
+
+
+def test_uncertainty_explanation_preserves_absent_analysis_and_graph_limits():
+    result = build_process_diagram({"files": [{"path": "SKILL.md"}]})
+    reasons = {item["code"]: item for item in result["uncertainty_reasons"]}
+    assert reasons["analysis_limits"]["count"] == 1
+    assert "documented_steps_unrecognized" in reasons
+    assert result["status"] == "partial"

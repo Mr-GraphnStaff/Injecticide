@@ -36,6 +36,7 @@ def _outside_fences(text):
 
 def creator_mitigation(path, text):
     result = {"status": "absent", "convention": None, "start_marker_found": False,
+              "declaration_recognized": False, "eof_claimed": False,
               "end_marker_found": False, "eof_verified": False,
               "satisfies_tagging_convention": False,
               "large_file_tagged_chunked_reference": False,
@@ -58,7 +59,7 @@ def creator_mitigation(path, text):
         if not claimed:
             return result
         unclaimed_result = dict(result)
-        result.update(start_marker_found=True, convention="B", status="unverifiable")
+        result.update(start_marker_found=True, convention="B", status="unverifiable", eof_claimed=True)
         if len(text) > MAX_MARKER_CHARACTERS:
             result["reason"] = "Claimed JSON convention exceeds the 2 MiB marker-parser budget; completeness was not verified."
             return result
@@ -93,6 +94,15 @@ def creator_mitigation(path, text):
         if not declaration and not comment_claim:
             return result
         result.update(start_marker_found=True, convention="A" if declaration else "B", status="unverifiable")
+        result["declaration_recognized"] = bool(declaration)
+        # A read pattern is a reading preference, not a promise of an EOF tag.
+        # Keep explicit marker attempts (including malformed/fenced ones) subject
+        # to verification; never turn a declaration into completeness evidence.
+        result["eof_claimed"] = bool(comment_claim or re.search(r"<!--\s*END OF FILE\b", text, re.I)
+                                     or re.search(r"\b(?:until|through|matching|require[sd]?)\b[^\r\n]{0,80}\b(?:EOF|END OF FILE)\b", header, re.I))
+        if declaration and not result["eof_claimed"]:
+            result.update(status="declared", reason="Recognized chunked-reference reading declaration; no EOF marker or completeness claim was supplied.")
+            return result
         if not declaration and not comment:
             result["reason"] = "Large-file header tag is incomplete within the bounded header recognition region."
             return result
@@ -124,6 +134,13 @@ def creator_mitigation(path, text):
 def mitigation_finding(evidence):
     if not evidence["start_marker_found"] or evidence["status"] == "verified":
         return []
+    if evidence["status"] == "declared":
+        return [{"id": "recognized_chunk_reading", "severity": "info", "tier": "info",
+                 "category": "coverage", "finding_category": "creator_mitigation",
+                 "description": evidence["reason"], "subject": "creator_reading_convention",
+                 "action_state": "declared", "disposition": "info", "count": 1,
+                 "samples": [], "observations": [], "counts_for_governance": False,
+                 "status": "verified", "is_actionable": False, "display_kind": "informational_signal"}]
     return [{"id": "unverifiable_chunk_marker", "severity": "medium", "tier": "review",
              "category": "coverage", "finding_category": "creator_mitigation",
              "description": evidence["reason"], "subject": "creator_reading_convention",

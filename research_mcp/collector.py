@@ -108,6 +108,7 @@ class Collector:
         self.status = {"last_cycle": None, "last_error": None, "running": False}
         self.thread = threading.Thread(target=self.run, name="research-collector", daemon=True)
         self.source_cursor = 0
+        self.after_collection = None
 
     def request(self, source_id: str) -> dict:
         if source_id not in self.catalog.sources:
@@ -247,6 +248,11 @@ class Collector:
                 try:
                     self.status["last_result"] = self.collect(None if periodic else requested)
                     self.status["last_error"] = None
+                    if self.after_collection is not None:
+                        try:
+                            self.after_collection()
+                        except Exception:
+                            LOG.exception("Post-collection research triage failed; evidence collection retained")
                 except Exception as error:
                     self.status["last_error"] = type(error).__name__
                     LOG.exception("Research cycle failed")

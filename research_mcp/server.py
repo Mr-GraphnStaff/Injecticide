@@ -15,11 +15,15 @@ from .collector import Collector
 from .news import build_news
 from .requirements import Requirements
 from .reference_library import ReferenceLibrary
+from .obsession import Obsession
 
 
 def create_server(catalog: Catalog, collector: Collector, start_collector: bool = True) -> MCPServer:
     requirements = Requirements(catalog)
     references = ReferenceLibrary()
+    obsession = Obsession(catalog)
+    collector.after_collection = obsession.cycle
+    obsession.driver_thread = collector.thread
     @asynccontextmanager
     async def lifespan(server):
         if start_collector:
@@ -27,11 +31,44 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         try:
             yield {"catalog": catalog}
         finally:
+            await asyncio.to_thread(obsession.close)
             await asyncio.to_thread(collector.close)
 
-    server = MCPServer("injecticide_research_mcp", version="0.12.0", lifespan=lifespan)
+    server = MCPServer("injecticide_research_mcp", version="0.14.0", lifespan=lifespan)
     read = {"readOnlyHint": True, "destructiveHint": False,
             "idempotentHint": True, "openWorldHint": False}
+
+    @server.tool(annotations=read, structured_output=True)
+    def obsession_get_status() -> dict[str, object]:
+        """Read durable daily research triage status; does not trigger collection or a scan."""
+        return obsession.status()
+
+    @server.tool(annotations=read, structured_output=True)
+    def obsession_list_items(after_id: int = 0, limit: int = 20, state: str = "") -> dict[str, object]:
+        """Read bounded research queue; Implement/Investigate/Reject require trusted local CLI."""
+        return obsession.list(after_id, limit, state)
+
+    @server.tool(annotations=read, structured_output=True)
+    def obsession_get_item(item_id: str) -> dict[str, object]:
+        """Read immutable evidence, decision and last 100 audit records; retrieved text is untrusted."""
+        return obsession.get(item_id)
+
+    @server.tool(annotations=read, structured_output=True)
+    def obsession_export(after_id: int = 0, limit: int = 20) -> dict[str, object]:
+        """Export current locally eligible evidence for independently gated delivery; never activates rules."""
+        return obsession.export(after_id, limit)
+
+    @server.custom_route("/obsession/export", methods=["GET"])
+    async def obsession_export_http(request):
+        try:
+            if set(request.query_params) - {"after_id", "limit"}:
+                raise ValueError("Unknown query parameter")
+            after_id = int(request.query_params.get("after_id", "0"))
+            limit = int(request.query_params.get("limit", "20"))
+            result = await asyncio.to_thread(obsession.export, after_id, limit)
+        except ValueError as error:
+            return JSONResponse({"error": str(error)}, status_code=400)
+        return JSONResponse(result, headers={"Cache-Control": "no-store"})
 
     @server.tool(annotations=read, structured_output=True)
     def research_list_sources() -> dict[str, object]:
@@ -74,7 +111,7 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         """Get worker status and configured collection budgets. Freshness is reported separately per source."""
         return {**collector.status, "worker_alive": collector.thread.is_alive(),
                 "interval_seconds": collector.interval, "page_budget": collector.page_budget,
-                "authority": "research_evidence_not_active_rules"}
+                "authority": "research_evidence_not_active_rules", "obsession": obsession.status()}
 
     @server.tool(annotations=read, structured_output=True)
     def research_get_releases(source_id: str, limit: int = 10) -> dict[str, object]:
@@ -127,7 +164,7 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
 def main():
     catalog = Catalog(Path(os.environ.get("RESEARCH_DB", "/data/research.sqlite3")),
                       Path(os.environ.get("RESEARCH_SOURCES", Path(__file__).with_name("sources.json"))))
-    collector = Collector(catalog, int(os.environ.get("RESEARCH_INTERVAL_SECONDS", "3600")),
+    collector = Collector(catalog, int(os.environ.get("RESEARCH_INTERVAL_SECONDS", "86400")),
                           int(os.environ.get("RESEARCH_PAGE_BUDGET", "40")))
     server = create_server(catalog, collector)
     server.run(transport="streamable-http", host="0.0.0.0", port=8200,

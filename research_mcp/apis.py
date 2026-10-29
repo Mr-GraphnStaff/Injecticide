@@ -7,7 +7,7 @@ import json
 import re
 from urllib.parse import parse_qsl, urlsplit
 
-API_CONNECTORS = {"github_releases", "github_advisories", "mcp_registry", "crossref"}
+API_CONNECTORS = {"github_releases", "github_advisories", "github_issues", "github_issue_comments", "mcp_registry", "crossref"}
 
 
 def api_connector(url: str) -> str | None:
@@ -24,6 +24,14 @@ def api_connector(url: str) -> str | None:
         return None
     if is_github_releases_url(url):
         return "github_releases" if not params or params in ({"per_page": "1"}, {"per_page": "5"}) else None
+    # Source: GitHub REST repository issues and repository issue comments.
+    # Explicit first-page bounds; pull requests are distinguished in projection.
+    issue_path = "/repos/OWASP/www-project-agentic-skills-top-10/issues"
+    if parts.hostname == "api.github.com":
+        if parts.path == issue_path and params == {"state": "all", "sort": "updated", "direction": "desc", "per_page": "100"}:
+            return "github_issues"
+        if parts.path == issue_path + "/comments" and params == {"sort": "updated", "direction": "desc", "per_page": "100"}:
+            return "github_issue_comments"
     if parts.hostname == "api.github.com" and parts.path == "/advisories":
         if (set(params) == {"ecosystem", "affects", "per_page"}
                 and params["ecosystem"] in ("pip", "npm") and params["per_page"] == "10"
@@ -45,7 +53,20 @@ def normalize_api(connector: str, body: bytes) -> dict:
     coverage = "bounded first page only; not complete synchronization"
     if connector == "github_releases":
         return {"records": github_releases(body), "coverage": coverage}
-    if connector == "github_advisories":
+    if connector in {"github_issues", "github_issue_comments"}:
+        if not isinstance(data, list) or len(data) > 100:
+            raise ValueError("Expected at most 100 issue/comment records")
+        records = []
+        for item in data:
+            if not isinstance(item, dict) or type(item.get("id")) is not int or not isinstance(item.get("html_url"), str):
+                raise ValueError("Invalid issue/comment record")
+            fields = ("id", "number", "title", "state", "html_url", "body", "updated_at", "comments", "issue_url")
+            record = {k: item.get(k) for k in fields if k in item}
+            record["record_kind"] = "comment" if connector == "github_issue_comments" else "pull_request" if "pull_request" in item else "issue"
+            record["authority"] = "community_submission_not_publisher_endorsement"
+            records.append(record)
+        coverage = "Latest 100 updated issues/PRs or comments only; high activity can exceed this window. Community content requires review."
+    elif connector == "github_advisories":
         if not isinstance(data, list) or len(data) > 10:
             raise ValueError("Expected at most ten advisory records")
         records = []

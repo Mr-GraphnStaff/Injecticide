@@ -121,6 +121,10 @@ def build_finding(
     if detector_id == "dynamic_exec" and observations and all(item.get("context_tag") == "prose_mention" for item in observations):
         action_state = "mentioned"
 
+    protective_only = bool(observations) and all(item.get("context_tag") in {"protective_language", "negated_or_defined"} for item in observations)
+    if protective_only and detector_id in {"sensitive_topic", "secret_exfiltration", "system_exfiltration"}:
+        action_state = "protective_guidance"
+
     fixture_only = bool(observations) and all(observation.get("context_tag") == "test_fixture" for observation in observations)
     if fixture_only:
         action_state = "declared_test_input"
@@ -134,7 +138,7 @@ def build_finding(
         "category": rule["category"],
         "severity": severity,
         "tier": disposition_result["tier"],
-        "description": ("Declared evaluation fixture; execution and guardrail enforcement are not established. " if fixture_only else "") + str(rule["description"]),
+        "description": ("Explicit protective or definitional language; runtime enforcement is not established. " if protective_only else "") + ("Declared evaluation fixture; execution and guardrail enforcement are not established. " if fixture_only else "") + str(rule["description"]),
         "finding_category": finding_category,
         "subject": rule.get("subject", "unknown"),
         "action_state": action_state,

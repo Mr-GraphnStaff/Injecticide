@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.14.0 - 2026-10-29
+
+- Add Obsession MCP daily background triage with durable source evidence,
+  restart-safe cursors, leases, decisions and audit records, separate from scans.
+- Gate official reference changes and locally approved literal recipes; keep
+  initial baselines, community submissions and unsupported new code in review.
+- Add trusted host delivery through fixed JSON catalogs, paired regression tests,
+  scoped PRs, pinned exact-revision Azure CI and strict branch protection.
+- Add daily Pi-agent delivery and independently requalified automatic deployment
+  while retaining human production acceptance for broader changes.
+- Monitor OWASP skill issues/comments and the requested standards/intelligence
+  sources with explicit access, projection and applicability limits.
+- Document the source assessment and Injecticide architecture. No paid research
+  provider or arbitrary Internet code execution is activated.
+
+## 0.13.0 - 2026-10-29
+
+- Distinguish chunk-reading declarations from explicit whole-file EOF claims;
+  declarations remain informational without certifying complete inspection.
+- Calibrate protective credential language separately from disclosure instructions,
+  retaining independent review of mixed clauses and actual sensitive data.
+- Focus selected skill-map connections in both the scan and playground views,
+  with dimming, optional connection filtering, clearing and keyboard support.
+- Explain source resolution separately from runtime, trust and sensitivity
+  uncertainty; preserve complete relationships and citations in exports.
+- Record primary-source scanner research and a frozen comparison protocol;
+  these changes do not establish comparative detection leadership.
+
 ## 0.12.0 - 2026-10-28
 
 - Capture the complete nine-page Agent Skills documentation site, its direct

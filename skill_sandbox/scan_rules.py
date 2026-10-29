@@ -9,6 +9,11 @@ from io import StringIO
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
+if __package__:
+    from .obsession_signatures import load_rules as load_obsession_rules
+else:
+    from obsession_signatures import load_rules as load_obsession_rules
+
 
 RULE_CATALOG_PATH = Path(__file__).resolve().parent / "rules" / "violations.json"
 
@@ -18,7 +23,9 @@ def load_rule_catalog() -> Dict[str, object]:
     """Load the local structured rule catalog used for skill scanning."""
 
     with RULE_CATALOG_PATH.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+        catalog = json.load(handle)
+    catalog["rules"].extend(load_obsession_rules())
+    return catalog
 
 
 def compile_patterns() -> Tuple[Dict[str, object], ...]:
@@ -59,13 +66,8 @@ SAFE_RUNTIME_PACKAGES = {
     "pdfplumber",
 }
 
-DISCLOSURE_VERBS = r"show|reveal|dump|print|return|expose|output|extract|leak|disclose|send|share|display"
+DISCLOSURE_VERBS = r"show|reveal|dump|print|return|expose|output|extract|leak|disclose|send|share|display|read|fetch"
 SYSTEM_TARGETS = r"(?:system|developer)\s+(?:prompt|message|instructions)"
-NEGATION_OR_DEFINITION_REGEX = re.compile(
-    r"\b(do\s+not|don't|never|must\s+not|not\s+a|is\s+not|definition|defined\s+as|means)\b",
-    re.IGNORECASE,
-)
-QUOTED_OR_FENCED_REGEX = re.compile(r"^\s*(?:`{1,3}|>{0,1}\s*[\"'])")
 
 
 def find_rule_matches(rule: Dict[str, object], unit: object) -> List[Dict[str, object]]:
@@ -85,6 +87,16 @@ def find_rule_matches(rule: Dict[str, object], unit: object) -> List[Dict[str, o
         return _find_system_exfiltration_matches(text, line_number)
     if rule.get("id") == "secret_exfiltration":
         return _find_secret_exfiltration_matches(text, line_number)
+    if rule.get("id") == "sensitive_topic":
+        matches = []
+        for clause in _disclosure_clauses(text):
+            protective = _protective_prefix(clause)
+            if not protective and any(pattern.search(clause) for pattern in rule.get("compiled_excludes", ())):
+                continue
+            for pattern in rule.get("compiled_patterns", ()):
+                matches.extend(_observations_for_pattern(pattern, clause, line_number,
+                               "protective_language" if protective else "pattern_match"))
+        return matches[:3]
     if rule.get("id") == "dynamic_exec":
         if isinstance(unit, dict) and "source_text" in unit:
             text = str(unit["source_text"])
@@ -279,20 +291,13 @@ def _find_system_exfiltration_matches(text: str, line_number: int | None) -> Lis
             re.IGNORECASE,
         ),
     )
-    matches: List[Dict[str, object]] = []
-    for pattern in patterns:
-        for match in pattern.finditer(text):
-            context_tag = _disclosure_context_tag(text)
-            matches.append(_observation(match.group(0), line_number, context_tag, "high"))
-            if len(matches) >= 3:
-                return matches
-    return matches
+    return _disclosure_matches(patterns, text, line_number)
 
 
 def _find_secret_exfiltration_matches(text: str, line_number: int | None) -> List[Dict[str, object]]:
     patterns = (
         re.compile(
-            r"\b(show|reveal|dump|print|return|expose|display|output|extract|leak)\b"
+            rf"\b({DISCLOSURE_VERBS})\b"
             r"[^.\n]{0,80}"
             r"\b(api\s*key|access\s+token|bearer\s+token|password|credential|secret|access\s+key|private\s+key|ssh\s+key|pem)\b",
             re.IGNORECASE,
@@ -300,18 +305,42 @@ def _find_secret_exfiltration_matches(text: str, line_number: int | None) -> Lis
         re.compile(
             r"\b(api\s*key|access\s+token|bearer\s+token|password|credential|secret|access\s+key|private\s+key|ssh\s+key|pem)\b"
             r"[^.\n]{0,80}"
-            r"\b(show|reveal|dump|print|return|expose|display|output|extract|leak)\b",
+            rf"\b({DISCLOSURE_VERBS})\b",
             re.IGNORECASE,
         ),
     )
-    matches: List[Dict[str, object]] = []
-    for pattern in patterns:
-        for match in pattern.finditer(text):
-            context_tag = _disclosure_context_tag(text)
-            matches.append(_observation(match.group(0), line_number, context_tag, "high"))
-            if len(matches) >= 3:
-                return matches
-    return matches[:3]
+    return _disclosure_matches(patterns, text, line_number)
+
+
+def _disclosure_clauses(text):
+    # Contrast, sequence and independently commanded conjunctions end negation
+    # scope. This is a bounded syntax convention, not a natural-language proof.
+    return re.split(r"[.;!?\n]|\b(?:but|however|then)\b|(?:,\s*|\b(?:and|or)\s+)(?=(?:please\s+)?(?:" + DISCLOSURE_VERBS + r")\b)", text, flags=re.I)
+
+
+def _protective_prefix(text):
+    for verb in re.finditer(r"\b(?:" + DISCLOSURE_VERBS + r")\b", text, re.I):
+        if _disclosure_context_tag(text[:verb.end()]) == "negated_or_defined":
+            return True
+    return False
+
+
+def _disclosure_matches(patterns, text, line_number):
+    matches = []
+    for clause in _disclosure_clauses(text):
+        for pattern in patterns:
+            for match in pattern.finditer(clause):
+                verb = re.search(r"\b(?:" + DISCLOSURE_VERBS + r")\b", match.group(0), re.I)
+                action_end = match.start() + verb.end()
+                context = _disclosure_context_tag(clause[:action_end])
+                observation = _observation(match.group(0), line_number, context, "high")
+                if observation not in matches:
+                    matches.append(observation)
+                # Protective prefixes must never consume the display budget
+                # before a later disclosure instruction in the same paragraph.
+                matches.sort(key=lambda item: item["context_tag"] != "imperative_disclosure")
+                del matches[3:]
+    return matches
 
 
 def _find_dynamic_exec_matches(text: str, line_number: int | None, *, prose=False) -> List[Dict[str, object]]:
@@ -417,9 +446,15 @@ def _unit_text_and_line(unit: object) -> Tuple[str, int | None]:
 
 
 def _disclosure_context_tag(text: str) -> str:
-    if QUOTED_OR_FENCED_REGEX.search(text):
+    opening = re.match(r"^\s*(?:>\s*)?([\"'`])", text)
+    # An unrelated completed quote before an instruction is not its context.
+    if opening and len(re.findall(r"(?<!\\)" + re.escape(opening[1]), text)) % 2:
         return "quoted_or_fenced"
-    if NEGATION_OR_DEFINITION_REGEX.search(text):
+    # Only a guard that directly governs this action changes its disposition.
+    # Earlier unrelated prohibitions cannot immunize a later disclosure verb.
+    if re.search(r"\b(?:do\s+not|don't|never|must\s+not|should\s+not|not\s+allowed\s+to|cannot|can't|will\s+not)\s+(?:ever\s+)?(?:(?:ask|instruct|tell)\s+(?:the\s+)?(?:user|agent|operator)\s+to\s+)?(?:" + DISCLOSURE_VERBS + r")\s*$", text, re.I):
+        return "negated_or_defined"
+    if re.search(r"\b(?:refuse|decline)\s+to\s+(?:" + DISCLOSURE_VERBS + r")\s*$", text, re.I) and not re.search(r"\b(?:not|never|don't)\s+(?:refuse|decline)\b", text, re.I):
         return "negated_or_defined"
     return "imperative_disclosure"
 

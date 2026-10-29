@@ -1,3 +1,51 @@
+# Active assignment - Obsession MCP 0.14.0
+
+David authorized implementation, PR/push/pipeline delivery and a final Injecticide
+architecture diagram. Daily research is independent of scans. High useful signals
+can enter the scoped automatic release lane; medium/low receive Implement,
+Investigate or Reject review. New external costs require prior notice/approval.
+The user's supplied standards/intelligence brief and OWASP issue tracker are
+included in source assessment; no publisher endorsement is inferred for issues.
+
+Base includes scanner/map PR60 (94637c0) over published 0.12.0. Current isolated
+branch codex/obsession-mcp-0-14; original Y: changes remain preserved. Avery owns
+integration, source coverage, signature template, diagram and live release.
+Ishan owns durable research gate/MCP. Mara owns trusted bridge/pipeline. Lena
+independently reviews final authority, provenance and delivery boundaries.
+
+Reference updates are evidence-only. Shipped signature recipes are empty;
+novel detectors require reviewed local policy and paired controls. Arbitrary
+new code remains review work. No new paid model/search service or private upload.
+Actual test, PR, protection and pipeline/deployment states follow in validation.
+
+---
+
+# Active assignment - 0.13.0 generic scanner context and readable maps
+
+David authorized research and implementation on October 29, with advance notice
+and approval before any new external cost. No paid provider, comparator API,
+private upload, sample execution or new infrastructure was activated.
+
+Candidate branch codex/scanner-context-map-0-13 starts at published 0.12.0,
+bf10a4bb45ccc1152eb3ae2e52498ae21bb93d1c. Original Y: checkout changes remain
+preserved. Avery coordinates/integrates; Ishan owns generic context and chunk
+handling; Mara owns both map interfaces; Lena owns primary-source comparison
+research and independent final review. These are actual separate agent
+assignments, not independent human approvals.
+
+Acceptance requires paired mixed refusal/disclosure controls, declaration vs
+forged/invalid EOF evidence, direct sensitive-data preservation, dense-map
+selection/filter/clear/keyboard behavior, full export and existing-draft
+preservation, and a real local API-to-map check. Results follow verification.
+Human PR acceptance remains required for this major release.
+
+The previous external corpus is exposed diagnostic evidence, not a new holdout.
+No perfect scanner or industry-leadership claim is supported. See
+../research/2026-10-29-scanner-quality-evidence.md for primary-source practices,
+coverage/threshold distinctions and the no-new-cost evaluation protocol.
+
+---
+
 # Release candidate - 0.11.0
 
 Implementation and independent review complete within recorded scopes. Root
