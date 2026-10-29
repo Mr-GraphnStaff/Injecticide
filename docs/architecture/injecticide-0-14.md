@@ -33,7 +33,8 @@ flowchart TB
         Qualify --> Deploy[Existing Pi deployment wrapper]
         Deploy --> Health[Health checks and rollback]
         Decisions -->|supported Implement proposal| HumanPR[Review-required PR]
-        HumanPR --> Human[Human acceptance and production environment gate]
+        HumanPR --> CI
+        CI -->|reviewed broader update and master validation| Human[Human acceptance and production environment gate]
         Human --> Deploy
     end
     Health -->|versioned release for subsequent scans| Sandbox
