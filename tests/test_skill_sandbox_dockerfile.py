@@ -27,6 +27,7 @@ def test_skill_sandbox_dockerfile_copies_scanner_modules():
         "finding_enrichment.py",
         "governance.py",
         "scan_rules.py",
+        "speech_acts.py",
         "sensitive_data.py",
         "package_formats.py",
         "package_threats.py",

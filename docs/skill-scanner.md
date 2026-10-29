@@ -28,6 +28,64 @@ unsupported compression and budget exclusions remain visible.
 
 ## What the result contains
 
+### Context and blocking evidence (0.15.0)
+
+Detection retains `speech_act`, `imperative_evidence`, `target` and `confidence`
+for candidate instructions, including examples, quoted/fenced text and supported
+decoded projections. Example classification never disables scanning. Confidence
+means recognized-syntax evidence strength, not a calibrated accuracy probability.
+`policy_evaluation` separately records per-observation response and reasoning.
+The contract covers the seven existing high-blocking prose detectors: prompt
+override, system/credential disclosure, autonomous authoritative writes, bulk
+enterprise modification, workflow manipulation and cross-system automation.
+Code/effect detectors retain their independently measured contracts.
+
+Public upload adapters bind `uploaded_artifact`; archive metadata and HTTP form
+claims cannot upgrade that source. Python integrations may supply `source_channel`
+as an explicit analysis-context keyword; the CLI offers `--source-channel`.
+These are policy scenarios, not authenticated runtime provenance. High-confidence
+model-directed requests from retrieved documents, tool output, uploads or unknown
+sources block; user-turn requests require review, described risks are logged,
+illustrative examples are flagged, and unresolved intent/target receives review.
+An activation instruction changes how the referenced example is evaluated. Code
+data-flow/effect evidence keeps its separate policy and cannot be downgraded by
+an illustrative prose label. Other-language speech acts remain unassessed by the
+bounded English recognizers, even when supported text extraction is complete.
+Structurally recognized evaluation input keeps its existing review presentation
+while its policy response is `flag`; this does not count as a governance block.
+Recognition depends on actual field structure, never the file's directory name.
+
+Context records, illustrative ranges and activation references have explicit
+budgets. Exhaustion is exposed in instruction-context coverage and unresolved
+facts remain reviewable. Contextual matching streams the input and prioritizes
+operative evidence before bounded display selection, retaining later live
+requests after many examples within the supplied analysis budget.
+
+Disclosure classification separates recognized requests from status descriptions,
+risk statements and documented attack scenarios. Unknown intent remains reviewable.
+An author, filename, reference directory, heading or fenced example does not grant
+trust. Operative requests mixed into documentation retain their own evidence and
+disposition. These are bounded deterministic syntax checks, not complete language
+understanding or runtime observations.
+
+`declared_tool_execution` records invocation capabilities and retains execution
+controls separately from `tool_escape`, which requires explicit boundary-bypass
+language. `governance_profile.blocking_findings` binds blocking recommendations to
+file, rule, action state and observation line/context. Credential handling alone
+does not independently establish a disclosure violation. The risk-summary
+recommendation follows the contextual governance decision.
+
+Database extraction reports sampled rows and bounded total-row counts per table.
+Unavailable totals stay unknown; exhausting the optional count budget preserves
+the earlier sample. Token footprint distinguishes complete extracted projections
+from complete source text. Creator summaries separate reading declarations,
+explicit EOF claims and content without assessable marker text.
+
+Process extraction includes resolved packaged document links and explicit steps
+in their plain-text blocks; these are declarations, never execution traces.
+Differences among supplied metadata, filename and an explicit first changelog
+release are maintenance observations, not format errors or security blocks.
+
 The 0.12.0 candidate adds a source-backed portable frontmatter allowlist and
 enforces version declarations as strings at `metadata.version`. A version is
 optional; no SemVer or changelog requirement is invented. Misplaced/non-string

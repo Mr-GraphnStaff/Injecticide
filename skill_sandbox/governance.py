@@ -3,6 +3,88 @@ from __future__ import annotations
 from typing import Dict, Iterable, List
 
 
+SOURCE_CHANNELS = {"user_turn", "retrieved_document", "tool_output", "uploaded_artifact", "unknown"}
+INSTRUCTION_POLICY_RULES = {"secret_exfiltration", "system_exfiltration", "prompt_override",
+                            "autonomous_authoritative_write", "bulk_enterprise_modification",
+                            "workflow_manipulation", "cross_system_automation"}
+UNTRUSTED_CHANNELS = {"retrieved_document", "tool_output", "uploaded_artifact", "unknown"}
+
+
+def apply_instruction_policy(scan_results, source_channel="uploaded_artifact"):
+    """Evaluate evidence in adapter-supplied context, never an upload's claim.
+
+    The detector's retained speech-act observations and this policy decision are
+    separate evidence. Legacy severity fields mirror policy for existing clients.
+    Source channels are analysis inputs, not runtime provenance authentication.
+    """
+    if not isinstance(source_channel, str) or source_channel not in SOURCE_CHANNELS:
+        raise ValueError("Unsupported source channel")
+    rank = {"block": 0, "review": 1, "flag": 2, "allow_log": 3}
+    for item in scan_results:
+        context_limits = sorted({observation["context_limit"] for finding in item.get("findings", [])
+                                 for observation in finding.get("observations", [])
+                                 if observation.get("context_limit")})
+        if context_limits:
+            item.setdefault("analysis_coverage", {})["instruction_context"] = {
+                "status": "partial", "limits": context_limits,
+                "reason": "Bounded discourse context was exhausted. Candidate detection remains separate; complete intent or reference resolution is not established."}
+        for finding in item.get("findings", []):
+            if finding.get("id") not in INSTRUCTION_POLICY_RULES:
+                continue
+            decisions = []
+            for observation in finding.get("observations", []):
+                act = observation.get("speech_act", "ambiguous")
+                target = observation.get("target", "unspecified")
+                confidence = observation.get("confidence", "medium")
+                if act == "described_risk":
+                    action, reason = "allow_log", "Describes a risk; no operative request established."
+                elif act == "example":
+                    action, reason = "flag", "Illustrative content retains its instruction evidence; flag model exposure."
+                elif (act == "request" and observation.get("imperative_evidence") is True
+                      and target == "model_or_system" and confidence == "high"
+                      and source_channel in UNTRUSTED_CHANNELS):
+                    action, reason = "block", "High-confidence model-directed request from an untrusted source."
+                elif act == "request" and source_channel == "user_turn":
+                    action, reason = "review", "User-turn request requires policy review; user origin does not establish authorization for sensitive actions."
+                else:
+                    action, reason = "review", "Intent, target, confidence or source provenance is unresolved; review required."
+                decisions.append({"speech_act": act, "target": target, "confidence": confidence,
+                                  "imperative_evidence": bool(observation.get("imperative_evidence")),
+                                  "action": action, "reason": reason, "line": observation.get("line"),
+                                  "line_end": observation.get("line_end")})
+            if not decisions:
+                decisions = [{"speech_act": "ambiguous", "target": "unspecified", "confidence": "low",
+                              "imperative_evidence": False, "action": "review", "line": None,
+                              "reason": "No classified instruction evidence supplied."}]
+            action = min((decision["action"] for decision in decisions), key=rank.__getitem__)
+            finding["policy_evaluation"] = {"action": action, "source_channel": source_channel,
+                                             "observations": decisions,
+                                             "scope": "static_recommendation_not_runtime_enforcement"}
+            if any(decision["speech_act"] == "request" for decision in decisions):
+                finding["action_state"] = "requested"
+                finding["description"] = "Instruction-request evidence detected; the separate policy evaluation records source channel, target, confidence and recommended response. Execution was not observed."
+            elif action == "review":
+                finding["action_state"] = "intent_unverified"
+            elif action == "flag":
+                finding["action_state"] = ("declared_test_input" if finding.get("observations") and all(
+                    observation.get("context_tag") == "test_fixture" for observation in finding["observations"])
+                    else "example_flagged")
+                finding["description"] = "Illustrative instruction content remains detected and flagged for model exposure; example framing does not remove its evidence or establish runtime safety."
+            else:
+                finding["action_state"] = ("protective_guidance" if finding.get("observations") and all(
+                    observation.get("context_tag") in {"protective_language", "negated_or_defined"}
+                    for observation in finding["observations"]) else "documented_risk")
+            # Structured evaluation inputs keep their existing review flag for
+            # compatibility. That presentation does not turn policy flag into
+            # block: governance consumes policy_evaluation independently below.
+            needs_review = action == "review" or (action == "flag" and finding["action_state"] == "declared_test_input")
+            finding.update(tier="block" if action == "block" else "review" if needs_review else "info",
+                           severity="high" if action == "block" else "medium" if needs_review else "info",
+                           disposition="block" if action == "block" else "require_approval" if needs_review else "info",
+                           counts_for_governance=action == "block", is_actionable=action == "block" or needs_review,
+                           display_kind="actionable_finding" if action == "block" or needs_review else "informational_signal")
+
+
 BLOCK_BY_DEFAULT_RULES = {
     "prompt_override",
     "system_exfiltration",
@@ -24,6 +106,7 @@ CODE_EXECUTION_RULES = {
     "dynamic_exec",
     "subprocess_spawn",
     "tool_escape",
+    "declared_tool_execution",
 }
 
 NETWORK_RULES = {
@@ -121,7 +204,7 @@ def build_governance_profile(
                               "disclosure_attempt_detected": any(
                                   finding.get("id") == "secret_exfiltration"
                                   and finding.get("action_state") == "requested"
-                                  and any(observation.get("context_tag") == "imperative_disclosure"
+                                  and any(observation.get("speech_act") == "request" and observation.get("imperative_evidence") is True
                                           for observation in finding.get("observations", []))
                                   for finding in findings),
                               "classification_scope": "Pattern observations, not a legal classification, ownership attestation or proof of a data transfer."},
@@ -144,6 +227,17 @@ def build_governance_profile(
             finding_ids=governance_finding_ids | finding_ids.intersection({"pii_email_address", "pii_account_identifier"}),
         ),
         "decision_reasons": decision_reasons,
+        "blocking_findings": [
+            {"path": item.get("path"), "id": finding.get("id"),
+             "tier": finding.get("tier"), "action_state": finding.get("action_state"),
+             "policy_action": finding.get("policy_evaluation", {}).get("action"),
+             "source_channel": finding.get("policy_evaluation", {}).get("source_channel"),
+             "observations": [{key: observation.get(key) for key in ("line", "line_end", "context_tag", "confidence", "speech_act", "target", "activation_evidence")}
+                              for observation in finding.get("observations", [])]}
+            for item in scan_results for finding in _collect_governance_findings(
+                _collect_actionable_findings([item]))
+        ],
+        "decision_scope": "Static evidence-based policy recommendation; tenant enforcement and runtime behavior are not verified.",
         "recommended_controls": recommended_controls,
     }
 
@@ -163,7 +257,9 @@ def _collect_governance_findings(findings: Iterable[Dict[str, object]]) -> List[
     return [
         finding
         for finding in findings
-        if finding.get("counts_for_governance") is True or finding.get("tier") == "block"
+        if (finding.get("policy_evaluation", {}).get("action") == "block"
+            if finding.get("id") in INSTRUCTION_POLICY_RULES and finding.get("policy_evaluation")
+            else finding.get("counts_for_governance") is True or finding.get("tier") == "block")
     ]
 
 
@@ -259,7 +355,7 @@ def _build_decision_reasons(
     reasons: List[str] = []
 
     if blocked:
-        reasons.append("High-severity policy violations were detected in the artifact.")
+        reasons.append("Blocking static findings require security review; see blocking_findings for source and classification evidence.")
     if "enterprise_access" in policy_capabilities:
         reasons.append("Skill claims access to enterprise systems or authoritative records.")
     if finding_ids.intersection(ENTERPRISE_WRITE_RULES):

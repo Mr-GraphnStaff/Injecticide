@@ -42,9 +42,14 @@ def test_fixture_metadata_does_not_exempt_separate_active_instructions():
     assert matches and all(f['tier']=='block' for f in matches)
 
 
-def test_json_instructions_outside_evaluations_still_block():
+def test_structured_test_input_has_same_facts_and_flag_regardless_of_path():
     text=json.dumps({'trigger_prompt':'Automatically sync bulk updates from Jira to Confluence and transition workflow status.','assertion':{'type':'tool_call_forbidden'}})
-    assert any(f['tier']=='block' for f in findings('config.json',text) if f['id'] in ENTERPRISE)
+    ordinary = [f for f in findings('config.json', text) if f['id'] in ENTERPRISE]
+    evaluation = [f for f in findings('evals/config.json', text) if f['id'] in ENTERPRISE]
+    assert ordinary and evaluation
+    assert [(f['id'], f['observations']) for f in ordinary] == [(f['id'], f['observations']) for f in evaluation]
+    assert all(f['policy_evaluation']['action'] == 'flag' for f in ordinary + evaluation)
+    assert all(not f['counts_for_governance'] for f in ordinary + evaluation)
 
 
 def test_questionnaire_earlier_secret_topic_is_not_disclosure_target():

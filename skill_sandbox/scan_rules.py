@@ -4,6 +4,7 @@ import json
 import re
 import tokenize
 from itertools import islice
+from bisect import bisect_right
 from functools import lru_cache
 from io import StringIO
 from pathlib import Path
@@ -66,16 +67,45 @@ SAFE_RUNTIME_PACKAGES = {
     "pdfplumber",
 }
 
-DISCLOSURE_VERBS = r"show|reveal|dump|print|return|expose|output|extract|leak|disclose|send|share|display|read|fetch"
+DISCLOSURE_VERBS = r"include|included|show|shown|reveal|revealed|dump|dumped|print|printed|return|returned|expose|exposed|output|extract|extracted|leak|leaked|disclose|disclosed|send|sent|share|shared|display|displayed|read|fetch|fetched"
 SYSTEM_TARGETS = r"(?:system|developer)\s+(?:prompt|message|instructions)"
 
 
-def find_rule_matches(rule: Dict[str, object], unit: object) -> List[Dict[str, object]]:
+def find_rule_matches(rule: Dict[str, object], unit: object, *, fact_context_provider=None) -> List[Dict[str, object]]:
     """Return normalized match samples when a compiled rule applies."""
 
     text, line_number = _unit_text_and_line(unit)
+    if isinstance(unit, dict) and unit.get("json_container") and rule.get("id") in {"prompt_override", "system_exfiltration", "secret_exfiltration"}:
+        # JSON string delimiters describe a container, not illustrative speech.
+        # Reuse duplicate-safe structural scalar units; no filename/path grants
+        # a testcase authority and all raw fallback content remains inspected.
+        if __package__:
+            from .contextual_rules import _json_context_units
+            from .speech_acts import annotate_observation_facts, observation_fact_priority
+        else:
+            from contextual_rules import _json_context_units
+            from speech_acts import annotate_observation_facts, observation_fact_priority
+        result = []
+        for scalar in _json_context_units("", text):
+            candidates = find_rule_matches(rule, scalar, fact_context_provider=fact_context_provider)
+            if scalar.get("test_fixture"):
+                for observation in candidates:
+                    observation["context_tag"] = "test_fixture"
+                    observation["fixture_id"] = scalar.get("fixture_id")
+            if candidates and fact_context_provider is not None:
+                candidates = annotate_observation_facts(rule["id"], candidates, prepared_context=fact_context_provider())
+            result.extend(candidates)
+            result.sort(key=observation_fact_priority)
+            del result[3:]
+        return result
+    source_layout = None
+    if isinstance(unit, dict) and rule.get("id") in {"prompt_override", "system_exfiltration", "secret_exfiltration"} and isinstance(unit.get("source_text"), str):
+        source_layout = unit["source_text"]
+        # Preserve physical offsets while keeping the existing wrapped-prose
+        # matcher contract; replacing LF is length preserving.
+        text = source_layout.replace("\n", " ")
     if isinstance(unit, dict) and unit.get("context_tag") == "educational_example" and rule.get("id") in {"prompt_override", "system_exfiltration", "secret_exfiltration"}:
-        matches = find_rule_matches(rule, {"text": text, "line": line_number})
+        matches = find_rule_matches(rule, {"text": text, "line": line_number}, fact_context_provider=fact_context_provider)
         for match in matches:
             # An authored example still needs review; it is not an exemption.
             match["context_tag"] = "educational_example"
@@ -84,7 +114,7 @@ def find_rule_matches(rule: Dict[str, object], unit: object) -> List[Dict[str, o
     if rule.get("id") == "unicode_deception":
         return _find_unicode_deception_matches(text, line_number)
     if rule.get("id") == "system_exfiltration":
-        return _find_system_exfiltration_matches(text, line_number)
+        return _find_system_exfiltration_matches(text, line_number, fact_context_provider=fact_context_provider, source_layout=source_layout)
     if rule.get("id") == "secret_exfiltration":
         return _find_secret_exfiltration_matches(text, line_number)
     if rule.get("id") == "sensitive_topic":
@@ -116,7 +146,7 @@ def find_rule_matches(rule: Dict[str, object], unit: object) -> List[Dict[str, o
     if mode == "all":
         grouped_matches: List[Dict[str, object]] = []
         for pattern in compiled_patterns:
-            matches = _observations_for_pattern(pattern, text, line_number)
+            matches = _observations_for_pattern(pattern, text, line_number, detector_id=rule.get("id"), fact_context_provider=fact_context_provider, source_layout=source_layout)
             if not matches:
                 return []
             grouped_matches.extend(matches[:1])
@@ -124,7 +154,7 @@ def find_rule_matches(rule: Dict[str, object], unit: object) -> List[Dict[str, o
 
     positive_matches: List[Dict[str, object]] = []
     for pattern in compiled_patterns:
-        positive_matches.extend(_observations_for_pattern(pattern, text, line_number))
+        positive_matches.extend(_observations_for_pattern(pattern, text, line_number, detector_id=rule.get("id"), fact_context_provider=fact_context_provider, source_layout=source_layout))
 
     return positive_matches[:3]
 
@@ -133,6 +163,8 @@ def build_scan_units(path: str, text: str) -> List[Dict[str, object]]:
     """Split text into units that reduce unrelated cross-line keyword matches."""
 
     lower_path = path.lower()
+    if lower_path.endswith(".json"):
+        return [{"text": text, "line": 1, "json_container": True}]
     if lower_path.endswith(".csv"):
         return [
             {"text": line.strip(), "line": index}
@@ -276,7 +308,7 @@ def _find_unicode_deception_matches(text: str, line_number: int | None) -> List[
     return matches
 
 
-def _find_system_exfiltration_matches(text: str, line_number: int | None) -> List[Dict[str, object]]:
+def _find_system_exfiltration_matches(text: str, line_number: int | None, *, fact_context_provider=None, source_layout=None) -> List[Dict[str, object]]:
     patterns = (
         re.compile(
             rf"\b({DISCLOSURE_VERBS})\b"
@@ -291,7 +323,7 @@ def _find_system_exfiltration_matches(text: str, line_number: int | None) -> Lis
             re.IGNORECASE,
         ),
     )
-    return _disclosure_matches(patterns, text, line_number)
+    return _disclosure_matches(patterns, text, line_number, fact_context_provider=fact_context_provider, source_layout=source_layout)
 
 
 def _find_secret_exfiltration_matches(text: str, line_number: int | None) -> List[Dict[str, object]]:
@@ -312,10 +344,33 @@ def _find_secret_exfiltration_matches(text: str, line_number: int | None) -> Lis
     return _disclosure_matches(patterns, text, line_number)
 
 
+def _clause_separator_spans(text):
+    # Sentence punctuation within a quoted example cannot manufacture an open
+    # quote on the next real instruction. Preserve original offsets while
+    # masking quoted spans for separator recognition only; content is scanned.
+    masked = list(text)
+    quote = None
+    for index, char in enumerate(text):
+        if char in {"\"", "'", "`"} and not (index and index+1<len(text) and text[index-1].isalnum() and text[index+1].isalnum()):
+            if quote is None:
+                quote = char
+            elif quote == char:
+                quote = None
+            masked[index] = " "
+        elif quote:
+            masked[index] = " "
+    projected = "".join(masked)
+    return [(m.start(), m.end()) for m in re.finditer(r"[.;!?\n]|\b(?:but|however|then)\b|(?:,\s*|\b(?:and|or)\s+)(?=(?:please\s+)?(?:" + DISCLOSURE_VERBS + r")\b)", projected, re.I)]
+
+
 def _disclosure_clauses(text):
-    # Contrast, sequence and independently commanded conjunctions end negation
-    # scope. This is a bounded syntax convention, not a natural-language proof.
-    return re.split(r"[.;!?\n]|\b(?:but|however|then)\b|(?:,\s*|\b(?:and|or)\s+)(?=(?:please\s+)?(?:" + DISCLOSURE_VERBS + r")\b)", text, flags=re.I)
+    start = 0
+    output = []
+    for left, right in _clause_separator_spans(text):
+        output.append(text[start:left])
+        start = right
+    output.append(text[start:])
+    return output
 
 
 def _protective_prefix(text):
@@ -325,20 +380,39 @@ def _protective_prefix(text):
     return False
 
 
-def _disclosure_matches(patterns, text, line_number):
+def _disclosure_matches(patterns, text, line_number, *, fact_context_provider=None, source_layout=None):
     matches = []
+    clause_cursor = 0
     for clause in _disclosure_clauses(text):
+        clause_start = text.find(clause, clause_cursor) if clause else clause_cursor
+        clause_cursor = clause_start + len(clause)
+        clause_line = line_number + (source_layout or text).count("\n", 0, clause_start) if isinstance(line_number, int) else None
         for pattern in patterns:
             for match in pattern.finditer(clause):
                 verb = re.search(r"\b(?:" + DISCLOSURE_VERBS + r")\b", match.group(0), re.I)
                 action_end = match.start() + verb.end()
-                context = _disclosure_context_tag(clause[:action_end])
-                observation = _observation(match.group(0), line_number, context, "high")
+                context = _disclosure_context_tag(clause[max(0, action_end-512):action_end])
+                match_line = line_number + (source_layout or text).count("\n", 0, clause_start+match.start()) if isinstance(line_number, int) else None
+                observation = _observation(match.group(0), match_line, context, "high")
+                observation["candidate_context"] = clause[max(0, match.start()-512):match.end()]
+                if fact_context_provider is not None:
+                    if __package__:
+                        from .speech_acts import annotate_observation_facts
+                    else:
+                        from speech_acts import annotate_observation_facts
+                    observation = annotate_observation_facts("system_exfiltration", [observation], prepared_context=fact_context_provider())[0]
                 if observation not in matches:
                     matches.append(observation)
                 # Protective prefixes must never consume the display budget
                 # before a later disclosure instruction in the same paragraph.
-                matches.sort(key=lambda item: item["context_tag"] != "imperative_disclosure")
+                if fact_context_provider is not None:
+                    if __package__:
+                        from .speech_acts import observation_fact_priority
+                    else:
+                        from speech_acts import observation_fact_priority
+                    matches.sort(key=observation_fact_priority)
+                else:
+                    matches.sort(key=lambda item: item["context_tag"] != "imperative_disclosure")
                 del matches[3:]
     return matches
 
@@ -417,11 +491,36 @@ def _observations_for_pattern(
     line_number: int | None,
     context_tag: str = "pattern_match",
     confidence: str = "medium",
+    *, detector_id=None, fact_context_provider=None, source_layout=None,
 ) -> List[Dict[str, object]]:
-    return [
-        _observation(match.group(0), line_number, context_tag, confidence)
-        for match in islice(pattern.finditer(text), 3)
-    ]
+    result = []
+    fact_matcher = detector_id in {"prompt_override", "system_exfiltration", "secret_exfiltration"} and fact_context_provider is not None
+    candidates = pattern.finditer(text) if fact_matcher else islice(pattern.finditer(text), 3)
+    boundaries = _clause_separator_spans(text) if fact_matcher else []
+    boundary_ends = [end for _, end in boundaries]
+    for match in candidates:
+        match_line = line_number + (source_layout or text).count("\n", 0, match.start()) if isinstance(line_number, int) else None
+        observation = _observation(match.group(0), match_line, context_tag, confidence)
+        context_start = max(0, match.start()-512)
+        if fact_matcher:
+            boundary_index = bisect_right(boundary_ends, match.start()) - 1
+            start = max(context_start, boundary_ends[boundary_index]) if boundary_index >= 0 else context_start
+        else:
+            preceding = text[context_start:match.start()]
+            local_boundaries = list(re.finditer(r"[.;!?\n]|\b(?:but|however|then)\b", preceding, re.I))
+            start = context_start + local_boundaries[-1].end() if local_boundaries else context_start
+        observation["candidate_context"] = text[start:match.end()][-1024:]
+        if fact_matcher:
+            if __package__:
+                from .speech_acts import annotate_observation_facts, observation_fact_priority
+            else:
+                from speech_acts import annotate_observation_facts, observation_fact_priority
+            observation = annotate_observation_facts(detector_id, [observation], prepared_context=fact_context_provider())[0]
+        result.append(observation)
+        if fact_matcher:
+            result.sort(key=observation_fact_priority)
+            del result[3:]
+    return result
 
 
 def _observation(
@@ -445,18 +544,79 @@ def _unit_text_and_line(unit: object) -> Tuple[str, int | None]:
     return str(unit), None
 
 
-def _disclosure_context_tag(text: str) -> str:
+def _disclosure_context_tag(text: str, action_pattern: str | None = None) -> str:
+    action_verbs = action_pattern or DISCLOSURE_VERBS
+    if re.search(r"\b(?:do\s+not|don't|never)\s+hesitate\s+to\s+(?:" + action_verbs + r")\s*$", text, re.I):
+        return "imperative_disclosure"
+    if re.search(r"\b(?:my|our|the)\s+(?:admin(?:istrator)?|developer|system|manager)\s+(?:says|said|asks|instructs|demands|requires)(?:\s+to)?\s*[:,]?\s*[\"']?\s*(?:" + action_verbs + r")\s*$", text, re.I):
+        # This is a claimed instruction, not proof of the claimed authority.
+        return "imperative_disclosure"
+    controlling_request = re.search(r"\b(?:execute|follow|obey|carry\s+out|perform|apply)\s+(?:(?:this|that|the)\s+)?(?:instruction|request|command|example)\b", text, re.I)
+    if controlling_request:
+        guard = text[:controlling_request.start()]
+        return "negated_or_defined" if re.search(r"\b(?:do not|don't|never|must not)\s*$", guard, re.I) else "imperative_disclosure"
     opening = re.match(r"^\s*(?:>\s*)?([\"'`])", text)
     # An unrelated completed quote before an instruction is not its context.
     if opening and len(re.findall(r"(?<!\\)" + re.escape(opening[1]), text)) % 2:
         return "quoted_or_fenced"
+    # Explicitly quoted unsafe requests are evidence about text, not active
+    # instructions. The quote must still be open at this exact action.
+    quoted_example = re.search(r"\b(?:example(?:\s+of)?(?:\s+an?)?\s+(?:unsafe\s+)?request|attack example)\s*:\s*([\"'])", text, re.I)
+    if quoted_example and len(re.findall(r"(?<!\\)" + re.escape(quoted_example[1]), text[quoted_example.end()-1:])) % 2:
+        return "quoted_or_fenced"
     # Only a guard that directly governs this action changes its disposition.
     # Earlier unrelated prohibitions cannot immunize a later disclosure verb.
-    if re.search(r"\b(?:do\s+not|don't|never|must\s+not|should\s+not|not\s+allowed\s+to|cannot|can't|will\s+not)\s+(?:ever\s+)?(?:(?:ask|instruct|tell)\s+(?:the\s+)?(?:user|agent|operator)\s+to\s+)?(?:" + DISCLOSURE_VERBS + r")\s*$", text, re.I):
+    if re.search(r"\b(?:do\s+not|don't|never|must\s+not|should\s+not|not\s+allowed\s+to|cannot|can't|will\s+not)\s+(?:ever\s+)?(?:(?:ask|instruct|tell)\s+(?:the\s+)?(?:user|agent|operator)\s+to\s+)?(?:" + action_verbs + r")\s*$", text, re.I):
         return "negated_or_defined"
-    if re.search(r"\b(?:refuse|decline)\s+to\s+(?:" + DISCLOSURE_VERBS + r")\s*$", text, re.I) and not re.search(r"\b(?:not|never|don't)\s+(?:refuse|decline)\b", text, re.I):
+    if re.search(r"\b(?:refuse|decline)\s+to\s+(?:" + action_verbs + r")\s*$", text, re.I) and not re.search(r"\b(?:not|never|don't)\s+(?:refuse|decline)\b", text, re.I):
         return "negated_or_defined"
-    return "imperative_disclosure"
+    # A grammatical mention is not automatically a request. Keep the local
+    # action prefix so a prior benign sentence cannot excuse a later directive.
+    action = re.search(r"\b(?:" + action_verbs + r")\s*$", text, re.I)
+    prefix = text[:action.start()] if action else text
+    # A self-description of possible capability is not an operative command or
+    # a third-party risk report. Retain uncertainty for declared agent powers.
+    if re.search(r"(?:^|:\s*)(?:this|the)\s+(?:skill|tool|assistant|agent|model)\s+(?:can|could|may|might)\b", prefix, re.I):
+        return "ambiguous_disclosure"
+    if re.search(r"\b(?:must|shall|should|needs?\s+to|is\s+to)\s+be\s*$", prefix, re.I):
+        return "imperative_disclosure"
+    if re.search(r"\byou\b|^\s*please\b|(?:^|[,;:])\s*(?:(?:the|this)\s+)?(?:assistant|agent|operator)\b", prefix, re.I) or re.search(
+            r"\b(?:please|now|instead|always|first|next|then|actually|immediately)\s*$|[:,]\s*$", prefix, re.I):
+        return "imperative_disclosure"
+    if re.search(r"\b(?:task|instruction|request|goal|job|step|action)\s+(?:is|will\s+be)\s+to\s*$", prefix, re.I):
+        return "imperative_disclosure"
+    if re.match(r"\s*(?:use|run|execute|invoke)\b", prefix, re.I) and re.search(r"\bto\s+(?:automatically\s+)?$", prefix, re.I):
+        return "imperative_disclosure"
+    if re.match(r"\s*(?:(?:an?|the)\s+)?(?:prompt\s+injection(?:\s+attack)?|attackers?|adversar(?:y|ies)|malware|flaws?|vulnerabilit(?:y|ies))\b", prefix, re.I) and re.search(r"\b(?:may|might|could|can)\b", prefix, re.I):
+        return "descriptive_security_language"
+    # Preserve recognized requests expressed through a controlling verb, rather
+    # than treating an arbitrary noun before a disclosure verb as an imperative.
+    if re.search(r"\b(?:ask|tell|instruct|command|require|ensure|need|want|means|refuse)\b", prefix, re.I):
+        return "imperative_disclosure"
+    if re.match(r"\s*(?:for|during|as part of)\b", prefix, re.I) and re.search(r"\b(?:testing|debugging|audit|review|validation|compliance)\s*$", prefix, re.I):
+        return "imperative_disclosure"
+    if re.search(r"\b(?:make\s+(?:sure|certain)|it\s+is\s+(?:necessary|required)\s+to)\b", prefix, re.I) or re.search(r"\b(?:must|shall|should)\s*$", prefix, re.I):
+        return "imperative_disclosure"
+    if re.search(r"\b(?:is|are|was|were)\s+(?:vulnerable|susceptible|compromised)\b|\b(?:when|if)\s+(?:attackers?|adversar(?:y|ies))\b", prefix, re.I):
+        return "descriptive_security_language"
+    if re.fullmatch(r"\s*(?:(?:please|now|then)\s+)?automatically\s+", prefix, re.I):
+        return "imperative_disclosure"
+    # Third-person risk, possibility and historical narration are descriptions.
+    # This rule does not apply to direct user/agent requests above.
+    if re.search(r"\b(?:may|might|could|can|would|were|was|has|have|had)\s+(?:be(?:en)?\s+)?(?:[a-z]+ly\s+){0,2}$", prefix, re.I):
+        return "descriptive_security_language"
+    if re.match(r"\s*(?:(?:an?|the)\s+)?(?:attackers?|adversar(?:y|ies)|malware|vulnerabilit(?:y|ies)|flaws?|misconfigurations?)\b", prefix, re.I):
+        return "descriptive_security_language"
+    if action and action.group(0).strip().lower() in {
+            "shown", "revealed", "dumped", "printed", "returned", "exposed", "extracted",
+            "leaked", "disclosed", "sent", "shared", "displayed", "fetched"}:
+        return "descriptive_security_language"
+    if not prefix.strip() or re.fullmatch(r"[\s>*#\-\d.]*", prefix):
+        return "imperative_disclosure"
+    # An already completed quote does not govern a following disclosure verb.
+    if re.fullmatch(r'\s*["\'][^"\']*["\']\s*', prefix):
+        return "imperative_disclosure"
+    return "ambiguous_disclosure"
 
 
 def _dependency_context_tag(package_spec: str) -> str:

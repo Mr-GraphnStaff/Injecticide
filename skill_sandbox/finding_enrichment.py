@@ -129,6 +129,23 @@ def build_finding(
     if fixture_only:
         action_state = "declared_test_input"
 
+    operative_disclosure = any(item.get("context_tag") == "imperative_disclosure" for item in observations)
+    descriptive_only = bool(observations) and all(item.get("context_tag") in {
+        "descriptive_security_language", "documented_attack_pattern", "topic_discussion",
+        "quoted_or_fenced", "protective_language", "negated_or_defined"
+    } for item in observations)
+    ambiguous_evidence = not operative_disclosure and any(item.get("context_tag") == "ambiguous_disclosure" for item in observations)
+    if descriptive_only and detector_id in {"secret_exfiltration", "system_exfiltration"}:
+        finding_category = "topic_mention"
+        action_state = "protective_guidance" if protective_only else "documented"
+    if ambiguous_evidence and detector_id in {"secret_exfiltration", "system_exfiltration"}:
+        action_state = "intent_unverified"
+    description = str(rule["description"])
+    if descriptive_only:
+        description = "Describes a security risk or documented adversary behavior; this text is not an operative disclosure request. Runtime behavior remains unverified."
+    elif ambiguous_evidence:
+        description = "Disclosure-related language is present, but an operative request is not established by the recognized syntax. Review the context."
+
     is_actionable = bool(disposition_result["is_actionable"])
     display_kind = _display_kind("active" if finding_category == "data_presence" else artifact_role, severity)
     samples = _unique_samples(format_observation_sample(observation) for observation in observations)
@@ -138,7 +155,7 @@ def build_finding(
         "category": rule["category"],
         "severity": severity,
         "tier": disposition_result["tier"],
-        "description": ("Explicit protective or definitional language; runtime enforcement is not established. " if protective_only else "") + ("Declared evaluation fixture; execution and guardrail enforcement are not established. " if fixture_only else "") + str(rule["description"]),
+        "description": ("Explicit protective or definitional language; runtime enforcement is not established. " if protective_only else "") + ("Declared evaluation fixture; execution and guardrail enforcement are not established. " if fixture_only else "") + description,
         "finding_category": finding_category,
         "subject": rule.get("subject", "unknown"),
         "action_state": action_state,

@@ -15,17 +15,26 @@ MAX_CANDIDATES = 32
 MAX_TOKEN_CHARS = 65536
 MAX_DECODED_CHARS = 131072
 TOKEN = re.compile(r"(?<![A-Za-z0-9+/_=-])[A-Za-z0-9+/_-]{32,}={0,2}(?![A-Za-z0-9+/_=-])")
+EXPLICIT_BASE64 = re.compile(r"\b(?:base64|b64)\s*[:=]\s*[`\"']?([A-Za-z0-9+/_-]{8,}={0,2})(?![A-Za-z0-9+/_=-])", re.I)
 
 
 def decoded_projections(text):
     projections, supplied, seen, limited = [], 0, set(), False
     examined = 0
-    for match in TOKEN.finditer(text):
+    # Explicit encoding cues also admit short payloads. Candidate collection is
+    # streaming/bounded; a long input never constructs an unbounded match list.
+    import heapq
+    generic = ((match.start(), match.end(), match[0]) for match in TOKEN.finditer(text))
+    explicit = ((match.start(1), match.end(1), match[1]) for match in EXPLICIT_BASE64.finditer(text))
+    previous_span = None
+    for start, end, token in heapq.merge(generic, explicit):
+        if previous_span == (start, end):
+            continue
+        previous_span = (start, end)
         if examined >= MAX_CANDIDATES:
             limited = True
             break
         examined += 1
-        token = match[0]
         if len(token) > MAX_TOKEN_CHARS:
             limited = True
             continue
@@ -46,8 +55,8 @@ def decoded_projections(text):
         supplied += len(decoded)
         projections.append({"text": decoded, "encoding": "base64", "decoded_sha256": digest,
             "encoded_sha256": hashlib.sha256(token.encode("ascii")).hexdigest(),
-            "start_character": match.start(), "end_character": match.end(),
-            "source_line": text.count("\n", 0, match.start()) + 1})
+            "start_character": start, "end_character": end,
+            "source_line": text.count("\n", 0, start) + 1})
     return projections, {"status": "partial" if limited else "complete_supported_candidates",
         "candidates_examined": examined, "decoded_projections": len(projections),
         "decoded_characters_supplied": supplied, "maximum_candidates": MAX_CANDIDATES,

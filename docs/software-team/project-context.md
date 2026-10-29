@@ -1,3 +1,44 @@
+# Active assignment - contextual accuracy and source policy 0.15.0
+
+User steering explicitly requires retained candidate detection inside examples,
+quotes, fences and decoded text, separate source/target/confidence policy, minimal
+pairs and fake-framing controls, and separate benign-discussion false positives
+versus operative-attack true positives. Source context is adapter-supplied, not
+asserted by uploaded text. Unsupported languages remain unassessed. Actual own
+repository documents and payload writeups are pinned with unit/file hashes.
+
+A new flat scanner module needs one Docker COPY addition. No workflow, secret,
+authentication or production configuration was changed. Under AGENTS.md the
+reviewed change remains uncommitted pending permission for the image-packaging
+commit and human PR acceptance for this major version; no live release occurred.
+
+David directed Software Team implementation on October 29 after the supplied
+0.14.1 scan falsely blocked status prose, security guidance and attack references.
+Outcome: contextual evidence must support blocking; preserve operative requests
+mixed into benign content and preserve capability/data review controls.
+The research-grade product ambition is unchanged.
+
+Actual host: Windows Codex; isolated worktree based on origin/master f687395,
+matching the report build. Original Y: changes and unrelated worktrees preserved.
+Avery owns integration/reporting; Ishan owns contextual classification; Lena
+independently owns QA/accessibility; Morgan independently owns security and
+coordinator evidence review. No paid services or uploaded-code execution.
+
+Acceptance: paired operative/descriptive/collocated cases; passive requests;
+adversarial catalogue/output wrappers; bounded large text; source-bound blocks;
+accurate purpose, creator, sample, version and process reporting; packaged imports;
+full regression and browser checks. Uploaded material stays untrusted data. No
+private contact records enter tracked fixtures. The pasted report's 3.0.0 archive
+is unavailable; exact member hashes bind its examples to the supplied 3.0.2 file.
+
+Initial independent QA baseline: 38 cases, 15 failed and 23 passed. Broader review
+found a password-policy noun-list false block and repeated per-line paragraph
+analysis. Corrections and executed final results are recorded in current
+validation and independent reviews. Local completion is separate from publication
+and live production acceptance. No source-level change in industry ambition.
+
+---
+
 # Active assignment - Obsession MCP 0.14.0
 
 David authorized implementation, PR/push/pipeline delivery and a final Injecticide

@@ -14,12 +14,15 @@ from pathlib import Path
 
 from .app import MAX_UPLOAD_BYTES, scan_upload
 from .package_formats import RUNTIMES
+from .governance import SOURCE_CHANNELS
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("artifact", type=Path)
     parser.add_argument("--target-runtime", choices=RUNTIMES, default="auto")
+    parser.add_argument("--source-channel", choices=sorted(SOURCE_CHANNELS), default="uploaded_artifact",
+                        help="Operator-supplied policy scenario; does not authenticate runtime provenance")
     parser.add_argument("--output", type=Path, help="Write a JSON report instead of stdout; refuses to overwrite")
     args = parser.parse_args(argv)
     try:
@@ -27,7 +30,7 @@ def main(argv=None):
             raise ValueError("Output already exists; choose a new report path")
         with args.artifact.open("rb") as handle:
             data = handle.read(MAX_UPLOAD_BYTES + 1)
-        result = scan_upload(data, args.artifact.name, args.target_runtime)
+        result = scan_upload(data, args.artifact.name, args.target_runtime, source_channel=args.source_channel)
         rendered = json.dumps(result, ensure_ascii=True, indent=2) + "\n"
         if args.output:
             with args.output.open("x", encoding="utf-8") as handle:

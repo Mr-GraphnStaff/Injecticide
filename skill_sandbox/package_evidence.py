@@ -8,6 +8,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import posixpath
+import re
 from pathlib import Path
 import subprocess
 from datetime import date
@@ -145,10 +147,38 @@ def scanner_metadata():
                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                          "freshness": "unknown" if age is None or age < 0 else "stale" if age > 90 else "current",
                          "age_days": age})
-    return {"scanner_version": "0.14.1", "adapter_version": "2026-10-29", "catalogs": catalogs,
+    return {"scanner_version": "0.15.0", "adapter_version": "2026-10-29", "catalogs": catalogs,
             "engine_source_sha256": engine_digest.hexdigest(),
             "engine_fingerprint_scope": "Sorted local scanner Python modules and shipped validator manifest; excludes uploaded content.",
             "update_policy": "reviewed_application_release", "automatic_research_activation": False,
             "network_access_during_static_analysis": False,
             "network_scope": "Built-in static analyzers never connect; optional administrator verifier isolation is operator-managed",
             "optional_signature_verifier": "administrator_configured_local_process"}
+
+
+def version_observations(skills, texts, filename):
+    observations = []
+    for skill in skills[:100]:
+        path = skill["path"]
+        version = skill.get("metadata", {}).get("version")
+        if not isinstance(version, str):
+            continue
+        declarations = [{"source": "metadata.version", "path": path, "value": version}]
+        if len(skills) == 1:
+            match = re.search(r"[-_](\d+(?:[._]\d+){1,3}(?:-[A-Za-z0-9.-]+)?)\.(?:skill|zip)$", filename)
+            if match:
+                declarations.append({"source": "artifact_filename", "value": match[1].replace("_", ".")})
+        changelog = posixpath.join(posixpath.dirname(path), "CHANGELOG.md")
+        # Only an explicit first release heading is compared. No changelog or
+        # SemVer convention is required, and arbitrary prose is not interpreted.
+        for number, line in enumerate(texts.get(changelog, "").splitlines()[:80], 1):
+            match = re.match(r"^(?:#{1,6}\s+|\*\*)(?:\[|v)?(\d+(?:\.\d+){1,3}(?:-[A-Za-z0-9.-]+)?)(?=[\s\]*—:-]|$)", line)
+            if match:
+                declarations.append({"source": "first_changelog_release", "path": changelog,
+                                     "line": number, "value": match[1]})
+                break
+        mismatch = any(item["value"] != version for item in declarations)
+        observations.append({"path": path, "status": "mismatch" if mismatch else "no_mismatch_in_supplied_declarations",
+                             "declarations": declarations, "counts_for_governance": False,
+                             "scope": "Declared version consistency only; optional filename/changelog conventions do not establish format validity or malicious behavior."})
+    return observations
