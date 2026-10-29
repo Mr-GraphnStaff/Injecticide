@@ -25,6 +25,14 @@ def test_pipeline_deploys_only_after_validation() -> None:
     assert job["environment"] == "injecticide-pi-production"
     assert job["pool"]["name"] == "Injecticide Pi Private"
 
+    checks = pipeline["stages"][0]["jobs"][0]["steps"]
+    names = [step.get("displayName", "") for step in checks]
+    smoke = next(i for i, name in enumerate(names) if "packaged scanner" in name.lower() or "scanner image" in name.lower())
+    assert names.index("Build container candidates") < smoke
+    script = checks[smoke].get("script", checks[smoke].get("bash", ""))
+    assert "docker run" in script and "--network none" in script
+    assert "--read-only" in script and "scan_upload" in script
+
 
 def test_automatic_delivery_requalifies_sha_and_schedule_uses_existing_pi():
     pipeline = yaml.safe_load((ROOT / "azure-pipelines.yml").read_text(encoding="utf-8"))

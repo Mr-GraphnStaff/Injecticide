@@ -33,7 +33,7 @@ const fixture = execFileSync('python', ['-c', [
         await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();
         const response=await scanResponse;assert.equal(response.status(),200);
         const report=await response.json();
-        assert.equal(report.scanner_metadata.scanner_version,'0.14.0');
+        assert.equal(report.scanner_metadata.scanner_version,'0.14.1');
         assert.ok(report.documented_process.steps.length>=3);
         const diagram=report.process_diagram;
         assert.ok(diagram.nodes.some(node=>node.kind==='step'&&node.step_type==='approval_mention'));

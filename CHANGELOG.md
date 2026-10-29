@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.1 - 2026-10-29
+
+- Include the literal-signature module in the isolated scanner image.
+- Execute an actual built-image import and static-scan smoke test in CI.
+- Explicitly propagate deployment command failures and require all application
+  services healthy, with a validated last-healthy rollback revision.
+
 ## 0.14.0 - 2026-10-29
 
 - Add Obsession MCP daily background triage with durable source evidence,
