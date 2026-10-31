@@ -1,4 +1,44 @@
 {
   "schema_version": 1,
-  "updates": []
+  "updates": [
+    {
+      "sequence": 20,
+      "id": "obsession-7aacef4cc58e70cbe4c910b24262cfc2095a55a05d57ce2db54b52fdd869bc0a",
+      "sha256": "7aacef4cc58e70cbe4c910b24262cfc2095a55a05d57ce2db54b52fdd869bc0a",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Client Showcase\n\n> Agent products that support the Agent Skills format.\n\n**Shuffle**\n\n**Alphabetical**\n",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "d11e7259d6a9f01707dbc84ebd023a6c40707a7008cb6ae5332e862ce117d4b6",
+          "source_id": "agent-skills",
+          "source_sha256": "6dabf4e3f4b39b29c6df9dcc6cff893a59a5cce3740a3a905df2a8b19e183e32",
+          "url": "https://agentskills.io/clients.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/clients.md",
+          "previous_sha256": "d11e7259d6a9f01707dbc84ebd023a6c40707a7008cb6ae5332e862ce117d4b6",
+          "retrieved": "2026-10-21T11:07:11+00:00",
+          "snapshot_id": 719,
+          "source_id": "agent-skills",
+          "source_sha256": "6dabf4e3f4b39b29c6df9dcc6cff893a59a5cce3740a3a905df2a8b19e183e32",
+          "url": "https://agentskills.io/clients.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-10-30T18:30:40+00:00"
+      }
+    }
+  ]
 }
