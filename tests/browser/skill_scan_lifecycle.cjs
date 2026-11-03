@@ -1,11 +1,31 @@
-// Run with Node and Playwright available via NODE_PATH. Uses only synthetic scans.
-// Pinned browser libraries: tmp/scan-resource-regression/{react,react-dom,babel}.js
+// Run through working_area.py with the local working browser cache. Uses only synthetic scans.
+// Pinned browser libraries: working/cache/browser/scan-resource-regression/{react,react-dom,babel}.js
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const { execFileSync } = require('node:child_process');
-const { chromium } = require('playwright');
+const root = path.resolve(__dirname, '../..');
+// Use the checked launcher: it owns this run's temp, profile and cache paths.
+const working = path.join(root, 'working');
+const run = process.env.AGENT_WORKING_DIR && path.resolve(process.env.AGENT_WORKING_DIR);
+const relativeRun = run && path.relative(path.join(working, 'runs'), run);
+if (!run || !relativeRun || relativeRun === '..' || relativeRun.startsWith(`..${path.sep}`) || path.isAbsolute(relativeRun)) {
+    throw new Error('Run this harness through working_area.py run --root <checkout> -- node <harness>.');
+}
+require('node:child_process').execFileSync('python', ['C:/Users/DavidFarris/.codex/tools/working_area.py', 'check', '--root', root], {cwd:root, stdio:'pipe'});
+const output = path.join(run, 'reports', 'browser', path.basename(__filename, '.cjs'));
+fs.mkdirSync(output, {recursive:true});
+const browserCache = path.join(working, 'cache', 'browser');
+const assetCandidates = [path.join(browserCache, 'scan-resource-regression'), path.join(working, 'relocated', '2026-11-02', 'tmp', 'scan-resource-regression')];
+const assets = assetCandidates.find(folder => ['react.js','react-dom.js','babel.js'].every(name => fs.existsSync(path.join(folder, name)))) || assetCandidates[0];
+const {chromium} = require(path.join(browserCache, 'node_modules', 'playwright'));
+const screenshot = process.env.INJECTICIDE_TEST_SCREENSHOT && path.resolve(output, process.env.INJECTICIDE_TEST_SCREENSHOT);
+if (screenshot) {
+    const relative = path.relative(run, screenshot);
+    if (!relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) throw new Error('INJECTICIDE_TEST_SCREENSHOT must stay inside the current managed working run.');
+    fs.mkdirSync(path.dirname(screenshot), {recursive:true});
+}
 // Contact labels cannot infer internal provenance from a reference path/domain.
 const appForClassification = fs.readFileSync(path.resolve(__dirname, '../../webapp/static/app.js'), 'utf8');
 const classificationSource = appForClassification.slice(appForClassification.indexOf('const SECURITY_CATEGORIES'), appForClassification.indexOf('function classifyFindingLabel'));
@@ -16,27 +36,25 @@ for (const role of ['active', 'reference', 'reference_template']) {
     }
 }
 
-const root = path.resolve(__dirname, '../..');
 const packageReport = JSON.parse(execFileSync('python', ['-c',
     "import io,json,zipfile; from skill_sandbox.app import scan_upload; b=io.BytesIO(); z=zipfile.ZipFile(b,'w'); z.writestr('demo/SKILL.md','---\\nname: demo\\ndescription: Fixture\\n---\\nSummarize text.'); z.writestr('demo/logo.png',bytes([137,80,78,71,13,10,26,10,0])); z.close(); print(json.dumps(scan_upload(b.getvalue(),'package-fixture.zip')))"
 ], {cwd: root, encoding:'utf8'}));
 const policyReport = JSON.parse(execFileSync('python', ['-c',
     "import io,json,zipfile; from pathlib import Path; from skill_sandbox.app import scan_upload; b=io.BytesIO(); z=zipfile.ZipFile(b,'w'); z.writestr('demo/SKILL.md','---\\nname: demo\\ndescription: Fixture\\n---\\nSummarize text.'); z.writestr('demo/scripts/apply_notes.py.md',Path('tests/fixtures/package_snippets/apply_notes.py.md').read_text()); z.close(); print(json.dumps(scan_upload(b.getvalue(),'policy-fixture.zip')))"
 ], {cwd: root, encoding:'utf8'}));
-const assetRoot = path.join(root, 'tmp/scan-resource-regression');
 const source = fs.readFileSync(process.env.INJECTICIDE_APP_SOURCE || path.join(root, 'webapp/static/app.js'), 'utf8');
 const server = http.createServer((req, res) => {
     res.setHeader('Content-Type', req.url === '/' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8');
     if (req.url === '/') return res.end('<div id="root"></div><script src="/react.js"></script><script src="/react-dom.js"></script><script src="/babel.js"></script><script src="/fixture.js"></script>');
     if (req.url === '/fixture.js') return res.end('eval(Babel.transform(' + JSON.stringify(source.replace('ReactDOM.render(<Root />,', 'ReactDOM.render(<App />,')) + ', {presets:["react"]}).code)');
-    if (['/react.js', '/react-dom.js', '/babel.js'].includes(req.url)) return res.end(fs.readFileSync(path.join(assetRoot, req.url.slice(1))));
+    if (['/react.js', '/react-dom.js', '/babel.js'].includes(req.url)) return res.end(fs.readFileSync(path.join(assets, req.url.slice(1))));
     res.statusCode = 404;
     res.end();
 });
 
 (async () => {
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-    const browser = await chromium.launch({ channel: process.env.INJECTICIDE_TEST_BROWSER || 'msedge', headless: true });
+    const browser = await chromium.launch({downloadsPath:path.join(output,'downloads'),tracesDir:path.join(output,'traces'), channel: process.env.INJECTICIDE_TEST_BROWSER || 'msedge', headless: true });
     try {
         const page = await browser.newPage({ acceptDownloads: true });
         const errors = [];
@@ -90,8 +108,8 @@ const server = http.createServer((req, res) => {
         assert.equal(await page.locator('[data-package-overview]').count(), 1);
         assert.equal(await page.getByRole('region', {name:'Vendor requirement verification'}).count(), 1);
         assert.match(await page.getByRole('region', {name:'Vendor requirement verification'}).innerText(), /UNKNOWN/);
-        if (process.env.INJECTICIDE_TEST_SCREENSHOT) {
-            await page.getByRole('region', {name:'Vendor requirement verification'}).screenshot({path: process.env.INJECTICIDE_TEST_SCREENSHOT});
+        if (screenshot) {
+            await page.getByRole('region', {name:'Vendor requirement verification'}).screenshot({path: screenshot});
         }
         await page.getByLabel('Package report section', {exact:true}).selectOption('checks');
         assert.equal(await page.locator('[data-package-evidence]').count(), 10);
@@ -121,7 +139,7 @@ const server = http.createServer((req, res) => {
         const vendorPanel = page.getByRole('region', {name:'Vendor requirement verification'});
         await vendorPanel.getByText('Sources, limits and checks', {exact:true}).click();
         assert.match(await vendorPanel.innerText(), /observed 201, maximum 200/);
-        if (process.env.INJECTICIDE_TEST_SCREENSHOT) await vendorPanel.screenshot({path:process.env.INJECTICIDE_TEST_SCREENSHOT});
+        if (screenshot) await vendorPanel.screenshot({path:screenshot});
 
         await select('policy-fixture.zip');
         await scan.click();

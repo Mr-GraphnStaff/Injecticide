@@ -3,9 +3,21 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
-const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '../..');
-const assets = path.join(root, 'tmp/scan-resource-regression');
+// Use the checked launcher: it owns this run's temp, profile and cache paths.
+const working = path.join(root, 'working');
+const run = process.env.AGENT_WORKING_DIR && path.resolve(process.env.AGENT_WORKING_DIR);
+const relativeRun = run && path.relative(path.join(working, 'runs'), run);
+if (!run || !relativeRun || relativeRun === '..' || relativeRun.startsWith(`..${path.sep}`) || path.isAbsolute(relativeRun)) {
+    throw new Error('Run this harness through working_area.py run --root <checkout> -- node <harness>.');
+}
+require('node:child_process').execFileSync('python', ['C:/Users/DavidFarris/.codex/tools/working_area.py', 'check', '--root', root], {cwd:root, stdio:'pipe'});
+const output = path.join(run, 'reports', 'browser', path.basename(__filename, '.cjs'));
+fs.mkdirSync(output, {recursive:true});
+const browserCache = path.join(working, 'cache', 'browser');
+const assetCandidates = [path.join(browserCache, 'scan-resource-regression'), path.join(working, 'relocated', '2026-11-02', 'tmp', 'scan-resource-regression')];
+const assets = assetCandidates.find(folder => ['react.js','react-dom.js','babel.js'].every(name => fs.existsSync(path.join(folder, name)))) || assetCandidates[0];
+const {chromium} = require(path.join(browserCache, 'node_modules', 'playwright'));
 const script = ['webapp/static/pages/Home.jsx', 'webapp/static/pages/ArchitectureCanvas.jsx', 'webapp/static/pages/MapPng.js', 'webapp/static/app.js'].map(name => fs.readFileSync(path.join(root, name), 'utf8')).join('\n');
 const citation = (source, line = null) => ({path:source,line,line_accuracy:line ? 'exact' : 'file_only'});
 const hostile = '<img src=x onerror="window.uploadExecuted=true">';
@@ -50,7 +62,7 @@ const server=http.createServer((req,res)=>{
 });
 (async()=>{
     await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-    const browser=await chromium.launch({channel:process.env.INJECTICIDE_TEST_BROWSER||'msedge',headless:true});
+    const browser=await chromium.launch({downloadsPath:path.join(output,'downloads'),tracesDir:path.join(output,'traces'),channel:process.env.INJECTICIDE_TEST_BROWSER||'msedge',headless:true});
     try{
         const page=await browser.newPage({viewport:{width:1600,height:1100},acceptDownloads:true});
         const errors=[];page.on('pageerror',error=>errors.push(error.message));
@@ -103,7 +115,7 @@ const server=http.createServer((req,res)=>{
             await page.setViewportSize({width,height:1100});
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`page reflows at ${width}`);
         }
-        await process.screenshot({path:path.join(root,'tmp/skill-process-diagram-desktop.png')});
+        await process.screenshot({path:path.join(output, 'skill-process-diagram-desktop.png')});
         await process.getByRole('button',{name:'Add process diagram to playground',exact:true}).focus();await page.keyboard.press('Enter');
         await page.getByRole('heading',{name:'New skill process map',exact:true}).waitFor();
         assert.equal(await page.locator('.map-node').count(),6,'new map does not merge with eight-node starter draft');

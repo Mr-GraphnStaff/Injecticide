@@ -4,9 +4,21 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
-const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '../..');
-const assets = path.join(root, 'tmp/scan-resource-regression');
+// Use the checked launcher: it owns this run's temp, profile and cache paths.
+const working = path.join(root, 'working');
+const run = process.env.AGENT_WORKING_DIR && path.resolve(process.env.AGENT_WORKING_DIR);
+const relativeRun = run && path.relative(path.join(working, 'runs'), run);
+if (!run || !relativeRun || relativeRun === '..' || relativeRun.startsWith(`..${path.sep}`) || path.isAbsolute(relativeRun)) {
+    throw new Error('Run this harness through working_area.py run --root <checkout> -- node <harness>.');
+}
+require('node:child_process').execFileSync('python', ['C:/Users/DavidFarris/.codex/tools/working_area.py', 'check', '--root', root], {cwd:root, stdio:'pipe'});
+const output = path.join(run, 'reports', 'browser', path.basename(__filename, '.cjs'));
+fs.mkdirSync(output, {recursive:true});
+const browserCache = path.join(working, 'cache', 'browser');
+const assetCandidates = [path.join(browserCache, 'scan-resource-regression'), path.join(working, 'relocated', '2026-11-02', 'tmp', 'scan-resource-regression')];
+const assets = assetCandidates.find(folder => ['react.js','react-dom.js','babel.js'].every(name => fs.existsSync(path.join(folder, name)))) || assetCandidates[0];
+const {chromium} = require(path.join(browserCache, 'node_modules', 'playwright'));
 const source = fs.readFileSync(path.join(root, 'webapp/static/app.js'), 'utf8').replace('ReactDOM.render(<Root />,', 'ReactDOM.render(<App />,');
 const hostile = '<img src=x onerror="window.standardLabelExecuted=true">';
 const standards = {
@@ -53,7 +65,7 @@ const server = http.createServer((req,res)=>{
 });
 (async()=>{
     await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-    const browser=await chromium.launch({channel:process.env.INJECTICIDE_TEST_BROWSER||'msedge',headless:true});
+    const browser=await chromium.launch({downloadsPath:path.join(output,'downloads'),tracesDir:path.join(output,'traces'),channel:process.env.INJECTICIDE_TEST_BROWSER||'msedge',headless:true});
     try{
         const page=await browser.newPage({viewport:{width:1440,height:1100},acceptDownloads:true});
         const errors=[];page.on('pageerror',error=>{errors.push(error.message);console.error('Browser error:',error.message);});
@@ -99,7 +111,7 @@ const server = http.createServer((req,res)=>{
             assert.ok(!markdown.includes('SYNTHETIC_ONLY'));
         }
         for(const width of [390,1440]){await page.setViewportSize({width,height:1100});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`standards page reflows at ${width}`);}
-        await panel.screenshot({path:path.join(root,'tmp/skill-standards-desktop.png')});
+        await panel.screenshot({path:path.join(output, 'skill-standards-desktop.png')});
         mode='portable-pass';await scan();
         assert.match(await panel.innerText(),/Portable mandatory checks: Pass/);
         await panel.getByRole('button',{name:/^Vendor compatibility/}).click();assert.match(await panel.locator('.standards-selected-category').innerText(),/Vendor extension/);

@@ -72,10 +72,15 @@ Community/product links are not treated as normative scanner requirements.
 These tools return captured research data, never live verification or active
 instructions. Live source monitoring remains in the normal collector.
 
-Reproduce a capture from the repository root into a **new** directory:
+Reproduce a capture from the repository root into a **new**, excluded managed
+working directory. The launcher prints its location; retained captures remain
+local research evidence until deliberately reviewed for promotion:
 
 ```powershell
-python -m tools.ingest_agent_skills_site --output tmp/new-agent-skills-capture
+$launcher = 'C:/Users/DavidFarris/.codex/tools/working_area.py'
+$checkout = (Get-Location).Path
+python $launcher check --root $checkout
+python $launcher run --root $checkout -- python -c "import os,runpy,sys; from pathlib import Path; sys.argv=['tools.ingest_agent_skills_site','--output',str(Path(os.environ['AGENT_WORKING_DIR'])/'reports'/'new-agent-skills-capture')]; runpy.run_module('tools.ingest_agent_skills_site',run_name='__main__')"
 ```
 
 The tool checks the index against the sitemap, follows each direct HTTPS

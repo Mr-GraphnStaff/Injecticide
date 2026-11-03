@@ -239,3 +239,39 @@ clean structure
 zero hallucinated nonsense
 
 This protocol governs all contributions.
+
+<!-- owner-working-area-policy:start -->
+## Owner-required scratch boundary — November 2, 2026
+
+Each work folder maps to its own remote repository. `working/` is the ONLY
+permitted location for agent scratch and temporary work in this checkout.
+This owner instruction supersedes older tmp/, temp/, dist/scratch/, QA-folder,
+OS-temp and peer-clone recommendations. No child instructions or convenience
+exception may waive it; stop on a conflict instead of finding a workaround.
+
+- Before ANY temporary write, run:
+  `python C:/Users/DavidFarris/.codex/tools/working_area.py check --root <checkout>`.
+  A missing marker, linked path, tracked scratch file or failed exclusion stops
+  the operation. Never use force-add, remove exclusions, change the boundary,
+  reuse a different repository, or fall back to OS temp to get past a failure.
+- Run development/test/research commands through the tool's `run --root
+  <checkout> -- <command>` mode. It sets per-run temporary/cache paths inside
+  working/, suppresses source-tree Python bytecode and checks for new untracked
+  files outside working/. Configure any tool-specific logs, downloads, browser
+  profiles, screenshots, reports and disposable checkouts inside that run too.
+  If a tool cannot comply, stop rather than run it with an outside destination.
+- Keep actual source, deliberate deliverables and runtime dependencies in their
+  intended project locations. Never relabel user files or uncommitted source as
+  scratch. Never stage, commit, push or package working/. Verify each non-Git
+  sync/build/package context excludes it as well.
+- Run `maintain --root <checkout>` at task start and finish. It purges only
+  completed, explicitly disposable managed runs older than seven days, with no
+  live owner, retained marker, links or nested repository. Relocated material,
+  rollback databases, recovery records, manifests and user files are retained.
+- Relocation requires an inventory, zero tracked paths, no active worktrees,
+  verified inside-root paths, and before/after hashes. Keep the recovery receipt.
+
+These instructions and the checked launcher are mandatory operating controls,
+not an OS sandbox. Never claim they technically prevent every arbitrary process
+from writing elsewhere. Changes to this owner policy require the owner's direction.
+<!-- owner-working-area-policy:end -->

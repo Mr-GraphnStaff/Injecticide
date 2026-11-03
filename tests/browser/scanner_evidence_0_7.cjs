@@ -4,9 +4,21 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
-const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '../..');
-const assets = path.join(root, 'tmp/scan-resource-regression');
+// Use the checked launcher: it owns this run's temp, profile and cache paths.
+const working = path.join(root, 'working');
+const run = process.env.AGENT_WORKING_DIR && path.resolve(process.env.AGENT_WORKING_DIR);
+const relativeRun = run && path.relative(path.join(working, 'runs'), run);
+if (!run || !relativeRun || relativeRun === '..' || relativeRun.startsWith(`..${path.sep}`) || path.isAbsolute(relativeRun)) {
+    throw new Error('Run this harness through working_area.py run --root <checkout> -- node <harness>.');
+}
+require('node:child_process').execFileSync('python', ['C:/Users/DavidFarris/.codex/tools/working_area.py', 'check', '--root', root], {cwd:root, stdio:'pipe'});
+const output = path.join(run, 'reports', 'browser', path.basename(__filename, '.cjs'));
+fs.mkdirSync(output, {recursive:true});
+const browserCache = path.join(working, 'cache', 'browser');
+const assetCandidates = [path.join(browserCache, 'scan-resource-regression'), path.join(working, 'relocated', '2026-11-02', 'tmp', 'scan-resource-regression')];
+const assets = assetCandidates.find(folder => ['react.js','react-dom.js','babel.js'].every(name => fs.existsSync(path.join(folder, name)))) || assetCandidates[0];
+const {chromium} = require(path.join(browserCache, 'node_modules', 'playwright'));
 const source = fs.readFileSync(path.join(root, 'webapp/static/app.js'), 'utf8');
 const script = source.replace('ReactDOM.render(<Root />,', 'ReactDOM.render(<App />,');
 const server = http.createServer((req, res) => {
@@ -74,7 +86,7 @@ report.inventory = report.files.map(({path, size, assessment_state, archive_cont
     ({path, size, assessment_state, archive_container, archive_depth}));
 (async () => {
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-    const browser = await chromium.launch({channel:process.env.INJECTICIDE_TEST_BROWSER || 'msedge',headless:true});
+    const browser = await chromium.launch({downloadsPath:path.join(output,'downloads'),tracesDir:path.join(output,'traces'),channel:process.env.INJECTICIDE_TEST_BROWSER || 'msedge',headless:true});
     try {
         const page = await browser.newPage({viewport:{width:1440,height:1100},acceptDownloads:true});
         const errors=[]; page.on('pageerror', e=>errors.push(e.message));
@@ -165,9 +177,9 @@ report.inventory = report.files.map(({path, size, assessment_state, archive_cont
             await page.setViewportSize({width,height:1100});
             assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),`no horizontal overflow at ${width}px`);
         }
-        await page.screenshot({path:path.join(root,'tmp/scanner-evidence-0-7-desktop.png'),fullPage:true});
+        await page.screenshot({path:path.join(output, 'scanner-evidence-0-7-desktop.png'),fullPage:true});
         await page.setViewportSize({width:390,height:844});
-        await page.screenshot({path:path.join(root,'tmp/scanner-evidence-0-7-mobile.png'),fullPage:true});
+        await page.screenshot({path:path.join(output, 'scanner-evidence-0-7-mobile.png'),fullPage:true});
         await choose('structured-failure.skill'); await scan.click();
         await reply({detail:{message:'Sandbox unavailable',stage:'sandbox_analysis',request_id:'failed-request-456'}},502,{'X-Scan-Request-ID':'failed-request-456'});
         const error=page.getByRole('alert'); await error.filter({hasText:'failed-request-456'}).waitFor();
@@ -214,6 +226,6 @@ report.inventory = report.files.map(({path, size, assessment_state, archive_cont
         await reply(formatReport); await page.getByText('Format observations need review',{exact:true}).waitFor();
         assert.equal(await page.getByText('Package review incomplete',{exact:true}).count(),0);
         assert.deepEqual(errors,[]);
-        console.log(JSON.stringify({status:'PASS',checked:['manual retry without reselect','no automatic retry','keyboard submit','double-submit guard','success release','independent evidence axes','verified tag with partial detector coverage','scoped official format failure','source link','correlation export','no upload content in export','390px and 1440px overflow','keyboard disclosure','relationship keyboard disclosure','relationship pagination and section reset','untrusted relationship labels remain literal text','asset inspection and nested provenance export','legacy reports without new fields','structured and legacy errors','invalid response','timeout recovery','clear','replacement and stale-response isolation','legacy report compatibility','format mismatch distinct from incomplete coverage'],screenshots:['tmp/scanner-evidence-0-7-desktop.png','tmp/scanner-evidence-0-7-mobile.png']}));
+        console.log(JSON.stringify({status:'PASS',checked:['manual retry without reselect','no automatic retry','keyboard submit','double-submit guard','success release','independent evidence axes','verified tag with partial detector coverage','scoped official format failure','source link','correlation export','no upload content in export','390px and 1440px overflow','keyboard disclosure','relationship keyboard disclosure','relationship pagination and section reset','untrusted relationship labels remain literal text','asset inspection and nested provenance export','legacy reports without new fields','structured and legacy errors','invalid response','timeout recovery','clear','replacement and stale-response isolation','legacy report compatibility','format mismatch distinct from incomplete coverage'],screenshots:[path.join(output,'scanner-evidence-0-7-desktop.png'),path.join(output,'scanner-evidence-0-7-mobile.png')]}));
     } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());
