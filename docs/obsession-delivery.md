@@ -27,6 +27,43 @@ explicit unavailable/error outcome; they do not silently activate anything.
 Credentials stay in the host process and never enter research content or logs.
 Fixed API endpoints ignore environment proxies and reject redirects so authorization cannot cross origins.
 
+After publishing a new automatic candidate, the same scheduled job waits for up
+to 600 seconds, checking at 20-second intervals. `--ci-wait-seconds` can reduce
+that window or disable it with zero; the maximum accepted window is 900 seconds.
+Every attempt obtains a fresh export and repeats the existing exact-head CI,
+scope, trusted-producer, current-base and no-bypass ruleset checks. The job leaves
+its clean dedicated checkout detached at the pinned base; it retains the pushed
+candidate branch. It never creates replacement PRs in the wait loop.
+
+Base movement, changed PR heads, stale/superseded evidence, failed checks or a
+timeout leave an explicit receipt and retain the PR. Successful merge only queues
+the normal protected master validation/qualification/deployment path. Human-review
+proposals never enter this automatic follow-up. Queue delivery fields still are
+not updated by host receipts; the separate authorized queue-control boundary is
+unchanged.
+
+The CLI validates the 0–900 second wait window before any delivery operation.
+A newly published automatic candidate is receipted before a nonzero follow-up
+wait begins. If follow-up raises, the CLI exits nonzero and records
+`ci_followup_failed` with the original PR URL, revision, proposal identities,
+`prior_state`, `failed_stage` and reason. A post-delivery receipt failure uses
+`outcome_receipt_failed` and retains the known outcome in stdout even if the
+receipt store is unavailable. Neither failure means the published PR vanished;
+inspect that exact candidate before recovery instead of blindly republishing.
+Zero still disables waiting, and human-review proposals still skip automatic
+follow-up. Existing freshness, exact-head, producer, base and ruleset gates are
+unchanged.
+
+The daily collector defaults to 100 page attempts and a 600-second deadline for
+the current 88 configured URLs. `RESEARCH_PAGE_BUDGET` remains capped at 100;
+`RESEARCH_CYCLE_SECONDS` must be 30–900 seconds and no longer than the collection
+interval. The twelve-URL source is no longer capped at eight pages per cycle.
+Truncated cycles resume after the last serviced source and report planned and
+unattempted page counts. The daily period is anchored to the cycle start, rather
+than drifting by its run duration. Requests still respect robots, provider
+backoff and source scopes. Failed requests retain stale status; these changes do
+not relax the 24-hour freshness definition or promise exhaustive discovery.
+
 Only high-priority automatic candidates can append data to these paths:
 
 - `research_mcp/obsession_updates.json`: schema 1, `updates` list of immutable

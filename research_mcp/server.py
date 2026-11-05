@@ -165,7 +165,8 @@ def main():
     catalog = Catalog(Path(os.environ.get("RESEARCH_DB", "/data/research.sqlite3")),
                       Path(os.environ.get("RESEARCH_SOURCES", Path(__file__).with_name("sources.json"))))
     collector = Collector(catalog, int(os.environ.get("RESEARCH_INTERVAL_SECONDS", "86400")),
-                          int(os.environ.get("RESEARCH_PAGE_BUDGET", "40")))
+                          int(os.environ.get("RESEARCH_PAGE_BUDGET", "100")),
+                          cycle_seconds=int(os.environ.get("RESEARCH_CYCLE_SECONDS", "600")))
     server = create_server(catalog, collector)
     server.run(transport="streamable-http", host="0.0.0.0", port=8200,
                json_response=True, stateless_http=True, max_request_body_size=65536,

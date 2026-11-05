@@ -74,7 +74,8 @@ services:
       - "127.0.0.1:8200:8200"
     environment:
       - RESEARCH_INTERVAL_SECONDS=${INJECTICIDE_RESEARCH_INTERVAL_SECONDS:-86400}
-      - RESEARCH_PAGE_BUDGET=${INJECTICIDE_RESEARCH_PAGE_BUDGET:-40}
+      - RESEARCH_PAGE_BUDGET=${INJECTICIDE_RESEARCH_PAGE_BUDGET:-100}
+      - RESEARCH_CYCLE_SECONDS=${INJECTICIDE_RESEARCH_CYCLE_SECONDS:-600}
     volumes:
       - research-data:/data
       - ./research_mcp/sources.json:/app/research_mcp/sources.json:ro
