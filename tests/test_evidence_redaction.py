@@ -107,8 +107,12 @@ def test_credential_collection_work_budget_fails_closed_including_credentials_in
 
 
 def test_scanner_engine_identity_is_stable_and_independent_of_uploaded_text():
+    import tomllib
+    from pathlib import Path
+
     first = scanner_metadata()
-    assert first["scanner_version"] == "0.15.0"
+    release = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8"))
+    assert first["scanner_version"] == release["project"]["version"]
     assert first["adapter_version"] == "2026-10-29"
     assert len(first["engine_source_sha256"]) == 64
     assert first["engine_source_sha256"] == scanner_metadata()["engine_source_sha256"]
