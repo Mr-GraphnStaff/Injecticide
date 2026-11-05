@@ -10,6 +10,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import datetime, timezone
 import urllib.error
 import urllib.request
@@ -354,8 +355,9 @@ def deliver(required_check):
         git("fetch", "--no-tags", "origin", sha)
         try:
             qualify_revision("origin/master", sha, eligible)
-        except DeliveryError:
-            outcomes.append({"number": pull["number"], "state": "review_required_stale_or_ineligible"})
+        except DeliveryError as error:
+            outcomes.append({"number": pull["number"], "state": "review_required_stale_or_ineligible",
+                             "reason": str(error)[:240]})
             continue
         outcome = github.merge_if_verified(pull, required_check, git("rev-parse", "origin/master"))
         outcomes.append({"number": pull["number"], **outcome})
@@ -395,6 +397,86 @@ def deliver(required_check):
     git("push", "origin", "HEAD:refs/heads/" + branch)
     pull = github.publish_pr(branch, sha, automatic=automatic)
     return {"state": "pr_created_waiting_exact_sha_ci" if automatic else "review_pr_created_requires_human_acceptance", "sha": sha, "pull_request": pull["html_url"], "proposal_sha256": qualification["proposal_sha256"], "results": outcomes}
+
+
+def validate_ci_wait_seconds(wait_seconds):
+    """Validate the publication wait before any delivery side effect."""
+    if type(wait_seconds) is not int or not 0 <= wait_seconds <= 900:
+        raise DeliveryError("CI wait must be 0–900 seconds; zero disables follow-up")
+
+
+def wait_for_candidate(result, required_check, *, wait_seconds=600, poll_seconds=20,
+                       clock=time.monotonic, sleeper=time.sleep):
+    """Revisit only this just-created automatic PR, with every existing gate.
+
+    CI usually completes minutes after publication. Waiting until the next daily
+    run can leave the proposal superseded by a newer collection before merging.
+    This wait never creates another PR, relaxes freshness, or deploys directly.
+    """
+    if result.get("state") != "pr_created_waiting_exact_sha_ci":
+        return result
+    validate_ci_wait_seconds(wait_seconds)
+    if wait_seconds == 0:
+        return result
+    if not 1 <= poll_seconds <= 60:
+        raise DeliveryError("CI poll must be 1–60 seconds")
+    if os.environ.get("BUILD_REASON") != "Schedule" or os.environ.get("BUILD_SOURCEBRANCH") != "refs/heads/master":
+        raise DeliveryError("Automatic CI follow-up runs only in the scheduled master pipeline")
+    sha = result.get("sha", "")
+    url = result.get("pull_request", "")
+    match = re.fullmatch(r"https://github\.com/" + re.escape(REPOSITORY) + r"/pull/([1-9][0-9]*)", url)
+    if not re.fullmatch(r"[a-f0-9]{40}", sha) or match is None:
+        raise DeliveryError("CI follow-up requires a fixed repository PR and revision")
+    number = int(match[1])
+    assert_clean()
+    if git("rev-parse", "HEAD") != sha:
+        raise DeliveryError("Daily candidate checkout changed before CI follow-up")
+    base_sha = git("rev-parse", sha + "^")
+    if git("rev-parse", "origin/master") != base_sha:
+        return {**result, "state": "base_advanced_review_required"}
+    # This is the clean dedicated job checkout, not the user's working tree.
+    # Keep the published candidate branch intact and pin the verification base.
+    git("checkout", "--detach", base_sha)
+    github = GitHub(github_headers())
+    deadline = clock() + wait_seconds
+    outcomes = list(result.get("results", []))
+    last_state = "waiting_for_exact_sha_ci"
+    while True:
+        if clock() >= deadline:
+            return {**result, "state": "ci_wait_timed_out", "last_check_state": last_state, "results": outcomes}
+        assert_clean()
+        git("fetch", "--no-tags", "origin", "master")
+        if git("rev-parse", "HEAD") != base_sha or git("rev-parse", "origin/master") != base_sha:
+            return {**result, "state": "base_advanced_review_required", "results": outcomes}
+        pull = github.api("/pulls/" + str(number))
+        if (pull.get("head", {}).get("sha") != sha or
+                pull.get("head", {}).get("repo", {}).get("full_name") != REPOSITORY or
+                not re.fullmatch(r"codex/obsession-auto-[a-f0-9]{20}", pull.get("head", {}).get("ref", "")) or
+                pull.get("base", {}).get("ref") != BASE or pull.get("base", {}).get("sha") != base_sha):
+            raise DeliveryError("PR changed during automatic CI follow-up")
+        if pull.get("state") != "open":
+            return {**result, "state": "observed_merged" if pull.get("merged") else "pr_closed", "results": outcomes}
+        eligible = eligible_candidates(export_candidates())
+        try:
+            qualify_revision("origin/master", sha, eligible)
+        except DeliveryError as error:
+            return {**result, "state": "review_required_stale_or_ineligible", "reason": str(error)[:240],
+                    "results": outcomes}
+        # Reuse the exact-head Azure-producer, append-only scope, strict ruleset,
+        # empty-bypass and current-base checks without any alternate merge path.
+        if clock() >= deadline:
+            return {**result, "state": "ci_wait_timed_out", "last_check_state": last_state, "results": outcomes}
+        outcome = github.merge_if_verified(pull, required_check, base_sha)
+        last_state = outcome["state"]
+        outcomes.append({"number": number, **outcome})
+        if last_state == "merged":
+            return {**result, "state": "merged_pending_protected_pipeline", "results": outcomes}
+        if last_state not in {"waiting_for_exact_sha_ci", "waiting_for_commit_statuses"}:
+            return {**result, "state": last_state, "results": outcomes}
+        remaining = deadline - clock()
+        if remaining <= 0:
+            return {**result, "state": "ci_wait_timed_out", "last_check_state": last_state, "results": outcomes}
+        sleeper(min(poll_seconds, remaining))
 
 
 def write_receipt(result, directory=None):
@@ -458,14 +540,31 @@ def main():
     parser.add_argument("command", choices=["daily", "qualify-commit", "preflight"])
     parser.add_argument("--required-check", default="")
     parser.add_argument("--require-eligible", action="store_true")
+    parser.add_argument("--ci-wait-seconds", type=int, default=600)
     args = parser.parse_args()
+    result = None
+    stage = "delivery"
     try:
+        if args.command == "daily":
+            validate_ci_wait_seconds(args.ci_wait_seconds)
         write_receipt({"state": "started", "command": args.command, "sha": git("rev-parse", "HEAD")})
         result = preflight() if args.command == "preflight" else deliver(args.required_check) if args.command == "daily" else qualify_commit(args.require_eligible)
+        if args.command == "daily":
+            if result.get("state") == "pr_created_waiting_exact_sha_ci" and args.ci_wait_seconds:
+                # Preserve the published side effect before a wait, interruption,
+                # changed PR or unavailable prerequisite can stop follow-up.
+                stage = "publication_receipt"
+                write_receipt(result)
+            stage = "ci_followup"
+            result = wait_for_candidate(result, args.required_check, wait_seconds=args.ci_wait_seconds)
+        stage = "outcome_receipt"
         write_receipt(result)
         print(json.dumps(result, sort_keys=True))
     except (DeliveryError, ValueError, OSError) as error:
         failure = {"state": "unavailable", "reason": str(error)}
+        if result is not None:
+            failure = {**result, "state": "ci_followup_failed" if stage == "ci_followup" else "outcome_receipt_failed",
+                       "prior_state": result.get("state"), "failed_stage": stage, "reason": str(error)}
         try:
             write_receipt(failure)
         except (OSError, DeliveryError):

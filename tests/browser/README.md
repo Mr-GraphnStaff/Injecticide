@@ -22,19 +22,49 @@ selected local File for explicit retry; no automatic retransmission occurs.
 Success, replacement and explicit clearing release it. Both harnesses use
 synthetic responses and are separate from the authenticated production smoke test.
 
-Prerequisites: Node.js, the `playwright` package available on Node's module search path, and Microsoft Edge installed. Set `INJECTICIDE_TEST_BROWSER=chrome` to use Chrome instead.
+Prerequisites: Node.js, the project's reviewed `playwright` package installed in
+`working/cache/browser/node_modules/`, and Microsoft Edge installed. Provision
+that excluded dependency cache through the checked launcher's `run` mode; do not
+install or download anything into the retired `tmp/` tree. Set
+`INJECTICIDE_TEST_BROWSER=chrome` for the harnesses that support Chrome.
 
-Download the same pinned browser libraries used by `webapp/static/index.html` into `tmp/scan-resource-regression/` from the repository root:
+Run from this checkout's root using the owner-required launcher:
 
 ```powershell
-New-Item -ItemType Directory -Force tmp/scan-resource-regression
-Invoke-WebRequest https://unpkg.com/react@18.3.1/umd/react.production.min.js -OutFile tmp/scan-resource-regression/react.js
-Invoke-WebRequest https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js -OutFile tmp/scan-resource-regression/react-dom.js
-Invoke-WebRequest https://unpkg.com/@babel/standalone@7.28.5/babel.min.js -OutFile tmp/scan-resource-regression/babel.js
-node tests/browser/skill_scan_lifecycle.cjs
-node tests/browser/scanner_evidence_0_7.cjs
+$launcher = 'C:/Users/DavidFarris/.codex/tools/working_area.py'
+$checkout = (Get-Location).Path
+python $launcher check --root $checkout
+python $launcher run --root $checkout -- node tests/browser/skill_scan_lifecycle.cjs
+python $launcher run --root $checkout -- node tests/browser/scanner_evidence_0_7.cjs
 ```
 
-When using a shared Playwright installation, set `NODE_PATH` to its containing `node_modules` directory first. The test shortens only the scan timeout inside its isolated browser fixture. Heap measurements are JavaScript heap after forced garbage collection, not total browser or system memory.
+The launcher prints the run directory. Screenshots, evidence, downloads and traces
+are written to `working/runs/<run-id>/reports/browser/<harness-name>/`; automatic
+browser profiles and subprocess temporary files inherit that run's temporary
+paths. A harness refuses to run without the managed run directory. These checks
+are operating controls, not an OS sandbox.
+
+Pinned browser libraries must match `webapp/static/index.html`. The active cache
+is `working/cache/browser/scan-resource-regression/`, containing:
+
+| File | Existing pinned source |
+| --- | --- |
+| `react.js` | `https://unpkg.com/react@18.3.1/umd/react.production.min.js` |
+| `react-dom.js` | `https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js` |
+| `babel.js` | `https://unpkg.com/@babel/standalone@7.28.5/babel.min.js` |
+
+If the active cache is incomplete, the harnesses can read the complete retained
+cache at `working/relocated/2026-11-02/tmp/scan-resource-regression/`. That fallback
+is read-only; new libraries belong in the active cache. Do not run historical
+scripts from the relocated tree. Obtain missing dependencies only through an
+explicitly chosen command inside the launcher's `run` mode. The harnesses resolve
+Playwright directly from the local working cache, rather than an external
+`NODE_PATH` installation.
+
+For `skill_scan_lifecycle.cjs`, an optional `INJECTICIDE_TEST_SCREENSHOT` is relative
+to that harness's output directory, or an absolute path inside the same current
+managed run. Outside destinations are rejected. The harness shortens only the
+scan timeout inside its isolated browser fixture. Heap measurements are JavaScript
+heap after forced garbage collection, not total browser or system memory.
 
 Optionally set `INJECTICIDE_APP_SOURCE` to a different app.js file to check a baseline. The previous implementation fails the uploaded-file-release assertion.

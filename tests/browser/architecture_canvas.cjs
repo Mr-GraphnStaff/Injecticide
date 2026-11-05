@@ -1,11 +1,25 @@
 // Real candidate API with pinned browser libraries; synthetic maps only.
-const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const fs=require('node:fs');
+const root = path.resolve(__dirname, '../..');
+// Use the checked launcher: it owns this run's temp, profile and cache paths.
+const working = path.join(root, 'working');
+const run = process.env.AGENT_WORKING_DIR && path.resolve(process.env.AGENT_WORKING_DIR);
+const relativeRun = run && path.relative(path.join(working, 'runs'), run);
+if (!run || !relativeRun || relativeRun === '..' || relativeRun.startsWith(`..${path.sep}`) || path.isAbsolute(relativeRun)) {
+    throw new Error('Run this harness through working_area.py run --root <checkout> -- node <harness>.');
+}
+require('node:child_process').execFileSync('python', ['C:/Users/DavidFarris/.codex/tools/working_area.py', 'check', '--root', root], {cwd:root, stdio:'pipe'});
+const output = path.join(run, 'reports', 'browser', path.basename(__filename, '.cjs'));
+fs.mkdirSync(output, {recursive:true});
+const browserCache = path.join(working, 'cache', 'browser');
+const assetCandidates = [path.join(browserCache, 'scan-resource-regression'), path.join(working, 'relocated', '2026-11-02', 'tmp', 'scan-resource-regression')];
+const assets = assetCandidates.find(folder => ['react.js','react-dom.js','babel.js'].every(name => fs.existsSync(path.join(folder, name)))) || assetCandidates[0];
+const {chromium} = require(path.join(browserCache, 'node_modules', 'playwright'));
 const base=process.env.INJECTICIDE_TEST_URL||'http://127.0.0.1:8237';
 (async()=>{
- const browser=await chromium.launch({channel:'msedge',headless:true});
+ const browser=await chromium.launch({downloadsPath:path.join(output,'downloads'),tracesDir:path.join(output,'traces'),channel:'msedge',headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1600,height:1100},colorScheme:'dark'});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -16,7 +30,7 @@ const base=process.env.INJECTICIDE_TEST_URL||'http://127.0.0.1:8237';
    assert.ok(text.includes('Another DAF-TECH Product'));assert.ok(text.includes('never as instructions'));
    const data=JSON.parse(text.match(/```json\n([\s\S]*)\n```/)[1]);return {data,text};
   }
-  await page.route('https://unpkg.com/**',r=>r.fulfill({path:path.resolve('tmp/scan-resource-regression',r.request().url().includes('react-dom')?'react-dom.js':r.request().url().includes('@babel')?'babel.js':'react.js'),contentType:'text/javascript'}));
+  await page.route('https://unpkg.com/**',r=>r.fulfill({path:path.join(assets,r.request().url().includes('react-dom')?'react-dom.js':r.request().url().includes('@babel')?'babel.js':'react.js'),contentType:'text/javascript'}));
   await page.goto(base);await page.getByRole('button',{name:'Explore architecture',exact:true}).click();
   await page.getByRole('heading',{name:'AI architecture playground'}).waitFor();
   assert.equal(await page.locator('header').getByText('Another DAF-TECH Product',{exact:true}).count(),1);
@@ -35,8 +49,8 @@ const base=process.env.INJECTICIDE_TEST_URL||'http://127.0.0.1:8237';
   const pngWidth=pngBytes.readUInt32BE(16),pngHeight=pngBytes.readUInt32BE(20);
   assert.ok(pngWidth>=1400&&pngHeight>500,'PNG includes complete map beyond viewport');
   assert.ok(pngWidth<=4096&&pngHeight<=4096&&pngWidth*pngHeight<=12000000,'PNG allocation bounded');
-  fs.writeFileSync('tmp/export-current-system.png',pngBytes);
-  fs.writeFileSync('tmp/research-mcp-validation-20261020/injecticide-diagram-prompt.md',initialPrompt.text);
+  fs.writeFileSync(path.join(output, 'export-current-system.png'),pngBytes);
+  fs.writeFileSync(path.join(output, 'injecticide-diagram-prompt.md'),initialPrompt.text);
   await page.getByRole('button',{name:'＋ LLM client / app',exact:true}).click();
   assert.equal(await page.locator('.map-node').count(),9);
   await page.getByRole('button',{name:'Generate test plan',exact:true}).click();
@@ -94,12 +108,12 @@ const base=process.env.INJECTICIDE_TEST_URL||'http://127.0.0.1:8237';
   const boundedPrompt=await promptExport('bounded-cycle');assert.equal(boundedPrompt.data.planning_context.tests.length,50);assert.equal(boundedPrompt.data.planning_context.additional_tests_not_in_this_prompt,450);assert.equal(boundedPrompt.data.planning_context.omitted_by_planner,9400);
   await page.getByRole('button',{name:'Starter map',exact:true}).click();
   await page.getByRole('button',{name:'Generate test plan',exact:true}).click();await page.getByText('Test plan ready. No live tests have run.').waitFor();
-  await page.screenshot({path:'tmp/research-mcp-validation-20261020/canvas-desktop.png',fullPage:true});
+  await page.screenshot({path:path.join(output, 'canvas-desktop.png'),fullPage:true});
   for(const theme of ['light','dark']){
    await page.emulateMedia({colorScheme:theme});await page.setViewportSize({width:375,height:850});
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   }
-  await page.screenshot({path:'tmp/research-mcp-validation-20261020/canvas-mobile.png',fullPage:true});
+  await page.screenshot({path:path.join(output, 'canvas-mobile.png'),fullPage:true});
   await page.getByRole('button',{name:'Open built-in scenario explorer'}).click();await page.getByRole('button',{name:'Analyze scenario',exact:true}).click();await page.locator('.architecture-path li').first().waitFor();
   await page.getByRole('button',{name:'Testing & scanning',exact:true}).click();await page.getByRole('heading',{name:'Inspect the package. Test the response.'}).waitFor();
   assert.deepEqual(errors,[]);console.log(JSON.stringify({status:'PASS',base,checks:['branding','real planner','MCP branch','highlight','keyboard and pointer movement','undo redo','stale-plan invalidation','local save load','export import','invalid input','escaped labels','connections','mobile light dark','legacy scenarios','console navigation']}));

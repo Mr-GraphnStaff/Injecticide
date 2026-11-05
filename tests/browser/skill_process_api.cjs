@@ -4,8 +4,21 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const {execFileSync} = require('node:child_process');
-const {chromium} = require('playwright');
 const root = path.resolve(__dirname, '../..');
+// Use the checked launcher: it owns this run's temp, profile and cache paths.
+const working = path.join(root, 'working');
+const run = process.env.AGENT_WORKING_DIR && path.resolve(process.env.AGENT_WORKING_DIR);
+const relativeRun = run && path.relative(path.join(working, 'runs'), run);
+if (!run || !relativeRun || relativeRun === '..' || relativeRun.startsWith(`..${path.sep}`) || path.isAbsolute(relativeRun)) {
+    throw new Error('Run this harness through working_area.py run --root <checkout> -- node <harness>.');
+}
+require('node:child_process').execFileSync('python', ['C:/Users/DavidFarris/.codex/tools/working_area.py', 'check', '--root', root], {cwd:root, stdio:'pipe'});
+const output = path.join(run, 'reports', 'browser', path.basename(__filename, '.cjs'));
+fs.mkdirSync(output, {recursive:true});
+const browserCache = path.join(working, 'cache', 'browser');
+const assetCandidates = [path.join(browserCache, 'scan-resource-regression'), path.join(working, 'relocated', '2026-11-02', 'tmp', 'scan-resource-regression')];
+const assets = assetCandidates.find(folder => ['react.js','react-dom.js','babel.js'].every(name => fs.existsSync(path.join(folder, name)))) || assetCandidates[0];
+const {chromium} = require(path.join(browserCache, 'node_modules', 'playwright'));
 const base = process.env.INJECTICIDE_TEST_URL || 'http://127.0.0.1:8241';
 const fixture = execFileSync('python', ['-c', [
     'import io,sys,zipfile',
@@ -17,12 +30,12 @@ const fixture = execFileSync('python', ['-c', [
     'z.close()', 'sys.stdout.buffer.write(b.getvalue())'
 ].join(';')], {cwd:root});
 (async()=>{
-    const browser=await chromium.launch({channel:'msedge',headless:true});
+    const browser=await chromium.launch({downloadsPath:path.join(output,'downloads'),tracesDir:path.join(output,'traces'),channel:'msedge',headless:true});
     try {
         const page=await browser.newPage({viewport:{width:1600,height:1100},acceptDownloads:true});
         const errors=[];page.on('pageerror',error=>errors.push(error.message));
         await page.route('https://unpkg.com/**',route=>route.fulfill({
-            path:path.join(root,'tmp/scan-resource-regression',route.request().url().includes('react-dom')?'react-dom.js':route.request().url().includes('@babel')?'babel.js':'react.js'),contentType:'text/javascript'}));
+            path:path.join(assets,route.request().url().includes('react-dom')?'react-dom.js':route.request().url().includes('@babel')?'babel.js':'react.js'),contentType:'text/javascript'}));
         // Keep this acceptance test local; optional presentation CDNs are unnecessary.
         await page.route('https://cdn.tailwindcss.com/**',route=>route.fulfill({contentType:'text/javascript',body:''}));
         await page.route('https://cdnjs.cloudflare.com/**',route=>route.fulfill({contentType:'text/css',body:''}));
@@ -61,13 +74,13 @@ const fixture = execFileSync('python', ['-c', [
         await page.getByRole('button',{name:'Generate test plan',exact:true}).click();
         assert.equal((await planResponse).status(),200);
         await page.getByText('Test plan ready. No live tests have run.',{exact:true}).waitFor();
-        await page.screenshot({path:path.join(root,'tmp/skill-process-api-playground.png'),fullPage:true});
+        await page.screenshot({path:path.join(output, 'skill-process-api-playground.png'),fullPage:true});
         await page.getByRole('button',{name:'Return to scan report',exact:true}).click();
         await page.locator('[data-process-diagram]').waitFor();
         assert.equal(await page.getByRole('tab',{name:'Structure & process',exact:true}).getAttribute('aria-selected'),'true');
         assert.equal(await panel.getByRole('button',{name:'Add process diagram to playground',exact:true}).evaluate(element=>element===document.activeElement),true);
         assert.deepEqual(errors,[]);
-        fs.writeFileSync(path.join(root,'tmp/skill-process-api-evidence.json'),JSON.stringify({
+        fs.writeFileSync(path.join(output, 'skill-process-api-evidence.json'),JSON.stringify({
             status:'PASS',scope:'Local actual API, synthetic bytes; not production acceptance or uploaded-code execution',
             files:report.summary.total_files,steps:report.documented_process.steps.length,nodes:diagram.nodes.length,edges:diagram.edges.length,
             artifact_sha256:diagram.artifact_sha256,scanner:report.scanner_metadata,

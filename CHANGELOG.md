@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.15.1 - 2026-11-05
+
+- Size the daily research collection for the current 52-source, 88-URL registry:
+  at most 100 pages and a configurable, bounded ten-minute cycle. Include each
+  source's configured seed count, rotate past serviced sources on truncated
+  cycles, report deferred pages, and avoid drifting the daily start time.
+- Re-check a newly created automatic Obsession PR after CI within the same
+  scheduled job, for at most ten minutes. Revalidate fresh evidence, exact head,
+  trusted CI, current base and the existing no-bypass ruleset before merging.
+  Stale proposals stay review-only; deployment remains independently gated.
+- Retain bounded stale/ineligible reasons in host delivery outcomes.
+- Reject invalid CI wait windows before delivery, receipt a published PR before
+  waiting, and preserve its URL, revision and prior state if follow-up fails.
+  Keep receipt-write failures distinct from publication or follow-up failures.
+- Capture deploy-test events through stdout instead of reopening a shared-drive
+  trace file for each event; retain exact event-order and failure-exit checks.
+- Align packaged scanner reports and the optional scanner MCP identity with the
+  application release; verify an actual scan reports the project version.
+
 ## 0.15.0 - 2026-10-29
 
 - Separate retained speech-act, confidence and target evidence from governance

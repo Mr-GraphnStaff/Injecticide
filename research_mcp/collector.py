@@ -93,10 +93,13 @@ def project(response) -> tuple[str, list[str]]:
 
 class Collector:
     def __init__(self, catalog: Catalog, interval: int = 3600, page_budget: int = 40,
-                 fetcher=fetch):
+                 fetcher=fetch, cycle_seconds: int = 240):
         if interval < 300 or not 1 <= page_budget <= 100:
             raise ValueError("Interval must be >=300 seconds and page budget 1–100")
+        if type(cycle_seconds) is not int or not 30 <= cycle_seconds <= 900 or cycle_seconds > interval:
+            raise ValueError("Cycle deadline must be 30–900 seconds and no longer than the interval")
         self.catalog, self.interval, self.page_budget = catalog, interval, page_budget
+        self.cycle_seconds = cycle_seconds
         self.fetcher = fetcher
         self.stop_event, self.wake = threading.Event(), threading.Event()
         self.lock = threading.Lock()
@@ -155,22 +158,29 @@ class Collector:
     def collect(self, source_ids: list[str] | None = None) -> dict:
         ids = source_ids if source_ids is not None else list(self.catalog.sources)
         ids = [sid for sid in ids if self.catalog.sources[sid].get("enabled", True)]
-        # Rotate the starting source when the global cycle budget is exhausted.
-        ids = ids[self.source_cursor % len(ids):] + ids[:self.source_cursor % len(ids)] if ids else []
-        self.source_cursor += 1
-        pages = {sid: self.catalog.due_pages(sid, 8) for sid in ids}
+        # Resume after the last serviced source, rather than moving only one
+        # position per day when a cycle cannot reach the end of the registry.
+        offset = self.source_cursor % len(ids) if ids and source_ids is None else 0
+        ids = ids[offset:] + ids[:offset]
+        # The configured registry includes a 12-seed source. An eight-page slice
+        # cannot refresh that source fully, even with enough global capacity.
+        pages = {sid: self.catalog.due_pages(
+            sid, max(8, len(self.catalog.sources[sid]["seeds"]))) for sid in ids}
+        planned_pages = sum(len(queue) for queue in pages.values())
         attempted, changed, failures = 0, 0, 0
         started = time.monotonic()
         while attempted < self.page_budget and not self.stop_event.is_set():
             worked = False
-            for sid in ids:
-                if attempted >= self.page_budget or time.monotonic() - started > 240:
+            for position, sid in enumerate(ids):
+                if attempted >= self.page_budget or time.monotonic() - started > self.cycle_seconds:
                     break
                 if not pages[sid] or self.stop_event.is_set():
                     continue
                 worked = True
                 page = pages[sid].pop(0)
                 attempted += 1
+                if source_ids is None:
+                    self.source_cursor = (offset + position + 1) % len(ids)
                 try:
                     source = self.catalog.sources[sid]
                     connector = source.get("connector", "web")
@@ -229,11 +239,13 @@ class Collector:
                     failures += 1
                     self.catalog.failure(page, error)
                     LOG.warning("Research fetch failed: source=%s kind=%s", sid, type(error).__name__)
-            if not worked or time.monotonic() - started > 240:
+            if not worked or time.monotonic() - started > self.cycle_seconds:
                 break
         return {"attempted": attempted, "changed": changed, "failures": failures,
+                "planned_pages": planned_pages,
+                "unattempted_pages": sum(len(queue) for queue in pages.values()),
                 "cycle_budget_reached": attempted >= self.page_budget,
-                "deadline_reached": time.monotonic() - started > 240}
+                "deadline_reached": time.monotonic() - started > self.cycle_seconds}
 
     def run(self):
         next_cycle = 0
@@ -244,6 +256,7 @@ class Collector:
                 self.pending.clear()
             periodic = time.monotonic() >= next_cycle
             if periodic or requested:
+                cycle_started = time.monotonic()
                 self.status["running"] = True
                 try:
                     self.status["last_result"] = self.collect(None if periodic else requested)
@@ -260,7 +273,9 @@ class Collector:
                     self.status["last_cycle"] = now()
                     self.status["running"] = False
                 if periodic:
-                    next_cycle = time.monotonic() + self.interval
+                    # Anchor the period to the start, avoiding a growing daily
+                    # drift of one complete collection duration per cycle.
+                    next_cycle = cycle_started + self.interval
             self.wake.wait(min(30, max(0, next_cycle - time.monotonic())))
 
     def close(self):

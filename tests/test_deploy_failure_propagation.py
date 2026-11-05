@@ -22,9 +22,8 @@ def run_functions(tmp_path, suffix, **environment):
 
 @pytest.mark.parametrize('failure', ['checkout','config','down','pull','remove','build','up','health'])
 def test_critical_failure_cannot_be_hidden_by_later_success_inside_if(tmp_path, failure):
-    trace = tmp_path / 'trace'
     result = run_functions(tmp_path, r'''
-record() { printf '%s\n' "$1" >> "$TRACE"; [[ "$1" != "$FAIL_AT" ]]; }
+record() { printf 'DEPLOY_TEST_EVENT:%s\n' "$1"; [[ "$1" != "$FAIL_AT" ]]; }
 git() { record checkout; }
 compose() { record "$2"; }
 remove_injecticide_images() { record remove; }
@@ -34,10 +33,14 @@ if deploy_commit 1111111111111111111111111111111111111111; then
 else
   exit 0
 fi
-''', TRACE=trace.as_posix(), FAIL_AT=failure)
+''', FAIL_AT=failure)
     assert result.returncode == 0, result.stdout + result.stderr
     steps = ['checkout','config','down','pull','remove','build','up','health']
-    assert trace.read_text().splitlines() == steps[:steps.index(failure)+1]
+    # Trace control flow without introducing per-event filesystem append opens.
+    # The fixed prefix separates test events from the real wrapper's log output.
+    events = [line.removeprefix('DEPLOY_TEST_EVENT:') for line in result.stdout.splitlines()
+              if line.startswith('DEPLOY_TEST_EVENT:')]
+    assert events == steps[:steps.index(failure)+1], result.stdout + result.stderr
 
 
 def test_failed_image_enumeration_is_not_a_successful_empty_list(tmp_path):
