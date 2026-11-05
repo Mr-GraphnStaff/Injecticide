@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.15.1 - Unreleased
+## 0.15.1 - 2026-11-05
 
 - Size the daily research collection for the current 52-source, 88-URL registry:
   at most 100 pages and a configurable, bounded ten-minute cycle. Include each
@@ -16,6 +16,8 @@
   Keep receipt-write failures distinct from publication or follow-up failures.
 - Capture deploy-test events through stdout instead of reopening a shared-drive
   trace file for each event; retain exact event-order and failure-exit checks.
+- Align packaged scanner reports and the optional scanner MCP identity with the
+  application release; verify an actual scan reports the project version.
 
 ## 0.15.0 - 2026-10-29
 

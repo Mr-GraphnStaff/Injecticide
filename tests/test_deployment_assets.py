@@ -6,6 +6,15 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_scanned_artifact_reports_current_release_version() -> None:
+    import tomllib
+    from skill_sandbox.app import scan_upload
+
+    expected = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    result = scan_upload(b"---\nname: version-check\ndescription: Read local documentation.\n---\nRead SKILL.md.\n", "SKILL.md")
+    assert result["scanner_metadata"]["scanner_version"] == expected
+
+
 def test_pipeline_deploys_only_after_validation() -> None:
     pipeline = yaml.safe_load((ROOT / "azure-pipelines.yml").read_text(encoding="utf-8"))
 

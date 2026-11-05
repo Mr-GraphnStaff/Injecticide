@@ -18,7 +18,7 @@ from .app import (SCAN_SLOT, MAX_ARCHIVE_FILES, MAX_ARCHIVE_TOTAL_BYTES,
 from .asset_inspection import MAX_ASSET_BYTES, MAX_METADATA_BYTES
 from .nested_archives import NestedArchiveBudget
 from .package_formats import RUNTIMES
-from .package_evidence import scanner_metadata
+from .package_evidence import SCANNER_VERSION, scanner_metadata
 
 
 MAX_MCP_ARTIFACT_BYTES = 4 * 1024 * 1024
@@ -107,7 +107,7 @@ def create_server():
     # Keep MCP optional for ordinary scanner imports and default installation.
     from mcp.server import MCPServer
 
-    server = MCPServer("injecticide_skill_scanner", version="0.15.0")
+    server = MCPServer("injecticide_skill_scanner", version=SCANNER_VERSION)
     annotations = {"readOnlyHint": True, "destructiveHint": False,
                    "idempotentHint": True, "openWorldHint": False}
     server.tool(annotations=annotations, structured_output=True)(skill_scan_package)
