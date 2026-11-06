@@ -155,13 +155,61 @@ def make_unassessed_row(
     }
 
 
-def normalize_row(row: Mapping[str, Any], row_id: Any = None) -> Dict[str, Any]:
-    """Return a contract row, validating typed rows and converting legacy ones.
+def is_unrecorded(row: Mapping[str, Any]) -> bool:
+    """True for a converted legacy row whose dispatch was never recorded."""
 
-    A legacy row (no ``outcome``) is never normalized into ``assessed``: the
-    record cannot show that a response was received and analyzed. It becomes
-    ``failed`` / ``unrecorded_outcome``, and any original flags are kept only
-    under ``legacy_flags``.
+    return row.get("reason") == "unrecorded_outcome"
+
+
+def validate_row(row: Mapping[str, Any]) -> None:
+    """Reject a row that is incomplete or contradicts the contract.
+
+    Nothing is repaired: an inconsistent row must not turn into an apparently
+    clean assessment or into complete coverage.
+    """
+
+    if not isinstance(row, Mapping):
+        raise ContractError("row must be a mapping")
+    rid = row.get("row_id")
+    if not isinstance(rid, str) or not rid:
+        raise ContractError("row_id is required")
+    outcome = row.get("outcome")
+    if outcome not in OUTCOMES:
+        raise ContractError(f"unknown outcome {outcome!r}")
+    if outcome == ASSESSED:
+        if row.get("reason") is not None:
+            raise ContractError("assessed row must not carry a failure reason")
+        if row.get("detail") is not None or row.get("error") is not None:
+            raise ContractError("assessed row must not carry failure detail or error text")
+        signals = row.get("signals")
+        if not isinstance(signals, Mapping):
+            raise ContractError("assessed row is missing signals")
+        if not all(isinstance(value, bool) for value in signals.values()):
+            raise ContractError("signal values must be bool")
+        _check_verified(row.get("verified"))
+        return
+    reason = row.get("reason")
+    allowed = REASON_OUTCOMES.get(reason)
+    if allowed is None or outcome not in allowed:
+        raise ContractError(f"reason {reason!r} is not allowed with outcome {outcome!r}")
+    if row.get("signals"):
+        raise ContractError(f"{outcome} row must not carry signals")
+    if row.get("verified") is not None:
+        raise ContractError(f"{outcome} row must not carry verified evidence")
+
+
+def normalize_row(row: Mapping[str, Any], row_id: Any = None) -> Dict[str, Any]:
+    """Return a validated contract row; convert legacy rows without inventing facts.
+
+    A legacy row (no ``outcome``) is never normalized into ``assessed`` and is
+    never counted as an attempt: the record shows neither that the request was
+    dispatched nor that a response was analyzed. It becomes
+    ``failed`` / ``unrecorded_outcome``; ``build_coverage`` reports it under
+    ``unrecorded``, outside ``attempted``. Original flags are kept only under
+    ``legacy_flags``.
+
+    A typed row is validated, not repaired: a contradictory or incomplete row
+    raises ``ContractError``.
     """
 
     rid = row.get("row_id", row_id)
@@ -179,19 +227,17 @@ def normalize_row(row: Mapping[str, Any], row_id: Any = None) -> Dict[str, Any]:
             normalized["legacy_flags"] = {str(k): bool(v) for k, v in dict(legacy_flags).items()}
         return normalized
 
+    validate_row(dict(row, row_id=str(rid)))
     if outcome == ASSESSED:
-        signals = row.get("signals")
-        if signals is None:
-            raise ContractError("assessed row is missing signals")
-        normalized = make_assessed_row(rid, payload, category, "", signals, verified=row.get("verified"))
+        normalized = make_assessed_row(rid, payload, category, "", row["signals"], verified=row.get("verified"))
         normalized["response_length"] = row.get("response_length")
         return normalized
-
-    if row.get("signals"):
-        raise ContractError(f"{outcome} row must not carry signals")
-    if row.get("verified") is not None:
-        raise ContractError(f"{outcome} row must not carry verified evidence")
-    return make_unassessed_row(rid, payload, category, outcome, row.get("reason"), row.get("detail"))
+    # Keep the diagnostic: fall back to compatibility ``error`` text when
+    # ``detail`` is missing.
+    detail = row.get("detail")
+    if detail is None:
+        detail = row.get("error")
+    return make_unassessed_row(rid, payload, category, outcome, row["reason"], detail)
 
 
 def signal_names(row: Mapping[str, Any]) -> List[str]:
@@ -238,22 +284,28 @@ def build_coverage(
 ) -> Dict[str, Any]:
     """Aggregate typed rows into the coverage object.
 
-    ``rows`` are terminal rows (``not_run`` included). For a final coverage,
-    ``planned`` defaults to ``len(rows)``, ``in_flight`` must be zero, no row
-    may still be ``pending``, and ``planned`` must equal ``attempted + not_run``.
-    For a live snapshot (``final=False``) the remainder
-    ``planned - len(rows) - in_flight`` is reported as ``pending`` and no
-    terminal outcome is invented for it.
+    ``rows`` are terminal rows (``not_run`` included); every row is validated
+    and an invalid row raises ``ContractError``. Converted legacy rows
+    (``unrecorded_outcome``) are counted under ``unrecorded``, never under
+    ``attempted`` or ``failed``, because their dispatch is unknown. For a final
+    coverage, ``planned`` defaults to ``len(rows)``, ``in_flight`` must be
+    zero, no row may still be ``pending``, and
+    ``planned == attempted + not_run + unrecorded``. For a live snapshot
+    (``final=False``) the remainder ``planned - len(rows) - in_flight`` is
+    reported as ``pending`` and no terminal outcome is invented for it.
     """
 
     typed = [dict(row) for row in rows]
     for row in typed:
-        if row.get("outcome") not in OUTCOMES:
-            raise ContractError("build_coverage needs typed rows; call normalize_row first")
+        validate_row(row)
     counts = {outcome: 0 for outcome in OUTCOMES}
+    unrecorded = 0
     for row in typed:
         if row.get("reason") == "pending":
             continue  # reported under ``pending``, not as a terminal not_run
+        if is_unrecorded(row):
+            unrecorded += 1  # dispatch unknown: not an attempt, not a failure
+            continue
         counts[row["outcome"]] += 1
 
     if in_flight < 0:
@@ -271,8 +323,8 @@ def build_coverage(
             raise ContractError("final coverage cannot have requests in flight")
         if pending_rows or pending:
             raise ContractError("final coverage cannot have pending rows")
-        if planned_count != attempted + counts[NOT_RUN]:
-            raise ContractError("planned must equal attempted + not_run")
+        if planned_count != attempted + counts[NOT_RUN] + unrecorded:
+            raise ContractError("planned must equal attempted + not_run + unrecorded")
 
     assessed_rows = [row for row in typed if row["outcome"] == ASSESSED]
     with_signals = [row for row in assessed_rows if signal_names(row)]
@@ -295,6 +347,7 @@ def build_coverage(
         "timed_out": counts[TIMED_OUT],
         "cancelled": counts[CANCELLED],
         "not_run": counts[NOT_RUN],
+        "unrecorded": unrecorded,
         "in_flight": in_flight,
         "pending": pending + pending_rows,
         "complete": bool(final and planned_count > 0 and assessed == planned_count),

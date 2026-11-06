@@ -163,6 +163,54 @@ def test_legacy_rows_never_normalize_to_assessed():
     assert b["detail"] == "boom"
     cov = build_coverage([a, b])
     assert cov["assessed"] == 0 and cov["rows_with_signals"] == 0
+    # Dispatch is unknown for legacy rows: never counted as attempted or failed.
+    assert cov["attempted"] == 0 and cov["failed"] == 0
+    assert cov["unrecorded"] == 2
+    assert cov["planned"] == cov["attempted"] + cov["not_run"] + cov["unrecorded"]
+    assert cov["complete"] is False
+
+
+def test_single_legacy_error_row_is_not_an_attempt():
+    # Codex review reproduction: planned=1, attempted=1, failed=1 before the fix.
+    cov = build_coverage([normalize_row({"payload": "p", "error": "HTTP 500"}, row_id=0)])
+    assert (cov["planned"], cov["attempted"], cov["failed"], cov["unrecorded"]) == (1, 0, 0, 1)
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        # Codex review reproduction: assessed row carrying a failure was repaired to NO SIGNALS.
+        {"row_id": "0", "outcome": "assessed", "reason": "provider_error", "detail": "HTTP500",
+         "error": "HTTP500", "signals": {}},
+        {"row_id": "0", "outcome": "assessed", "signals": {}, "error": "HTTP500"},
+        {"row_id": "0", "outcome": "assessed", "signals": {}, "detail": "x"},
+        {"row_id": "0", "outcome": "assessed", "signals": {"x": "yes"}},
+        {"row_id": "0", "outcome": "assessed", "signals": ["x"]},
+        {"row_id": "0", "outcome": "assessed"},
+        {"row_id": "0", "outcome": "failed", "reason": "timeout"},
+        {"row_id": "0", "outcome": "failed"},
+        {"row_id": "0", "outcome": "not_run", "reason": "pending", "signals": {"x": True}},
+        {"row_id": "0", "outcome": "safe", "reason": "provider_error"},
+    ],
+)
+def test_contradictory_rows_are_rejected_at_both_public_boundaries(row):
+    with pytest.raises(ContractError):
+        normalize_row(row)
+    with pytest.raises(ContractError):
+        build_coverage([row])
+
+
+def test_build_coverage_rejects_rows_without_id():
+    # Codex review reproduction: {'outcome': 'assessed'} gave assessed=1, complete=True.
+    with pytest.raises(ContractError):
+        build_coverage([{"outcome": "assessed"}])
+    with pytest.raises(ContractError):
+        build_coverage([{"outcome": "assessed", "signals": {}}])
+
+
+def test_unassessed_normalization_keeps_error_text_when_detail_missing():
+    row = normalize_row({"row_id": "3", "outcome": "failed", "reason": "provider_error", "error": "HTTP 502"})
+    assert row["detail"] == "HTTP 502" and row["error"] == "HTTP 502"
 
 
 def test_typed_rows_round_trip_and_reject_contradictions():
