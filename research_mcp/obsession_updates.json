@@ -39,6 +39,747 @@
         "reason": "Locally approved deterministic gate passed",
         "updated": "2026-10-30T18:30:40+00:00"
       }
+    },
+    {
+      "sequence": 78,
+      "id": "obsession-0492bcb82e0648a6c701447d204c544949665f9b71caaf994435d25910c84059",
+      "sha256": "0492bcb82e0648a6c701447d204c544949665f9b71caaf994435d25910c84059",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# How to add skills support to your agent\n\n> A guide for adding Agent Skills support to an AI agent or development tool.\n\nThis guide walks through how to add Agent Skills support to an AI agent or development tool. It covers the full lifecycle: discovering skills, telling the model about them, loading their content into context, and keeping that content effective over time.\n\nThe core integration is the same regardless of your agent's architecture. The implementation details vary based on two factors:\n\n* **Where do skills live?** A locally-running agent can scan the user's filesystem for skill directories. A cloud-hosted or sandboxed agent will need an alternative discovery mechanism — an API, a remote registry, or bundled assets.\n* **How does the model access skill content?** If the model has file-reading capabilities, it can read `SKILL.md` files directly. Otherwise, you'll provide a dedicated tool or inject skill content into the prompt programmatically.\n\nThe guide notes where these differences matter. You don't need to support every scenario — follow the path that fits your agent.\n\n**Prerequisites**: Familiarity with the [Agent Skills specification](https://agentskills.io/specification.md), which defines the `SKILL.md` file format, frontmatter fields, and directory conventions.\n\n## The core principle: progressive disclosure\n\nEvery skills-compatible agent follows the same three-tier loading strategy:\n\n| Tier | What's loaded | When | Token cost |\n| - | - | - | - |\n| 1. Catalog | Name + description | Session start | \\~50-100 tokens per skill |\n| 2. Instructions | Full `SKILL.md` body | When the skill is activated | \\<5000 tokens (recommended) |\n| 3. Resources | Scripts, references, assets | When the instructions reference them | Varies |\n\nThe model sees the catalog from the start, so it knows",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "79489bd252377681a31958e75ee3e6e96f7f791719eaac3b3e870a0d193be172",
+          "source_id": "agent-skills",
+          "source_sha256": "07511caadbe1bad84d81477d0efce87bc2c7eaff562179522c083910586dfb06",
+          "url": "https://agentskills.io/client-implementation/adding-skills-support.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/client-implementation/adding-skills-support.md",
+          "previous_sha256": "79489bd252377681a31958e75ee3e6e96f7f791719eaac3b3e870a0d193be172",
+          "retrieved": "2026-10-29T08:16:27+00:00",
+          "snapshot_id": 3630,
+          "source_id": "agent-skills",
+          "source_sha256": "07511caadbe1bad84d81477d0efce87bc2c7eaff562179522c083910586dfb06",
+          "url": "https://agentskills.io/client-implementation/adding-skills-support.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:05+00:00"
+      }
+    },
+    {
+      "sequence": 165,
+      "id": "obsession-0e0d2e3c5c67a3540f85ba9d2ee84d5065b3dcae5fc65578b9878d5dac658d01",
+      "sha256": "0e0d2e3c5c67a3540f85ba9d2ee84d5065b3dcae5fc65578b9878d5dac658d01",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Powers - Features - Docs - Kiro Loading image... Product About Kiro Agents IDE CLI Web Mobile Crew Pricing Downloads For Enterprise Startups Students Community Overview Ambassadors Case studies Discord Events Powers Shop Showcase Resources Docs Blog Changelog FAQs Videos Report a bug Suggest an idea Billing support Social English Site Terms License Responsible AI Policy Legal Privacy Policy Cookie Preferences English Agents Apps Enterprise Pricing Docs Community Resources SIGN IN DOWNLOADS Get Started Installation Authentication Your first project Models Overview Available models Reasoning effort AWS GovCloud (US) models Features How Kiro works Local command sandbox ACP integrations Specs Steering Hooks MCP Permissions Custom agents Workflows Agent Skills Powers Install powers Create powers Cloud sessions Memory Compaction Kiroignore Checkpoints and rewind Built-in tools Configuration scopes IDE 1.x What's new in 1.0 Setup & First Run Editor Chat Experimental Troubleshooting 0.x reference CLI What's new in V3 Setup & First Run Terminal UI Chat Fullscreen mode Voice mode Headless mode ACP Auto complete Experimental 2.x reference Crew Quick start Installation Running 24/7 Chat Agent Capabilities Features Interfaces Apps System & storage Configuration Security Troubleshooting Web Setup & First Run Identity Center Connect your repositories Working with the agent Autonomous mode Schedule Configuration Sync Sandbox Mobile - Preview Overview Commands and Reference CLI commands Slash commands Built-in tools Exit codes Settings Billing Overview Managing your subscription Upgrading your plan Downgrading your plan Cancelling your plan Purchasing add-on credits Managing your payments Managing usage notifications Managing your taxes Contacting billing support Deleting your account Related questions Enterprise Concepts Onboarding quickstart Connecting your identity provider Deployment options Subscribe your team Manage subscriptions Governance Monitor and track Settings Managed u",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "2fbbe6f233215c3f287419a5695bbad24734e9320b2e1ecb9a6c5328812eea82",
+          "source_id": "kiro",
+          "source_sha256": "47e910ac0b58738feae46112bad5b03b69a04f40a40a8a21cc52397f543feb5a",
+          "url": "https://kiro.dev/docs/powers/"
+        },
+        "provenance": {
+          "final_url": "https://kiro.dev/docs/powers/",
+          "previous_sha256": "2fbbe6f233215c3f287419a5695bbad24734e9320b2e1ecb9a6c5328812eea82",
+          "retrieved": "2026-11-01T11:10:40+00:00",
+          "snapshot_id": 3795,
+          "source_id": "kiro",
+          "source_sha256": "47e910ac0b58738feae46112bad5b03b69a04f40a40a8a21cc52397f543feb5a",
+          "url": "https://kiro.dev/docs/powers/"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:06+00:00"
+      }
+    },
+    {
+      "sequence": 65,
+      "id": "obsession-16967e2625cbfa75aa6579a049897e239d012dc0e364c823a5492afcea3db0e0",
+      "sha256": "16967e2625cbfa75aa6579a049897e239d012dc0e364c823a5492afcea3db0e0",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Specification - Agent Skills Documentation Index Fetch the complete documentation index at: /llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Agent Skills now has an official Discord server . See the announcement for details. Agent Skills home page Agent Skills Search... ⌘ K Ask Assistant ⌘ I agentskills/agentskills agentskills/agentskills Search... Navigation Specification Overview Specification Client Showcase For skill creators Quickstart Best practices Optimizing descriptions Evaluating skills Using scripts For client implementors Adding skills support On this page Back to top Directory structure SKILL.md format Frontmatter name field description field license field compatibility field metadata field allowed-tools field Body content Optional directories scripts/ references/ assets/ Progressive disclosure File references Validation Specification Copy page Copy page The complete format specification for Agent Skills. Copy page Copy page ​ Directory structure A skill is a directory containing, at minimum, a SKILL.md file: skill-name/ ├── SKILL.md # Required: metadata + instructions ├── scripts/ # Optional: executable code ├── references/ # Optional: documentation ├── assets/ # Optional: templates, resources └── ... # Any additional files or directories ​ SKILL.md format The SKILL.md file must contain YAML frontmatter followed by Markdown content. ​ Frontmatter Field Required Constraints name Yes Max 64 characters. Lowercase letters, numbers, and hyphens only. Must not start or end with a hyphen. description Yes Max 1024 characters. Non-empty. Describes what the skill does and when to use it. license No License name or reference to a bundled license file. compatibility No Max 500 characters. Indicates environment requirements (intended product, system packages, network access, etc.). metadata No Arbitrary key-value mapping for additional metadata",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "0db69a65c8516c1794724169914b8a02fe8ec9a13810b6fdd850f179d948d644",
+          "source_id": "agent-skills",
+          "source_sha256": "bbc245eb19d09e70fc9faee4bf54771a122d8da8f1b3b6e9de02d47fda6f4f05",
+          "url": "https://agentskills.io/specification"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/specification",
+          "previous_sha256": "0db69a65c8516c1794724169914b8a02fe8ec9a13810b6fdd850f179d948d644",
+          "retrieved": "2026-10-28T22:36:28+00:00",
+          "snapshot_id": 3499,
+          "source_id": "agent-skills",
+          "source_sha256": "bbc245eb19d09e70fc9faee4bf54771a122d8da8f1b3b6e9de02d47fda6f4f05",
+          "url": "https://agentskills.io/specification"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-10-31T18:31:53+00:00"
+      }
+    },
+    {
+      "sequence": 163,
+      "id": "obsession-20434826a474b8cf93f8306cce731b548f11d0d0505e4d1cf304a8d456f872be",
+      "sha256": "20434826a474b8cf93f8306cce731b548f11d0d0505e4d1cf304a8d456f872be",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Extend Claude with skills - Claude Code Docs Documentation Index Fetch the complete documentation index at: /docs/llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Claude Code Docs home page English Search... ⌘ K Ask Assistant ⌘ I Claude Developer Platform Open Claude Code Open Claude Code Search... Navigation Skills Extend Claude with skills Getting started Build with Claude Code Plugins Administration Configuration Reference Agent SDK What's New Resources Agents and parallel work Overview Create custom subagents Agent view Run agent teams Cross-session messaging Dynamic workflows Isolate sessions with worktrees MCP Quickstart Reference Skills Extend Claude with skills Artifacts Share session output as artifacts Automation Automate with hooks Push external events to Claude Run prompts on a schedule Goals Programmatic usage Launch sessions from links Guides Monorepos and large repos Troubleshooting Troubleshoot installation and login Troubleshoot performance and stability Debug configuration Error reference On this page Back to top Bundled skills Check your setup with /doctor Run and verify your app Run your checks before each commit Work on Claude API projects Getting started Create your first skill Choose where skills load Load skills in monorepos and subdirectories Load skills from a directory outside the project Run a same-named skill from an added directory Resolve skills that share a name Use skills in Cowork and cloud sessions Skills synced from claude.ai Where synced skills load When a synced skill name matches another command Names reserved for synced skills How Claude Code handles the frontmatter of a synced skill How Claude Code handles the body of a synced skill Edit a skill during a session Remove a skill Configure skills Types of skill content Frontmatter reference Using skill frontmatter outside Claude Code How a skill gets its comm",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "d4ea6e0d85e632f4338156fcd245ea8caca02f566fe6e517483ff831a33f686d",
+          "source_id": "claude-code",
+          "source_sha256": "89c48436311518d1d301f2a602583ceface3abdd1ea454e83455cb50070c16e7",
+          "url": "https://code.claude.com/docs/en/skills"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/skills",
+          "previous_sha256": "d4ea6e0d85e632f4338156fcd245ea8caca02f566fe6e517483ff831a33f686d",
+          "retrieved": "2026-11-01T11:10:29+00:00",
+          "snapshot_id": 3793,
+          "source_id": "claude-code",
+          "source_sha256": "89c48436311518d1d301f2a602583ceface3abdd1ea454e83455cb50070c16e7",
+          "url": "https://code.claude.com/docs/en/skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:06+00:00"
+      }
+    },
+    {
+      "sequence": 67,
+      "id": "obsession-34b6fed7e232b57b4750dba395faa4ce8b7c14a70b0af9f97ac6a0dfd9855dd2",
+      "sha256": "34b6fed7e232b57b4750dba395faa4ce8b7c14a70b0af9f97ac6a0dfd9855dd2",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Best practices for skill creators\n\n> How to write skills that are well-scoped and calibrated to the task.\n\n## Start from real expertise\n\nA common pitfall in skill creation is asking an LLM to generate a skill without providing domain-specific context — relying solely on the LLM's general training knowledge. The result is vague, generic procedures (\"handle errors appropriately,\" \"follow best practices for authentication\") rather than the specific API patterns, edge cases, and project conventions that make a skill valuable.\n\nEffective skills are grounded in real expertise. The key is feeding domain-specific context into the creation process.\n\n### Extract from a hands-on task\n\nComplete a real task in conversation with an agent, providing context, corrections, and preferences along the way. Then extract the reusable pattern into a skill. Pay attention to:\n\n* **Steps that worked** — the sequence of actions that led to success\n* **Corrections you made** — places where you steered the agent's approach (e.g., \"use library X instead of Y,\" \"check for edge case Z\")\n* **Input/output formats** — what the data looked like going in and coming out\n* **Context you provided** — project-specific facts, conventions, or constraints the agent didn't already know\n\n### Synthesize from existing project artifacts\n\nWhen you have a body of existing knowledge, you can feed it into an LLM and ask it to synthesize a skill. A data-pipeline skill synthesized from your team's actual incident reports and runbooks will outperform one synthesized from a generic \"data engineering best practices\" article, because it captures *your* schemas, failure modes, and recovery procedures. The key is project-specific material, not generic references.\n\nGood source material includes:\n\n* Internal documentation, runbooks, and style guides\n* ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "277c31927ba446c7491e649de39c80f712244f669701020d952154f38d478dd1",
+          "source_id": "agent-skills",
+          "source_sha256": "ab9f3b6091a0f24816b52cd7b90a3fdf53e621f47dba13b36694be272b87fb41",
+          "url": "https://agentskills.io/skill-creation/best-practices.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/skill-creation/best-practices.md",
+          "previous_sha256": "277c31927ba446c7491e649de39c80f712244f669701020d952154f38d478dd1",
+          "retrieved": "2026-10-29T00:08:31+00:00",
+          "snapshot_id": 3515,
+          "source_id": "agent-skills",
+          "source_sha256": "ab9f3b6091a0f24816b52cd7b90a3fdf53e621f47dba13b36694be272b87fb41",
+          "url": "https://agentskills.io/skill-creation/best-practices.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-10-31T18:31:53+00:00"
+      }
+    },
+    {
+      "sequence": 72,
+      "id": "obsession-41323e20fabb30376761c312e67f4a12987c1c07c70cf148e7705d1bdfc4464f",
+      "sha256": "41323e20fabb30376761c312e67f4a12987c1c07c70cf148e7705d1bdfc4464f",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Optimizing skill descriptions\n\n> How to improve your skill's description so it triggers reliably on relevant prompts.\n\nA skill only helps if it gets activated. The `description` field in your `SKILL.md` frontmatter is the primary mechanism agents use to decide whether to load a skill for a given task. An under-specified description means the skill won't trigger when it should; an over-broad description means it triggers when it shouldn't.\n\nThis guide covers how to systematically test and improve your skill's description for triggering accuracy.\n\n## How skill triggering works\n\nAgents use [progressive disclosure](https://agentskills.io/specification.md#progressive-disclosure) to manage context. At startup, they load only the `name` and `description` of each available skill — just enough to decide when a skill might be relevant. When a user's task matches a description, the agent reads the full `SKILL.md` into context and follows its instructions.\n\nThis means the description carries the entire burden of triggering. If the description doesn't convey when the skill is useful, the agent won't know to reach for it.\n\nOne important nuance: agents typically only consult skills for tasks that require knowledge or capabilities beyond what they can handle alone. A simple, one-step request like \"read this PDF\" may not trigger a PDF skill even if the description matches perfectly, because the agent can handle it with basic tools. Tasks that involve specialized knowledge — an unfamiliar API, a domain-specific workflow, or an uncommon format — are where a well-written description can make the difference.\n\n## Writing effective descriptions\n\nBefore testing, it helps to know what a good description looks like. A few principles:\n\n* **Use imperative phrasing.** Frame the description as an instruction to the agen",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "49c74ac1e6b9646c8191d2e237e488da4a90a4ab4b1579c8f49da06529008690",
+          "source_id": "agent-skills",
+          "source_sha256": "7cc54fbb6abbcf08c33e7b320fd01a1fb9696426270da3b588a398d243bfd837",
+          "url": "https://agentskills.io/skill-creation/optimizing-descriptions.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/skill-creation/optimizing-descriptions.md",
+          "previous_sha256": "49c74ac1e6b9646c8191d2e237e488da4a90a4ab4b1579c8f49da06529008690",
+          "retrieved": "2026-10-29T02:10:27+00:00",
+          "snapshot_id": 3542,
+          "source_id": "agent-skills",
+          "source_sha256": "7cc54fbb6abbcf08c33e7b320fd01a1fb9696426270da3b588a398d243bfd837",
+          "url": "https://agentskills.io/skill-creation/optimizing-descriptions.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-10-31T18:31:53+00:00"
+      }
+    },
+    {
+      "sequence": 161,
+      "id": "obsession-6552ff5a5569c943722dbe187a143139b4a89dfb8ecea21bd106d1eb93b51d61",
+      "sha256": "6552ff5a5569c943722dbe187a143139b4a89dfb8ecea21bd106d1eb93b51d61",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugin UI changelog – Plugins | OpenAI Developers For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT Start searching API Dashboard Try ChatGPT Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Plugins Sign in with ChatGPT Commerce Ads Workspace Agents User Docs Search the ChatGPT docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background mode Streaming WebSocket mode Mid-turn steering Multi-agent Webhooks File inputs Compaction Counting tokens SDKs and CLI OpenAI ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "136e62989a0841409788f5b3ea0709d2d9a7d32d68d8c40945e8ccb9c53f1e69",
+          "source_id": "openai-plugins",
+          "source_sha256": "b72f5758ea3171fb3defd1aa2c93e0f1cb0346cdb622b36ea8f161c71fa6ad78",
+          "url": "https://developers.openai.com/plugins/changelog"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/changelog",
+          "previous_sha256": "136e62989a0841409788f5b3ea0709d2d9a7d32d68d8c40945e8ccb9c53f1e69",
+          "retrieved": "2026-11-01T11:10:24+00:00",
+          "snapshot_id": 3791,
+          "source_id": "openai-plugins",
+          "source_sha256": "b72f5758ea3171fb3defd1aa2c93e0f1cb0346cdb622b36ea8f161c71fa6ad78",
+          "url": "https://developers.openai.com/plugins/changelog"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:06+00:00"
+      }
+    },
+    {
+      "sequence": 30,
+      "id": "obsession-794b9bd3239efb8fea178f7ca2e4269cc7fdc9b38571cd7285610ee4be5ce40b",
+      "sha256": "794b9bd3239efb8fea178f7ca2e4269cc7fdc9b38571cd7285610ee4be5ce40b",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "# Build skills\n\n> For the complete documentation index, see [llms.txt](/llms.txt). Markdown versions of documentation pages are available by appending `.md` to the page URL.\n\nA skill complements your MCP server by teaching ChatGPT and Codex how to use\nits tools in a repeatable workflow. Use the server for live data,\nauthentication, authorization, and controlled actions. Use the skill for tool\nsequences, decision points, output requirements, examples, templates, and\nother reusable guidance.\n\nA plugin can contain one skill or a group of related skills. Keep every skill\nfocused on a recognizable user goal from your\n[use-case inventory](https://developers.openai.com/plugins/plan/use-case). A skill can also work without an\nMCP server when the workflow needs only packaged instructions and resources.\n\n## Create a skill\n\nThe fastest way to start is with the built-in skill creator. Describe the user\ngoal and the MCP tools that support it:\n\n```text\n@skill-creator Create a skill named tabletop-dice that understands dice\nnotation such as 3d6, calls roll_dice once for each die, and reports every\nroll and the total.\n```\n\nIn Codex, invoke the same creator as `$skill-creator`.\n\nYou can also create the files manually. Each skill lives in its own directory\nand requires a `SKILL.md` file:\n\n## Write `SKILL.md`\n\nStart the file with a name and a description, followed by the instructions:\n\n```md\n---\nname: tabletop-dice\ndescription: Roll one or more dice for tabletop games and report each result and the total.\n---\n\nUse this skill when the user asks to roll dice.\n\n1. Parse requests written as `NdS` as N dice with S sides. For example, `3d6`\n   means three six-sided dice.\n2. Call `roll_dice` once for each requested die and pass S as `sides`.\n3. Report each tool result in order.\n4. When the user requests multiple dice, add the results and report the total.\n\nDo not invent, replace, or reroll a result unless the user asks you to.\n```\n\nThe description determines when the model considers the skil",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "e4f96c0d297f17fc1ce55472fce42de1c13c98d8e710ce8062d0656bcf5b1fa5",
+          "source_id": "requirements-openai",
+          "source_sha256": "8ace07ca0432b29e924da01cb3878b43c907bfa9bf6e009fca99d91026cbb050",
+          "url": "https://developers.openai.com/plugins/build/skills.md"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/build/skills.md",
+          "previous_sha256": "e4f96c0d297f17fc1ce55472fce42de1c13c98d8e710ce8062d0656bcf5b1fa5",
+          "retrieved": "2026-10-26T17:11:15+00:00",
+          "snapshot_id": 2645,
+          "source_id": "requirements-openai",
+          "source_sha256": "8ace07ca0432b29e924da01cb3878b43c907bfa9bf6e009fca99d91026cbb050",
+          "url": "https://developers.openai.com/plugins/build/skills.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-10-31T18:31:53+00:00"
+      }
+    },
+    {
+      "sequence": 127,
+      "id": "obsession-8be71bda0f747453feb8513cacb410e51784d143d655de5be4005afdd6764ea4",
+      "sha256": "8be71bda0f747453feb8513cacb410e51784d143d655de5be4005afdd6764ea4",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "# Configuration Reference\n\n> For the complete documentation index, see [llms.txt](https://learn.chatgpt.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to the page URL.\n\nUse this page as a searchable reference for Codex configuration files. For conceptual guidance and examples, start with [Config basics](https://learn.chatgpt.com/docs/config-file/config-basic) and [Advanced Config](https://learn.chatgpt.com/docs/config-file/config-advanced).\n\n<a id=\"settings-for-synced-chatgpt-work\"></a>\n\n## Settings for Local computer access with Work Cloud\n\nWith Local computer access with Work Cloud enabled, OpenAI's cloud coordinates the task while supported tools run in the cloud or on a connected computer. Requirements set limits; configuration values provide defaults.\n\nUse the policy API to manage Global settings. To manage Local or Codex Cloud settings, use the Agent Security UI. Existing Global API workflows remain available after migration. Test your scripts and Terraform integrations, and confirm that policy assignments and ordering are unchanged. Support for a `requirements.toml` field does not by itself establish API compatibility.\n\n| Setting or setting family                                           | Scope in Local computer access with Work Cloud                                                                                   | Guidance                                                                                                                                                                                                                                                                                                                                                                                                                                            |\n| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "fe48af085a53345cf171cf492f3147eb2bb297b8ab28f83e67b8e9e62f715a21",
+          "source_id": "openai-codex",
+          "source_sha256": "bc188a808ecd6c2827024d454dc0a35bcda73ea881be62405b9186883d0bfd6c",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "provenance": {
+          "final_url": "https://learn.chatgpt.com/docs/config-file/config-reference.md",
+          "previous_sha256": "fe48af085a53345cf171cf492f3147eb2bb297b8ab28f83e67b8e9e62f715a21",
+          "retrieved": "2026-10-30T18:29:52+00:00",
+          "snapshot_id": 3747,
+          "source_id": "openai-codex",
+          "source_sha256": "bc188a808ecd6c2827024d454dc0a35bcda73ea881be62405b9186883d0bfd6c",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:05+00:00"
+      }
+    },
+    {
+      "sequence": 160,
+      "id": "obsession-9418987b61a84dd5e865372b3d89bfad4b0245ab7b73c2333c15a04ad5095a70",
+      "sha256": "9418987b61a84dd5e865372b3d89bfad4b0245ab7b73c2333c15a04ad5095a70",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Specification\n\n> The complete format specification for Agent Skills.\n\n## Directory structure\n\nA skill is a directory containing, at minimum, a `SKILL.md` file:\n\n```\nskill-name/\n├── SKILL.md          # Required: metadata + instructions\n├── scripts/          # Optional: executable code\n├── references/       # Optional: documentation\n├── assets/           # Optional: templates, resources\n└── ...               # Any additional files or directories\n```\n\n## `SKILL.md` format\n\nThe `SKILL.md` file must contain YAML frontmatter followed by Markdown content.\n\n### Frontmatter\n\n| Field | Required | Constraints |\n| - | - | - |\n| `name` | Yes | Max 64 characters. Lowercase letters, numbers, and hyphens only. Must not start or end with a hyphen. |\n| `description` | Yes | Max 1024 characters. Non-empty. Describes what the skill does and when to use it. |\n| `license` | No | License name or reference to a bundled license file. |\n| `compatibility` | No | Max 500 characters. Indicates environment requirements (intended product, system packages, network access, etc.). |\n| `metadata` | No | Arbitrary key-value mapping for additional metadata (a map from string keys to string values). |\n| `allowed-tools` | No | Space-separated string of pre-approved tools the skill may use. (Experimental) |\n\n> [card]\n>\n> **Minimal example:**\n>\n> ```markdown SKILL.md theme={null}\n> ---\n> name: skill-name\n> description: A description of what this skill does and when to use it.\n> ---\n> ```\n>\n> **Example with optional fields:**\n>\n> ```markdown SKILL.md theme={null}\n> ---\n> name: pdf-processing\n> description: Extract PDF text, fill forms, merge files. Use when handling PDFs.\n> license: Apache-2.0\n> metadata:\n>   author: example-org\n>   version: \"1.0\"\n> ---\n> ```\n\n#### `name` field\n\nThe required `name` field:\n\n* Must be 1-64 characters",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "9a67de89132948b2300b8dc87b93817971d47f9be89b644444965881a8dfde16",
+          "source_id": "agent-skills",
+          "source_sha256": "bf4137a702014f82a022de532e597c5f92ea86fb53fe29ea27bee3bbc1d19738",
+          "url": "https://agentskills.io/specification.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/specification.md",
+          "previous_sha256": "9a67de89132948b2300b8dc87b93817971d47f9be89b644444965881a8dfde16",
+          "retrieved": "2026-11-01T11:10:13+00:00",
+          "snapshot_id": 3790,
+          "source_id": "agent-skills",
+          "source_sha256": "bf4137a702014f82a022de532e597c5f92ea86fb53fe29ea27bee3bbc1d19738",
+          "url": "https://agentskills.io/specification.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:06+00:00"
+      }
+    },
+    {
+      "sequence": 64,
+      "id": "obsession-b29d60fa7b7a7d9d94ed5e716807daef2581ef179e4dd1b6fc71ba22ddbc7d12",
+      "sha256": "b29d60fa7b7a7d9d94ed5e716807daef2581ef179e4dd1b6fc71ba22ddbc7d12",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Security and Privacy Hardening | Cursor Docs Skip to main content Cursor Logo Docs API Learn Help Search docs... ⌘K Sign in Download Command Palette Search for a command to run... Get Started Welcome Quickstart Models & Pricing Changelog Release Notes Agent Overview Agents Window Projects Agent Review Planning Prompting Debugging Design Mode Tools Security Grok Bot Overview Get Started Use Cases Work with Grok Bot Settings Teams and Enterprise Customize Overview Plugins Rules Skills Subagents Hooks MCP Cloud Agents Overview Setup Builds Capabilities Best Practices Choose Where Cloud Agents Run Automations Bugbot Security Agents PR Routing & Approval Rollouts Mobile Security Self-Hosted Machines Settings API Origin Overview CLI Create a repository Mirror GitHub Clone, Push & Pull CloneKit in CI Pull requests Code Tours Browse & Search Agents and Automations Apps Settings Integrations Slack Microsoft Teams Jira Linear Notion GitHub GitLab Azure DevOps Bitbucket JetBrains Xcode Tailscale Deeplinks SDK TypeScript Python Bridge Changelog Agent SDK Getting started Integrations Extensions Guides Templates Reference CLI Overview Installation Capabilities Changelog Shell Mode ACP Headless / CI Reference Teams & Enterprise Teams Enterprise Overview Admin Setup Guide Organizations Organization Groups Identity & Access Privacy & Data Governance Network Configuration Tenancy Restriction Private Connectivity Endpoint Security LLM Safety & Controls Models & Integrations Cyber Safeguards Pooled Usage Compliance & Monitoring OpenTelemetry Export HIPAA BAA Deployment Patterns Service Accounts Billing Groups Security and Privacy Hardening Cursor Blame Teams & Enterprise Security and Privacy Hardening This page consolidates the security and privacy guidance spread across the Cursor docs into one reference, so teams configuring Cursor can review and apply the right controls without hunting through every page. Each item links to its source doc for the full detail. Shared responsibility C",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "2e5cc10bfaad02c54e019a07001f3d83938a245ac50700425ace7309032080f2",
+          "source_id": "cursor",
+          "source_sha256": "a370d12dfd2ad8db8c0a727eb1af611f47343cba1203ef81174d6ba7847e5e98",
+          "url": "https://prod.cursor.com/docs/enterprise/security-hardening"
+        },
+        "provenance": {
+          "final_url": "https://prod.cursor.com/docs/enterprise/security-hardening",
+          "previous_sha256": "2e5cc10bfaad02c54e019a07001f3d83938a245ac50700425ace7309032080f2",
+          "retrieved": "2026-10-28T22:35:33+00:00",
+          "snapshot_id": 3489,
+          "source_id": "cursor",
+          "source_sha256": "a370d12dfd2ad8db8c0a727eb1af611f47343cba1203ef81174d6ba7847e5e98",
+          "url": "https://prod.cursor.com/docs/enterprise/security-hardening"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-10-31T18:31:53+00:00"
+      }
+    },
+    {
+      "sequence": 142,
+      "id": "obsession-c710759cf696682541acb509546c96f70160d8d6e5e287abd1ab4931edffcc3b",
+      "sha256": "c710759cf696682541acb509546c96f70160d8d6e5e287abd1ab4931edffcc3b",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Settings files and precedence - Claude Code Docs Documentation Index Fetch the complete documentation index at: /docs/llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Claude Code Docs home page English Search... ⌘ K Ask Assistant ⌘ I Claude Developer Platform Open Claude Code Open Claude Code Search... Navigation Settings Settings files and precedence Getting started Build with Claude Code Plugins Administration Configuration Reference Agent SDK What's New Resources Settings Settings files and precedence All settings Example settings files Permissions and sandboxing Permissions Permission modes Auto mode classifier charges Bash sandbox Sandbox environments Environments Cloud environments Self-hosted environments Model and responses Model configuration Speed up responses with fast mode Escalate hard decisions with the advisor tool Output styles Interface Terminal configuration Fullscreen rendering Screen reader mode Voice dictation Customize status line Customize keyboard shortcuts On this page Back to top Settings files and who they affect Compare the scope of each settings file Find or create your settings files Share settings with your team Keep personal settings out of a repository Where Claude Code keeps the local file in a git repository Check what your organization enforces Change a setting Use the /config menu Edit a settings file Change a setting for one session When edits take effect Confirm what loaded Fix a broken settings file Settings precedence Lists merge instead of overriding Precedence examples Team settings override personal settings Organization settings override everything The command line overrides your files for one session A flag or environment variable sets the same thing Troubleshoot a setting that doesn’t apply A value you set is ignored A change you made in Claude Code is lost in new sessions A managed change hasn’t rea",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "dec2453811df9bdeb4f412573d5fa62525aaaefef11de4a4fb4c337e2b1e3655",
+          "source_id": "claude-code",
+          "source_sha256": "95d8dfc187ff9faf572d88e9cb676a94887e033113f8778afa394d92a0d3c632",
+          "url": "https://code.claude.com/docs/en/settings"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/settings",
+          "previous_sha256": "dec2453811df9bdeb4f412573d5fa62525aaaefef11de4a4fb4c337e2b1e3655",
+          "retrieved": "2026-10-31T18:30:59+00:00",
+          "snapshot_id": 3772,
+          "source_id": "claude-code",
+          "source_sha256": "95d8dfc187ff9faf572d88e9cb676a94887e033113f8778afa394d92a0d3c632",
+          "url": "https://code.claude.com/docs/en/settings"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:06+00:00"
+      }
+    },
+    {
+      "sequence": 139,
+      "id": "obsession-cb21cad987d43295f800d5d282469f897b8e2c2d7647ef0bf2837ea34faad9bb",
+      "sha256": "cb21cad987d43295f800d5d282469f897b8e2c2d7647ef0bf2837ea34faad9bb",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Build skills – Plugins | OpenAI Developers For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT Start searching API Dashboard Try ChatGPT Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Plugins Sign in with ChatGPT Commerce Ads Workspace Agents User Docs Search the ChatGPT docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background mode Streaming WebSocket mode Mid-turn steering Multi-agent Webhooks File inputs Compaction Counting tokens SDKs and CLI OpenAI SDK Ope",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "6034311b2660d6ca92b6f3d9629fd5dde156d0b80d1b1d77e39b4dacc155225b",
+          "source_id": "openai-plugins",
+          "source_sha256": "ff6494dcff8ceb4c42f1afb0bb74fae5d5b3e826e1b2b25b9a0afdb6771ceb15",
+          "url": "https://developers.openai.com/plugins/build/skills"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/build/skills",
+          "previous_sha256": "6034311b2660d6ca92b6f3d9629fd5dde156d0b80d1b1d77e39b4dacc155225b",
+          "retrieved": "2026-10-31T18:30:50+00:00",
+          "snapshot_id": 3769,
+          "source_id": "openai-plugins",
+          "source_sha256": "ff6494dcff8ceb4c42f1afb0bb74fae5d5b3e826e1b2b25b9a0afdb6771ceb15",
+          "url": "https://developers.openai.com/plugins/build/skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:06+00:00"
+      }
+    },
+    {
+      "sequence": 135,
+      "id": "obsession-cfc52413df8969fb4c1bd0e2fb9f57406a9b361d6260ad489f1dbb33667349cf",
+      "sha256": "cfc52413df8969fb4c1bd0e2fb9f57406a9b361d6260ad489f1dbb33667349cf",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Extend Claude with skills\n\n> Create, manage, and share skills to extend Claude's capabilities in Claude Code. Includes custom commands and bundled skills.\n\nSkills extend what Claude can do. Create a `SKILL.md` file with instructions, and Claude adds it to its toolkit. Claude uses skills when relevant, or you can invoke one directly with `/skill-name`.\n\nCreate a skill when you keep pasting the same instructions, checklist, or multi-step procedure into chat, or when a section of CLAUDE.md has grown into a procedure rather than a fact. Unlike CLAUDE.md content, a skill's body loads only when it's used, so long reference material costs almost nothing until you need it.\n\n> [!NOTE]\n>\n> For built-in commands like `/help` and `/compact`, and bundled skills like `/debug` and `/code-review`, see the [commands reference](https://code.claude.com/docs/en/commands.md).\n>\n> **Custom commands have been merged into skills.** A file at `.claude/commands/deploy.md` and a skill at `.claude/skills/deploy/SKILL.md` both create `/deploy` and work the same way. Your existing `.claude/commands/` files keep working. Skills add optional features: a directory for supporting files, frontmatter to [control whether you or Claude invokes them](#control-who-invokes-a-skill), and the ability for Claude to load them automatically when relevant.\n\nClaude Code skills follow the [Agent Skills](https://agentskills.io) open standard, which works across multiple AI tools. Claude Code extends the standard with additional features like [invocation control](#control-who-invokes-a-skill), [subagent execution](#run-skills-in-a-subagent), and [dynamic context injection](#inject-dynamic-context). See [Using skill frontmatter outside Claude Code](#using-skill-frontmatter-outside-claude-code) for which frontmatter fields are part of t",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "0a5e9e2e76028fe09ed4c449e0b4dc5bd9a1d641fa673a00bb6dab23eeabd31f",
+          "source_id": "requirements-claude-code",
+          "source_sha256": "d2a5d07c0d1cef1d1edcf30f38f6b2712ff70ac050e3d50601cd3dadb42f9097",
+          "url": "https://code.claude.com/docs/en/skills.md"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/skills.md",
+          "previous_sha256": "0a5e9e2e76028fe09ed4c449e0b4dc5bd9a1d641fa673a00bb6dab23eeabd31f",
+          "retrieved": "2026-10-30T18:30:30+00:00",
+          "snapshot_id": 3764,
+          "source_id": "requirements-claude-code",
+          "source_sha256": "d2a5d07c0d1cef1d1edcf30f38f6b2712ff70ac050e3d50601cd3dadb42f9097",
+          "url": "https://code.claude.com/docs/en/skills.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:06+00:00"
+      }
+    },
+    {
+      "sequence": 69,
+      "id": "obsession-d6c11f2b426df60158710387c67259fcccdca4396933f432eb77fbd4276a48c0",
+      "sha256": "d6c11f2b426df60158710387c67259fcccdca4396933f432eb77fbd4276a48c0",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Evaluating skill output quality\n\n> How to test whether your skill produces good outputs using eval-driven iteration.\n\nYou wrote a skill, tried it on a prompt, and it seemed to work. But does it work reliably — across varied prompts, in edge cases, better than no skill at all? Running structured evaluations (evals) answers these questions and gives you a feedback loop for improving the skill systematically.\n\n## Designing test cases\n\nA test case has three parts:\n\n* **Prompt**: a realistic user message — the kind of thing someone would actually type.\n* **Expected output**: a human-readable description of what success looks like.\n* **Input files** (optional): files the skill needs to work with.\n\nStore test cases in `evals/evals.json` inside your skill directory:\n\n```json evals/evals.json theme={null}\n{\n  \"skill_name\": \"csv-analyzer\",\n  \"evals\": [\n    {\n      \"id\": 1,\n      \"prompt\": \"I have a CSV of monthly sales data in data/sales_2025.csv. Can you find the top 3 months by revenue and make a bar chart?\",\n      \"expected_output\": \"A bar chart image showing the top 3 months by revenue, with labeled axes and values.\",\n      \"files\": [\"evals/files/sales_2025.csv\"]\n    },\n    {\n      \"id\": 2,\n      \"prompt\": \"there's a csv in my downloads called customers.csv, some rows have missing emails — can you clean it up and tell me how many were missing?\",\n      \"expected_output\": \"A cleaned CSV with missing emails handled, plus a count of how many were missing.\",\n      \"files\": [\"evals/files/customers.csv\"]\n    }\n  ]\n}\n```\n\n**Tips for writing good test prompts:**\n\n* **Start with 2-3 test cases.** Don't over-invest before you've seen your first round of results. You can expand the set later.\n* **Vary the prompts.** Use different phrasings, levels of detail, and formality. Some prompts should be casual (\"hey",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "5bec4f1bee90e763e067a8cdc10960f079c86d45cf4107e7a88208ef016be984",
+          "source_id": "agent-skills",
+          "source_sha256": "a799805f3a285390c1b6e906b691f56684fa1031b499d177f664f464d99fb684",
+          "url": "https://agentskills.io/skill-creation/evaluating-skills.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/skill-creation/evaluating-skills.md",
+          "previous_sha256": "5bec4f1bee90e763e067a8cdc10960f079c86d45cf4107e7a88208ef016be984",
+          "retrieved": "2026-10-29T01:09:27+00:00",
+          "snapshot_id": 3530,
+          "source_id": "agent-skills",
+          "source_sha256": "a799805f3a285390c1b6e906b691f56684fa1031b499d177f664f464d99fb684",
+          "url": "https://agentskills.io/skill-creation/evaluating-skills.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-10-31T18:31:53+00:00"
+      }
+    },
+    {
+      "sequence": 76,
+      "id": "obsession-dc0e9a18e03376550c313be5fc9662e3b7aed854ba5fc7a2ed71180e2b817365",
+      "sha256": "dc0e9a18e03376550c313be5fc9662e3b7aed854ba5fc7a2ed71180e2b817365",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Quickstart\n\n> Create your first Agent Skill and see it work in VS Code.\n\nIn this tutorial, you'll create a skill that gives an agent the capability to roll dice using a random number generator.\n\n## Prerequisites\n\n* [VS Code](https://code.visualstudio.com/) with [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)\n\n> [!NOTE]\n>\n> This tutorial uses VS Code, but Agent Skills are an open format. The same skill works in any compatible agent, including Claude Code and OpenAI Codex.\n\n## Create the skill\n\nA skill is a folder containing a `SKILL.md` file. VS Code looks for skills in `.agents/skills/` by default. Create `.agents/skills/roll-dice/SKILL.md` in your project:\n\n````markdown .agents/skills/roll-dice/SKILL.md theme={null}\n---\nname: roll-dice\ndescription: Roll dice using a random number generator. Use when asked to roll a die (d6, d20, etc.), roll dice, or generate a random dice roll.\n---\n\nTo roll a die, use the following command that generates a random number from 1\nto the given number of sides:\n\n```bash\necho $((RANDOM % <sides> + 1))\n```\n\n```powershell\nGet-Random -Minimum 1 -Maximum (<sides> + 1)\n```\n\nReplace `<sides>` with the number of sides on the die (e.g., 6 for a standard\ndie, 20 for a d20).\n````\n\nThat's it — one file, under 20 lines. Here's what each part does:\n\n* **`name`** — A short identifier for the skill. Must match the folder name.\n* **`description`** — Tells the agent when to use this skill. This is how the agent decides whether to activate it.\n* **The body** — Instructions the agent follows when the skill activates. Here, the agent is instructed to generate a random number using a terminal command, substituting the number of sides from the user's request.\n\n## Try it out\n\n1. Open your project in VS Code.\n2. Open the Copilot Chat panel.\n3. Selec",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "4d0e78f333871f7a4b22368f8ab871b681ee60ad560b4e23d6b1979c65a41eb5",
+          "source_id": "agent-skills",
+          "source_sha256": "7c480b447edac58fd8ff8f250c471dfc7d4621155b91fabed46379075c32bffb",
+          "url": "https://agentskills.io/skill-creation/quickstart.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/skill-creation/quickstart.md",
+          "previous_sha256": "4d0e78f333871f7a4b22368f8ab871b681ee60ad560b4e23d6b1979c65a41eb5",
+          "retrieved": "2026-10-29T05:13:54+00:00",
+          "snapshot_id": 3595,
+          "source_id": "agent-skills",
+          "source_sha256": "7c480b447edac58fd8ff8f250c471dfc7d4621155b91fabed46379075c32bffb",
+          "url": "https://agentskills.io/skill-creation/quickstart.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:05+00:00"
+      }
+    },
+    {
+      "sequence": 66,
+      "id": "obsession-deaf1778c4b2a7e2c22918eed79d01ec96bde5d55b8a429f7d36b9d7e9217516",
+      "sha256": "deaf1778c4b2a7e2c22918eed79d01ec96bde5d55b8a429f7d36b9d7e9217516",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugins Reference | Cursor Docs Skip to main content Cursor Logo Docs API Learn Help Search docs... ⌘K Sign in Download Command Palette Search for a command to run... Get Started Welcome Quickstart Models & Pricing Changelog Release Notes Agent Overview Agents Window Projects Agent Review Planning Prompting Debugging Design Mode Tools Security Grok Bot Overview Get Started Use Cases Work with Grok Bot Settings Teams and Enterprise Customize Overview Plugins Rules Skills Subagents Hooks MCP Cloud Agents Overview Setup Builds Capabilities Best Practices Choose Where Cloud Agents Run Automations Bugbot Security Agents PR Routing & Approval Rollouts Mobile Security Self-Hosted Machines Settings API Origin Overview CLI Create a repository Mirror GitHub Clone, Push & Pull CloneKit in CI Pull requests Code Tours Browse & Search Agents and Automations Apps Settings Integrations Slack Microsoft Teams Jira Linear Notion GitHub GitLab Azure DevOps Bitbucket JetBrains Xcode Tailscale Deeplinks SDK TypeScript Python Bridge Changelog Agent SDK Getting started Integrations Extensions Guides Templates Reference CLI Overview Installation Capabilities Changelog Shell Mode ACP Headless / CI Reference Teams & Enterprise Teams Enterprise Get Started Plugins reference Reference documentation for building, structuring, and submitting Cursor plugins. Plugins package rules, skills, agents, commands, MCP servers, and hooks into distributable bundles that work in the Cursor IDE. If you're starting from scratch, use the plugin template repository . Supported plugin formats Cursor loads plugins in two formats, identified by their manifest location: Format Manifest location Components Agent Plugins (open standard) plugin.json at the plugin root Skills, MCP servers Cursor Plugins .cursor-plugin/plugin.json Skills, MCP servers, rules, agents, commands, hooks, variables A plugin that conforms to the Agent Plugins specification loads in Cursor. Cursor does not expand the standard's ${PLUGIN_ROOT} an",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "b7a921bce6d0c687475c9dad3682b9156203bda188f1fb05ef73639b482f5bac",
+          "source_id": "cursor",
+          "source_sha256": "03d56eaf4d3097575c931555a2e2605f6ee70c635fe6177777bc61233b40b8fc",
+          "url": "https://prod.cursor.com/docs/reference/plugins"
+        },
+        "provenance": {
+          "final_url": "https://prod.cursor.com/docs/reference/plugins",
+          "previous_sha256": "b7a921bce6d0c687475c9dad3682b9156203bda188f1fb05ef73639b482f5bac",
+          "retrieved": "2026-10-28T23:07:47+00:00",
+          "snapshot_id": 3506,
+          "source_id": "cursor",
+          "source_sha256": "03d56eaf4d3097575c931555a2e2605f6ee70c635fe6177777bc61233b40b8fc",
+          "url": "https://prod.cursor.com/docs/reference/plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-10-31T18:31:53+00:00"
+      }
+    },
+    {
+      "sequence": 84,
+      "id": "obsession-ea91497d93aac4edcfa68b455d6a7eeddf70724f37088d6bda3c60500d1f76ef",
+      "sha256": "ea91497d93aac4edcfa68b455d6a7eeddf70724f37088d6bda3c60500d1f76ef",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Agent Skills Overview\n\n> A standardized way to give AI agents new capabilities and expertise.\n\n## What are Agent Skills?\n\nAgent Skills are a lightweight, open format for extending AI agent capabilities with specialized knowledge and workflows.\n\nAt its core, a skill is a folder containing a `SKILL.md` file. This file includes metadata (`name` and `description`, at minimum) and instructions that tell an agent how to perform a specific task. Skills can also bundle scripts, reference materials, templates, and other resources.\n\n```\nmy-skill/\n├── SKILL.md          # Required: metadata + instructions\n├── scripts/          # Optional: executable code\n├── references/       # Optional: documentation\n├── assets/           # Optional: templates, resources\n└── ...               # Any additional files or directories\n```\n\n## Why Agent Skills?\n\nAgents are increasingly capable, but often don't have the context they need to do real work reliably. Skills solve this by packaging procedural knowledge and company-, team-, and user-specific context into portable, version-controlled folders that agents load on demand. This gives agents:\n\n* **Domain expertise**: Capture specialized knowledge — from legal review processes to data analysis pipelines to presentation formatting — as reusable instructions and resources.\n* **Repeatable workflows**: Turn multi-step tasks into consistent, auditable procedures.\n* **Cross-product reuse**: Build a skill once and use it across any skills-compatible agent.\n\n## How do Agent Skills work?\n\nAgents load skills through **progressive disclosure**, in three stages:\n\n1. **Discovery**: At startup, agents load only the name and description of each available skill, just enough to know when it might be relevant.\n\n2. **Activation**: When a task matches a skill's description, the agent reads ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "8a457cac02b1ad8fa11800d5a33ca879d1e4fe3f996ce8b82fade5e42d37e839",
+          "source_id": "agent-skills",
+          "source_sha256": "d17b5e7010bf5da5475cad48be33693e1943799aaa3fdb827a521002e2e77140",
+          "url": "https://agentskills.io/home.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/home.md",
+          "previous_sha256": "8a457cac02b1ad8fa11800d5a33ca879d1e4fe3f996ce8b82fade5e42d37e839",
+          "retrieved": "2026-10-29T10:18:09+00:00",
+          "snapshot_id": 3653,
+          "source_id": "agent-skills",
+          "source_sha256": "d17b5e7010bf5da5475cad48be33693e1943799aaa3fdb827a521002e2e77140",
+          "url": "https://agentskills.io/home.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:05+00:00"
+      }
+    },
+    {
+      "sequence": 138,
+      "id": "obsession-ebfde88301742dcee4ceee27d48aef966d25d62e559c06b5a93a8796e75655be",
+      "sha256": "ebfde88301742dcee4ceee27d48aef966d25d62e559c06b5a93a8796e75655be",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://agentskills.io/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Using scripts in skills\n\n> How to run commands and bundle executable scripts in your skills.\n\nSkills can instruct agents to run shell commands and bundle reusable scripts in a `scripts/` directory. This guide covers one-off commands, self-contained scripts with their own dependencies, and how to design script interfaces for agentic use.\n\n## One-off commands\n\nWhen an existing package already does what you need, you can reference it directly in your `SKILL.md` instructions without a `scripts/` directory. Many ecosystems provide tools that auto-resolve dependencies at runtime.\n\n> [tab] uvx\n>\n> [uvx](https://docs.astral.sh/uv/guides/tools/) runs Python packages in isolated environments with aggressive caching. It ships with [uv](https://docs.astral.sh/uv/).\n>\n> ```bash theme={null}\n> uvx ruff@0.8.0 check .\n> uvx black@24.10.0 .\n> ```\n>\n> * Not bundled with Python — requires a separate install.\n> * Fast. Caches aggressively so repeat runs are near-instant.\n\n> [tab] pipx\n>\n> [pipx](https://pipx.pypa.io/) runs Python packages in isolated environments. Available via OS package managers (`apt install pipx`, `brew install pipx`).\n>\n> ```bash theme={null}\n> pipx run 'black==24.10.0' .\n> pipx run 'ruff==0.8.0' check .\n> ```\n>\n> * Not bundled with Python — requires a separate install.\n> * A mature alternative to `uvx`. While `uvx` has become the standard recommendation, `pipx` remains a reliable option with broader OS package manager availability.\n\n> [tab] npx\n>\n> [npx](https://docs.npmjs.com/cli/commands/npx) runs npm packages, downloading them on demand. It ships with npm (which ships with Node.js).\n>\n> ```bash theme={null}\n> npx eslint@9 --fix .\n> npx create-vite@6 my-app\n> ```\n>\n> * Bundled with Node.js — no extra install needed.\n> * Downloads the package, runs it, and caches it for future use.\n> * ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "2cd7727106b423a758b4b6b1ab3545da74845a98e68e6718279846f89d62ad1f",
+          "source_id": "agent-skills",
+          "source_sha256": "c8a0792d224d8bdc98741cf741c2cd9e0cd36457cb3930df791f18e81fca31d0",
+          "url": "https://agentskills.io/skill-creation/using-scripts.md"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/skill-creation/using-scripts.md",
+          "previous_sha256": "2cd7727106b423a758b4b6b1ab3545da74845a98e68e6718279846f89d62ad1f",
+          "retrieved": "2026-10-31T18:30:43+00:00",
+          "snapshot_id": 3768,
+          "source_id": "agent-skills",
+          "source_sha256": "c8a0792d224d8bdc98741cf741c2cd9e0cd36457cb3930df791f18e81fca31d0",
+          "url": "https://agentskills.io/skill-creation/using-scripts.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-02T11:12:06+00:00"
+      }
     }
   ]
 }
