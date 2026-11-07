@@ -702,6 +702,123 @@
         "reason": "Locally approved deterministic gate passed",
         "updated": "2026-11-04T11:13:52+00:00"
       }
+    },
+    {
+      "sequence": 328,
+      "id": "obsession-2049a61029ec824d8575213d239a2f7bf2fddf6586e1047c676616ca4997652a",
+      "sha256": "2049a61029ec824d8575213d239a2f7bf2fddf6586e1047c676616ca4997652a",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "# Configuration Reference\n\n> For the complete documentation index, see [llms.txt](https://learn.chatgpt.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to the page URL.\n\nUse this page as a searchable reference for Codex configuration files. For conceptual guidance and examples, start with [Config basics](https://learn.chatgpt.com/docs/config-file/config-basic) and [Advanced Config](https://learn.chatgpt.com/docs/config-file/config-advanced).\n\n<a id=\"settings-for-synced-chatgpt-work\"></a>\n\n## Settings for Local computer access with Work Cloud\n\nWith Local computer access with Work Cloud enabled, OpenAI's cloud coordinates the task while supported tools run in the cloud or on a connected computer. Requirements set limits; configuration values provide defaults.\n\nUse the policy API to manage Global settings. To manage Local or Codex Cloud settings, use the Agent Security UI. Existing Global API workflows remain available after migration. Test your scripts and Terraform integrations, and confirm that policy assignments and ordering are unchanged. Support for a `requirements.toml` field does not by itself establish API compatibility.\n\n| Setting or setting family                                           | Scope in Local computer access with Work Cloud                                                                                   | Guidance                                                                                                                                                                                                                                                                                                                                                                                                                                            |\n| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "54cbd27aa84fddd4a35dd801dfd2850d988611e47d8f16c007d6e3210a50cd76",
+          "source_id": "openai-codex",
+          "source_sha256": "78b5f4af406fa8ab57dce0267a14c62954cdfeb4543d4b18f938ad76a70c7e96",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "provenance": {
+          "final_url": "https://learn.chatgpt.com/docs/config-file/config-reference.md",
+          "previous_sha256": "54cbd27aa84fddd4a35dd801dfd2850d988611e47d8f16c007d6e3210a50cd76",
+          "retrieved": "2026-11-06T14:18:34+00:00",
+          "snapshot_id": 3958,
+          "source_id": "openai-codex",
+          "source_sha256": "78b5f4af406fa8ab57dce0267a14c62954cdfeb4543d4b18f938ad76a70c7e96",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-06T14:19:08+00:00"
+      }
+    },
+    {
+      "sequence": 297,
+      "id": "obsession-2f3482bd868931d465cdfc8d145e661a234c1cf1b542d8fefa9c41658533fd72",
+      "sha256": "2f3482bd868931d465cdfc8d145e661a234c1cf1b542d8fefa9c41658533fd72",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Agent Plugins Specification | Agent Plugins Skip to content Agent Plugins Specification Search... ⌘ K Agent Plugins Compatible Clients For Plugin Authors Build an Agent Plugin Plugin manifest Skills MCP servers Client extensions For Client Implementers Implement an Agent Plugins client Loading and discovery MCP runtime Client conformance checklist Reference Agent Plugins Specification JSON Schemas Agent Plugins Specification Agent Plugins Specification The complete normative contract for portable Agent Plugin packages and conformant clients. Spec Version: 1.0.0 Status: Published This document defines the canonical Agent Plugins Specification v1.0.0 for packaging reusable components that extend AI agents into distributable plugins. Table of contents Status and version Conformance language Terminology Plugin package model Manifest Component discovery Component types Client extensions Environment variables and placeholder expansion Versioning Client conformance Non-normative material Appendix A: Conformance Checklist Design Decisions 1. Status and version This specification defines version 1.0.0 of the Agent Plugins format. Clients and plugin packages claiming conformance to Agent Plugins v1 MUST implement or follow the requirements in this document. 1.1 Governance model Governance for the Agent Plugins project is defined separately from the portable package format in the Technical Charter . 2. Conformance language In the normative sections of this document, the key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL are to be interpreted as described in RFC 2119 and RFC 8174 when, and only when, they appear in all capitals. Appendix A and Design Decisions are non-normative. All other sections are normative. 3. Terminology Term Meaning Description Plugin Package unit A self-contained directory with a manifest and optional components. Plugin root Filesystem root The top-level directory of a plugin package. Manifest Metadata document A plug",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "58120d199a9d80ac61b3dd13de952dff2f9d6e3a50f8c1d547f09c6a3effaaee",
+          "source_id": "agent-plugins",
+          "source_sha256": "73a86146a2ec1e7f68bfe50a80ad476b7e6862f6dd639f2b03ad0e21bfbca9cd",
+          "url": "https://agent-plugins.org/specification"
+        },
+        "provenance": {
+          "final_url": "https://agent-plugins.org/specification",
+          "previous_sha256": "58120d199a9d80ac61b3dd13de952dff2f9d6e3a50f8c1d547f09c6a3effaaee",
+          "retrieved": "2026-11-06T14:17:24+00:00",
+          "snapshot_id": 3927,
+          "source_id": "agent-plugins",
+          "source_sha256": "73a86146a2ec1e7f68bfe50a80ad476b7e6862f6dd639f2b03ad0e21bfbca9cd",
+          "url": "https://agent-plugins.org/specification"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-06T14:19:08+00:00"
+      }
+    },
+    {
+      "sequence": 326,
+      "id": "obsession-6f5d9a21eee23b1e11a81fe4c72ec7a1673c249c0d856af0db41faa568366f16",
+      "sha256": "6f5d9a21eee23b1e11a81fe4c72ec7a1673c249c0d856af0db41faa568366f16",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "# Agent Skills\n\n- [Agent Skills Overview](https://agentskills.io/home.md): A standardized way to give AI agents new capabilities and expertise.\n- [Specification](https://agentskills.io/specification.md): The complete format specification for Agent Skills.\n- [Client Showcase](https://agentskills.io/clients.md): Agent products that support the Agent Skills format.\n- [Quickstart](https://agentskills.io/skill-creation/quickstart.md): Create your first Agent Skill and see it work in VS Code.\n- [Best practices for skill creators](https://agentskills.io/skill-creation/best-practices.md): How to write skills that are well-scoped and calibrated to the task.\n- [Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions.md): How to improve your skill's description so it triggers reliably on relevant prompts.\n- [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills.md): How to test whether your skill produces good outputs using eval-driven iteration.\n- [Using scripts in skills](https://agentskills.io/skill-creation/using-scripts.md): How to run commands and bundle executable scripts in your skills.\n- [How to add skills support to your agent](https://agentskills.io/client-implementation/adding-skills-support.md): A guide for adding Agent Skills support to an AI agent or development tool.\n",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "d9b01a3a13b79bb04ee0bc25125087d92e393f0c7e8f028c4c5fa4c217f1fbfb",
+          "source_id": "agent-skills",
+          "source_sha256": "c312e2e9dd5d99206b927a99b47aacc12b56c30ba876ca67c205935f21da5831",
+          "url": "https://agentskills.io/llms.txt"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/llms.txt",
+          "previous_sha256": "d9b01a3a13b79bb04ee0bc25125087d92e393f0c7e8f028c4c5fa4c217f1fbfb",
+          "retrieved": "2026-11-06T14:18:34+00:00",
+          "snapshot_id": 3956,
+          "source_id": "agent-skills",
+          "source_sha256": "c312e2e9dd5d99206b927a99b47aacc12b56c30ba876ca67c205935f21da5831",
+          "url": "https://agentskills.io/llms.txt"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-06T14:19:08+00:00"
+      }
     }
   ]
 }
