@@ -1,0 +1,6 @@
+{
+  "database_not_cleared": {"label": "Database not fully checked", "plain": "Placeholder label. Integration replaces this file with skill_sandbox/rules/finding-labels.json."},
+  "opaque_database": {"label": "Unreadable database", "plain": "Placeholder label. Integration replaces this file with skill_sandbox/rules/finding-labels.json."},
+  "embedded_executable_blob": {"label": "Executable stored inside a database", "plain": "Placeholder label. Integration replaces this file with skill_sandbox/rules/finding-labels.json."},
+  "contact_directory": {"label": "Business contact directory", "plain": "Placeholder label. Integration replaces this file with skill_sandbox/rules/finding-labels.json."}
+}

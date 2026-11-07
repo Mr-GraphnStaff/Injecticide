@@ -59,6 +59,22 @@ function buildDiagramPrompt(map, plan) {
         '## Source data', '', '```json', JSON.stringify(context,null,2), '```', ''
     ].join('\n');
 }
+/* Orthogonal route from a card's right edge to the next card's left edge.
+   Edges between the same two columns share one vertical channel, which
+   reduces visual crossings compared with free Bezier curves. */
+function mapEdgePath(a,b,width=220,height=100) {
+    const sx=a.x+width, sy=a.y+height/2, tx=b.x, ty=b.y+height/2;
+    if (tx-sx>=24) { const mx=Math.round(sx+(tx-sx)/2); return `M${sx} ${sy} H${mx} V${ty} H${tx}`; }
+    const below=Math.max(a.y,b.y)+height+18;
+    const lane=Math.abs(a.y-b.y)>height+20 ? Math.round((Math.min(a.y,b.y)+height+Math.max(a.y,b.y))/2) : below;
+    return `M${sx} ${sy} H${sx+18} V${lane} H${tx-18} V${ty} H${tx}`;
+}
+function mapNodeFootnote(n) {
+    const parts=[];
+    if (n.trust && n.trust!=='unknown') parts.push(`Trust: ${n.trust}`);
+    if (n.sensitivity && n.sensitivity!=='unknown') parts.push(`Data: ${n.sensitivity}`);
+    return parts.join(' · ');
+}
 function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,onMapChange}) {
     const [map,setMap] = React.useState(() => initialMap || starterMap());
     const [selected,setSelected] = React.useState(() => initialMap?.nodes[0]?.id || 'agent');
@@ -119,8 +135,8 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
         finally {clearTimeout(timeout);if(request.current===controller){request.current=null;setBusy(false);}}
     }
     function exportFilename(name) {
-        const stem=slugifyFilename(map.name || 'untitled-system').replace(/^\.+|\.+$/g,'').slice(0,120) || 'untitled-system';
-        return `${stem}-${name}`;
+        const dot=name.lastIndexOf('.');
+        return injecticideFilename({name:map.name || 'untitled-system',kind:name.slice(0,dot),ext:name.slice(dot+1),buildInfo});
     }
     function download(value,name,type='application/json') {
         const content=type==='application/json'?JSON.stringify(value,null,2):value;
@@ -182,7 +198,7 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
                     <div className="map-toolbar"><button aria-label="Zoom out" onClick={()=>setZoom(z=>Math.max(.3,z-.1))}>−</button><span>{Math.round(zoom*100)}%</span><button aria-label="Zoom in" onClick={()=>setZoom(z=>Math.min(1.5,z+.1))}>＋</button><button onClick={()=>{const width=Math.max(500,...map.nodes.map(n=>n.x+250));setZoom(Math.max(.15,Math.min(1,viewport.current.clientWidth/width)));viewport.current.scrollTo(0,0);}}>Fit map</button><span>Scroll to pan · select a card to edit · arrow keys move cards</span></div>
                     <div className="process-focus-controls"><button type="button" disabled={!selected && !focusNode} onClick={clearSelection}>Clear selection</button><label><input type="checkbox" checked={focusedOnly} onChange={e=>setFocusedOnly(e.target.checked)}/>Only selected connections</label><p role="status">{focusNode ? `${focusNode.label}: ${focusEdges.filter(e=>e.target===focusNode.id).length} incoming · ${focusEdges.filter(e=>e.source===focusNode.id).length} outgoing · ${otherFocusEdges.length} other connections ${focusedOnly ? 'hidden' : 'dimmed'}${highlight ? '  - gold test path remains visible' : ''}` : `All ${map.edges.length} connections shown. Enter or Space selects a component; Escape clears. Arrow keys move cards.`}</p></div>
                     <div className="map-scroll" ref={viewport} tabIndex="0" aria-label="Scrollable system map"><div style={{width:3260*zoom,height:2040*zoom}}><div className="map-surface" style={{transform:`scale(${zoom})`}}>
-                        <svg width="3260" height="2040" aria-hidden="true"><defs><marker id="map-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8" fill="#86cfc2"/></marker></defs>{map.edges.map(e=>{const a=map.nodes.find(n=>n.id===e.source),b=map.nodes.find(n=>n.id===e.target);if(!a||!b)return null;return <path key={e.id} className={`map-edge${highlight?.edge_ids.includes(e.id)?' active':''}${focusNode && (e.source===focusNode.id||e.target===focusNode.id)?' connection-selected':focusNode && !highlight?.edge_ids.includes(e.id)?' dimmed':''}${focusNode && focusedOnly && e.source!==focusNode.id && e.target!==focusNode.id && !highlight?.edge_ids.includes(e.id)?' connection-hidden':''}`} d={`M${a.x+220} ${a.y+50} C${a.x+275} ${a.y+50},${b.x-55} ${b.y+50},${b.x} ${b.y+50}`} markerEnd="url(#map-arrow)"/>;})}</svg>
+                        <svg width="3260" height="2040" aria-hidden="true"><defs><marker id="map-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8" fill="#86cfc2"/></marker></defs>{map.edges.map(e=>{const dense=!focusNode&&!highlight&&map.edges.length>40;const a=map.nodes.find(n=>n.id===e.source),b=map.nodes.find(n=>n.id===e.target);if(!a||!b)return null;return <path key={e.id} className={`map-edge${dense?' dense':''}${highlight?.edge_ids.includes(e.id)?' active':''}${focusNode && (e.source===focusNode.id||e.target===focusNode.id)?' connection-selected':focusNode && !highlight?.edge_ids.includes(e.id)?' dimmed':''}${focusNode && focusedOnly && e.source!==focusNode.id && e.target!==focusNode.id && !highlight?.edge_ids.includes(e.id)?' connection-hidden':''}`} d={mapEdgePath(a,b)} markerEnd="url(#map-arrow)"/>;})}</svg>
                         {map.nodes.map(n=><button key={n.id} className={`map-node ${n.id===selected?'selected':''} ${highlight?.node_ids.includes(n.id)?'highlighted':''}`} style={{left:n.x,top:n.y}} aria-label={`${n.label}, ${componentKind(n.id,n.kind)}. Arrow keys to move.`}
                             aria-pressed={n.id===selected} onClick={()=>{setSelected(n.id);setConnectionFocus(n.id);}}
                             onKeyDown={e=>{const delta={ArrowLeft:[-20,0],ArrowRight:[20,0],ArrowUp:[0,-20],ArrowDown:[0,20]}[e.key];if(delta){e.preventDefault();commit({...map,nodes:map.nodes.map(v=>v.id===n.id?{...v,x:Math.max(0,Math.min(3000,v.x+delta[0])),y:Math.max(0,Math.min(1800,v.y+delta[1]))}:v)});}}}
@@ -190,7 +206,7 @@ function ArchitectureCanvas({onBack,onNavigate,buildInfo,initialMap,scanDiagram,
                             onPointerMove={e=>{const d=drag.current;if(!d||d.id!==n.id)return;if(!d.moved&&Math.hypot(e.clientX-d.cx,e.clientY-d.cy)<4)return;if(!d.moved){invalidate();d.moved=true;}move(n.id,d.x+(e.clientX-d.cx)/zoom,d.y+(e.clientY-d.cy)/zoom);}}
                             onLostPointerCapture={()=>{const d=drag.current;if(d?.moved){setHistory(h=>[...h.slice(-29),d.before]);setFuture([]);}drag.current=null;}}
                             onPointerUp={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);}}>
-                            <span>{componentKind(n.id,n.kind)}</span><strong>{n.label||'Unnamed component'}</strong><small>{scanEvidenceAttached ? (scanDiagram?.nodes?.find(item=>item.id===n.id)?.kind === 'unresolved' ? 'Source target unresolved' : 'Source evidence available') : `Trust: ${n.trust} · Data: ${n.sensitivity}`}</small>
+                            <span>{componentKind(n.id,n.kind)}</span><strong>{n.label||'Unnamed component'}</strong>{scanEvidenceAttached ? <small>{scanDiagram?.nodes?.find(item=>item.id===n.id)?.kind === 'unresolved' ? 'Source target unresolved' : 'Source evidence available'}</small> : mapNodeFootnote(n) ? <small>{mapNodeFootnote(n)}</small> : null}
                         </button>)}
                     </div></div></div>
                 </section>

@@ -5,7 +5,7 @@ const { useState, useEffect, useRef } = React;
 const SECURITY_CATEGORIES = new Set(['prompt', 'code', 'enterprise', 'obfuscation']);
 const REGULATED_FINDING_PREFIXES = ['pii_', 'phi_'];
 
-const SKILL_REPORT_SCOPES = [['overview', 'Overview'], ['security', 'Security'], ['structure', 'Structure & process'], ['standards', 'Standards'], ['tokens', 'Token usage'], ['evidence', 'Evidence & coverage']];
+const SKILL_REPORT_SCOPES = [['overview', 'Overview'], ['files', 'Files'], ['security', 'Security'], ['structure', 'Structure & process'], ['standards', 'Standards'], ['tokens', 'Token usage'], ['evidence', 'Evidence & coverage']];
 
 function SkillReportViews({ sections, toolbar, active, setActive }) {
     const buttons = useRef([]);
@@ -470,8 +470,169 @@ function slugifyFilename(name) {
         .replace(/^-|-$/g, '');
 }
 
+/* ---- Finding display names: /static/finding-labels.json, falling back to the id. ---- */
+const findingLabelStore = { labels: {}, listeners: new Set(), promise: null };
+
+function loadFindingLabels() {
+    if (findingLabelStore.promise) return findingLabelStore.promise;
+    findingLabelStore.promise = Promise.resolve()
+        .then(() => fetch('/static/finding-labels.json', { cache: 'no-cache' }))
+        .then(response => (response && response.ok ? response.json() : {}))
+        .catch(() => ({}))
+        .then(data => {
+            const source = data && typeof data === 'object' && data.labels && typeof data.labels === 'object' ? data.labels : data;
+            const labels = {};
+            if (source && typeof source === 'object' && !Array.isArray(source)) {
+                for (const [id, entry] of Object.entries(source)) {
+                    if (entry && typeof entry === 'object' && typeof entry.label === 'string' && entry.label.trim()) {
+                        labels[id] = { label: entry.label.trim().slice(0, 200), plain: typeof entry.plain === 'string' ? entry.plain.slice(0, 1000) : '' };
+                    }
+                }
+            }
+            findingLabelStore.labels = labels;
+            findingLabelStore.listeners.forEach(listener => listener(labels));
+            return labels;
+        });
+    return findingLabelStore.promise;
+}
+
+function useFindingLabels() {
+    const [labels, setLabels] = useState(findingLabelStore.labels);
+    useEffect(() => {
+        findingLabelStore.listeners.add(setLabels);
+        loadFindingLabels();
+        return () => { findingLabelStore.listeners.delete(setLabels); };
+    }, []);
+    return labels;
+}
+
+function findingLabelText(id) {
+    const entry = findingLabelStore.labels[id];
+    return entry ? `${entry.label} (${id})` : String(id || 'unknown finding');
+}
+
+function FindingName({ id }) {
+    const labels = useFindingLabels();
+    const entry = labels[id];
+    if (!entry) return <span className="finding-name">{String(id || 'Unknown finding')}</span>;
+    return <span className="finding-name" title={entry.plain || undefined}>{entry.label} <small className="finding-id">{id}</small></span>;
+}
+
+/* ---- Download names: <name>-injecticide-<version>-<YYYYMMDD-HHMM>-<kind>.<ext> ---- */
+function filenameTimestamp(date = new Date()) {
+    const pad = value => String(value).padStart(2, '0');
+    return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
+}
+
+function injecticideVersionLabel(buildInfo, fallback) {
+    const candidates = [buildInfo?.package_version, buildInfo?.app_version, fallback];
+    const raw = candidates.find(value => typeof value === 'string' && value && value !== 'unknown') || 'unknown';
+    return slugifyFilename(raw).slice(0, 40) || 'unknown';
+}
+
+function injecticideFilename({ name, kind, ext, buildInfo, fallbackVersion, stripExtension = false }) {
+    let base = String(name || '').trim();
+    if (stripExtension) base = base.replace(/\.[a-z0-9]{1,8}$/i, '');
+    const stem = slugifyFilename(base).replace(/^\.+|\.+$/g, '').slice(0, 80) || 'untitled';
+    return `${stem}-injecticide-${injecticideVersionLabel(buildInfo, fallbackVersion)}-${filenameTimestamp()}-${slugifyFilename(kind) || 'export'}.${ext}`;
+}
+
+function scanDownloadName(result, buildInfo, kind, ext) {
+    return injecticideFilename({ name: result?.filename || 'skill-scan', kind, ext, buildInfo,
+        fallbackVersion: result?.scanner_metadata?.scanner_version, stripExtension: true });
+}
+
+/* ---- Shared helpers for fix items, policy, files and databases. ---- */
+const FIX_PRIORITY_RANK = { block: 0, review: 1, info: 2 };
+const FIX_PRIORITY_TEXT = { block: 'Fix before use', review: 'Review', info: 'For information' };
+const POLICY_EFFECT_TEXT = { block: 'Block', require_approval: 'Needs approval', warn: 'Warn', allow: 'Allowed by policy' };
+const SEVERITY_ORDER = ['critical', 'high', 'medium', 'low', 'info'];
+const DATA_CLASS_TEXT = {
+    business_contact_email: 'Business email', work_phone: 'Work phone', person_name: 'Person name', job_title: 'Job title',
+    department: 'Department', manager_reference: 'Manager reference', employee_id: 'Employee ID', personal_email: 'Personal email',
+    ssn: 'SSN', date_of_birth: 'Date of birth', home_address: 'Home address', financial: 'Financial', health: 'Health',
+    credential: 'Credential', free_text: 'Free text'
+};
+const SENSITIVE_DATA_CLASSES = new Set(['personal_email', 'ssn', 'date_of_birth', 'home_address', 'financial', 'health', 'credential']);
+
+function asArray(value) {
+    return Array.isArray(value) ? value : [];
+}
+
+function countText(value) {
+    return Number.isFinite(value) ? value.toLocaleString() : 'not reported';
+}
+
+function sortedFixItems(fixSummary) {
+    return asArray(fixSummary?.items).map((item, index) => ({ item, index }))
+        .sort((left, right) => ((FIX_PRIORITY_RANK[left.item?.priority] ?? 3) - (FIX_PRIORITY_RANK[right.item?.priority] ?? 3)) || left.index - right.index)
+        .map(entry => entry.item).filter(item => item && typeof item === 'object');
+}
+
+function findingLocations(finding) {
+    const locations = [];
+    const add = (source) => {
+        if (!source || typeof source !== 'object') return;
+        const citation = source.citation;
+        if (citation && typeof citation === 'object') {
+            locations.push(`table ${citation.table ?? '?'} · column ${citation.column ?? '?'} · row ${citation.row ?? '?'}`);
+        } else if (Number.isInteger(source.line) && source.line > 0) {
+            locations.push(`line ${source.line}`);
+        }
+    };
+    add(finding);
+    asArray(finding?.observations).forEach(add);
+    return [...new Set(locations)];
+}
+
+function isIssueFinding(finding, artifactRole) {
+    const reviewClass = classifyReviewClass(finding, artifactRole || 'active');
+    return reviewClass !== 'informational' && reviewClass !== 'documented_pattern';
+}
+
+function fileIssueFindings(file) {
+    return asArray(file?.findings).filter(finding => isIssueFinding(finding, file.artifact_role));
+}
+
+function topSeverity(findings) {
+    let best = -1;
+    for (const finding of findings) {
+        const rank = SEVERITY_ORDER.indexOf(finding.severity);
+        if (rank >= 0 && (best < 0 || rank < best)) best = rank;
+    }
+    return best < 0 ? '' : SEVERITY_ORDER[best];
+}
+
+function fileFolder(path) {
+    const parts = String(path || '').split('/');
+    parts.pop();
+    return parts.join('/') || '(top level)';
+}
+
+function fileType(path) {
+    const name = String(path || '').split('/').pop();
+    const dot = name.lastIndexOf('.');
+    return dot > 0 ? name.slice(dot).toLowerCase() : '(no extension)';
+}
+
+function coverageNotCleared(status) {
+    return status === 'partial' || status === 'opaque';
+}
+
+function coverageStatusText(status) {
+    if (status === 'complete') return 'All rows read';
+    if (status === 'partial') return 'NOT CLEARED: partly read';
+    if (status === 'opaque') return 'NOT CLEARED: could not be read';
+    return 'Coverage not reported';
+}
+
+function mdText(value, limit = 2000) {
+    return String(value ?? '').replace(/\s*\r?\n\s*/g, ' ').slice(0, limit);
+}
+
 function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary') {
     const lines = [];
+    const push = (...rows) => lines.push(...rows);
     const generatedAt = new Date().toISOString();
     const summary = scanResult.summary || {};
     const governance = scanResult.governance_profile || {};
@@ -479,210 +640,201 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     const reviewSummary = summarizeReviewClasses(scanResult);
     const assessment = summarizeAssessment(scanResult);
     const concerns = topConcerns(scanResult);
+    const files = asArray(scanResult.files);
+    const detailed = reportDepth === 'detailed';
 
-    lines.push(`# Skill Scan Report: ${scanResult.filename}`);
-    lines.push('');
-    lines.push(`- Generated: ${generatedAt}`);
-    lines.push(`- File type: ${scanResult.file_type}`);
-    if (scanResult.scan_request_id) lines.push(`- Scan request: ${scanResult.scan_request_id}`);
-    if (buildInfo?.display_version) {
-        lines.push(`- Build: ${buildInfo.display_version}`);
-    }
-    lines.push(`- Total files: ${summary.total_files ?? 0}`);
-    lines.push(`- Flagged files: ${summary.flagged_files ?? 0}`);
-    lines.push(`- Review findings: ${summary.total_findings ?? 0}`);
-    lines.push(`- Informational findings: ${summary.info_findings ?? 0}`);
-    lines.push('');
-    lines.push('## Token usage guide');
-    lines.push('');
-    lines.push('Packaged-text measurements and illustrative loading scenarios; actual model/runtime usage remains unassessed.');
-    lines.push('```json');
-    lines.push(JSON.stringify({ token_footprint: scanResult.token_footprint || null }, null, 2));
-    lines.push('```');
-    lines.push('');
-    lines.push('## Package effect evidence');
-    lines.push('');
-    lines.push('```json');
-    lines.push(JSON.stringify({ effect_analysis: scanResult.package_analysis?.effect_analysis || null }, null, 2));
-    lines.push('```');
-    lines.push('');
-    lines.push('## Standards assessment');
-    lines.push('');
-    if (scanResult.standards_assessment) {
-        const standards = scanResult.standards_assessment;
-        lines.push(`- Portable mandatory status: ${standards.overall_status || 'not_assessed'}`);
-        lines.push('- Scope: measured portable format requirements; vendor compatibility, recommendations, security review and runtime evaluation remain separate. This is not a full compliance or safety certificate.');
-        lines.push('```json');
-        lines.push(JSON.stringify({ standards_assessment: standards }, null, 2));
-        lines.push('```');
-    } else lines.push('Not assessed — this report does not include a standards assessment.');
-    lines.push('');
-    if (scanResult.package_analysis) {
-        lines.push(`- Package kind: ${scanResult.package_analysis.artifact_kind}`);
-        lines.push(`- Target runtime: ${scanResult.package_analysis.target_runtime}`);
-        lines.push(`- Coverage: ${scanResult.coverage.status}; ${scanResult.coverage.analyzed_files}/${scanResult.coverage.total_files} files analyzed`);
-        lines.push(`- Coverage note: ${scanResult.coverage.statement}`);
-        if (scanResult.coverage.inspection_summary) {
-            const inspection = scanResult.coverage.inspection_summary;
-            lines.push(`- Inspection stages: ${inspection.text_or_structured_files_analyzed} text/structured files; ${inspection.assets_with_structural_inspection} assets structurally inspected; ${inspection.files_without_supported_inspection} files without supported inspection`);
-        }
-        lines.push(`- Artifact SHA-256: ${scanResult.governance_evidence.artifact_sha256}`);
-        lines.push(`- Runtime evaluation: ${scanResult.governance_evidence.evaluation.status}`);
-        lines.push(`- Scanner: ${scanResult.scanner_metadata.scanner_version}; adapters ${scanResult.scanner_metadata.adapter_version}`);
-        lines.push('');
-        lines.push('## Package analysis and coverage');
-        lines.push('');
-        lines.push('```json');
-        const evidence = { package_analysis: scanResult.package_analysis, coverage: scanResult.coverage,
-            analysis_context: scanResult.analysis_context, governance_profile: scanResult.governance_profile,
-            governance_evidence: scanResult.governance_evidence, scanner_metadata: scanResult.scanner_metadata,
-            process_diagram: scanResult.process_diagram,
-            checks: scanResult.check_results, readiness: scanResult.readiness,
-            vendor_verification: scanResult.vendor_verification,
-            official_validator_results: scanResult.official_validator_results,
-            scan_request_id: scanResult.scan_request_id,
-            file_analysis: (scanResult.files || []).map(file => ({path: file.path, assessment_state: file.assessment_state,
-                ...(reportDepth === 'detailed' ? {findings: file.findings} : {}),
-                analysis_coverage: file.analysis_coverage, creator_mitigation: file.creator_mitigation,
-                asset_inspection: file.asset_inspection, archive_inspection: file.archive_inspection,
-                archive_container: file.archive_container, archive_depth: file.archive_depth,
-                large_file_tagged_chunked_reference: file.large_file_tagged_chunked_reference})) };
-        if (reportDepth === 'detailed') evidence.inventory = scanResult.inventory;
-        lines.push(JSON.stringify(evidence, null, 2));
-        lines.push('```');
-    }
-    lines.push('');
+    push(`# Injecticide skill review: ${mdText(scanResult.filename)}`, '');
+    push(`- Generated: ${generatedAt}`);
+    push(`- Report: ${detailed ? 'detailed' : 'summary'}`);
+    if (scanResult.file_type) push(`- File type: ${mdText(scanResult.file_type)}`);
+    if (scanResult.scan_request_id) push(`- Scan request: ${mdText(scanResult.scan_request_id)}`);
+    if (buildInfo?.display_version) push(`- Build: ${mdText(buildInfo.display_version)}`);
+    push(`- Total files: ${summary.total_files ?? files.length}`);
+    push(`- Flagged files: ${summary.flagged_files ?? 0}`);
+    push(`- Review findings: ${summary.total_findings ?? 0}`);
+    push(`- Informational findings: ${summary.info_findings ?? 0}`);
+    push('', '> Raw scan data is not part of this report. Use "Download full data (JSON)" in Injecticide for the complete machine-readable record.', '');
+    push('## Headline', '', `**${assessment.title}.** ${assessment.body}`, '');
 
-    lines.push('## Independent evidence');
-    lines.push('');
-    lines.push(`- Creator mitigation: ${mitigationSummary(scanResult).text}`);
-    lines.push('- Format validation, scan coverage, security observations and organizational approval are separate conclusions.');
-    lines.push('');
-    lines.push('## Assessment');
-    lines.push('');
-    lines.push(`- Headline: ${assessment.title}`);
-    lines.push(`- Summary: ${assessment.body}`);
-    lines.push('');
-
-    lines.push('## Review Buckets');
-    lines.push('');
-    lines.push(`- Security risks: ${reviewSummary.security_risk}`);
-    lines.push(`- Needs review: ${reviewSummary.review}`);
-    lines.push(`- Sensitive data: ${reviewSummary.sensitive_data}`);
-    lines.push(`- Expected/internal: ${reviewSummary.expected_internal}`);
-    lines.push(`- Informational only: ${reviewSummary.informational + reviewSummary.documented_pattern}`);
-    lines.push('');
-
-    if (concerns.length > 0) {
-        lines.push('## Top Concerns');
-        lines.push('');
-        concerns.forEach((concern) => {
-            lines.push(`- ${classifyFindingLabel(concern.reviewClass)}: ${concern.finding.id} in ${concern.path}`);
+    // 1. What to fix
+    push('## What to fix', '');
+    if (!scanResult.fix_summary) {
+        push('Not reported by this scanner version. Use the findings by file below.', '');
+    } else {
+        const items = sortedFixItems(scanResult.fix_summary);
+        if (!items.length) push('No fix items were reported. This does not certify the skill as safe.', '');
+        items.forEach((item, index) => {
+            const itemFiles = asArray(item.files);
+            push(`${index + 1}. **[${FIX_PRIORITY_TEXT[item.priority] || 'Priority not reported'}] ${mdText(item.title || 'Untitled fix item')}**`);
+            if (item.action) push(`   - What to do: ${mdText(item.action)}`);
+            if (item.cause) push(`   - Cause: ${mdText(evidenceLabel(item.cause))}`);
+            if (asArray(item.finding_ids).length) push(`   - Findings: ${item.finding_ids.map(findingLabelText).join(', ')}`);
+            if (Number.isFinite(item.count)) push(`   - Occurrences: ${item.count}`);
+            push(`   - Files (${itemFiles.length}): ${itemFiles.slice(0, detailed ? 200 : 15).map(path => mdText(path, 300)).join(', ') || 'none listed'}${itemFiles.length > (detailed ? 200 : 15) ? ` and ${itemFiles.length - (detailed ? 200 : 15)} more` : ''}`);
         });
-        lines.push('');
+        push('');
     }
 
-    lines.push('## Risk Classification');
-    lines.push('');
-    lines.push(`- Overall risk: ${risk.overall_risk || 'unknown'}`);
-    lines.push(`- Recommendation: ${risk.recommendation || 'unknown'}`);
-    lines.push('');
-
-    lines.push('## Governance');
-    lines.push('');
-    lines.push(`- Brokered: ${governance.brokered_tokens?.decision || 'unknown'}`);
-    lines.push(`- BYO: ${governance.customer_managed_keys?.decision || 'unknown'}`);
-    lines.push(`- Tier: ${governance.execution_tier || 'unknown'}`);
-    lines.push(`- Sandbox required: ${governance.sandbox_required ? 'yes' : 'no'}`);
-    lines.push(`- Approval required: ${governance.approval_required ? 'yes' : 'no'}`);
-    if (governance.policy_capabilities?.length) {
-        lines.push(`- Policy capabilities: ${governance.policy_capabilities.join(', ')}`);
+    // 2. Policy results
+    push('## Policy results', '');
+    const policy = scanResult.policy_evaluation;
+    if (!policy) push('Not reported by this scanner version.', '');
+    else if (policy.status === 'none') push('No organization policy was supplied for this scan.', '');
+    else if (policy.status === 'invalid') {
+        push(`**The organization policy was not applied: ${asArray(policy.errors).length} problem(s) found.** The scanner's own findings are unaffected.`, '');
+        asArray(policy.errors).forEach(error => push(`- ${mdText(error.path || '(policy root)', 300)}: ${mdText(error.message || 'Problem not described')}${error.suggestion ? ` Suggestion: ${mdText(error.suggestion)}` : ''}`));
+        push('');
+    } else if (policy.status === 'applied') {
+        const effects = policy.effect_summary || {};
+        push(`- Policy: ${mdText(policy.policy?.name || 'Unnamed policy')}${policy.policy?.organization ? ` · ${mdText(policy.policy.organization)}` : ''}`);
+        if (policy.policy?.sha256) push(`- Policy SHA-256: ${mdText(policy.policy.sha256, 128)}`);
+        push(`- Effects: ${['block', 'require_approval', 'warn', 'allow'].map(effect => `${POLICY_EFFECT_TEXT[effect]} ${Number.isFinite(effects[effect]) ? effects[effect] : 0}`).join(' · ')}`);
+        push('- Policy results sit beside the scanner verdict. An allow rule marks findings as allowed by policy; it never hides them.', '');
+        const triggered = asArray(policy.rules).filter(rule => rule.triggered);
+        push(`### Triggered rules (${triggered.length})`, '');
+        if (!triggered.length) push('No rule was triggered by the statically checked evidence.');
+        triggered.forEach(rule => {
+            push(`- **${mdText(rule.title || rule.id)}** (${mdText(rule.id, 200)}) · ${POLICY_EFFECT_TEXT[rule.effect] || mdText(rule.effect || 'effect not reported')}${rule.enforcement ? ` · enforcement: ${mdText(rule.enforcement)}` : ''}${rule.approver ? ` · approver: ${mdText(rule.approver)}` : ''}`);
+            asArray(rule.evidence).slice(0, detailed ? 200 : 10).forEach(item => push(`  - ${mdText(item.path || 'file not reported', 300)}: ${item.finding_id ? findingLabelText(item.finding_id) : 'evidence'}${Number.isFinite(item.count) ? ` × ${item.count}` : ''}`));
+        });
+        push('');
+    } else push(`Policy status: STATUS: UNKNOWN — UNVERIFIED (${mdText(policy.status, 60)})`, '');
+    if (policy && asArray(policy.not_statically_checkable).length) {
+        push('### Needs a human or runtime check', '');
+        policy.not_statically_checkable.forEach(item => push(`- ${mdText(typeof item === 'string' ? item : item?.title || item?.id || JSON.stringify(item))}`));
+        push('');
     }
-    lines.push('');
+    const evidenceInput = scanResult.evidence_input;
+    if (evidenceInput && ['ignored', 'rejected'].includes(evidenceInput.status)) {
+        push('## Evidence input', '', `Supplied review evidence was **${evidenceInput.status}** and did not change any result.`);
+        asArray(evidenceInput.reasons).forEach(reason => push(`- ${mdText(typeof reason === 'string' ? reason : JSON.stringify(reason))}`));
+        push('');
+    }
 
+    // 3. Database coverage
+    push('## Database coverage', '');
+    const profiled = files.filter(file => file.database_profile);
+    const sampled = files.filter(file => !file.database_profile && Object.values(file.analysis_coverage || {}).some(item => item?.sampling));
+    if (!profiled.length && !sampled.length) push('No database files were profiled in this scan.', '');
+    profiled.forEach(file => {
+        const profile = file.database_profile;
+        const coverage = profile.coverage || {};
+        push(`### ${mdText(file.path, 300)}`, '');
+        push(`- Coverage: **${coverageStatusText(coverage.status)}** · ${countText(coverage.rows_read)} of ${countText(coverage.rows_total)} rows read`);
+        asArray(coverage.unread).forEach(item => push(`  - Not read: ${mdText(item.what)} (${mdText(item.reason)})`));
+        asArray(profile.tables).forEach(table => {
+            const classes = [...new Set(asArray(table.columns).flatMap(column => asArray(column.data_classes)))];
+            push(`- Table ${mdText(table.name, 200)}: ${countText(table.row_count)} rows, ${countText(table.rows_read)} read${table.skipped_reason ? ` (skipped: ${mdText(table.skipped_reason)})` : ''}${classes.length ? ` · data: ${classes.map(value => DATA_CLASS_TEXT[value] || value).join(', ')}` : ''}`);
+            if (detailed) asArray(table.columns).forEach(column => push(`  - ${mdText(column.name, 200)} (${mdText(column.declared_type || 'type not declared', 60)})${asArray(column.data_classes).length ? `: ${column.data_classes.map(value => DATA_CLASS_TEXT[value] || value).join(', ')}` : ''}${Number.isFinite(column.opaque_values) && column.opaque_values > 0 ? ` · ${column.opaque_values} unreadable values` : ''}`));
+        });
+        const flagged = asArray(profile.schema_objects).filter(item => item.flagged);
+        if (flagged.length) push(`- Flagged schema objects: ${flagged.map(item => `${mdText(item.type, 30)} ${mdText(item.name, 200)}`).join(', ')}`);
+        if (profile.blobs) push(`- Stored files (BLOBs): ${countText(profile.blobs.total)} total · ${countText(profile.blobs.executables)} executables · ${countText(profile.blobs.archives)} archives · ${countText(profile.blobs.images)} images · ${countText(profile.blobs.opaque)} unreadable`);
+        if (Number.isFinite(profile.freelist_text_fragments) && profile.freelist_text_fragments > 0) push(`- Text fragments left in deleted (free) pages: ${profile.freelist_text_fragments}`);
+        push('');
+    });
+    sampled.forEach(file => {
+        Object.entries(file.analysis_coverage || {}).filter(([, item]) => item?.sampling).forEach(([name, item]) => {
+            push(`- ${mdText(file.path, 300)} (${evidenceLabel(name)}): ${evidenceLabel(item.status)}; ${countText(item.sampling.sampled_rows)} rows sampled`);
+            asArray(item.sampling.tables).forEach(table => push(`  - ${mdText(table.table, 200)}: ${table.sampled_rows} of ${Number.isInteger(table.total_rows) ? table.total_rows : 'unknown total'} rows sampled`));
+        });
+    });
+    if (sampled.length) push('');
+
+    // 4. Findings by file (files with issues only)
+    const issueFiles = files.filter(file => !file.skipped && fileIssueFindings(file).length);
+    push('## Findings by file', '');
+    push(`Files with issues only: ${issueFiles.length} of ${files.length} files. Files with no findings or informational signals only are omitted; the full data export contains every file.`, '');
+    issueFiles.forEach(file => {
+        const role = file.artifact_role || 'active';
+        push(`### ${mdText(file.path, 300)}`, '');
+        if (file.assessment_state) push(`- Assessment: ${evidenceLabel(file.assessment_state)}`);
+        if (detailed) push(`- Artifact role: ${role} · size ${file.size ?? 0} bytes`);
+        if (file.reason) push(`- Note: ${mdText(file.reason)}`);
+        asArray(file.findings).forEach(finding => {
+            const reviewClass = classifyReviewClass(finding, role);
+            const locations = findingLocations(finding);
+            push(`- **${findingLabelText(finding.id)}** · ${finding.severity || 'severity not reported'} · ${classifyFindingLabel(reviewClass)}${locations.length ? ` · ${locations.slice(0, 10).join('; ')}${locations.length > 10 ? ` (+${locations.length - 10} more)` : ''}` : ''}${finding.policy_disposition === 'allowed_by_policy' ? ' · allowed by policy' : ''}`);
+            if (!detailed) return;
+            if (finding.description) push(`  - Description: ${mdText(finding.description)}`);
+            push(`  - Tier: ${finding.tier || 'review'} · Category: ${finding.finding_category || finding.category || 'signal'} · Subject: ${finding.subject || 'unknown'} · Action state: ${finding.action_state || 'present'} · Disposition: ${finding.disposition || 'unknown'}`);
+            if (finding.policy_evaluation) {
+                push(`  - Policy response: ${finding.policy_evaluation.action} · source ${finding.policy_evaluation.source_channel}`);
+                asArray(finding.policy_evaluation.observations).forEach(observation => push(`  - Speech act: ${observation.speech_act}; target: ${observation.target}; evidence strength: ${observation.confidence}; response: ${observation.action}; ${mdText(observation.reason)}`));
+            }
+            if (finding.policy_disposition) push(`  - Organization policy: ${evidenceLabel(finding.policy_disposition)}${finding.policy_rule_id ? ` (rule ${mdText(finding.policy_rule_id, 200)})` : ''}`);
+            if (asArray(finding.samples).length) push(`  - Samples (as reported, masked by the scanner where applicable): ${finding.samples.slice(0, 10).map(sample => mdText(sample, 500)).join(' | ')}`);
+        });
+        push('');
+    });
+    if (detailed) {
+        const skipped = files.filter(file => file.skipped);
+        if (skipped.length) {
+            push('### Skipped files', '');
+            skipped.forEach(file => push(`- ${mdText(file.path, 300)}${file.reason ? `: ${mdText(file.reason)}` : ''}`));
+            push('');
+        }
+    }
+
+    // 5. Summary, governance, standards
+    push('## Summary', '');
+    push(`- Security risks: ${reviewSummary.security_risk}`);
+    push(`- Needs review: ${reviewSummary.review}`);
+    push(`- Sensitive data: ${reviewSummary.sensitive_data}`);
+    push(`- Expected/internal: ${reviewSummary.expected_internal}`);
+    push(`- Informational only: ${reviewSummary.informational + reviewSummary.documented_pattern}`);
+    push(`- Overall risk: ${risk.overall_risk || 'unknown'} · Recommendation: ${risk.recommendation || 'unknown'}`);
+    if (scanResult.coverage) push(`- Coverage: ${evidenceLabel(scanResult.coverage.status)}; ${scanResult.coverage.analyzed_files ?? '?'}/${scanResult.coverage.total_files ?? '?'} files analyzed${scanResult.coverage.statement ? `. ${mdText(scanResult.coverage.statement)}` : ''}`);
+    if (scanResult.governance_evidence?.artifact_sha256) push(`- Artifact SHA-256: ${mdText(scanResult.governance_evidence.artifact_sha256, 128)}`);
+    if (scanResult.scanner_metadata?.scanner_version) push(`- Scanner: ${mdText(scanResult.scanner_metadata.scanner_version, 80)}`);
+    push('');
+    if (concerns.length) {
+        push('### Top concerns', '');
+        concerns.forEach(concern => push(`- ${classifyFindingLabel(concern.reviewClass)}: ${findingLabelText(concern.finding.id)} in ${mdText(concern.path, 300)}`));
+        push('');
+    }
+
+    push('## Governance', '');
+    push(`- Brokered: ${governance.brokered_tokens?.decision || 'unknown'}`);
+    push(`- BYO: ${governance.customer_managed_keys?.decision || 'unknown'}`);
+    push(`- Tier: ${governance.execution_tier || 'unknown'}`);
+    push(`- Sandbox required: ${governance.sandbox_required ? 'yes' : 'no'}`);
+    push(`- Approval required: ${governance.approval_required ? 'yes' : 'no'}`);
+    if (governance.policy_capabilities?.length) push(`- Policy capabilities: ${governance.policy_capabilities.join(', ')}`);
+    push('');
     if (governance.decision_reasons?.length) {
-        lines.push('### Governance Reasons');
-        lines.push('');
-        governance.decision_reasons.forEach((reason) => lines.push(`- ${reason}`));
-        lines.push('');
+        push('### Governance reasons', '');
+        governance.decision_reasons.forEach(reason => push(`- ${mdText(reason)}`));
+        push('');
     }
     if (governance.blocking_findings?.length) {
-        lines.push('### Blocking evidence');
-        lines.push('');
+        push('### Blocking evidence', '');
         governance.blocking_findings.forEach(item => {
-            const locations = (item.observations || []).map(observation => `${observation.line ? `line ${observation.line}` : 'line unknown'} (${observation.context_tag || 'context not reported'})`).join('; ');
-            lines.push(`- ${item.id} in ${item.path || 'unknown file'}: ${locations || 'See finding evidence.'} · source ${item.source_channel || 'not reported'}`);
+            const locations = asArray(item.observations).map(observation => `${observation.line ? `line ${observation.line}` : 'line unknown'} (${observation.context_tag || 'context not reported'})`).join('; ');
+            push(`- ${findingLabelText(item.id)} in ${mdText(item.path || 'unknown file', 300)}: ${locations || 'See finding evidence.'} · source ${item.source_channel || 'not reported'}`);
         });
-        lines.push('');
+        push('');
     }
+    push('### Independent evidence', '');
+    push(`- Creator mitigation: ${mitigationSummary(scanResult).text}`);
+    push('- Format validation, scan coverage, security observations and organizational approval are separate conclusions.', '');
+
+    push('## Standards', '');
+    if (scanResult.standards_assessment) {
+        const standards = scanResult.standards_assessment;
+        const counts = standards.summary || {};
+        push(`- Portable mandatory status: ${standards.overall_status || 'not_assessed'}`);
+        push(`- Mandatory passed: ${counts.mandatory_pass ?? 'not reported'} · failed: ${counts.mandatory_fail ?? 'not reported'} · not assessed: ${counts.mandatory_not_assessed ?? 'not reported'}`);
+        push('- Scope: measured portable format requirements; vendor compatibility, recommendations, security review and runtime evaluation remain separate. This is not a full compliance or safety certificate.');
+    } else push('Not assessed — this report does not include a standards assessment.');
+    if (scanResult.vendor_verification) push(`- Vendor requirements: ${evidenceLabel(scanResult.vendor_verification.status, 'STATUS: UNKNOWN — UNVERIFIED')} · runtime compatibility: ${evidenceLabel(scanResult.vendor_verification.compatibility, 'unknown')}`);
+    push('');
 
     if (scanResult.warnings?.length) {
-        lines.push('## Warnings');
-        lines.push('');
-        scanResult.warnings.forEach((warning) => lines.push(`- ${warning}`));
-        lines.push('');
+        push('## Warnings', '');
+        scanResult.warnings.forEach(warning => push(`- ${mdText(warning)}`));
+        push('');
     }
-
-    if (reportDepth !== 'detailed') {
-        return lines.join('\n');
-    }
-
-    lines.push('## Files');
-    lines.push('');
-
-    (scanResult.files || []).forEach((item) => {
-        const fileSummary = summarizeFileFindings(item.findings || []);
-        const visibleFindings = filterFindings(item.findings || [], item.artifact_role || 'active', 'all');
-        lines.push(`### ${item.path}`);
-        lines.push('');
-        lines.push(`- Artifact role: ${item.artifact_role || 'active'}`);
-        lines.push(`- Size: ${item.size ?? 0} bytes`);
-        if (item.assessment_state) lines.push(`- Assessment: ${evidenceLabel(item.assessment_state)}`);
-        if (item.skipped) {
-            lines.push(`- Status: skipped`);
-            if (item.reason) {
-                lines.push(`- Reason: ${item.reason}`);
-            }
-            lines.push('');
-            return;
-        }
-
-        lines.push(`- Review findings: ${fileSummary.actionableCount}`);
-        lines.push(`- Documented patterns: ${fileSummary.documentedPatternCount}`);
-        lines.push(`- Informational signals: ${fileSummary.informationalSignalCount}`);
-        if (item.reason) {
-            lines.push(`- Note: ${item.reason}`);
-        }
-        lines.push('');
-
-        if (!visibleFindings.length) {
-            lines.push('No findings.');
-            lines.push('');
-            return;
-        }
-
-        visibleFindings.forEach((finding) => {
-            const reviewClass = classifyReviewClass(finding, item.artifact_role || 'active');
-            lines.push(`- **${finding.id}** (${finding.severity})`);
-            lines.push(`  - Review class: ${classifyFindingLabel(reviewClass)}`);
-            lines.push(`  - Description: ${finding.description}`);
-            lines.push(`  - Kind: ${finding.display_kind || 'actionable_finding'}`);
-            lines.push(`  - Category: ${finding.finding_category || finding.category || 'signal'}`);
-            lines.push(`  - Subject: ${finding.subject || 'unknown'}`);
-            lines.push(`  - Action state: ${finding.action_state || 'present'}`);
-            if (finding.policy_evaluation) {
-                lines.push(`  - Policy response: ${finding.policy_evaluation.action} · source ${finding.policy_evaluation.source_channel}`);
-                (finding.policy_evaluation.observations || []).forEach(observation => lines.push(`  - Speech act: ${observation.speech_act}; target: ${observation.target}; evidence strength: ${observation.confidence}; response: ${observation.action}; ${observation.reason}`));
-            }
-            lines.push(`  - Tier: ${finding.tier || 'review'}`);
-            lines.push(`  - Disposition: ${finding.disposition || 'unknown'}`);
-            if (finding.samples?.length) {
-                lines.push(`  - Samples: ${finding.samples.join(' | ')}`);
-            }
-        });
-        lines.push('');
-    });
-
     return lines.join('\n');
 }
 
@@ -1103,7 +1255,7 @@ function SkillFindingList({ findings, artifactRole, depth }) {
                     return (
                         <li key={page * SKILL_FINDINGS_PER_PAGE + index} data-skill-finding="true">
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-gray-200">{finding.id}</span>
+                                <span className="text-gray-200"><FindingName id={finding.id} /></span>
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] ${findingPillClass(reviewClass)}`}>
                                     {classifyFindingLabel(reviewClass)}
                                 </span>
@@ -1217,7 +1369,7 @@ function downloadProcessFile(value, filename, type) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function SkillProcessDiagram({ result, onAddToPlayground }) {
+function SkillProcessDiagram({ result, onAddToPlayground, buildInfo }) {
     const diagram = result.process_diagram;
     const [selectedId, setSelectedId] = useState(null);
     const [view, setView] = useState('diagram');
@@ -1260,8 +1412,8 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
         <p className="process-knowledge-legend"><strong>Known:</strong> supported by source evidence. <strong>Inferred:</strong> interpretation, when explicitly labeled. <strong>Unknown:</strong> missing or unresolved evidence. Source evidence does not verify runtime behavior.</p>
         <div className="process-toolbar">
             <button type="button" id="skill-process-add-to-playground" className="process-primary" disabled={!nodes.length || !diagram.architecture_map} onClick={() => onAddToPlayground({ ...diagram, draft_id: crypto.randomUUID(), architecture_map: { ...diagram.architecture_map, name: `Skill process: ${result.filename || 'scanned package'}${(diagram.map_omitted?.components > 0 || diagram.map_omitted?.links > 0) ? ` (partial: ${diagram.architecture_map.nodes.length} components and ${diagram.architecture_map.edges.length} links shown; ${diagram.map_omitted.components || 0} components and ${diagram.map_omitted.links || 0} links not shown)` : ''}`.slice(0, 160) } })}>Add process diagram to playground</button>
-            <button type="button" disabled={!nodes.length} onClick={() => downloadProcessFile(diagram.mermaid || '', 'injecticide-skill-process.mmd', 'text/plain;charset=utf-8')}>Export Mermaid</button>
-            <button type="button" onClick={() => downloadProcessFile(diagram, 'injecticide-skill-process.json', 'application/json')}>Export diagram evidence</button>
+            <button type="button" disabled={!nodes.length} onClick={() => downloadProcessFile(diagram.mermaid || '', scanDownloadName(result, buildInfo, 'process-diagram', 'mmd'), 'text/plain;charset=utf-8')}>Export Mermaid</button>
+            <button type="button" onClick={() => downloadProcessFile(diagram, scanDownloadName(result, buildInfo, 'process-diagram-evidence', 'json'), 'application/json')}>Export diagram evidence</button>
         </div>
         <p className="process-note">The playground opens a separate temporary map. Your scan report and existing playground map stay available. Connections show source relationships and explicit documented order; runtime behavior remains unverified.</p>
         <details className="process-uncertainty"><summary>What the scan establishes and what still needs evidence</summary><p>Source evidence: {nodes.filter(node => node.kind === 'file').length} files present · {nodes.filter(node => node.kind === 'step').length} documented steps · {nodes.filter(node => node.kind === 'capability').length} recognized capabilities · {nodes.filter(node => node.kind === 'external').length} external origins. An external origin appearing in source does not establish a network request.</p><p>Source gaps: {nodes.filter(node => node.kind === 'unresolved').length} unresolved references. Runtime execution, trust and data sensitivity are separate questions and remain unverified by this static scan.</p>{diagram.uncertainty_reasons?.length > 0 && <ul>{diagram.uncertainty_reasons.map(reason => <li key={reason.code}>{reason.message}{reason.count ? ` (${reason.count})` : ''}</li>)}</ul>}</details>
@@ -1317,6 +1469,381 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
     </section>;
 }
 
+function FixPriorityBadge({ priority }) {
+    const safe = ['block', 'review', 'info'].includes(priority) ? priority : 'unknown';
+    return <span className={`fix-priority fix-priority-${safe}`}>{FIX_PRIORITY_TEXT[priority] || 'Priority not reported'}</span>;
+}
+
+function WhatToFix({ fixSummary, onOpenFile }) {
+    const [expanded, setExpanded] = useState(() => new Set());
+    if (!fixSummary) return null;
+    const items = sortedFixItems(fixSummary);
+    const count = priority => items.filter(item => item.priority === priority).length;
+    function toggle(index) {
+        setExpanded(current => { const next = new Set(current); next.has(index) ? next.delete(index) : next.add(index); return next; });
+    }
+    return <section className="fix-summary" aria-labelledby="fix-summary-title" data-fix-summary="true">
+        <h3 id="fix-summary-title">What to fix</h3>
+        <p>{items.length
+            ? `${count('block')} to fix before use · ${count('review')} to review · ${count('info')} for information. Related findings are grouped by cause; work from the top. Open a file to see its exact lines.`
+            : 'No fix items were reported. This does not certify the skill as safe; check coverage and the findings below.'}</p>
+        <ol className="fix-items">{items.map((item, index) => {
+            const files = asArray(item.files);
+            const open = expanded.has(index);
+            return <li key={`${item.id || 'fix'}:${index}`} className={`fix-item fix-item-${['block', 'review', 'info'].includes(item.priority) ? item.priority : 'unknown'}`} data-fix-item="true">
+                <div className="fix-item-heading"><FixPriorityBadge priority={item.priority} /><h4>{item.title || 'Untitled fix item'}</h4></div>
+                {item.action && <p className="fix-action"><strong>What to do:</strong> {item.action}</p>}
+                {item.cause && <p className="fix-meta">Cause: {evidenceLabel(item.cause)}</p>}
+                {asArray(item.finding_ids).length > 0 && <p className="fix-meta">Findings: {item.finding_ids.map((id, i) => <React.Fragment key={`${id}:${i}`}>{i ? ', ' : ''}<FindingName id={id} /></React.Fragment>)}</p>}
+                <button type="button" className="fix-files-toggle" aria-expanded={open} aria-controls={`fix-files-${index}`} disabled={!files.length} onClick={() => toggle(index)}>
+                    {open ? 'Hide' : 'Show'} {files.length} {files.length === 1 ? 'file' : 'files'}{Number.isFinite(item.count) ? ` · ${item.count} occurrences` : ''}
+                </button>
+                <ul id={`fix-files-${index}`} className="fix-files" hidden={!open}>{open && files.map(path => <li key={path}>
+                    <button type="button" className="file-link" onClick={() => onOpenFile(path)}>{path}</button>
+                </li>)}</ul>
+            </li>;
+        })}</ol>
+    </section>;
+}
+
+function PolicyResults({ evaluation, onOpenFile }) {
+    if (!evaluation) return null;
+    const rules = asArray(evaluation.rules);
+    const triggered = rules.filter(rule => rule.triggered);
+    const quiet = rules.filter(rule => !rule.triggered);
+    const errors = asArray(evaluation.errors);
+    const notCheckable = asArray(evaluation.not_statically_checkable);
+    const policy = evaluation.policy || {};
+    const effects = evaluation.effect_summary || {};
+    return <section className="policy-results" aria-labelledby="policy-results-title" data-policy-results="true">
+        <h3 id="policy-results-title">Policy results</h3>
+        {evaluation.status === 'none' && <p>No organization policy was supplied for this scan. To check this skill against your organization's rules, add a policy under Scan configuration and scan again.</p>}
+        {evaluation.status === 'invalid' && <div className="policy-invalid" data-policy-errors="true">
+            <p><strong>Your policy was not applied: {errors.length} {errors.length === 1 ? 'problem' : 'problems'} found.</strong> Fix {errors.length === 1 ? 'it' : 'them'} and scan again. The scanner's own findings below are not affected.</p>
+            <ol>{errors.map((error, index) => <li key={index}>
+                <code>{error.path || '(policy root)'}</code>: {error.message || 'Problem not described.'}
+                {error.suggestion && <p>Suggestion: {error.suggestion}</p>}
+            </li>)}</ol>
+        </div>}
+        {evaluation.status === 'applied' && <>
+            <p><strong>{policy.name || 'Unnamed policy'}</strong>{policy.organization ? ` · ${policy.organization}` : ''}</p>
+            {policy.sha256 && <p className="scan-revision">Policy SHA-256: {policy.sha256}</p>}
+            <ul className="policy-effects" aria-label="Rule effects">{['block', 'require_approval', 'warn', 'allow'].map(effect => <li key={effect} className={`policy-effect policy-effect-${effect}`}>
+                <strong>{Number.isFinite(effects[effect]) ? effects[effect] : 0}</strong> {POLICY_EFFECT_TEXT[effect]}
+            </li>)}</ul>
+            <p className="policy-note">Policy results sit beside the scanner's verdict. An "allow" rule marks findings as allowed by policy; it never hides them.</p>
+            <h4>Triggered rules ({triggered.length})</h4>
+            {!triggered.length && <p>No rule was triggered by the statically checked evidence.</p>}
+            <ul className="policy-rules">{triggered.map((rule, index) => <li key={`${rule.id}:${index}`} className={`policy-rule policy-rule-${['block', 'require_approval', 'warn', 'allow'].includes(rule.effect) ? rule.effect : 'unknown'}`}>
+                <div className="policy-rule-heading"><span className="policy-effect-badge">{POLICY_EFFECT_TEXT[rule.effect] || evidenceLabel(rule.effect, 'Effect not reported')}</span><h5>{rule.title || rule.id || 'Untitled rule'}</h5></div>
+                <p className="policy-rule-meta">Rule {rule.id || 'id not reported'}{rule.enforcement ? ` · enforcement: ${evidenceLabel(rule.enforcement)}` : ''}{rule.approver ? ` · approver: ${rule.approver}` : ''}</p>
+                {asArray(rule.evidence).length > 0 && <ul className="policy-evidence">{rule.evidence.slice(0, 50).map((item, i) => <li key={i}>
+                    {item.path ? <button type="button" className="file-link" onClick={() => onOpenFile(item.path)}>{item.path}</button> : <span>File not reported</span>}
+                    {item.finding_id && <span> · <FindingName id={item.finding_id} /></span>}
+                    {Number.isFinite(item.count) && <span> · {item.count}×</span>}
+                </li>)}</ul>}
+                {asArray(rule.evidence).length > 50 && <p>{rule.evidence.length - 50} more evidence entries are in the full data export.</p>}
+            </li>)}</ul>
+            {quiet.length > 0 && <details className="policy-quiet"><summary>Rules not triggered ({quiet.length})</summary><ul>{quiet.map((rule, index) => <li key={`${rule.id}:${index}`}>{rule.title || rule.id} · {POLICY_EFFECT_TEXT[rule.effect] || evidenceLabel(rule.effect, 'effect not reported')}</li>)}</ul></details>}
+        </>}
+        {!['none', 'invalid', 'applied'].includes(evaluation.status) && <p>Policy status: STATUS: UNKNOWN — UNVERIFIED</p>}
+        {notCheckable.length > 0 && <div className="policy-not-checkable">
+            <h4>Needs a human or runtime check ({notCheckable.length})</h4>
+            <p>A static scan cannot check these parts of your policy. Someone must confirm them separately before approval.</p>
+            <ul>{notCheckable.map((item, index) => <li key={index}>{typeof item === 'string' ? item : item?.title || item?.id || JSON.stringify(item)}</li>)}</ul>
+        </div>}
+    </section>;
+}
+
+function EvidenceInputNotice({ input }) {
+    if (!input || !['ignored', 'rejected'].includes(input.status)) return null;
+    return <section className="evidence-input-notice" aria-label="Review evidence input" data-evidence-input={input.status}>
+        <p><strong>The review evidence supplied with this scan was {input.status === 'rejected' ? 'rejected' : 'not used'}.</strong> It did not change any result shown here.</p>
+        {asArray(input.reasons).length > 0 && <ul>{input.reasons.map((reason, index) => <li key={index}>{typeof reason === 'string' ? reason : JSON.stringify(reason)}</li>)}</ul>}
+    </section>;
+}
+
+function DataClassBadges({ classes }) {
+    const list = asArray(classes);
+    if (!list.length) return null;
+    return <span className="data-class-list">{list.map(value => <span key={value} className={`data-class-badge${SENSITIVE_DATA_CLASSES.has(value) ? ' sensitive' : ''}`}>{DATA_CLASS_TEXT[value] || evidenceLabel(value)}</span>)}</span>;
+}
+
+function DatabaseCoverage({ coverage }) {
+    const status = coverage?.status;
+    const notCleared = coverageNotCleared(status);
+    return <div className={`db-coverage${notCleared ? ' db-not-cleared' : status === 'complete' ? ' db-complete' : ''}`} data-db-coverage={status || 'unknown'}>
+        <p><strong>{coverageStatusText(status)}</strong>{coverage && ` · ${countText(coverage.rows_read)} of ${countText(coverage.rows_total)} rows read`}</p>
+        {notCleared && <p>Unread parts of this database were not checked and could contain anything. Review them before approving this skill.</p>}
+        {status === 'complete' && <p>Every row was read by the scanner. This is coverage, not a safety verdict; check the findings.</p>}
+        {!status && <p>STATUS: UNKNOWN — UNVERIFIED</p>}
+        {asArray(coverage?.unread).length > 0 && <ul>{coverage.unread.map((item, index) => <li key={index}>Not read: {item.what || 'unspecified part'} ({evidenceLabel(item.reason, 'reason not reported')})</li>)}</ul>}
+    </div>;
+}
+
+function DatabaseProfile({ profile }) {
+    if (!profile) return null;
+    const tables = asArray(profile.tables);
+    const flagged = asArray(profile.schema_objects).filter(item => item.flagged);
+    const blobs = profile.blobs;
+    return <section className="db-profile" aria-label="Database profile" data-db-profile="true">
+        <h4>Database profile</h4>
+        <DatabaseCoverage coverage={profile.coverage} />
+        <h5>Tables ({tables.length})</h5>
+        {!tables.length && <p>No tables were reported.</p>}
+        {tables.map((table, index) => {
+            const columns = asArray(table.columns);
+            const classes = [...new Set(columns.flatMap(column => asArray(column.data_classes)))];
+            return <details key={`${table.name}:${index}`} className="db-table">
+                <summary><strong>{table.name || 'Unnamed table'}</strong> · {countText(table.row_count)} rows · {countText(table.rows_read)} read{table.skipped_reason ? ` · skipped (${evidenceLabel(table.skipped_reason)})` : ''} <DataClassBadges classes={classes} /></summary>
+                <div className="db-columns-scroll"><table className="db-columns">
+                    <caption>Columns in {table.name || 'this table'}</caption>
+                    <thead><tr><th scope="col">Column</th><th scope="col">Type</th><th scope="col">Data found</th><th scope="col">Values scanned</th><th scope="col">Unreadable</th></tr></thead>
+                    <tbody>{columns.map((column, i) => <tr key={`${column.name}:${i}`}>
+                        <th scope="row">{column.name || '(unnamed)'}</th><td>{column.declared_type || 'not declared'}</td>
+                        <td>{asArray(column.data_classes).length ? <DataClassBadges classes={column.data_classes} /> : 'none detected'}</td>
+                        <td>{countText(column.values_scanned)}</td><td>{countText(column.opaque_values)}</td>
+                    </tr>)}</tbody>
+                </table></div>
+            </details>;
+        })}
+        {flagged.length > 0 && <><h5>Flagged schema objects ({flagged.length})</h5><ul>{flagged.map((item, index) => <li key={index}>{evidenceLabel(item.type)}: <strong>{item.name}</strong></li>)}</ul></>}
+        {blobs && <p>Stored files (BLOBs): {countText(blobs.total)} total · {countText(blobs.text_scanned)} scanned as text · {countText(blobs.executables)} executables · {countText(blobs.archives)} archives · {countText(blobs.images)} images · {countText(blobs.opaque)} unreadable</p>}
+        {Number.isFinite(profile.freelist_text_fragments) && profile.freelist_text_fragments > 0 && <p>Text fragments left in deleted (free) pages: {profile.freelist_text_fragments}</p>}
+    </section>;
+}
+
+function ReaderFinding({ finding, artifactRole }) {
+    const reviewClass = classifyReviewClass(finding, artifactRole);
+    const locations = findingLocations(finding);
+    const samples = asArray(finding.samples);
+    const ruleId = finding.policy_rule_id || finding.policy_rule;
+    return <li className="reader-finding" data-reader-finding="true">
+        <div className="reader-finding-heading">
+            <FindingName id={finding.id} />
+            <span className={`px-2 py-0.5 rounded-full text-[10px] ${findingPillClass(reviewClass)}`}>{classifyFindingLabel(reviewClass)}</span>
+            <span className="reader-severity">{finding.severity || 'severity not reported'}{finding.tier ? ` · ${finding.tier}` : ''}</span>
+            {finding.policy_disposition === 'allowed_by_policy' && <span className="reader-allowed">Allowed by policy{ruleId ? ` (${ruleId})` : ''}</span>}
+        </div>
+        {finding.description && <p>{finding.description}</p>}
+        <p className="reader-locations">{locations.length ? `Where: ${locations.slice(0, 20).join('; ')}${locations.length > 20 ? ` and ${locations.length - 20} more` : ''}` : 'Where: location not reported (whole-file finding).'}</p>
+        {samples.length > 0 && <div className="reader-samples"><p>Samples, as reported by the scanner (database values arrive masked):</p><ul>{samples.slice(0, 10).map((sample, index) => <li key={index}><code>{String(sample).slice(0, 500)}</code></li>)}</ul>{samples.length > 10 && <p>{samples.length - 10} more samples are in the full data export.</p>}</div>}
+        {finding.policy_evaluation && <p className="reader-meta">Instruction policy response: {evidenceLabel(finding.policy_evaluation.action)} · source {evidenceLabel(finding.policy_evaluation.source_channel)}</p>}
+    </li>;
+}
+
+function processNodeIndex(diagram) {
+    const nodes = asArray(diagram?.nodes);
+    const edges = asArray(diagram?.edges);
+    return { nodes, edges, byId: new Map(nodes.map(node => [node.id, node])) };
+}
+
+function FileReferenceList({ title, entries, index, otherEnd, onOpenFile, emptyText }) {
+    return <div className="reader-references"><h5>{title} ({entries.length})</h5>
+        {!entries.length ? <p>{emptyText}</p> : <ul>{entries.slice(0, 100).map((edge, i) => {
+            const other = index.byId.get(otherEnd(edge));
+            const name = other?.label || otherEnd(edge);
+            return <li key={`${edge.id}:${i}`}>
+                <span className="reader-edge-label">{edge.label || 'references'}</span>{' '}
+                {other?.kind === 'file' && other.path ? <button type="button" className="file-link" onClick={() => onOpenFile(other.path)}>{other.path}</button> : <span>{name}{other?.kind ? ` (${other.kind === 'unresolved' ? 'unresolved reference' : evidenceLabel(other.kind)})` : ''}</span>}
+                {edge.status && edge.status !== 'resolved' && <span> · STATUS: UNKNOWN — UNVERIFIED</span>}
+            </li>;
+        })}</ul>}
+        {entries.length > 100 && <p>{entries.length - 100} more references are in the full data export.</p>}
+    </div>;
+}
+
+function FileDetail({ file, result, onOpenFile, headingId }) {
+    const index = React.useMemo(() => processNodeIndex(result.process_diagram), [result]);
+    const artifactRole = file.effective_artifact_role === 'execution_component' ? 'active' : file.artifact_role || 'active';
+    const fileNodeIds = new Set(index.nodes.filter(node => node.kind === 'file' && node.path === file.path).map(node => node.id));
+    const steps = index.nodes.filter(node => node.kind === 'step' && (node.path === file.path || asArray(node.citations).some(citation => citation.path === file.path)));
+    const stepIds = new Set(steps.map(node => node.id));
+    const incoming = index.edges.filter(edge => fileNodeIds.has(edge.target) && !fileNodeIds.has(edge.source) && !stepIds.has(edge.source));
+    const outgoing = index.edges.filter(edge => fileNodeIds.has(edge.source) && !fileNodeIds.has(edge.target) && !stepIds.has(edge.target));
+    const findings = asArray(file.findings);
+    const issues = findings.filter(finding => isIssueFinding(finding, artifactRole));
+    const others = findings.filter(finding => !isIssueFinding(finding, artifactRole));
+    const stepLine = node => { const citation = asArray(node.citations).find(item => item.path === file.path && item.line_accuracy === 'exact' && item.line); return citation ? `line ${citation.line}` : ''; };
+    return <article className="reader-detail" aria-labelledby={headingId}>
+        <h4 id={headingId} tabIndex={-1} className="reader-path">{file.path}</h4>
+        <p className="reader-meta">{file.skipped ? 'Skipped' : evidenceLabel(file.assessment_state, 'Assessment not reported')} · {evidenceLabel(artifactRole)} · {Number.isFinite(file.size) ? `${file.size.toLocaleString()} bytes` : 'size not reported'}</p>
+        {file.reason && <p className="reader-meta">{file.reason}</p>}
+        {file.file_type_policy?.potential_upload_control_bypass && <p className="home-warning">Executable source behind a document extension. Malware is not established.</p>}
+        <h5>Findings ({issues.length}{others.length ? ` + ${others.length} informational` : ''})</h5>
+        {!findings.length && <p>No scanner findings in this file. This does not certify the file as safe.</p>}
+        <ul className="reader-findings">{issues.map((finding, i) => <ReaderFinding key={`i${i}`} finding={finding} artifactRole={artifactRole} />)}</ul>
+        {others.length > 0 && <details className="reader-informational"><summary>Informational signals ({others.length})</summary><ul className="reader-findings">{others.map((finding, i) => <ReaderFinding key={`o${i}`} finding={finding} artifactRole={artifactRole} />)}</ul></details>}
+        {file.database_profile ? <DatabaseProfile profile={file.database_profile} /> : <FileAnalysisEvidence file={file} />}
+        <h5>Documented steps ({steps.length})</h5>
+        {!steps.length ? <p>No documented steps were extracted from this file.</p> : <ol className="reader-steps">{steps.slice(0, 100).map(node => <li key={node.id}>{node.text || node.label}{stepLine(node) && <span className="reader-meta"> · {stepLine(node)}</span>}</li>)}</ol>}
+        {!result.process_diagram ? <p>References are not available: this report has no process diagram.</p> : <>
+            <FileReferenceList title="Referenced by" entries={incoming} index={index} otherEnd={edge => edge.source} onOpenFile={onOpenFile} emptyText="No other component references this file in source." />
+            <FileReferenceList title="References out" entries={outgoing} index={index} otherEnd={edge => edge.target} onOpenFile={onOpenFile} emptyText="This file references no other component in source." />
+        </>}
+        <p className="reader-meta">References are static source evidence; runtime execution is unverified.</p>
+    </article>;
+}
+
+function FileReadingPane({ result, selectedPath, onSelect, onOpenFile }) {
+    const files = asArray(result.files);
+    const rows = React.useMemo(() => files.map(file => {
+        const issues = fileIssueFindings(file);
+        return { file, issues: issues.length, severity: topSeverity(issues), folder: fileFolder(file.path), type: fileType(file.path),
+            notCleared: coverageNotCleared(file.database_profile?.coverage?.status) };
+    }), [result]);
+    const issueCount = rows.filter(row => row.issues > 0).length;
+    const [scope, setScope] = useState(issueCount ? 'issues' : 'all');
+    const [folder, setFolder] = useState('');
+    const [type, setType] = useState('');
+    const [severity, setSeverity] = useState('');
+    const [query, setQuery] = useState('');
+    const list = useRef(null);
+    const folders = [...new Set(rows.map(row => row.folder))].sort();
+    const types = [...new Set(rows.map(row => row.type))].sort();
+    const severities = SEVERITY_ORDER.filter(value => rows.some(row => row.severity === value));
+    const needle = query.trim().toLowerCase();
+    const visible = rows.filter(row => (scope === 'all' || row.issues > 0) && (!folder || row.folder === folder) && (!type || row.type === type)
+        && (!severity || row.severity === severity) && (!needle || String(row.file.path).toLowerCase().includes(needle)))
+        .sort((left, right) => (right.issues > 0) - (left.issues > 0) || (SEVERITY_ORDER.indexOf(left.severity) + 1 || 9) - (SEVERITY_ORDER.indexOf(right.severity) + 1 || 9) || String(left.file.path).localeCompare(String(right.file.path)));
+    const shown = visible.slice(0, 400);
+    const selected = files.find(file => file.path === selectedPath);
+    function moveFocus(event) {
+        const buttons = Array.from(list.current?.querySelectorAll('button[data-reader-file]') || []);
+        const current = buttons.indexOf(document.activeElement);
+        let next = null;
+        if (event.key === 'ArrowDown') next = Math.min(buttons.length - 1, current + 1);
+        else if (event.key === 'ArrowUp') next = Math.max(0, current - 1);
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = buttons.length - 1;
+        if (next === null || !buttons.length) return;
+        event.preventDefault();
+        buttons[next].focus();
+    }
+    return <section className="file-reader" aria-labelledby="file-reader-title" data-file-reader="true">
+        <h3 id="file-reader-title">Files</h3>
+        <p>Pick a file to read its findings, steps, references and database profile. Arrow keys move through the list; Enter opens a file.</p>
+        <div className="file-reader-layout">
+            <div className="file-reader-list-panel">
+                <div className="file-reader-scope" role="group" aria-label="Which files to list">
+                    <button type="button" aria-pressed={scope === 'issues'} onClick={() => setScope('issues')}>Files with issues ({issueCount})</button>
+                    <button type="button" aria-pressed={scope === 'all'} onClick={() => setScope('all')}>All files ({rows.length})</button>
+                </div>
+                <div className="file-reader-filters">
+                    <label>Search<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Part of a path" /></label>
+                    <label>Folder<select value={folder} onChange={event => setFolder(event.target.value)}><option value="">All folders</option>{folders.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+                    <label>Type<select value={type} onChange={event => setType(event.target.value)}><option value="">All types</option>{types.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+                    <label>Severity<select value={severity} onChange={event => setSeverity(event.target.value)}><option value="">Any severity</option>{severities.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+                </div>
+                <p role="status" className="file-reader-count">{visible.length} of {rows.length} files shown{visible.length > shown.length ? `; first ${shown.length} listed, narrow the filters to see the rest` : ''}.</p>
+                <ul className="file-reader-list" ref={list} onKeyDown={moveFocus} aria-label="Files">
+                    {shown.map(row => <li key={row.file.path}>
+                        <button type="button" data-reader-file="true" aria-current={row.file.path === selectedPath ? 'true' : undefined} onClick={() => onSelect(row.file.path)}>
+                            <span className="file-reader-path">{row.file.path}</span>
+                            <span className="file-reader-tags">{row.issues ? `${row.issues} ${row.issues === 1 ? 'issue' : 'issues'}` : 'no issues'}{row.severity ? ` · ${row.severity}` : ''}{row.file.database_profile ? ' · database' : ''}{row.notCleared ? ' · NOT CLEARED' : ''}</span>
+                        </button>
+                    </li>)}
+                </ul>
+                {!visible.length && <p>No files match these filters.</p>}
+            </div>
+            <div className="file-reader-detail-panel">
+                {selected ? <FileDetail key={selected.path} file={selected} result={result} onOpenFile={onOpenFile || onSelect} headingId="file-reader-detail-heading" />
+                    : selectedPath ? <p role="note">The file {selectedPath} is not in this report's file list. It may have been omitted by scan limits.</p>
+                    : <p>Select a file from the list to read its details.</p>}
+            </div>
+        </div>
+    </section>;
+}
+
+function ArchitectureOverview({ overview, onOpenFile }) {
+    const [areaId, setAreaId] = useState(null);
+    const [showAllLinks, setShowAllLinks] = useState(false);
+    if (!overview) return <p>The area overview is not available in this report. Use the All files map, or run a fresh scan with Injecticide 0.16.0 or later.</p>;
+    const areas = asArray(overview.areas);
+    const services = asArray(overview.shared_services);
+    const stores = asArray(overview.data_stores);
+    const externals = asArray(overview.external_systems);
+    const links = asArray(overview.links);
+    const names = new Map();
+    [...areas, ...services, ...stores, ...externals].forEach(item => names.set(item.id, item.label || item.path || item.id));
+    const area = areas.find(item => item.id === areaId);
+    const orderedLinks = [...links].sort((left, right) => (right.write || right.untrusted ? 1 : 0) - (left.write || left.untrusted ? 1 : 0) || (right.count || 0) - (left.count || 0));
+    const shownLinks = showAllLinks ? orderedLinks : orderedLinks.slice(0, 25);
+    return <div className="arch-overview" data-architecture-overview="true">
+        <p>Functional areas: {areas.length} · shared services: {services.length} · data stores: {stores.length} · external systems: {externals.length}{Number.isFinite(overview.unassigned_files) && overview.unassigned_files > 0 ? ` · ${overview.unassigned_files} files not assigned to an area` : ''}. Select an area to list its files.</p>
+        <h4>Functional areas</h4>
+        {!areas.length && <p>No functional areas were identified.</p>}
+        <ul className="arch-areas">{areas.map(item => <li key={item.id}>
+            <button type="button" className="arch-area-card" aria-pressed={item.id === areaId} aria-controls="arch-area-files" onClick={() => setAreaId(item.id === areaId ? null : item.id)}>
+                <span className="arch-area-source">{item.source === 'declared' ? 'Declared by the skill' : item.source === 'inferred' ? 'Inferred by Injecticide' : 'Source not reported'}</span>
+                <strong>{item.label || item.id}</strong>
+                <span className="arch-area-counts">{asArray(item.files).length} {asArray(item.files).length === 1 ? 'file' : 'files'}{Number.isFinite(item.steps) ? ` · ${item.steps} ${item.steps === 1 ? 'step' : 'steps'}` : ''}</span>
+                {asArray(item.risk_badges).length > 0 && <span className="arch-badges">{item.risk_badges.map((badge, i) => <span key={`${badge.code}:${i}`} className="arch-risk-badge">{badge.label || evidenceLabel(badge.code)}{Number.isFinite(badge.count) ? ` ${badge.count}` : ''}</span>)}</span>}
+            </button>
+        </li>)}</ul>
+        <div id="arch-area-files" className="arch-area-files" aria-live="polite">
+            {area && <>
+                <h5>Files in {area.label || area.id} ({asArray(area.files).length})</h5>
+                {area.basis && <p className="reader-meta">Why these files: {area.basis}</p>}
+                <ul>{asArray(area.files).map(path => <li key={path}><button type="button" className="file-link" onClick={() => onOpenFile(path)}>{path}</button>{asArray(area.entry_files).includes(path) && <span className="arch-entry"> · entry file</span>}</li>)}</ul>
+            </>}
+        </div>
+        <h4>Shared services ({services.length})</h4>
+        {!services.length ? <p>None identified.</p> : <ul className="arch-list">{services.map(item => <li key={item.id}>
+            <strong>{item.label || item.id}</strong>{item.path && <> · <button type="button" className="file-link" onClick={() => onOpenFile(item.path)}>{item.path}</button></>}
+            <span className="reader-meta"> · used by {asArray(item.used_by).map(id => names.get(id) || id).join(', ') || 'no area reported'}</span>
+        </li>)}</ul>}
+        <h4>Data stores ({stores.length})</h4>
+        {!stores.length ? <p>None identified.</p> : <ul className="arch-list">{stores.map(item => <li key={item.id} className={coverageNotCleared(item.coverage_status) ? 'arch-store-not-cleared' : ''}>
+            <strong>{item.label || item.id}</strong>{item.path && <> · <button type="button" className="file-link" onClick={() => onOpenFile(item.path)}>{item.path}</button></>}
+            <span className="reader-meta"> · {countText(item.row_count)} rows</span>{' '}
+            <span className={`arch-coverage${coverageNotCleared(item.coverage_status) ? ' not-cleared' : ''}`}>{coverageStatusText(item.coverage_status)}</span>{' '}
+            <DataClassBadges classes={item.data_classes} />
+        </li>)}</ul>}
+        <h4>External systems ({externals.length})</h4>
+        {!externals.length ? <p>None identified.</p> : <ul className="arch-list">{externals.map(item => <li key={item.id}>
+            <strong>{item.label || item.id}</strong> <span className="reader-meta">({evidenceLabel(item.kind, 'kind not reported')})</span>{' · '}
+            <span>{item.direction === 'write' ? 'Writes to it' : item.direction === 'read' ? 'Reads from it' : 'Direction unknown'}</span>
+            {item.untrusted && <span className="arch-untrusted"> · Untrusted content</span>}
+            {asArray(item.evidence).length > 0 && <span className="reader-meta"> · seen in {item.evidence.slice(0, 5).map((evidence, i) => <React.Fragment key={i}>{i ? ', ' : ''}<button type="button" className="file-link" onClick={() => onOpenFile(evidence.path)}>{evidence.path}{Number.isInteger(evidence.line) ? `:${evidence.line}` : ''}</button></React.Fragment>)}{item.evidence.length > 5 ? ` and ${item.evidence.length - 5} more` : ''}</span>}
+        </li>)}</ul>}
+        <h4>Connections ({links.length})</h4>
+        <p className="reader-meta">Aggregated source references between areas, services, stores and external systems. Writes and untrusted content are listed first. Runtime use is unverified.</p>
+        {!links.length ? <p>No connections were aggregated.</p> : <ul className="arch-links">{shownLinks.map((link, index) => <li key={index} className={link.write || link.untrusted ? 'arch-link-flagged' : ''}>
+            {names.get(link.source) || link.source} → {names.get(link.target) || link.target}
+            <span className="reader-meta"> · {Number.isFinite(link.count) ? `${link.count} ${link.count === 1 ? 'reference' : 'references'}` : 'count not reported'}</span>
+            {link.write && <span className="arch-flag"> · writes</span>}{link.untrusted && <span className="arch-flag"> · untrusted content</span>}
+        </li>)}</ul>}
+        {links.length > 25 && <button type="button" onClick={() => setShowAllLinks(value => !value)}>{showAllLinks ? 'Show fewer connections' : `Show all ${links.length} connections`}</button>}
+    </div>;
+}
+
+function ArchitectureViews({ result, onOpenFile, onAddToPlayground, buildInfo }) {
+    const overview = result.process_diagram?.overview;
+    const [view, setView] = useState(overview ? 'overview' : 'all');
+    return <section className="architecture-views" aria-label="Skill architecture">
+        <div className="process-toolbar architecture-view-switch" role="group" aria-label="Architecture view">
+            <button type="button" aria-pressed={view === 'overview'} onClick={() => setView('overview')}>Architecture overview</button>
+            <button type="button" aria-pressed={view === 'all'} onClick={() => setView('all')}>All files map</button>
+        </div>
+        {view === 'overview' ? <ArchitectureOverview overview={overview} onOpenFile={onOpenFile} />
+            : <SkillProcessDiagram result={result} onAddToPlayground={onAddToPlayground} buildInfo={buildInfo} />}
+    </section>;
+}
+
+const ORG_POLICY_MAX_CHARS = 262144;
+const ORG_POLICY_DOC_URL = 'https://github.com/Mr-GraphnStaff/Injecticide/blob/master/docs/org-policy.md';
+
+function orgPolicyProblem(text) {
+    if (!text.trim()) return '';
+    try {
+        const parsed = JSON.parse(text);
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? '' : 'The policy must be a JSON object ({ ... }).';
+    } catch (error) {
+        return `The policy is not valid JSON: ${String(error.message || 'parse error').slice(0, 200)}`;
+    }
+}
+
 function App({ onBack, onNavigate, buildInfo }) {
     const [testConfig, setTestConfig] = useState({
         target_service: 'anthropic',
@@ -1346,7 +1873,9 @@ function App({ onBack, onNavigate, buildInfo }) {
     const [payloadCategoriesError, setPayloadCategoriesError] = useState('');
     const [skillFile, setSkillFile] = useState(null);
     const [skillRuntime, setSkillRuntime] = useState('auto');
-    const [skillEvidence, setSkillEvidence] = useState('');
+    const [orgPolicy, setOrgPolicy] = useState('');
+    const [orgPolicyNotice, setOrgPolicyNotice] = useState('');
+    const [skillReaderPath, setSkillReaderPath] = useState(null);
     const [skillScanResult, setSkillScanResult] = useState(null);
     const [processPlayground, setProcessPlayground] = useState(null);
     const [skillScanError, setSkillScanError] = useState('');
@@ -1358,6 +1887,9 @@ function App({ onBack, onNavigate, buildInfo }) {
     const resultWorkspace = useRef(null);
     const skillFileInput = useRef(null);
     const skillScanRequest = useRef(null);
+    const orgPolicyFileInput = useRef(null);
+
+    useEffect(() => { loadFindingLabels(); }, []);
 
     useEffect(() => () => {
         const pending = skillScanRequest.current;
@@ -1696,6 +2228,39 @@ function App({ onBack, onNavigate, buildInfo }) {
         setSkillScanError('');
         setSkillReportDepth('summary');
         setSkillFindingFilter('all');
+        setSkillReaderPath(null);
+    };
+
+    const openReaderFile = (path) => {
+        if (!path) return;
+        setSkillReaderPath(path);
+        setSkillReportScope('files');
+        requestAnimationFrame(() => {
+            const heading = document.getElementById('file-reader-detail-heading');
+            heading?.focus();
+            heading?.scrollIntoView({ block: 'nearest' });
+        });
+    };
+
+    const updateOrgPolicy = (text) => {
+        setOrgPolicy(text);
+        setOrgPolicyNotice(orgPolicyProblem(text));
+        resetSkillScanState();
+    };
+
+    const handleOrgPolicyFile = async (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+        if (file.size > ORG_POLICY_MAX_CHARS) {
+            setOrgPolicyNotice(`The policy file is larger than ${ORG_POLICY_MAX_CHARS / 1024} KiB. Remove unused rules and try again.`);
+            return;
+        }
+        try {
+            updateOrgPolicy(await file.text());
+        } catch (error) {
+            setOrgPolicyNotice('The policy file could not be read. Paste its contents instead.');
+        }
     };
 
     const MAX_SKILL_UPLOAD_BYTES = 32 * 1024 * 1024;
@@ -1739,6 +2304,13 @@ function App({ onBack, onNavigate, buildInfo }) {
             return;
         }
 
+        const policyProblem = orgPolicyProblem(orgPolicy);
+        if (policyProblem) {
+            setOrgPolicyNotice(policyProblem);
+            setSkillScanError(`Scan not started. ${policyProblem.replace(/\.?$/, '.')} Fix the organization policy or remove it to scan without one.`);
+            return;
+        }
+
         resetSkillScanState();
         setIsScanningSkill(true);
         setActiveResultView('package');
@@ -1753,7 +2325,7 @@ function App({ onBack, onNavigate, buildInfo }) {
         try {
             const formData = new FormData();
             formData.append('target_runtime', skillRuntime);
-            formData.append('governance_evidence', skillEvidence || '{}');
+            if (orgPolicy.trim()) formData.append('org_policy', orgPolicy);
             formData.append('file', skillFile);
             // Keep this local selection retryable until success, replacement or clear.
             // It is never stored in a completed report or automatically uploaded again.
@@ -1800,23 +2372,17 @@ function App({ onBack, onNavigate, buildInfo }) {
     };
 
     const downloadSkillScanMarkdown = () => {
-        if (!skillScanResult) {
-            return;
-        }
-
+        if (!skillScanResult) return;
         const markdown = formatSkillScanMarkdown(skillScanResult, buildInfo, skillReportDepth);
-        const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        const baseName = slugifyFilename(skillScanResult.filename || 'skill-scan');
-        link.href = url;
-        link.download = `${baseName}-scan-report-${skillReportDepth}.md`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        downloadProcessFile(markdown, scanDownloadName(skillScanResult, buildInfo, `report-${skillReportDepth}`, 'md'), 'text/markdown;charset=utf-8');
     };
-    
+
+    const downloadSkillScanJson = () => {
+        if (!skillScanResult) return;
+        downloadProcessFile({ schema: 'injecticide-scan-export/v1', generated_at: new Date().toISOString(), injecticide_build: buildInfo || null, result: skillScanResult },
+            scanDownloadName(skillScanResult, buildInfo, 'full-data', 'json'), 'application/json');
+    };
+
     if (processPlayground) {
         const returnToScan = () => { setProcessPlayground(null); requestAnimationFrame(() => { const button = document.getElementById('skill-process-add-to-playground'); button?.focus(); button?.scrollIntoView({ block: 'nearest' }); }); };
         // This playground is drawn inside the scan page, so "Testing & scanning"
@@ -2058,11 +2624,22 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         <select id="skill-runtime" name="target_runtime" value={skillRuntime} disabled={isScanningSkill} onChange={e => { setSkillRuntime(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2">
                                             {['auto', 'generic', 'claude-code', 'claude-upload', 'openai', 'openai-mcp-import', 'copilot', 'gemini', 'cursor', 'cascade', 'kiro', 'openclaw'].map(runtime => <option key={runtime} value={runtime}>{runtime === 'auto' ? 'Detect format automatically' : runtime === 'openai-mcp-import' ? 'OpenAI MCP skill import' : runtime}</option>)}
                                         </select>
-                                        <details>
-                                            <summary>Optional review and evaluation evidence</summary>
-                                            <label htmlFor="skill-evidence" className="block mt-2">Evidence JSON (optional)</label>
-                                            <textarea id="skill-evidence" name="governance_evidence" rows={3} maxLength={131072} value={skillEvidence} disabled={isScanningSkill} onChange={e => { setSkillEvidence(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2" />
-                                            <p>Claims require artifact fingerprints and a configured trusted issuer before they can be authenticated.</p>
+                                        <details className="org-policy-input">
+                                            <summary>Organization AI policy (optional){orgPolicy.trim() ? (orgPolicyNotice ? ' · needs fixing' : ' · policy loaded') : ''}</summary>
+                                            <p id="org-policy-help" className="org-policy-help"><strong>What is this?</strong> Your organization's own rules for AI skills, written as JSON. For example: block skills that write to outside systems, or require approval when personal data is present. Injecticide checks this scan against each rule and lists which rules are triggered and which need a human check. Leave it empty to scan without a policy.</p>
+                                            <p className="org-policy-links">
+                                                <a href="/static/org-policy-template.json" download>Download template</a>
+                                                <a href={ORG_POLICY_DOC_URL} target="_blank" rel="noopener noreferrer">Policy format guide (opens GitHub in a new tab)</a>
+                                            </p>
+                                            <label htmlFor="org-policy" className="block mt-2">Policy JSON</label>
+                                            <textarea id="org-policy" name="org_policy" rows={5} maxLength={ORG_POLICY_MAX_CHARS} value={orgPolicy} disabled={isScanningSkill} aria-describedby="org-policy-help org-policy-status" aria-invalid={orgPolicyNotice ? true : undefined} spellCheck={false} onChange={e => updateOrgPolicy(e.target.value)} className="w-full bg-gray-900 border border-gray-600 rounded p-2 font-mono text-xs" />
+                                            <label htmlFor="org-policy-file" className="block mt-2">Or load a policy file (.json)</label>
+                                            <input type="file" id="org-policy-file" accept=".json,application/json" ref={orgPolicyFileInput} disabled={isScanningSkill} onChange={handleOrgPolicyFile} className="w-full text-sm text-gray-300" />
+                                            <p id="org-policy-status" className={orgPolicyNotice ? 'org-policy-error' : 'org-policy-status'} role={orgPolicyNotice ? 'alert' : 'status'}>
+                                                {orgPolicyNotice || (orgPolicy.trim() ? 'Policy ready. It will be checked with the next scan.' : 'No policy: the scan runs without organization rules.')}
+                                            </p>
+                                            {skillScanResult?.policy_evaluation?.status === 'invalid' && <p className="org-policy-error" role="alert">The server did not apply this policy ({asArray(skillScanResult.policy_evaluation.errors).length} problems). See Policy results in the report.</p>}
+                                            {orgPolicy && <button type="button" className="text-sm text-gray-300 underline" disabled={isScanningSkill} onClick={() => updateOrgPolicy('')}>Remove policy</button>}
                                         </details>
                                         <label htmlFor="skill-upload-file" className="block text-sm font-medium text-gray-300">
                                             <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload SKILL.md, .skill, or .zip (up to 32 MiB)
@@ -2202,7 +2779,8 @@ function App({ onBack, onNavigate, buildInfo }) {
                                                 <i className="fas fa-file-arrow-down mr-1"></i>
                                                 Export {skillReportDepth === 'summary' ? 'Summary' : 'Detailed'}
                                             </button>
-                                            <button type="button" onClick={() => downloadProcessFile(formatSkillImprovementPlan(skillScanResult), `${slugifyFilename(skillScanResult.filename || 'skill')}-improvement-plan.md`, 'text/markdown;charset=utf-8')}>Export improvement plan (.md)</button>
+                                            <button type="button" onClick={() => downloadProcessFile(formatSkillImprovementPlan(skillScanResult), scanDownloadName(skillScanResult, buildInfo, 'improvement-plan', 'md'), 'text/markdown;charset=utf-8')}>Export improvement plan (.md)</button>
+                                            <button type="button" onClick={downloadSkillScanJson}>Download full data (JSON)</button>
                                             <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
                                                 {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
                                             </span>
@@ -2210,7 +2788,11 @@ function App({ onBack, onNavigate, buildInfo }) {
                                     </div>
 </>}
                                     sections={{
-                                        overview: <>                                    {(() => {
+                                        overview: <>
+                                    <WhatToFix fixSummary={skillScanResult.fix_summary} onOpenFile={openReaderFile} />
+                                    <PolicyResults evaluation={skillScanResult.policy_evaluation} onOpenFile={openReaderFile} />
+                                    <EvidenceInputNotice input={skillScanResult.evidence_input} />
+                                    {(() => {
                                         const assessment = summarizeAssessment(skillScanResult);
                                         const reviewSummary = summarizeReviewClasses(skillScanResult);
                                         const concerns = topConcerns(skillScanResult);
@@ -2332,8 +2914,9 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         ))}
                                     </div>
                                     <SkillScanFiles key={skillFindingFilter} files={skillScanResult.files || []} filter={skillFindingFilter} depth={skillReportDepth} /></>,
+                                        files: <FileReadingPane result={skillScanResult} selectedPath={skillReaderPath} onSelect={setSkillReaderPath} onOpenFile={openReaderFile} />,
                                         structure: <>
-                                            <SkillProcessDiagram result={skillScanResult} onAddToPlayground={setProcessPlayground} />
+                                            <ArchitectureViews result={skillScanResult} onOpenFile={openReaderFile} onAddToPlayground={setProcessPlayground} buildInfo={buildInfo} />
                                             <PackageEffects analysis={skillScanResult.package_analysis?.effect_analysis} />
                                             {skillScanResult.package_analysis && <PackageScanOverview result={skillScanResult} />}
                                         </>,
