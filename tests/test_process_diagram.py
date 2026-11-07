@@ -283,3 +283,96 @@ def test_large_package_map_keeps_files_groups_folders_and_says_it_is_partial(mon
     evidence_ids = {n["id"] for n in diagram["nodes"]}
     skill_id = exported["nodes"][0]["id"]
     assert skill_id in evidence_ids  # citations stay attached in the playground
+
+
+def full_report(sources):
+    source = report(sources)
+    source["documented_process"] = extract_documented_steps(
+        [{"path": path, "text": text} for path, text in sources.items()],
+        source["package_analysis"]["relationship_graph"])
+    return source
+
+
+def _map_kinds(diagram):
+    return {n["label"]: n["kind"] for n in diagram["architecture_map"]["nodes"]}
+
+
+def test_scan_evidence_maps_to_real_kinds_and_flags_on_a_synthetic_skill():
+    from tests.test_architecture_overview import vendor_report
+    diagram = build_process_diagram(vendor_report())
+    exported = diagram["architecture_map"]
+    validate_map(exported)
+    kinds = _map_kinds(diagram)
+    assert kinds["SKILL.md"] == "skill"
+    assert kinds["data/vendors.sqlite"] == "data"
+    assert kinds["scripts/sync_vendors.py"] == "code"
+    assert kinds["scripts/export.py.md"] == "code"  # document-suffixed script
+    assert kinds["capabilities/weekly-report.md"] == "artifact"
+    assert kinds["https://feeds.example-corp.test (fetched content)"] == "retrieval"
+    assert kinds["https://ticketing.example-corp.test (write destination)"] == "output"
+    assert kinds["ticketing (MCP server)"] == "mcp"
+    assert kinds["WebFetch (web tool)"] == "retrieval"
+    assert kinds["Bash (shell tool)"] == "code"
+    assert any(kind == "approval" for kind in kinds.values())
+    ids = {n["id"]: n for n in exported["nodes"]}
+    for edge in exported["edges"]:
+        source, target = ids[edge["source"]], ids[edge["target"]]
+        # Untrusted exactly on edges leaving fetched content; write exactly on evidenced writes.
+        assert edge["untrusted"] == (source["kind"] == "retrieval")
+        if edge["write"]:
+            assert target["kind"] == "output" or target["label"] == "data/vendors.sqlite"
+    assert any(e["write"] and ids[e["target"]]["kind"] == "output" for e in exported["edges"])
+    # sqlite3.connect names the store but does not establish a write.
+    assert not any(e["write"] and ids[e["target"]]["kind"] == "data" for e in exported["edges"])
+
+
+def test_planner_proposes_path_edge_control_and_package_tests_for_the_synthetic_skill():
+    from architecture_map import plan_map
+    from tests.test_architecture_overview import vendor_report
+    exported = build_process_diagram(vendor_report())["architecture_map"]
+    plan = plan_map(exported)
+    titles = [t["title"] for t in plan["tests"]]
+    kinds = {n["id"]: n["kind"] for n in exported["nodes"]}
+    paths = [t for t in plan["tests"] if t["id"].startswith("path-")]
+    assert {kinds[t["node_ids"][0]] for t in paths} == {"retrieval"}
+    assert {"code", "mcp"} <= {kinds[t["node_ids"][-1]] for t in paths}
+    assert titles.count("Verify control enforcement and routing") == 1  # the approval mention
+    assert titles.count("Inspect the skill or plugin package") == 1
+    assert any(t["id"].startswith("edge-") for t in plan["tests"])
+    assert plan["summary"]["suggested_tests"] >= 10
+
+
+def test_documentation_only_skill_keeps_neutral_kinds_and_one_package_test():
+    from architecture_map import plan_map
+    source = full_report({"SKILL.md": "Read [notes](notes.md). Docs at https://docs.example-corp.test/guide.",
+                     "notes.md": "Notes."})
+    diagram = build_process_diagram(source)
+    kinds = set(_map_kinds(diagram).values())
+    assert kinds == {"skill", "artifact", "external_reference"}
+    assert not any(e["untrusted"] or e["write"] for e in diagram["architecture_map"]["edges"])
+    assert plan_map(diagram["architecture_map"])["summary"]["suggested_tests"] == 1
+
+
+def test_unknown_http_method_is_not_called_a_fetch_or_a_write():
+    source = report({"SKILL.md": "Run `python run.py`.",
+                     "run.py": "import requests\nrequests.request(method, 'https://api.example-corp.test/x')"})
+    diagram = build_process_diagram(source)
+    assert _map_kinds(diagram)["https://api.example-corp.test"] == "external_reference"
+    assert not any(e["untrusted"] or e["write"] for e in diagram["architecture_map"]["edges"])
+
+
+def test_file_write_syntax_marks_only_that_link_as_a_write():
+    source = report({"SKILL.md": "Run `python run.py`.",
+                     "run.py": "out = open('report.csv', 'w')\nsrc = open('input.csv')",
+                     "report.csv": "a", "input.csv": "b"})
+    exported = build_process_diagram(source)["architecture_map"]
+    labels = {n["id"]: n["label"] for n in exported["nodes"]}
+    flags = {labels[e["target"]]: e["write"] for e in exported["edges"] if labels[e["source"]] == "run.py"}
+    assert flags["report.csv"] is True and flags["input.csv"] is False
+
+
+def test_negated_approval_is_not_an_approval_gate():
+    positive = full_report({"SKILL.md": "Show a preview and wait for approval."})
+    negative = full_report({"SKILL.md": "Post without approval or preview."})
+    assert "approval" in _map_kinds(build_process_diagram(positive)).values()
+    assert "approval" not in _map_kinds(build_process_diagram(negative)).values()

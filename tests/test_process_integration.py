@@ -69,3 +69,30 @@ def test_long_shared_path_prefixes_keep_distinct_nodes_and_findings():
     assert {node["path"] for node in diagram["nodes"]} == set(paths)
     assert [node["finding_ids"] for node in diagram["nodes"]] == [["0"], ["1"]]
     assert all(node["assessment_state"] == "text_analyzed" for node in diagram["nodes"])
+
+
+def test_scanned_synthetic_skill_has_overview_real_kinds_and_meaningful_plan():
+    from architecture_map import plan_map, validate_map
+    from tests.test_architecture_overview import vendor_review_sources
+    report = scan_package(vendor_review_sources())
+    diagram = report["process_diagram"]
+    overview = diagram["overview"]
+    assert overview["schema"] == "injecticide-overview/v1"
+    declared = [a["label"] for a in overview["areas"] if a["source"] == "declared" and a["id"] != "area-entry"]
+    assert declared == ["Weekly vendor summary", "Vendor risk check", "Raise a ticket"]
+    validate_map(diagram["architecture_map"])
+    kinds = {n["kind"] for n in diagram["architecture_map"]["nodes"]}
+    assert {"skill", "code", "retrieval", "output", "mcp", "approval"} <= kinds
+    plan = plan_map(diagram["architecture_map"])
+    assert any(t["id"].startswith("path-") for t in plan["tests"])
+    assert plan["summary"]["suggested_tests"] > 1
+
+
+def test_router_text_is_redacted_like_other_evidence():
+    secret = "SYNTHETIC_ROUTER_SECRET_123456789"
+    report = scan_package({
+        "ticketing/SKILL.md": "| Need | Load |\n|---|---|\n"
+                              f'| Tickets password="{secret}" | [t](t.md) |\n| Weekly | [w](w.md) |\n',
+        "ticketing/t.md": "T", "ticketing/w.md": "W"})
+    assert secret not in json.dumps(report)
+    assert report["process_diagram"]["overview"]["areas"]
