@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.15.2 - 2026-11-07
+
+- Add `assessment.py`, typed result-row and coverage helpers for the
+  stress-tester result contract v2. Rows are `assessed`, `failed`, `timed_out`,
+  `cancelled` or `not_run`, with closed reasons. Coverage enforces its final
+  invariants and reports `complete` only when every planned row was assessed.
+  Duplicate row IDs and malformed inputs are rejected. Keyword signals are never
+  reported as verified findings, and no row is labelled safe. Not yet wired into
+  the web API or reports, so behavior is unchanged.
+- Append the 2026-11-06 automatic Obsession reference-index evidence update
+  (fetch-verified source changes; semantic verification not established).
+
 ## 0.15.1 - 2026-11-05
 
 - Size the daily research collection for the current 52-source, 88-URL registry:
