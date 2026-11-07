@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.15.5 - 2026-11-07
+
+- Make the skill process map readable in the playground. Package files take
+  priority: the entry skill first, then the most-connected files and files
+  with findings. At most ten unresolved names and ten capabilities or named
+  origins are kept, so passing prose mentions cannot crowd out the files.
+  Documented steps are listed inside their file instead of drawn as boxes.
+  Boxes are grouped in columns by folder, labels are paths relative to the
+  skill with markdown marks removed, and the name states how many components
+  and links are shown. Map IDs reuse the evidence view's IDs, so playground
+  citations stay attached. The scan page's evidence view is unchanged.
+- Name the offending fields when the portable frontmatter allowlist check
+  fails (for example "Found: read_pattern, size_note.").
+  The improvement plan now tells you to move those named fields, instead of
+  the generic "such as version" example that could point at a compliant field.
+
 ## 0.15.4 - 2026-11-07
 
 - Show the "Needs review" count in the scan summary and the downloaded report.

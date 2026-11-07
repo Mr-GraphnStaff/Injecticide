@@ -166,3 +166,23 @@ def test_no_network_or_raw_frontmatter_value_reflection(monkeypatch):
     report, _ = assess({"demo/SKILL.md": document(metadata={"secret": secret})})
     import json
     assert secret not in json.dumps(report)
+
+
+def test_frontmatter_field_failure_names_the_extra_fields():
+    from skill_sandbox.package_formats import portable_skill_checks
+    checks = {c["id"]: c for c in portable_skill_checks(
+        {"name": "my-skill", "description": "d", "read_pattern": "x", "size_note": "y"}, "my-skill/SKILL.md")}
+    assert checks["frontmatter_fields"]["status"] == "fail"
+    assert checks["frontmatter_fields"]["message"].endswith("Found: read_pattern, size_note.")
+
+
+def test_improvement_plan_names_the_misplaced_fields_not_a_generic_example():
+    from skill_sandbox.improvement_plan import build_improvement_plan
+    message = ("Portable frontmatter permits only name, description, license, compatibility, metadata and "
+               "allowed-tools; put additional properties such as version inside metadata. Found: read_pattern, size_note.")
+    plan = build_improvement_plan({"standards_assessment": {"requirements": [
+        {"id": "frontmatter_fields", "status": "fail", "category": "format", "requirement_level": "mandatory",
+         "path": "skill/SKILL.md", "line": 9, "message": message}]}})
+    actions = [item["action"] for item in plan["items"] if item.get("rule_id", item.get("id")) == "frontmatter_fields" or "metadata" in item.get("action", "")]
+    assert actions and actions[0].startswith("Move these top-level fields under metadata as string values: read_pattern, size_note.")
+    assert "such as version" not in actions[0]

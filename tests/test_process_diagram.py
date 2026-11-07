@@ -186,8 +186,10 @@ def test_source_evidence_and_runtime_uncertainty_remain_separate_in_exports():
     assert "documented_steps_unrecognized" not in reasons
     exported = result["architecture_map"]
     assert all(n["trust"] == n["sensitivity"] == "unknown" for n in exported["nodes"])
-    step = next(n for n in exported["nodes"] if n["kind"] == "step")
-    assert "documented step" in step["controls"]
+    # Documented steps are listed inside their file, not drawn as boxes.
+    assert not any(n["kind"] == "step" for n in exported["nodes"])
+    skill = next(n for n in exported["nodes"] if n["kind"] == "skill")
+    assert "Documented steps (2; completeness unverified): Read instructions.; Save output." in skill["controls"]
     unresolved = next(n for n in exported["nodes"] if n["kind"] == "unresolved_reference")
     assert "target unresolved (missing)" in unresolved["controls"]
     assert "Source: SKILL.md" in unresolved["controls"]
@@ -246,5 +248,38 @@ def test_truncated_map_says_so_in_its_name(monkeypatch):
     source = report({"SKILL.md": "See [a](a.md) and [b](b.md).", "a.md": "A", "b.md": "B"})
     diagram = build_process_diagram(source)
     assert diagram["omitted"]["nodes"] > 0
-    assert "partial:" in diagram["architecture_map"]["name"]
     validate_map(diagram["architecture_map"])
+
+
+def test_playground_limits_match_the_architecture_schema():
+    from architecture_map import SCHEMA
+    assert process_diagram.MAP_MAX_NODES == SCHEMA["properties"]["nodes"]["maxItems"]
+    assert process_diagram.MAP_MAX_EDGES == SCHEMA["properties"]["edges"]["maxItems"]
+
+
+def test_large_package_map_keeps_files_groups_folders_and_says_it_is_partial(monkeypatch):
+    monkeypatch.setattr(process_diagram, "MAP_MAX_NODES", 6)
+    sources = {"skill/SKILL.md": "1. **Run** `lint`.\n2. Read [a](docs/a.md) and [b](docs/b.md) and [x](scripts/x.py).\n"
+                                 + "".join(f"See [n{i}](notes/n{i}.md).\n" for i in range(8)) + "Also [gone](gone.md).",
+               "skill/docs/a.md": "A", "skill/docs/b.md": "B", "skill/scripts/x.py.md": "print(1)"}
+    sources.update({f"skill/notes/n{i}.md": "N" for i in range(8)})
+    source = report(sources)
+    source["documented_process"] = extract_documented_steps([{"path": "skill/SKILL.md", "text": sources["skill/SKILL.md"]}])
+    diagram = build_process_diagram(source)
+    exported = diagram["architecture_map"]
+    validate_map(exported)
+    labels = [n["label"] for n in exported["nodes"]]
+    assert len(labels) == 6 and labels[0] == "SKILL.md" and exported["nodes"][0]["kind"] == "skill"
+    assert "gone.md" in labels  # unresolved references are always kept
+    assert not any(n["kind"] == "step" for n in exported["nodes"])
+    assert "Run lint." in exported["nodes"][0]["controls"] and "**" not in exported["nodes"][0]["controls"]
+    assert diagram["map_omitted"]["components"] > 0
+    assert "partial: showing 6 of" in exported["name"]
+    # Folders start their own column; one folder never shares a column with another mid-way.
+    columns = {}
+    for node in exported["nodes"]:
+        columns.setdefault(node["x"], []).append(node)
+    assert len({n["id"] for n in exported["nodes"]}) == 6
+    evidence_ids = {n["id"] for n in diagram["nodes"]}
+    skill_id = exported["nodes"][0]["id"]
+    assert skill_id in evidence_ids  # citations stay attached in the playground
