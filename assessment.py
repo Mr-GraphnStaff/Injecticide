@@ -131,7 +131,7 @@ def make_unassessed_row(
 
     if outcome not in OUTCOMES or outcome == ASSESSED:
         raise ContractError(f"unassessed outcome must be one of {OUTCOMES[1:]}, got {outcome!r}")
-    allowed = REASON_OUTCOMES.get(reason)
+    allowed = REASON_OUTCOMES.get(reason) if isinstance(reason, str) else None
     if allowed is None:
         raise ContractError(f"unknown reason {reason!r}")
     if outcome not in allowed:
@@ -189,7 +189,7 @@ def validate_row(row: Mapping[str, Any]) -> None:
         _check_verified(row.get("verified"))
         return
     reason = row.get("reason")
-    allowed = REASON_OUTCOMES.get(reason)
+    allowed = REASON_OUTCOMES.get(reason) if isinstance(reason, str) else None
     if allowed is None or outcome not in allowed:
         raise ContractError(f"reason {reason!r} is not allowed with outcome {outcome!r}")
     if row.get("signals"):
@@ -212,6 +212,8 @@ def normalize_row(row: Mapping[str, Any], row_id: Any = None) -> Dict[str, Any]:
     raises ``ContractError``.
     """
 
+    if not isinstance(row, Mapping):
+        raise ContractError("row must be a mapping")
     rid = row.get("row_id", row_id)
     if rid is None:
         raise ContractError("row_id is required")
@@ -224,7 +226,13 @@ def normalize_row(row: Mapping[str, Any], row_id: Any = None) -> Dict[str, Any]:
         normalized = make_unassessed_row(rid, payload, category, FAILED, "unrecorded_outcome", detail)
         legacy_flags = row.get("flags")
         if legacy_flags:
-            normalized["legacy_flags"] = {str(k): bool(v) for k, v in dict(legacy_flags).items()}
+            if isinstance(legacy_flags, Mapping):
+                kept = {str(k): bool(v) for k, v in legacy_flags.items()}
+            elif isinstance(legacy_flags, (list, tuple)) and all(isinstance(k, str) for k in legacy_flags):
+                kept = {k: True for k in legacy_flags}
+            else:
+                raise ContractError("legacy flags must be a mapping or a list of names")
+            normalized["legacy_flags"] = kept
         return normalized
 
     validate_row(dict(row, row_id=str(rid)))
@@ -296,8 +304,12 @@ def build_coverage(
     """
 
     typed = [dict(row) for row in rows]
+    seen = set()
     for row in typed:
         validate_row(row)
+        if row["row_id"] in seen:
+            raise ContractError(f"duplicate row_id {row['row_id']!r}")
+        seen.add(row["row_id"])
     counts = {outcome: 0 for outcome in OUTCOMES}
     unrecorded = 0
     for row in typed:
@@ -308,8 +320,8 @@ def build_coverage(
             continue
         counts[row["outcome"]] += 1
 
-    if in_flight < 0:
-        raise ContractError("in_flight cannot be negative")
+    if type(in_flight) is not int or in_flight < 0:
+        raise ContractError("in_flight must be a non-negative integer")
     total_rows = len(typed)
     planned_count = total_rows + in_flight if planned is None else planned
     pending_rows = sum(1 for row in typed if row.get("reason") == "pending")

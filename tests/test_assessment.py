@@ -237,3 +237,39 @@ def test_detail_is_capped_and_escaped():
     escaped = escape_html(hostile)
     assert "<" not in escaped and ">" not in escaped and '"' not in escaped and "'" not in escaped
     assert escape_html(None) == ""
+
+
+def test_duplicate_row_ids_never_count_as_coverage():
+    with pytest.raises(ContractError, match="duplicate"):
+        build_coverage([_assessed(0), _assessed(0), _assessed(1)], planned=3)
+    with pytest.raises(ContractError, match="duplicate"):
+        build_coverage([_assessed(0), _assessed(0)])
+
+
+@pytest.mark.parametrize("bad", [None, "row", ["row_id", "0"], 7])
+def test_non_mapping_rows_raise_contract_error(bad):
+    with pytest.raises(ContractError):
+        normalize_row(bad, row_id=0)
+
+
+def test_legacy_flag_lists_are_kept_and_bad_flags_rejected():
+    row = normalize_row({"payload": "legacy", "flags": ["system_prompt_leak"]}, row_id=0)
+    assert row["legacy_flags"] == {"system_prompt_leak": True}
+    with pytest.raises(ContractError):
+        normalize_row({"payload": "legacy", "flags": 5}, row_id=1)
+
+
+@pytest.mark.parametrize("reason", [["timeout"], {"r": 1}, 3])
+def test_unhashable_or_non_string_reasons_raise_contract_error(reason):
+    with pytest.raises(ContractError):
+        make_unassessed_row(0, "p", "c", FAILED, reason)
+
+
+@pytest.mark.parametrize("in_flight", [None, 1.0, True, "1"])
+def test_in_flight_must_be_an_integer(in_flight):
+    with pytest.raises(ContractError):
+        build_coverage([_assessed(0)], in_flight=in_flight, final=False)
+
+
+def test_escape_html_escapes_ampersand_first():
+    assert escape_html('a & <b> "c" \'d\'') == "a &amp; &lt;b&gt; &quot;c&quot; &#x27;d&#x27;"
