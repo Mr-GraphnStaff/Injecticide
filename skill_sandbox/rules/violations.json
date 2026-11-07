@@ -1,6 +1,7 @@
 {
   "catalog_version": "2026-03-24",
   "last_reviewed": "2026-03-24",
+  "review_note": "last_reviewed is unchanged: on 2026-11-07 every rule's cited sources were checked, but only 3 of 24 rules are fully supported by their current citations (see each rule's source_review and docs/research/2026-11-07-violations-catalog-review.md). Rule status and patterns were not changed.",
   "rules": [
     {
       "id": "prompt_override",
@@ -23,7 +24,13 @@
           "ref": "LLM01 Prompt Injection",
           "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "supported",
+        "note": "Cited OWASP project page exists but now points to genai.owasp.org and does not list LLM01 itself. LLM01:2025 Prompt Injection (genai.owasp.org/llmrisk/llm01-prompt-injection/) Scenario #1 describes instructing a model to ignore previous guidelines.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "system_exfiltration",
@@ -53,7 +60,13 @@
           "ref": "Prompt injection series",
           "url": "https://simonwillison.net/series/prompt-injection/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "supported",
+        "note": "LLM01:2025 lists 'Revealing sensitive information about AI system infrastructure or system prompts' as an impact; LLM07:2025 System Prompt Leakage also applies. Simon Willison series page exists; a specific prompt-leak post was not confirmed.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "secret_exfiltration",
@@ -83,7 +96,13 @@
           "ref": "LLM02 Sensitive Information Disclosure",
           "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "partial",
+        "note": "LLM01:2025 names disclosure of sensitive information generally, not credentials. LLM07:2025 discusses credentials embedded in system prompts. Cited URL is the project landing page.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "sensitive_topic",
@@ -108,7 +127,13 @@
           "ref": "LLM02 Sensitive Information Disclosure",
           "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "partial",
+        "note": "Informational context rule, not an attack claim. Cited OWASP landing page exists; it does not itself describe this signal.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "tool_escape",
@@ -136,7 +161,13 @@
           "ref": "LLM01 Prompt Injection",
           "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "partial",
+        "note": "Cited OWASP landing page exists but names no item. LLM05:2025 Improper Output Handling covers model output passed to a shell, exec or eval; that is related, not the same claim.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "autonomous_authoritative_write",
@@ -165,7 +196,13 @@
           "ref": "Authorized capability misuse / enterprise action abuse",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "bulk_enterprise_modification",
@@ -194,7 +231,13 @@
           "ref": "Authorized capability misuse / enterprise action abuse",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "workflow_manipulation",
@@ -222,7 +265,13 @@
           "ref": "Workflow manipulation / enterprise action abuse",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "cross_system_automation",
@@ -250,7 +299,13 @@
           "ref": "Cross-system enterprise action abuse",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "runtime_dependency_install",
@@ -275,7 +330,13 @@
           "ref": "LLM05 Supply Chain Vulnerabilities",
           "url": "https://genai.owasp.org/llm05/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "partial",
+        "note": "Cited genai.owasp.org/llm05/ is 'LLM05: Supply Chain Vulnerabilities' (2023/24 edition); it covers vulnerable third-party packages. The current equivalent is LLM03:2025 Supply Chain. Runtime installation as such is not described.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "self_modifying_skill",
@@ -305,7 +366,13 @@
           "ref": "Claude Code sandboxing",
           "url": "https://www.anthropic.com/engineering/claude-code-sandboxing"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "source_broken",
+        "note": "docs.anthropic.com/s/claude-code-security redirects (301) to platform.claude.com/docs/s/claude-code-security, which returns 404. The second source (anthropic.com/engineering/claude-code-sandboxing, 2025-10-20) supports filesystem isolation against a prompt-injected agent modifying files, not self-modification of skills specifically.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "unicode_deception",
@@ -328,7 +395,13 @@
           "ref": "LLM05 Supply Chain Vulnerabilities",
           "url": "https://genai.owasp.org/llm05/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "source_mismatch",
+        "note": "Cited genai.owasp.org/llm05/ is the 2023/24 Supply Chain entry and does not mention Unicode or invisible characters. Candidate replacement, verified to exist: Boucher and Anderson, 'Trojan Source: Invisible Vulnerabilities', arXiv:2111.00169. Not applied.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "dynamic_import_construction",
@@ -355,7 +428,13 @@
           "ref": "LLM05 Supply Chain Vulnerabilities",
           "url": "https://genai.owasp.org/llm05/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "source_mismatch",
+        "note": "Cited genai.owasp.org/llm05/ (2023/24 Supply Chain) does not discuss obfuscated or dynamic imports.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "insecure_mcp_transport",
@@ -376,7 +455,13 @@
           "ref": "Authorization security requirements",
           "url": "https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "partial",
+        "note": "MCP authorization spec 2025-03-26 exists and states 'All authorization endpoints MUST be served over HTTPS'. That covers authorization endpoints, not all MCP traffic, and authorization is optional in that spec. Newer spec revisions were not checked.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "unverified_mcp_server",
@@ -402,7 +487,13 @@
           "ref": "Authorization security requirements",
           "url": "https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "partial",
+        "note": "MCP Registry 'about' page exists: it verifies namespace ownership and delegates security scanning to package registries and aggregators. The trusted-host list is Injecticide policy, not a registry list.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "dynamic_exec",
@@ -425,7 +516,13 @@
           "ref": "Execution-oriented technique mapping",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "subprocess_spawn",
@@ -448,7 +545,13 @@
           "ref": "Execution-oriented technique mapping",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "network_calls",
@@ -471,7 +574,13 @@
           "ref": "External interaction / exfiltration oriented behavior",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "filesystem_access",
@@ -494,7 +603,13 @@
           "ref": "Local system interaction",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "url_fetch",
@@ -517,7 +632,13 @@
           "ref": "External interaction / download behavior",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "base64_usage",
@@ -541,7 +662,13 @@
           "ref": "LLM01 Prompt Injection",
           "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "supported",
+        "note": "LLM01:2025 Scenario #9 'Multilingual/Obfuscated Attack' names Base64-encoded instructions used to evade filters. Cited URL is the project landing page.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "dangerous_file_ops",
@@ -564,7 +691,13 @@
           "ref": "Local system interaction",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "home_write",
@@ -587,7 +720,13 @@
           "ref": "Local system interaction",
           "url": "https://atlas.mitre.org/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "not_established",
+        "note": "Cited URL is the MITRE ATLAS home page (a script-rendered page; only its title was retrievable). ATLAS itself exists (mitre-atlas/atlas-data README). No specific technique is cited, so support for this rule is not established.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     },
     {
       "id": "sensitive_keywords",
@@ -610,7 +749,13 @@
           "ref": "LLM02 Sensitive Information Disclosure",
           "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
         }
-      ]
+      ],
+      "source_review": {
+        "reviewed_on": "2026-11-07",
+        "state": "partial",
+        "note": "Cited OWASP landing page exists; it does not itself describe this signal. LLM07:2025 covers credentials such as API keys in system prompts.",
+        "record": "docs/research/2026-11-07-violations-catalog-review.md"
+      }
     }
   ]
 }
