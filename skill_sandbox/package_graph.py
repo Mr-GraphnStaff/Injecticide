@@ -22,6 +22,9 @@ except ImportError:
 
 MAX_NODES = 500
 MAX_EDGES = 2000
+DOCUMENT_SUFFIXES = (".md", ".txt")
+# Unresolved references whose intended file is evidently present elsewhere.
+VARIANT_STATUSES = {"document_suffix_variant", "name_only_match", "ambiguous_name_match"}
 MAX_OBSERVATIONS = 500
 MAX_SOURCE_CHARACTERS = 1024 * 1024
 MAX_TOTAL_CHARACTERS = 4 * 1024 * 1024
@@ -190,6 +193,34 @@ class _Graph:
                                            and any(path.casefold() == candidate.casefold() for candidate in candidates)})
                     if case_matches:
                         status = "case_mismatch" if len(case_matches) == 1 else "ambiguous_case_reference"
+                    elif status == "missing":
+                        # The named file is packaged under a document suffix
+                        # (``tool.py`` shipped as ``tool.py.md``). Recorded as a
+                        # distinct status: the literal path still does not exist.
+                        suffix_matches = sorted({candidate + suffix for candidate in candidates
+                                                 for suffix in DOCUMENT_SUFFIXES
+                                                 if candidate + suffix in self.paths and inside_boundary(candidate + suffix)})
+                        if suffix_matches:
+                            status = "document_suffix_variant"
+                            variant_candidates = suffix_matches
+                        elif "/" not in normalized:
+                            # A bare file name that exists elsewhere in the same
+                            # skill or package; never treated as resolved.
+                            scope = [root + "/" for root in self.skill_roots if source.startswith(root + "/")] or [boundary + "/" if boundary else ""]
+                            def named(names):
+                                return sorted({path for path in self.paths if inside_boundary(path)
+                                               and posixpath.basename(path) in names
+                                               and any(path.startswith(prefix) for prefix in scope)})
+                            name_matches = named({normalized})
+                            disguised = [] if name_matches else named({normalized + suffix for suffix in DOCUMENT_SUFFIXES})
+                            if name_matches:
+                                status = "name_only_match" if len(name_matches) == 1 else "ambiguous_name_match"
+                                variant_candidates = name_matches
+                            elif len(disguised) == 1:
+                                # Bare name of a script packaged under a document suffix.
+                                status, variant_candidates = "document_suffix_variant", disguised
+                            elif disguised:
+                                status, variant_candidates = "ambiguous_name_match", disguised
         key = (source, target, line, kind, status)
         if key not in self.edge_keys:
             self.edge_keys.add(key)
@@ -197,6 +228,8 @@ class _Graph:
                     "status": status, "evidence_scope": "declared_static_reference"}
             if status in {"case_mismatch", "ambiguous_case_reference"}:
                 edge["case_mismatch_candidates"] = [{"path": path} for path in case_matches]
+            if status in VARIANT_STATUSES:
+                edge["variant_candidates"] = [{"path": path} for path in variant_candidates]
             self.edges.append(edge)
 
     def observe(self, path, line, capability, operation, **details):

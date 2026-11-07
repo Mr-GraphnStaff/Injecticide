@@ -27,6 +27,11 @@ RELATIONS = {
     "source_file_access": "names file in source",
     "manifest_component": "declares manifest component",
 }
+# Unresolved references linked to the one packaged file they evidently name.
+VARIANT_LABELS = {
+    "document_suffix_variant": "names file packaged under a document suffix",
+    "name_only_match": "names file by bare name; path unresolved",
+}
 
 
 def extract_documented_steps(text_sources, relationship_graph=None):
@@ -186,6 +191,16 @@ def _origin(value):
         return ""
 
 
+def _first_edge_per_pair(edges):
+    seen, result = set(), []
+    for item in edges:
+        pair = (item["source"], item["target"])
+        if pair not in seen:
+            seen.add(pair)
+            result.append(item)
+    return result
+
+
 def build_process_diagram(report):
     """Derive bounded JSON, Mermaid and playground maps from a redacted report.
 
@@ -239,17 +254,29 @@ def build_process_diagram(report):
         return node(("file", path), "file", path, path, _citation(path),
                     assessment_state=files.get(path, {}).get("assessment_state", "unknown"))
 
+    edge_lookup = {}
+
     def edge(source, target, label, kind, status, citation):
         nonlocal omitted_edges
+        if source is not None and source == target:
+            return  # a file referring to itself adds no relationship
+        key = (source, target, label, kind, status)
+        if source is not None and target is not None and key in edge_lookup:
+            current = edge_lookup[key]
+            if citation and citation not in current["citations"]:
+                current["citations"].append(citation)
+            return
         if source is None or target is None or len(edges) >= MAX_EDGES:
             omitted_edges += 1
             return
+        edge_lookup[key] = None  # replaced below
         edges.append({"id": "e" + str(len(edges)), "source": source, "target": target,
                       "label": label, "kind": kind, "status": status,
                       "knowledge_status": "known" if status == "resolved" else "unknown",
                       "knowledge_scope": "source_evidence_only",
                       "verification": "static_evidence_only" if status == "resolved" else UNKNOWN,
                       "citations": [citation], "execution_verified": False})
+        edge_lookup[key] = edges[-1]
 
     for path in sorted(entries):
         file_node(path)
@@ -279,11 +306,16 @@ def build_process_diagram(report):
         kind, status = _text(record.get("kind"), 100), _text(record.get("status"), 100)
         citation = _citation(source, record)
         source_id = file_node(source)
-        target_id = file_node(target) if status == "resolved" else node(
-            ("unresolved", target, status), "unresolved", target, None, citation,
-            status=status or "unknown", verification=UNKNOWN)
-        edge(source_id, target_id, RELATIONS.get(kind, "declares reference"), kind,
-             status or "unknown", citation)
+        variants = [_path(c.get("path")) for c in _items(record.get("variant_candidates")) if isinstance(c, dict)]
+        label = RELATIONS.get(kind, "declares reference")
+        if status == "resolved":
+            target_id = file_node(target)
+        elif status in VARIANT_LABELS and len(variants) == 1 and variants[0]:
+            target_id, label = file_node(variants[0]), VARIANT_LABELS[status]
+        else:
+            target_id = node(("unresolved", target, status), "unresolved", target, None, citation,
+                             status=status or "unknown", verification=UNKNOWN)
+        edge(source_id, target_id, label, kind, status or "unknown", citation)
     for record in _items(graph.get("capability_observations")):
         if not isinstance(record, dict):
             continue
@@ -359,7 +391,10 @@ def build_process_diagram(report):
     # Interoperability uses only the existing strict playground schema. Separate
     # citations above remain authoritative; controls carry the static-view caveat.
     result["architecture_map"] = {
-        "schema_version": 1, "name": "Scanned skill: documented relationships",
+        "schema_version": 1,
+        "name": "Scanned skill: documented relationships" + (
+            f" (partial: {len(omitted_nodes)} items and {omitted_edges} links not shown)"
+            if omitted_nodes or omitted_edges else ""),
         "nodes": [{"id": n["id"], "kind": "skill" if n["entrypoint"] else {
                        "step": "step", "file": "artifact", "capability": "capability",
                        "external": "external_reference", "unresolved": "unresolved_reference"}[n["kind"]],
@@ -372,7 +407,8 @@ def build_process_diagram(report):
                    }[n["kind"]] + ". Runtime: unverified. Trust and sensitivity: unassessed. " +
                        "Source: " + (n["path"] or "; ".join(c["path"] for c in n["citations"][:3])))[:1000]}
                   for i, n in enumerate(nodes)],
+        # The playground draws one arrow per pair; labelled relations stay in ``edges``.
         "edges": [{"id": e["id"], "source": e["source"], "target": e["target"], "untrusted": False, "write": False}
-                  for e in edges],
+                  for e in _first_edge_per_pair(edges)],
     }
     return result
