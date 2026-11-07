@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.3 - 2026-11-07
+
+- Fix skill scans failing with a server error when a file or a fenced code
+  block contains malformed Python, such as an unterminated triple-quoted string
+  or inconsistent indentation. The tokenizer error was raised while iterating,
+  outside the existing guard. Malformed Python is now scanned as raw text, so
+  nothing is skipped and the scan completes.
+
 ## 0.15.2 - 2026-11-07
 
 - Add `assessment.py`, typed result-row and coverage helpers for the
