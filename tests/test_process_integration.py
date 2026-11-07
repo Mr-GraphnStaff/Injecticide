@@ -49,7 +49,11 @@ def test_diagram_playground_export_validates_without_external_calls():
     plan = plan_map(report["process_diagram"]["architecture_map"])
     assert plan["status"] == "modeled_only"
     exported_nodes = report["process_diagram"]["architecture_map"]["nodes"]
-    assert any(node["kind"] == "step" for node in exported_nodes)
+    # Documented steps are listed inside their file rather than drawn as boxes.
+    assert not any(node["kind"] == "step" for node in exported_nodes)
+    skill = next(node for node in exported_nodes if node["kind"] == "skill")
+    assert "Documented steps (" in skill["controls"] and "Read notes." in skill["controls"]
+    assert "](" not in skill["controls"]
     assert any(node["kind"] == "artifact" for node in exported_nodes)
 
 

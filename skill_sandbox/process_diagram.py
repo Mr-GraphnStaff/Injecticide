@@ -406,7 +406,8 @@ MAP_KIND = {"file": "artifact", "capability": "capability", "external": "externa
 
 def _plain_label(value, limit=160):
     """Markdown emphasis and code marks are noise in a map label."""
-    text = re.sub(r"(\*\*|__|`)", "", value or "")
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", value or "")  # [text](target) -> text
+    text = re.sub(r"(\*\*|__|`)", "", text)
     text = re.sub(r"^\s*#+\s*", "", text)
     return re.sub(r"\s+", " ", text).strip()[:limit]
 
