@@ -29,6 +29,9 @@ if __package__:
     from .package_analysis import enrich_result
     from .package_formats import bounded_data, RUNTIMES
     from .inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
+    from .package_evidence import evidence_input_report
+    from .org_policy import evaluate_policy, RESULT_SCHEMA as POLICY_RESULT_SCHEMA
+    from .fix_summary import build_fix_summary
 else:
     from asset_inspection import inspect_asset
     from nested_archives import NestedArchiveBudget, inspect_nested_zip, is_nested_zip
@@ -45,6 +48,9 @@ else:
     from package_analysis import enrich_result
     from package_formats import bounded_data, RUNTIMES
     from inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
+    from package_evidence import evidence_input_report
+    from org_policy import evaluate_policy, RESULT_SCHEMA as POLICY_RESULT_SCHEMA
+    from fix_summary import build_fix_summary
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
@@ -78,7 +84,7 @@ MAX_TEXT_CHARS = 1024 * 1024
 
 @app.post("/scan")
 async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("auto"),
-                     governance_evidence: str = Form("{}")) -> Dict[str, object]:
+                     governance_evidence: str = Form("{}"), org_policy: str = Form("")) -> Dict[str, object]:
     if not file.filename:
         await file.close()
         raise HTTPException(status_code=400, detail="Missing filename")
@@ -89,7 +95,9 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
     try:
         upload_bytes = await file.read(MAX_UPLOAD_BYTES + 1)
         evidence = bounded_data(governance_evidence)
-        result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence)
+        # The policy is passed as raw text: its SHA-256 identifies the exact
+        # submitted policy, and an invalid policy is reported, not rejected.
+        result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence, org_policy)
         return result
     except (ValueError, zipfile.BadZipFile, tarfile.TarError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -99,7 +107,7 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
 
 
 def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None,
-                *, source_channel="uploaded_artifact") -> Dict[str, object]:
+                org_policy=None, *, source_channel="uploaded_artifact") -> Dict[str, object]:
     if not isinstance(source_channel, str) or source_channel not in SOURCE_CHANNELS:
         raise ValueError("Unsupported source channel")
     if len(upload_bytes) > MAX_UPLOAD_BYTES:
@@ -110,15 +118,33 @@ def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", gover
     lower_name = filename.lower()
 
     if lower_name.endswith(".zip") or zipfile.is_zipfile(io.BytesIO(upload_bytes)):
-        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel)
+        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel, org_policy=org_policy)
 
     if lower_name.endswith((".tar", ".tar.gz", ".tgz")):
-        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel)
+        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel, org_policy=org_policy)
 
-    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence, source_channel)
+    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence, source_channel, org_policy)
 
 
-def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact") -> Dict[str, object]:
+def _finalize_result(result, text_sources, governance_evidence=None, org_policy=None):
+    """Additive report sections computed after findings and redaction are final."""
+    evidence = result.get("governance_evidence") or {}
+    result["evidence_input"] = evidence_input_report(governance_evidence, evidence.get("artifact_sha256"),
+                                                     evidence.get("evidence_authentication"))
+    try:
+        result["policy_evaluation"] = evaluate_policy(org_policy, result, text_sources)
+    except Exception as exc:  # A policy problem must never fail the scan itself.
+        result["policy_evaluation"] = {
+            "schema": POLICY_RESULT_SCHEMA, "status": "invalid", "policy": None,
+            "errors": [{"path": "", "message": f"Policy could not be evaluated ({type(exc).__name__}).", "suggestion": None}],
+            "warnings": [], "rules": [], "not_statically_checkable": [], "verification_notes": [],
+            "effect_summary": {"block": 0, "require_approval": 0, "warn": 0, "allow": 0, "advisory_block": 0},
+            "decision": "not_evaluated"}
+    result["fix_summary"] = build_fix_summary(result)
+    return result
+
+
+def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact", org_policy=None) -> Dict[str, object]:
     warnings: List[str] = []
     excluded = []
     with tempfile.TemporaryDirectory() as temp_root:
@@ -132,15 +158,17 @@ def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_
 
         results, text_sources = _scan_extracted_files(extracted, excluded)
         result = _assemble_result(filename, archive_type, results, warnings, text_sources)
-        return enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text, source_channel=source_channel)
+        result = enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text, source_channel=source_channel)
+        return _finalize_result(result, text_sources, governance_evidence, org_policy)
 
 
-def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact") -> Dict[str, object]:
+def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact", org_policy=None) -> Dict[str, object]:
     entry, text = _scan_file_bytes(filename, upload_bytes)
     results = [entry]
     text_sources = _build_text_sources([(filename, text, entry["artifact_role"])])
-    return enrich_result(_assemble_result(filename, "skill", results, [], text_sources), text_sources,
-                         upload_bytes, target_runtime, governance_evidence, rescan=_scan_text, source_channel=source_channel)
+    result = enrich_result(_assemble_result(filename, "skill", results, [], text_sources), text_sources,
+                           upload_bytes, target_runtime, governance_evidence, rescan=_scan_text, source_channel=source_channel)
+    return _finalize_result(result, text_sources, governance_evidence, org_policy)
 
 
 def _max_scannable_file_bytes(path: str, header: bytes = b"") -> int:
