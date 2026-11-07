@@ -1,0 +1,7 @@
+{
+  "schema": "injecticide-org-policy/v1",
+  "name": "Placeholder policy template",
+  "organization": "Example organization",
+  "description": "Placeholder for UI testing only. Integration replaces this file with docs/org-policy-template.json; see docs/org-policy.md for the format.",
+  "rules": []
+}
