@@ -28,6 +28,7 @@ COPY governance.py /app/governance.py
 COPY scan_rules.py /app/scan_rules.py
 COPY speech_acts.py /app/speech_acts.py
 COPY obsession_signatures.py /app/obsession_signatures.py
+COPY secret_detection.py /app/secret_detection.py
 COPY sensitive_data.py /app/sensitive_data.py
 COPY package_formats.py /app/package_formats.py
 COPY package_threats.py /app/package_threats.py

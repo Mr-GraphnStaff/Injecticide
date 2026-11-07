@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.15.6 - 2026-11-07
+
+- Detect hardcoded secrets in scanned packages (`hardcoded_secret`). Before this
+  release Injecticide had no such detector: credential text was only masked in
+  reports, and `docs/scanner-evidence.md` wrongly implied a detector existed.
+  Known vendor formats (PEM private keys, AWS, GitHub, Slack, Stripe, Google,
+  Anthropic, OpenAI, Azure Storage keys, connection strings with passwords)
+  block; JWTs and credential-named high-entropy assignments require review.
+  Placeholders and documented example values are skipped. Secrets in reference
+  documents are not downgraded. Values are always masked.
+- Mask every recognized secret wherever any finding quotes it, including each
+  line of a private-key body. Previously a raw-line sample could keep up to 16
+  characters at each end of a key.
+- Add a planted-secret regression (every supported format must be reported and
+  no fragment may appear in the report) and a test that every module imported
+  by the sandbox is copied into its image.
+
 ## 0.15.5 - 2026-11-07
 
 - Make the skill process map readable in the playground. Package files take

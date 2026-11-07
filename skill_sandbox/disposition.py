@@ -98,7 +98,7 @@ def _disposition_for_observation(
 ) -> Dict[str, object]:
     # A reference/template describes the artifact's purpose, not whether its
     # actual personal data requires disclosure review.
-    data_presence = detector_id.startswith(("pii_", "phi_"))
+    data_presence = detector_id.startswith(("pii_", "phi_")) or detector_id == "hardcoded_secret"
     for override in catalog.get("role_overrides", []):
         if not data_presence and artifact_role in override.get("artifact_roles", []):
             return dict(override)

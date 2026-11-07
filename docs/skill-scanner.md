@@ -110,6 +110,16 @@ MCP reference library. See the [source review and implementation map](research/2
   Bare filenames are included; case-only alternatives remain explicit mismatches
   rather than being assumed to work on a case-sensitive runtime. Audit/reference
   file labels do not grant unrelated instructions a trust exemption.
+- Hardcoded secrets in any text file (`hardcoded_secret`, from 0.15.6): PEM
+  private keys; AWS, GitHub, Slack, Stripe, Google, Anthropic and OpenAI key
+  formats; Azure Storage account keys; connection strings with an embedded
+  password; JSON Web Tokens; and credential-named assignments with a
+  high-entropy literal. Known vendor formats block; JWTs and generic
+  assignments require review. Documented example values and placeholders are
+  skipped. Values are masked in the finding and wherever any other finding
+  quotes them. Not detected: secrets in binaries, in encodings beyond the
+  single base64 layer, split across lines or files, or in formats not listed
+  here; a clean result is not proof that a package contains no secrets.
 - Bounded Python credential-source-to-network URL/payload observations,
   including recognized source behind document suffixes and Python fences.
   Authentication fields and ordinary report uploads have paired negative tests.

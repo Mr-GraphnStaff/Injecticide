@@ -8,10 +8,12 @@ from urllib.parse import urlparse
 if __package__:
     from .disposition import apply_disposition, format_observation_sample, normalize_observations
     from .scan_rules import load_rule_catalog
+    from .secret_detection import detect_secret_findings
     from .sensitive_data import detect_sensitive_data_findings
 else:
     from disposition import apply_disposition, format_observation_sample, normalize_observations
     from scan_rules import load_rule_catalog
+    from secret_detection import detect_secret_findings
     from sensitive_data import detect_sensitive_data_findings
 
 
@@ -192,6 +194,7 @@ def detect_special_findings(path: str, text: str, artifact_role: str) -> List[Di
         findings.append(build_finding(catalog["unverified_mcp_server"], [url], artifact_role))
 
     findings.extend(detect_sensitive_data_findings(text, artifact_role, build_finding))
+    findings.extend(detect_secret_findings(text, artifact_role, build_finding))
     return findings
 
 

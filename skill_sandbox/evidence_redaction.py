@@ -9,6 +9,11 @@ from __future__ import annotations
 import re
 from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit, urlunsplit
 
+try:
+    from .secret_detection import FORMATS as SECRET_FORMATS, _placeholder as _secret_placeholder
+except ImportError:  # flat sandbox image layout
+    from secret_detection import FORMATS as SECRET_FORMATS, _placeholder as _secret_placeholder
+
 REDACTED = "[REDACTED]"
 MAX_SECRET_VALUES = 128
 MAX_SECRET_CHARACTERS = 32768
@@ -20,6 +25,7 @@ SENSITIVE_KEY = re.compile(r"(?:api[-_]?key|(?:access|refresh|session|auth)[-_]?
 DECLARATION = re.compile(
     r'''(?ix)["']?\b(?:api[-_]?key|(?:access|refresh|session|auth)[-_]?token|authorization|password|passwd|(?:client[-_]?)?secret|private[-_]?key)\b["']?\s*[:=]\s*["']([^"'\r\n]{1,8192})["']''')
 AUTHORIZATION = re.compile(r"(?i)\b(?:Bearer|Basic)\s+([A-Za-z0-9._~+/=-]{4,8192})")
+PEM_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(.{0,65536}?)-----END", re.S)
 TRUSTED_FIELDS = {
     "id", "rule_id", "status", "severity", "tier", "category", "finding_category", "subject",
     "action_state", "disposition", "display_kind", "decision", "execution_tier", "policy_capabilities",
@@ -103,6 +109,18 @@ def redact_result(result, texts):
             _remember(values, match[1])
         for match in URL_RE.finditer(bounded):
             _url_credentials(match[0], values)
+        # Every value the secret detector recognizes is masked wherever any
+        # other finding quotes it, including each line of a private-key body.
+        for kind, _, pattern, group, _ in SECRET_FORMATS:
+            if kind == "private_key":
+                continue
+            for match in pattern.finditer(bounded):
+                if not _secret_placeholder(match[group]):
+                    _remember(values, match[group])
+        for match in PEM_BLOCK.finditer(bounded):
+            for line in match[1].split():
+                if len(line) >= 8 and ":" not in line:
+                    _remember(values, line)
     # Longest-first prevents a shorter credential hiding part of a longer one.
     secrets = sorted(values, key=len, reverse=True)
     replacements = set()

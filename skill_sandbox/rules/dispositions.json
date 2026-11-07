@@ -375,6 +375,32 @@
           "counts_for_governance": false
         }
       }
+    },
+    {
+      "detector_id": "hardcoded_secret",
+      "contexts": {
+        "known_secret_format": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        },
+        "credential_like_value": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        },
+        "test_fixture": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
     }
   ]
 }
