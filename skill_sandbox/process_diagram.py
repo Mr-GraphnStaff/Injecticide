@@ -9,6 +9,15 @@ import posixpath
 import re
 from urllib.parse import urlsplit
 
+try:
+    from .architecture_overview import (build_overview, declared_tools, disguised_paths, edge_target,
+                                        extract_declared_structure, is_code_file, is_data_file,
+                                        origin_directions, write_lines)
+except ImportError:  # flat sandbox image layout
+    from architecture_overview import (build_overview, declared_tools, disguised_paths, edge_target,
+                                       extract_declared_structure, is_code_file, is_data_file,
+                                       origin_directions, write_lines)
+
 MAX_NODES = 100
 MAX_EDGES = 200
 MAX_INPUT_ITEMS = 3000
@@ -41,6 +50,15 @@ def extract_documented_steps(text_sources, relationship_graph=None):
     words are mentions, not verified controls or inferred branches. Only adjacent
     numbered entries (allowing blank lines) establish documented ordering.
     """
+    # Routers, declared tools and approval mentions feed the architecture view.
+    # Computed here so the report redactor sanitizes them with the steps.
+    declared = extract_declared_structure(text_sources, relationship_graph)
+    result = _extract_steps(text_sources, relationship_graph)
+    result["declared_structure"] = declared
+    return result
+
+
+def _extract_steps(text_sources, relationship_graph=None):
     steps, limits = [], []
     sources = [source for source in text_sources if isinstance(source.get("path"), str)
                and isinstance(source.get("text"), str)]
@@ -392,6 +410,7 @@ def build_process_diagram(report):
     # citations above remain authoritative; controls carry the static-view caveat.
     result["architecture_map"], result["map_omitted"] = _playground_map(
         graph, documented, files, entries, lookup, edges)
+    result["overview"] = build_overview(report)
     return result
 
 
@@ -399,7 +418,7 @@ MAP_ROWS, MAP_COLUMN_WIDTH, MAP_ROW_HEIGHT = 15, 250, 112
 # The playground schema's limits (architecture_map.py); the sandbox image does
 # not ship that module, and tests assert these stay equal.
 MAP_MAX_NODES, MAP_MAX_EDGES = 100, 200
-MAP_SIDE_SLOTS = 10  # at most this many unresolved names, and capabilities/origins
+MAP_SIDE_SLOTS = 10  # at most this many unresolved names, declared systems, and capabilities/origins
 MAP_KIND = {"file": "artifact", "capability": "capability", "external": "external_reference",
             "unresolved": "unresolved_reference"}
 
@@ -415,31 +434,47 @@ def _plain_label(value, limit=160):
 def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
     """A readable, bounded component map for the playground.
 
-    Components are package files, recognized capabilities, named origins and
-    unresolved references. Documented steps are listed inside their file rather
-    than drawn as boxes. When the package exceeds the playground limits, the
-    entry skill, unresolved references and the most-connected components are
-    kept and the name says how much is shown. Node and edge IDs reuse the
-    evidence view's IDs where the same component or relation exists there, so
-    playground citations stay attached.
+    Components are package files, recognized capabilities, named origins,
+    declared tools and approval mentions, and unresolved references. Kinds come
+    from static evidence only: data files are ``data``; scripts, including ones
+    packaged under a document suffix, are ``code``; origins a script or a
+    documented line fetches are ``retrieval`` (edges out of them are
+    ``untrusted``); origins written to are ``output`` (edges into them are
+    ``write``); declared tools are ``tool``/``mcp``; approval or preview
+    mentions are ``approval``. Without such evidence a component keeps a neutral
+    kind and its direction is stated as unknown, never guessed.
+
+    Documented steps are listed inside their file rather than drawn as boxes.
+    When the package exceeds the playground limits, the entry skill, unresolved
+    references, declared systems and the most-connected components are kept and
+    the name says how much is shown. Node and edge IDs reuse the evidence view's
+    IDs where the same component or relation exists there.
     """
     max_nodes, max_edges = MAP_MAX_NODES, MAP_MAX_EDGES
     components, relations = {}, {}
+    declared = documented.get("declared_structure") or {}
+    disguised = disguised_paths(graph)
+    writes = write_lines(graph)
 
-    def component(key, kind, path, label, status=None):
+    def component(key, kind, path, label, status=None, map_kind=None, evidence=None):
         if key not in components:
             components[key] = {"key": key, "kind": kind, "path": path, "label": label,
-                               "status": status, "sources": []}
+                               "status": status, "sources": [], "map_kind": map_kind, "evidence": evidence}
         return key
 
-    def relate(source, target):
+    def relate(source, target, untrusted=False, write=False):
         if source != target:
-            relations.setdefault((source, target), None)
+            flags = relations.setdefault((source, target), {"untrusted": False, "write": False})
+            flags["untrusted"] = flags["untrusted"] or untrusted
+            flags["write"] = flags["write"] or write
+
+    def file_key(path):
+        return component(("file", path), "file", path, path)
 
     for path in files:
-        component(("file", path), "file", path, path)
+        file_key(path)
     for path in entries:
-        component(("file", path), "file", path, path)
+        file_key(path)
     for record in _items(graph.get("edges")):
         if not isinstance(record, dict):
             continue
@@ -447,28 +482,61 @@ def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
         if not source or not target:
             continue
         status = _text(record.get("status"), 100) or "unknown"
-        variants = [_path(c.get("path")) for c in _items(record.get("variant_candidates")) if isinstance(c, dict)]
-        source_key = component(("file", source), "file", source, source)
-        if status == "resolved":
-            target_key = component(("file", target), "file", target, target)
-        elif status in VARIANT_LABELS and len(variants) == 1 and variants[0]:
-            target_key = component(("file", variants[0]), "file", variants[0], variants[0])
+        source_key = file_key(source)
+        known = edge_target(record)
+        if known:
+            # A write is evidenced only by write syntax on the referencing line.
+            relate(source_key, file_key(known), write=(source, record.get("line")) in writes)
         else:
             target_key = component(("unresolved", target, status), "unresolved", None, target, status)
             components[target_key]["sources"].append(source)
-        relate(source_key, target_key)
+            relate(source_key, target_key)
     for record in _items(graph.get("capability_observations")):
         if isinstance(record, dict) and _path(record.get("source")) and _text(record.get("capability"), 100):
             name = _text(record.get("capability"), 100)
             key = component(("capability", name), "capability", None, name.replace("_", " "))
             components[key]["sources"].append(_path(record.get("source")))
-            relate(component(("file", _path(record["source"])), "file", _path(record["source"]), _path(record["source"])), key)
-    for record in _items(graph.get("external_references")):
-        if isinstance(record, dict) and _path(record.get("source")) and _origin(record.get("url")):
-            origin = _origin(record.get("url"))
-            key = component(("external", origin), "external", None, origin)
-            components[key]["sources"].append(_path(record.get("source")))
-            relate(component(("file", _path(record["source"])), "file", _path(record["source"]), _path(record["source"])), key)
+            relate(file_key(_path(record["source"])), key)
+    for origin, buckets in sorted(origin_directions(graph, declared).items()):
+        read_key = write_key = None
+        if buckets["read"]:
+            read_key = component(("external", origin, "read"), "system", None, origin + " (fetched content)",
+                                 map_kind="retrieval",
+                                 evidence="content fetched from this origin in source syntax or a documented step; not contacted. Direction: read")
+            for path, _ in buckets["read"]:
+                components[read_key]["sources"].append(path)
+                relate(read_key, file_key(path), untrusted=True)
+        if buckets["write"]:
+            write_key = component(("external", origin, "write"), "system", None, origin + " (write destination)",
+                                  map_kind="output",
+                                  evidence="data sent to this origin in source syntax or a documented step; not contacted. Direction: write")
+            for path, _ in buckets["write"]:
+                components[write_key]["sources"].append(path)
+                relate(file_key(path), write_key, write=True)
+        for path, _ in buckets["mention"]:
+            key = read_key or write_key or component(("external", origin), "external", None, origin)
+            components[key]["sources"].append(path)
+            relate(file_key(path), key)
+    for (kind, _), tool in declared_tools(declared).items():
+        direction = tool["direction"]
+        suffix = {"mcp": " (MCP server)", "retrieval": " (web tool)", "code": " (shell tool)"}.get(kind, " (tool)")
+        key = component(("tool", kind, tool["name"].lower()), "system", None, tool["name"] + suffix, map_kind=kind,
+                        evidence="declared tool or connector named in the package; not invoked. Direction: " + direction)
+        users = sorted(p for p in tool.get("used_by_targets", ()) if p in files) or sorted(entries)
+        components[key]["sources"].extend(e["path"] for e in tool["evidence"])
+        for path in users:
+            if kind == "retrieval":
+                relate(key, file_key(path), untrusted=True)
+            else:
+                relate(file_key(path), key, write=direction == "write")
+    for mention in _items(declared.get("approval_mentions")):
+        if isinstance(mention, dict) and _path(mention.get("path")) in files:
+            path = _path(mention["path"])
+            key = component(("approval", path), "system", None,
+                            "Approval or preview: " + _plain_label(_text(mention.get("text"), 200), 100), map_kind="approval",
+                            evidence="approval or preview gate mentioned in documentation; enforcement unverified")
+            components[key]["sources"].append(path)
+            relate(file_key(path), key)
 
     steps = {}
     for record in _items(documented.get("steps")):
@@ -488,11 +556,12 @@ def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
         return sorted((item for item in components.values() if item["kind"] in kinds),
                       key=lambda item: (-score(item), item["label"]))
 
-    # Package files carry the structure. Unresolved names and capabilities are
-    # bounded so passing prose mentions cannot crowd the files out.
+    # Package files carry the structure. Unresolved names, declared systems and
+    # capabilities are bounded so passing prose mentions cannot crowd files out.
     entry_items = [item for item in ranked({"file"}) if item["path"] in entries]
     shown = entry_items[:max_nodes]
-    reserved = ranked({"unresolved"})[:MAP_SIDE_SLOTS] + ranked({"capability", "external"})[:MAP_SIDE_SLOTS]
+    reserved = (ranked({"unresolved"})[:MAP_SIDE_SLOTS] + ranked({"system"})[:MAP_SIDE_SLOTS]
+                + ranked({"capability", "external"})[:MAP_SIDE_SLOTS])
     package_files = [item for item in ranked({"file"}) if item["path"] in files and item not in shown]
     shown += package_files[:max(0, max_nodes - len(shown) - len(reserved))]
     shown += reserved[:max(0, max_nodes - len(shown))]
@@ -504,12 +573,32 @@ def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
     def relative(path):
         return path[len(root) + 1:] if root and path.startswith(root + "/") else path
 
+    system_groups = {"retrieval": (2, "Fetched content"), "tool": (3, "Tools and connectors"),
+                     "mcp": (3, "Tools and connectors"), "code": (3, "Tools and connectors"),
+                     "output": (4, "Write destinations"), "approval": (5, "Approval gates")}
+
     def group(item):
         if item["kind"] == "file":
             folder = posixpath.dirname(relative(item["path"]))
             return (0, "") if not folder else (1, folder)
-        return {"capability": (2, "Capabilities"), "external": (3, "Named origins"),
-                "unresolved": (4, "Unresolved references")}[item["kind"]]
+        if item["kind"] == "system":
+            return system_groups[item["map_kind"]]
+        return {"capability": (6, "Capabilities"), "external": (7, "Named origins"),
+                "unresolved": (8, "Unresolved references")}[item["kind"]]
+
+    def map_kind(item):
+        if item["kind"] == "file":
+            if item["path"] in entries:
+                return "skill"
+            record = files.get(item["path"], {})
+            if is_data_file(item["path"], record):
+                return "data"
+            if is_code_file(item["path"], record, disguised):
+                return "code"
+            return "artifact"
+        if item["kind"] == "system":
+            return item["map_kind"]
+        return MAP_KIND[item["kind"]]
 
     shown.sort(key=lambda item: (group(item), not (item["path"] in entries), relative(item["label"])))
     evidence_ids = {key: value["id"] for key, value in lookup.items()}
@@ -534,16 +623,21 @@ def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
                 node_id += "x"
             used_ids.add(node_id)
         ids[item["key"]] = node_id
-        is_entry = item["kind"] == "file" and item["path"] in entries
+        kind = map_kind(item)
         folder = current[1] or "skill root"
         if item["kind"] == "file":
-            evidence = "package file present"
+            evidence = {"data": "package data file present; read or write direction unknown unless a link says so",
+                        "code": "package script present" + ("; packaged under a document suffix" if item["path"] in disguised
+                                                             or item["path"].lower().endswith((".md", ".txt")) else "")
+                        }.get(kind, "package file present")
         elif item["kind"] == "unresolved":
             evidence = "target unresolved (" + (item["status"] or "unknown") + ")"
         elif item["kind"] == "capability":
             evidence = "recognized capability syntax"
+        elif item["kind"] == "system":
+            evidence = item["evidence"]
         else:
-            evidence = "origin named in source; not contacted"
+            evidence = "origin named in source; not contacted. Direction: unknown"
         file_steps = steps.get(item["path"], []) if item["path"] else []
         step_text = (" Documented steps (" + str(len(file_steps)) + "; completeness unverified): "
                      + "; ".join(file_steps)) if file_steps else ""
@@ -551,7 +645,7 @@ def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
         controls = ("Source evidence: " + evidence + ". Group: " + folder + ". Runtime: unverified. "
                     "Trust and sensitivity: unassessed. Source: " + sources + "." + step_text)
         label = relative(item["label"]) if item["kind"] in {"file", "unresolved"} else item["label"]
-        nodes.append({"id": node_id, "kind": "skill" if is_entry else MAP_KIND[item["kind"]],
+        nodes.append({"id": node_id, "kind": kind,
                       "label": _plain_label(label), "x": min(2750, 40 + column * MAP_COLUMN_WIDTH),
                       "y": min(1700, 30 + row * MAP_ROW_HEIGHT), "trust": "unknown", "sensitivity": "unknown",
                       "controls": controls[:1000]})
@@ -562,13 +656,20 @@ def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
         evidence_edge_ids.setdefault((item["source"], item["target"]), item["id"])
     entry_keys = {("file", path) for path in entries}
     candidate_pairs = [pair for pair in relations if pair[0] in shown_keys and pair[1] in shown_keys]
-    candidate_pairs.sort(key=lambda pair: (not (pair[0] in entry_keys or pair[1] in entry_keys),
+    # Flagged (untrusted or write) links carry the planner's signal; keep them first.
+    candidate_pairs.sort(key=lambda pair: (not (relations[pair]["untrusted"] or relations[pair]["write"]),
+                                           not (pair[0] in entry_keys or pair[1] in entry_keys),
                                            -(degree[pair[0]] + degree[pair[1]])))
-    map_edges = []
+    map_edges, used_edge_ids = [], set()
     for index, (source, target) in enumerate(candidate_pairs[:max_edges]):
         pair = (ids[source], ids[target])
         edge_id = evidence_edge_ids.get(pair) or "me" + str(index)
-        map_edges.append({"id": edge_id, "source": pair[0], "target": pair[1], "untrusted": False, "write": False})
+        while edge_id in used_edge_ids:
+            edge_id += "x"
+        used_edge_ids.add(edge_id)
+        flags = relations[(source, target)]
+        map_edges.append({"id": edge_id, "source": pair[0], "target": pair[1],
+                          "untrusted": flags["untrusted"], "write": flags["write"]})
     omitted = {"components": len(components) - len(shown), "links": len(relations) - len(map_edges)}
     name = "Scanned skill: documented relationships"
     if omitted["components"] or omitted["links"]:
