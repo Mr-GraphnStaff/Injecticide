@@ -29,6 +29,7 @@ def test_skill_sandbox_dockerfile_copies_scanner_modules():
         "scan_rules.py",
         "speech_acts.py",
         "sensitive_data.py",
+        "secret_detection.py",
         "package_formats.py",
         "package_threats.py",
         "package_evidence.py",
@@ -39,3 +40,21 @@ def test_skill_sandbox_dockerfile_copies_scanner_modules():
 
     for module_name in expected_modules:
         assert f"COPY {module_name} /app/{module_name}" in dockerfile
+
+
+def test_every_relatively_imported_scanner_module_is_copied():
+    """A module imported by a copied module but missing from the image fails at scan time."""
+    import re
+    sandbox = ROOT / "skill_sandbox"
+    dockerfile = (sandbox / "Dockerfile").read_text(encoding="utf-8")
+    copied = set(re.findall(r"^COPY (\w+\.py) /app/", dockerfile, re.M))
+    pending, missing = list(copied), set()
+    while pending:
+        module = pending.pop()
+        source = (sandbox / module).read_text(encoding="utf-8")
+        for name in re.findall(r"^\s*from \.(\w+) import", source, re.M):
+            target = name + ".py"
+            if (sandbox / target).exists() and target not in copied and target not in missing:
+                missing.add(target)
+    assert not missing, f"imported but not copied into the sandbox image: {sorted(missing)}"
+
