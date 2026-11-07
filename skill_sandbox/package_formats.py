@@ -127,7 +127,9 @@ def portable_skill_checks(data, path):
     add("metadata_value", isinstance(metadata, dict) and all(isinstance(k, str) and isinstance(v, str) for k, v in metadata.items()), "Optional metadata maps string keys to string values.", applicable="metadata" in data)
     # The specification's linked skills-ref validator explicitly checks this
     # allowlist. Vendor extensions are evaluated separately from portability.
-    add("frontmatter_fields", not (set(data) - BASE_FIELDS), "Portable frontmatter permits only name, description, license, compatibility, metadata and allowed-tools; put additional properties such as version inside metadata.")
+    extra = sorted(str(key)[:60] for key in set(data) - BASE_FIELDS)
+    found = (" Found: " + ", ".join(extra[:10]) + (f" and {len(extra) - 10} more" if len(extra) > 10 else "") + ".") if extra else ""
+    add("frontmatter_fields", not extra, "Portable frontmatter permits only name, description, license, compatibility, metadata and allowed-tools; put additional properties such as version inside metadata." + found)
     add("allowed_tools_value", isinstance(data.get("allowed-tools"), str), "Experimental allowed-tools is a space-separated string; runtime support is separate.", applicable="allowed-tools" in data)
     return checks
 

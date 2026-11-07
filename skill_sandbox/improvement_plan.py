@@ -6,6 +6,7 @@ Priority is a work queue based on existing report dispositions, not a risk score
 from __future__ import annotations
 
 import hashlib
+import re
 import json
 from itertools import islice
 
@@ -24,7 +25,7 @@ FORMAT_ACTIONS = {
     "description_length": "Adjust the description to the specification's supported length.",
     "compatibility_value": "Correct the compatibility field representation and documented length constraints.",
     "metadata_value": "Represent metadata as a mapping with string keys and string values.",
-    "frontmatter_fields": "Move additional skill properties such as version under metadata as string values. Use the selected vendor profile to assess vendor-specific extensions separately.",
+    "frontmatter_fields": "Move the non-portable top-level fields under metadata as string values. Use the selected vendor profile to assess vendor-specific extensions separately.",
     "allowed_tools_value": "Correct allowed-tools to the representation required by the cited portable specification.",
 }
 SECURITY_ACTIONS = {
@@ -102,6 +103,10 @@ def build_improvement_plan(sanitized_result):
             category, state, priority = "mandatory_format", "confirmed_failure", "required"
             reason, basis = "A listed mandatory portable format check failed.", "mandatory format check: fail"
             action = FORMAT_ACTIONS.get(rule, "Review the cited failed requirement and correct the measured constraint according to its cited specification.")
+            found = re.search(r"Found: ([^\n]{1,800}?)\.$", row.get("message") or "") if rule == "frontmatter_fields" else None
+            if found:
+                # Name the actual fields; the generic example could point at a compliant one.
+                action = "Move these top-level fields under metadata as string values: " + found.group(1) + ". " + action.split(". ", 1)[1]
         elif status == "fail" and recommendation:
             category, state, priority = "recommendation", "recommended", "normal"
             reason, basis = "An advisory authoring check needs attention; this is not a mandatory format failure.", "authoring recommendation: fail"

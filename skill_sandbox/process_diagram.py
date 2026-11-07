@@ -390,25 +390,186 @@ def build_process_diagram(report):
     result["mermaid"] = "\n".join(mermaid)
     # Interoperability uses only the existing strict playground schema. Separate
     # citations above remain authoritative; controls carry the static-view caveat.
-    result["architecture_map"] = {
-        "schema_version": 1,
-        "name": "Scanned skill: documented relationships" + (
-            f" (partial: {len(omitted_nodes)} items and {omitted_edges} links not shown)"
-            if omitted_nodes or omitted_edges else ""),
-        "nodes": [{"id": n["id"], "kind": "skill" if n["entrypoint"] else {
-                       "step": "step", "file": "artifact", "capability": "capability",
-                       "external": "external_reference", "unresolved": "unresolved_reference"}[n["kind"]],
-                   "label": n["label"], "x": 40 + (i % 6) * 480, "y": 30 + (i // 6) * 110,
-                   "trust": "unknown", "sensitivity": "unknown",
-                   "controls": ("Source evidence: " + {
-                       "file": "package file present", "step": "documented step; completeness unverified",
-                       "capability": "recognized capability syntax", "external": "origin named in source; not contacted",
-                       "unresolved": "target unresolved (" + n.get("status", "unknown") + ")",
-                   }[n["kind"]] + ". Runtime: unverified. Trust and sensitivity: unassessed. " +
-                       "Source: " + (n["path"] or "; ".join(c["path"] for c in n["citations"][:3])))[:1000]}
-                  for i, n in enumerate(nodes)],
-        # The playground draws one arrow per pair; labelled relations stay in ``edges``.
-        "edges": [{"id": e["id"], "source": e["source"], "target": e["target"], "untrusted": False, "write": False}
-                  for e in _first_edge_per_pair(edges)],
-    }
+    result["architecture_map"], result["map_omitted"] = _playground_map(
+        graph, documented, files, entries, lookup, edges)
     return result
+
+
+MAP_ROWS, MAP_COLUMN_WIDTH, MAP_ROW_HEIGHT = 15, 250, 112
+# The playground schema's limits (architecture_map.py); the sandbox image does
+# not ship that module, and tests assert these stay equal.
+MAP_MAX_NODES, MAP_MAX_EDGES = 100, 200
+MAP_SIDE_SLOTS = 10  # at most this many unresolved names, and capabilities/origins
+MAP_KIND = {"file": "artifact", "capability": "capability", "external": "external_reference",
+            "unresolved": "unresolved_reference"}
+
+
+def _plain_label(value, limit=160):
+    """Markdown emphasis and code marks are noise in a map label."""
+    text = re.sub(r"(\*\*|__|`)", "", value or "")
+    text = re.sub(r"^\s*#+\s*", "", text)
+    return re.sub(r"\s+", " ", text).strip()[:limit]
+
+
+def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
+    """A readable, bounded component map for the playground.
+
+    Components are package files, recognized capabilities, named origins and
+    unresolved references. Documented steps are listed inside their file rather
+    than drawn as boxes. When the package exceeds the playground limits, the
+    entry skill, unresolved references and the most-connected components are
+    kept and the name says how much is shown. Node and edge IDs reuse the
+    evidence view's IDs where the same component or relation exists there, so
+    playground citations stay attached.
+    """
+    max_nodes, max_edges = MAP_MAX_NODES, MAP_MAX_EDGES
+    components, relations = {}, {}
+
+    def component(key, kind, path, label, status=None):
+        if key not in components:
+            components[key] = {"key": key, "kind": kind, "path": path, "label": label,
+                               "status": status, "sources": []}
+        return key
+
+    def relate(source, target):
+        if source != target:
+            relations.setdefault((source, target), None)
+
+    for path in files:
+        component(("file", path), "file", path, path)
+    for path in entries:
+        component(("file", path), "file", path, path)
+    for record in _items(graph.get("edges")):
+        if not isinstance(record, dict):
+            continue
+        source, target = _path(record.get("source")), _path(record.get("target"))
+        if not source or not target:
+            continue
+        status = _text(record.get("status"), 100) or "unknown"
+        variants = [_path(c.get("path")) for c in _items(record.get("variant_candidates")) if isinstance(c, dict)]
+        source_key = component(("file", source), "file", source, source)
+        if status == "resolved":
+            target_key = component(("file", target), "file", target, target)
+        elif status in VARIANT_LABELS and len(variants) == 1 and variants[0]:
+            target_key = component(("file", variants[0]), "file", variants[0], variants[0])
+        else:
+            target_key = component(("unresolved", target, status), "unresolved", None, target, status)
+            components[target_key]["sources"].append(source)
+        relate(source_key, target_key)
+    for record in _items(graph.get("capability_observations")):
+        if isinstance(record, dict) and _path(record.get("source")) and _text(record.get("capability"), 100):
+            name = _text(record.get("capability"), 100)
+            key = component(("capability", name), "capability", None, name.replace("_", " "))
+            components[key]["sources"].append(_path(record.get("source")))
+            relate(component(("file", _path(record["source"])), "file", _path(record["source"]), _path(record["source"])), key)
+    for record in _items(graph.get("external_references")):
+        if isinstance(record, dict) and _path(record.get("source")) and _origin(record.get("url")):
+            origin = _origin(record.get("url"))
+            key = component(("external", origin), "external", None, origin)
+            components[key]["sources"].append(_path(record.get("source")))
+            relate(component(("file", _path(record["source"])), "file", _path(record["source"]), _path(record["source"])), key)
+
+    steps = {}
+    for record in _items(documented.get("steps")):
+        if isinstance(record, dict) and _path(record.get("path")) and _text(record.get("text")):
+            steps.setdefault(_path(record["path"]), []).append(_plain_label(_text(record["text"], 300), 120))
+
+    degree = {key: 0 for key in components}
+    for source, target in relations:
+        degree[source] += 1
+        degree[target] += 1
+
+    def score(item):
+        findings = files.get(item["path"], {}).get("findings") if item["path"] else None
+        return bool(findings) * 20 + len(steps.get(item["path"], [])) + degree[item["key"]]
+
+    def ranked(kinds):
+        return sorted((item for item in components.values() if item["kind"] in kinds),
+                      key=lambda item: (-score(item), item["label"]))
+
+    # Package files carry the structure. Unresolved names and capabilities are
+    # bounded so passing prose mentions cannot crowd the files out.
+    entry_items = [item for item in ranked({"file"}) if item["path"] in entries]
+    shown = entry_items[:max_nodes]
+    reserved = ranked({"unresolved"})[:MAP_SIDE_SLOTS] + ranked({"capability", "external"})[:MAP_SIDE_SLOTS]
+    package_files = [item for item in ranked({"file"}) if item["path"] in files and item not in shown]
+    shown += package_files[:max(0, max_nodes - len(shown) - len(reserved))]
+    shown += reserved[:max(0, max_nodes - len(shown))]
+    shown_keys = {item["key"] for item in shown}
+
+    # Labels relative to the entry skill's folder when every file shares it.
+    roots = {posixpath.dirname(path) for path in entries}
+    root = next(iter(roots)) if len(roots) == 1 and next(iter(roots)) else ""
+    def relative(path):
+        return path[len(root) + 1:] if root and path.startswith(root + "/") else path
+
+    def group(item):
+        if item["kind"] == "file":
+            folder = posixpath.dirname(relative(item["path"]))
+            return (0, "") if not folder else (1, folder)
+        return {"capability": (2, "Capabilities"), "external": (3, "Named origins"),
+                "unresolved": (4, "Unresolved references")}[item["kind"]]
+
+    shown.sort(key=lambda item: (group(item), not (item["path"] in entries), relative(item["label"])))
+    evidence_ids = {key: value["id"] for key, value in lookup.items()}
+    used_ids, nodes, ids = set(evidence_ids.values()), [], {}
+    column, row, previous_group = 0, 0, None
+    for index, item in enumerate(shown):
+        current = group(item)
+        if previous_group is not None and current != previous_group and row:
+            # Each folder starts a new column when it fits; otherwise after a gap row.
+            remaining = sum(1 for other in shown[index:] if group(other) == current)
+            if row + 1 + remaining > MAP_ROWS:
+                column, row = column + 1, 0
+            else:
+                row += 1
+        if row >= MAP_ROWS:
+            column, row = column + 1, 0
+        previous_group = current
+        node_id = evidence_ids.get(item["key"])
+        if node_id is None:
+            node_id = "m" + str(index)
+            while node_id in used_ids:
+                node_id += "x"
+            used_ids.add(node_id)
+        ids[item["key"]] = node_id
+        is_entry = item["kind"] == "file" and item["path"] in entries
+        folder = current[1] or "skill root"
+        if item["kind"] == "file":
+            evidence = "package file present"
+        elif item["kind"] == "unresolved":
+            evidence = "target unresolved (" + (item["status"] or "unknown") + ")"
+        elif item["kind"] == "capability":
+            evidence = "recognized capability syntax"
+        else:
+            evidence = "origin named in source; not contacted"
+        file_steps = steps.get(item["path"], []) if item["path"] else []
+        step_text = (" Documented steps (" + str(len(file_steps)) + "; completeness unverified): "
+                     + "; ".join(file_steps)) if file_steps else ""
+        sources = item["path"] or "; ".join(dict.fromkeys(item["sources"][:3]))
+        controls = ("Source evidence: " + evidence + ". Group: " + folder + ". Runtime: unverified. "
+                    "Trust and sensitivity: unassessed. Source: " + sources + "." + step_text)
+        label = relative(item["label"]) if item["kind"] in {"file", "unresolved"} else item["label"]
+        nodes.append({"id": node_id, "kind": "skill" if is_entry else MAP_KIND[item["kind"]],
+                      "label": _plain_label(label), "x": min(2750, 40 + column * MAP_COLUMN_WIDTH),
+                      "y": min(1700, 30 + row * MAP_ROW_HEIGHT), "trust": "unknown", "sensitivity": "unknown",
+                      "controls": controls[:1000]})
+        row += 1
+
+    evidence_edge_ids = {}
+    for item in evidence_edges:
+        evidence_edge_ids.setdefault((item["source"], item["target"]), item["id"])
+    entry_keys = {("file", path) for path in entries}
+    candidate_pairs = [pair for pair in relations if pair[0] in shown_keys and pair[1] in shown_keys]
+    candidate_pairs.sort(key=lambda pair: (not (pair[0] in entry_keys or pair[1] in entry_keys),
+                                           -(degree[pair[0]] + degree[pair[1]])))
+    map_edges = []
+    for index, (source, target) in enumerate(candidate_pairs[:max_edges]):
+        pair = (ids[source], ids[target])
+        edge_id = evidence_edge_ids.get(pair) or "me" + str(index)
+        map_edges.append({"id": edge_id, "source": pair[0], "target": pair[1], "untrusted": False, "write": False})
+    omitted = {"components": len(components) - len(shown), "links": len(relations) - len(map_edges)}
+    name = "Scanned skill: documented relationships"
+    if omitted["components"] or omitted["links"]:
+        name += f" (partial: showing {len(shown)} of {len(components)} components, {len(map_edges)} of {len(relations)} links)"
+    return {"schema_version": 1, "name": name[:160], "nodes": nodes, "edges": map_edges}, omitted
