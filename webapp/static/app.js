@@ -567,6 +567,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     lines.push('## Review Buckets');
     lines.push('');
     lines.push(`- Security risks: ${reviewSummary.security_risk}`);
+    lines.push(`- Needs review: ${reviewSummary.review}`);
     lines.push(`- Sensitive data: ${reviewSummary.sensitive_data}`);
     lines.push(`- Expected/internal: ${reviewSummary.expected_internal}`);
     lines.push(`- Informational only: ${reviewSummary.informational + reviewSummary.documented_pattern}`);
@@ -1258,7 +1259,7 @@ function SkillProcessDiagram({ result, onAddToPlayground }) {
         <p className="process-scope">{diagram.scope}</p>
         <p className="process-knowledge-legend"><strong>Known:</strong> supported by source evidence. <strong>Inferred:</strong> interpretation, when explicitly labeled. <strong>Unknown:</strong> missing or unresolved evidence. Source evidence does not verify runtime behavior.</p>
         <div className="process-toolbar">
-            <button type="button" id="skill-process-add-to-playground" className="process-primary" disabled={!nodes.length || !diagram.architecture_map} onClick={() => onAddToPlayground({ ...diagram, draft_id: crypto.randomUUID(), architecture_map: { ...diagram.architecture_map, name: `Skill process: ${result.filename || 'scanned package'}`.slice(0, 160) } })}>Add process diagram to playground</button>
+            <button type="button" id="skill-process-add-to-playground" className="process-primary" disabled={!nodes.length || !diagram.architecture_map} onClick={() => onAddToPlayground({ ...diagram, draft_id: crypto.randomUUID(), architecture_map: { ...diagram.architecture_map, name: `Skill process: ${result.filename || 'scanned package'}${(diagram.omitted?.nodes > 0 || diagram.omitted?.edges > 0) ? ` (partial: ${diagram.omitted.nodes || 0} items and ${diagram.omitted.edges || 0} links not shown)` : ''}`.slice(0, 160) } })}>Add process diagram to playground</button>
             <button type="button" disabled={!nodes.length} onClick={() => downloadProcessFile(diagram.mermaid || '', 'injecticide-skill-process.mmd', 'text/plain;charset=utf-8')}>Export Mermaid</button>
             <button type="button" onClick={() => downloadProcessFile(diagram, 'injecticide-skill-process.json', 'application/json')}>Export diagram evidence</button>
         </div>
@@ -1816,7 +1817,13 @@ function App({ onBack, onNavigate, buildInfo }) {
         window.URL.revokeObjectURL(url);
     };
     
-    if (processPlayground) return <ArchitectureCanvas initialMap={processPlayground.architecture_map} scanDiagram={processPlayground} onBack={() => { setProcessPlayground(null); requestAnimationFrame(() => { const button = document.getElementById('skill-process-add-to-playground'); button?.focus(); button?.scrollIntoView({ block: 'nearest' }); }); }} onNavigate={onNavigate} buildInfo={buildInfo} />;
+    if (processPlayground) {
+        const returnToScan = () => { setProcessPlayground(null); requestAnimationFrame(() => { const button = document.getElementById('skill-process-add-to-playground'); button?.focus(); button?.scrollIntoView({ block: 'nearest' }); }); };
+        // This playground is drawn inside the scan page, so "Testing & scanning"
+        // must close it here; the page-level route is already 'console'.
+        const navigateFromPlayground = (target) => (target === 'console' ? returnToScan() : onNavigate && onNavigate(target));
+        return <ArchitectureCanvas initialMap={processPlayground.architecture_map} scanDiagram={processPlayground} onBack={returnToScan} onNavigate={navigateFromPlayground} buildInfo={buildInfo} />;
+    }
 
     return (
         <div className="injecticide-home injecticide-workbench testing-workbench">
@@ -2214,6 +2221,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                                     <p className="mt-1 text-[11px] opacity-90">{assessment.body}</p>
                                                     <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
                                                         <span>Security risks: {reviewSummary.security_risk}</span>
+                                                        <span>Needs review: {reviewSummary.review}</span>
                                                         <span>Sensitive data: {reviewSummary.sensitive_data}</span>
                                                         <span>Expected/internal: {reviewSummary.expected_internal}</span>
                                                     </div>

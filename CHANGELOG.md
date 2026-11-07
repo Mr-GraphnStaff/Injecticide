@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.15.4 - 2026-11-07
+
+- Show the "Needs review" count in the scan summary and the downloaded report.
+  Review findings that were neither security risks nor sensitive data were
+  counted but never displayed, so a report could read "Security risks: 0"
+  while dozens of findings still needed review.
+- Stop reporting packaged files as missing. A reference to `tool.py` that is
+  packaged as `tool.py.md` is recorded as `document_suffix_variant`, and a bare
+  file name that matches exactly one file in the same skill is recorded as
+  `name_only_match`. Both keep their candidate paths and stay distinct from
+  resolved references. The process map links them to the packaged file.
+- Merge duplicate process-map relationships, drop self-references, and name a
+  truncated map as partial (with the omitted counts) when it is added to the
+  playground, so a downloaded map no longer looks complete.
+- Fix "Testing & scanning" not working from a skill process map opened in the
+  playground, and make "Overview" there go to the overview page.
+
 ## 0.15.3 - 2026-11-07
 
 - Fix skill scans failing with a server error when a file or a fenced code

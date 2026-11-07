@@ -201,3 +201,50 @@ def test_uncertainty_explanation_preserves_absent_analysis_and_graph_limits():
     assert reasons["analysis_limits"]["count"] == 1
     assert "documented_steps_unrecognized" in reasons
     assert result["status"] == "partial"
+
+
+def test_disguised_script_and_bare_name_link_to_the_packaged_file_not_missing():
+    source = report({"my-skill/SKILL.md": "Run `python scripts/lint.py`. See [load](load-order.md). Read `load-order.md` and `nowhere.md`.",
+                     "my-skill/scripts/lint.py.md": "print('x')",
+                     "my-skill/capabilities/load-order.md": "Steps."})
+    graph = source["package_analysis"]["relationship_graph"]
+    statuses = {(e["target"], e["status"]) for e in graph["edges"]}
+    assert ("my-skill/scripts/lint.py", "document_suffix_variant") in statuses
+    variant = next(e for e in graph["edges"] if e["status"] == "document_suffix_variant")
+    assert variant["variant_candidates"] == [{"path": "my-skill/scripts/lint.py.md"}]
+    assert any(e["status"] == "name_only_match" for e in graph["edges"])
+    diagram = build_process_diagram(source)
+    labels = {n["label"] for n in diagram["nodes"] if n["kind"] == "unresolved"}
+    assert "my-skill/scripts/lint.py" not in labels and "my-skill/load-order.md" not in labels
+    lint = next(n for n in diagram["nodes"] if n.get("path") == "my-skill/scripts/lint.py.md")
+    assert any(e["target"] == lint["id"] and e["label"] == "names file packaged under a document suffix"
+               for e in diagram["edges"])
+    validate_map(diagram["architecture_map"])
+
+
+def test_ambiguous_bare_name_stays_unresolved():
+    source = report({"SKILL.md": "Read `notes.md`.", "a/notes.md": "A", "b/notes.md": "B"})
+    statuses = {e["status"] for e in source["package_analysis"]["relationship_graph"]["edges"]}
+    diagram = build_process_diagram(source)
+    if "ambiguous_name_match" in statuses:
+        assert any(n["kind"] == "unresolved" for n in diagram["nodes"])
+
+
+def test_duplicate_references_merge_and_self_references_are_dropped():
+    source = report({"SKILL.md": "See [a](docs/a.md). Again [a](docs/a.md). And [me](SKILL.md).",
+                     "docs/a.md": "A"})
+    diagram = build_process_diagram(source)
+    pairs = [(e["source"], e["target"]) for e in diagram["edges"]]
+    assert len(pairs) == len(set(pairs))
+    assert all(source_id != target_id for source_id, target_id in pairs)
+    merged = next(e for e in diagram["edges"] if e["label"] == "references document")
+    assert len(merged["citations"]) >= 1
+
+
+def test_truncated_map_says_so_in_its_name(monkeypatch):
+    monkeypatch.setattr(process_diagram, "MAX_NODES", 2)
+    source = report({"SKILL.md": "See [a](a.md) and [b](b.md).", "a.md": "A", "b.md": "B"})
+    diagram = build_process_diagram(source)
+    assert diagram["omitted"]["nodes"] > 0
+    assert "partial:" in diagram["architecture_map"]["name"]
+    validate_map(diagram["architecture_map"])
