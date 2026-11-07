@@ -464,23 +464,27 @@ def _find_runtime_dependency_matches(text: str, line_number: int | None) -> List
 
 
 def _strip_python_comments_and_strings(text: str) -> str:
-    try:
-        tokens = tokenize.generate_tokens(StringIO(text).readline)
-    except tokenize.TokenError:
-        return text
+    """Drop comments and string literals from well-formed Python.
 
+    Tokenizing is lazy, so malformed code (an unterminated multi-line string,
+    inconsistent dedent) fails while iterating. Malformed or partial code is
+    scanned as raw text: nothing is skipped and the scan never fails on it.
+    """
     output_lines = [[] for _ in text.splitlines()]
-    for token in tokens:
-        token_type = token.type
-        token_text = token.string
-        start_line, _ = token.start
+    try:
+        for token in tokenize.generate_tokens(StringIO(text).readline):
+            token_type = token.type
+            token_text = token.string
+            start_line, _ = token.start
 
-        if token_type in {tokenize.COMMENT, tokenize.STRING}:
-            continue
-        if token_type in {tokenize.ENCODING, tokenize.ENDMARKER, tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT}:
-            continue
-        if 1 <= start_line <= len(output_lines):
-            output_lines[start_line - 1].append(token_text)
+            if token_type in {tokenize.COMMENT, tokenize.STRING}:
+                continue
+            if token_type in {tokenize.ENCODING, tokenize.ENDMARKER, tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT}:
+                continue
+            if 1 <= start_line <= len(output_lines):
+                output_lines[start_line - 1].append(token_text)
+    except (tokenize.TokenError, SyntaxError):
+        return text
 
     return "\n".join(" ".join(parts) for parts in output_lines)
 
