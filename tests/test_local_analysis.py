@@ -141,3 +141,34 @@ def test_total_transport_deadline_kills_slow_client(monkeypatch):
         assert time.monotonic()-start < 3
     finally:
         server.shutdown(); server.server_close(); thread.join()
+
+
+def test_scan_can_disable_model_per_request_without_network(monkeypatch):
+    from skill_sandbox.app import scan_upload
+    monkeypatch.setenv("INJECTICIDE_LOCAL_LLM_ENABLED", "1")
+    def forbidden(*a): raise AssertionError("Model must not be called")
+    monkeypatch.setattr("skill_sandbox.local_analysis._chat", forbidden)
+    report = scan_upload(b"Read documentation.", "SKILL.md", use_local_llm=False)
+    assert report["local_analysis"]["status"] == "skipped"
+
+
+def test_request_cannot_enable_operator_disabled_model(monkeypatch):
+    from skill_sandbox.app import scan_upload
+    monkeypatch.delenv("INJECTICIDE_LOCAL_LLM_ENABLED", raising=False)
+    report = scan_upload(b"Read documentation.", "SKILL.md", use_local_llm=True)
+    assert report["local_analysis"]["status"] == "not_assessed"
+
+
+def test_local_selection_roundtrips_archive_and_web_api(monkeypatch):
+    import io,zipfile
+    from fastapi.testclient import TestClient
+    import webapp.api as api
+    monkeypatch.delenv("SKILL_SANDBOX_URL", raising=False)
+    monkeypatch.setenv("INJECTICIDE_LOCAL_LLM_ENABLED", "1")
+    monkeypatch.setattr(api, "attach_vendor_check", lambda report: report)
+    archive=io.BytesIO()
+    with zipfile.ZipFile(archive,"w") as bundle: bundle.writestr("SKILL.md","Read documentation.")
+    client=TestClient(api.app)
+    response=client.post("/api/skills/scan",data={"use_local_llm":"false"},files={"file":("example.zip",archive.getvalue(),"application/zip")})
+    assert response.status_code==200
+    assert response.json()["local_analysis"]["status"]=="skipped"

@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 SCHEMA = "injecticide.local-analysis.v1"
 MAX_INPUT_BYTES = 3000
 MAX_RESPONSE_BYTES = 65536
-REQUEST_DEADLINE_SECONDS = 45
+REQUEST_DEADLINE_SECONDS = 90
 CATEGORIES = ["instruction_override", "data_exfiltration", "unsafe_execution", "excessive_permissions", "other"]
 OUTPUT_SCHEMA = {
     "type": "object", "additionalProperties": False,
@@ -54,7 +54,7 @@ endpoint,payload=json.load(sys.stdin)
 def request(path,body=None):
     data=None if body is None else json.dumps(body).encode()
     req=urllib.request.Request(endpoint+path,data=data,headers={"Content-Type":"application/json"})
-    with opener.open(req,timeout=40) as response:raw=response.read(65537)
+    with opener.open(req,timeout=85) as response:raw=response.read(65537)
     if len(raw)>65536:raise ValueError("response_budget")
     return json.loads(raw)
 status=request("/api/status")

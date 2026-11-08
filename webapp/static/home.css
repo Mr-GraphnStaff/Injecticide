@@ -456,3 +456,18 @@
 @media(max-width:900px) { .file-reader-layout { grid-template-columns:minmax(0,1fr); } .file-reader-list { max-height:320px; } }
 @media(max-width:420px) { .file-reader-filters { grid-template-columns:minmax(0,1fr); } }
 @media(forced-colors:active) { .fix-item, .policy-rule, .db-not-cleared, .data-class-badge.sensitive, .arch-coverage.not-cleared { border-color:CanvasText; } .file-reader-list button[aria-current=true] { outline:2px solid Highlight; } }
+
+/* Native local-analysis selection and readable evidence. */
+.local-ai-option, .local-ai-results { border: 1px solid #42746a; border-radius: .65rem; padding: 1rem; margin-block: .8rem; background: #0a201b; color: #e4f1ed; }
+.local-ai-option label { display: flex; align-items: center; gap: .65rem; min-block-size: 44px; cursor: pointer; font-weight: 650; }
+.local-ai-option input { accent-color: #69c6a7; inline-size: 1.15rem; block-size: 1.15rem; flex: none; }
+.local-ai-option input:focus-visible { outline: 2px solid #9de1ca; outline-offset: 4px; }
+.local-ai-option p, .local-ai-results p { font-size: .85rem; line-height: 1.6; margin-block: .45rem; }
+.local-ai-results h3 { font-size: 1.05rem; font-weight: 650; margin: 0 0 .6rem; }
+.local-ai-results ul { margin: .8rem 0; padding-left: 1.2rem; }
+.local-ai-results li + li { margin-top: 1rem; }
+.local-ai-results button { text-align: left; text-decoration: underline; overflow-wrap: anywhere; max-inline-size: 100%; }
+.local-ai-results blockquote { border-left: 3px solid #69c6a7; padding-left: .7rem; margin: .6rem 0; }
+.local-ai-results code { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.local-ai-results p { overflow-wrap: anywhere; }

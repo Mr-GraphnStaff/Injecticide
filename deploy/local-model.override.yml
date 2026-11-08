@@ -2,6 +2,9 @@
 # Apply with the main docker-compose.yml; do not expose Ollama through nginx.
 services:
   skill_sandbox:
+    # The retained package report and bounded model client share this budget.
+    mem_limit: 768m
+    memswap_limit: 768m
     environment:
       INJECTICIDE_LOCAL_LLM_ENABLED: "1"
       INJECTICIDE_LOCAL_LLM_URL: http://injecticide-local-llm:11434

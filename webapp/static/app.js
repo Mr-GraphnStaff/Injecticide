@@ -711,6 +711,22 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     push('', '> Raw scan data is not part of this report. Use "Download full data (JSON)" in Injecticide for the complete machine-readable record.', '');
     push('## Headline', '', `**${assessment.title}.** ${assessment.body}`, '');
 
+    if (scanResult.local_analysis) {
+        const local = scanResult.local_analysis;
+        const literal = value => String(value ?? '').replace(/\s*\r?\n\s*/g, ' ')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/[\\`*_{}\[\]()#!|]/g, '\\$&');
+        push('## Local AI analysis', '', `Status: ${literal(local.status)}`, '');
+        if (local.model) push(`Model: ${literal(local.model)}`, '');
+        if (local.reason) push(literal(local.reason), '');
+        if (local.coverage) push(`Text files selected: ${local.coverage.selected_files ?? 0}; omitted or shortened: ${local.coverage.omitted_or_clipped_files ?? 0}.`, '');
+        for (const finding of asArray(local.findings)) {
+            push(`### ${literal(finding.category)} · ${literal(finding.severity)}`, '', `File: ${literal(finding.path)}`, '', literal(finding.detail), '', `Evidence: ${literal(finding.evidence_excerpt)}`, '');
+        }
+        if (!asArray(local.findings).length && ['completed', 'partial'].includes(local.status)) push('No evidence-backed observations returned. This is not a safety determination.', '');
+        push('Model analysis is limited and advisory; scanner findings and organization policy remain separate.', '');
+    }
+
     // 1. What to fix
     push('## What to fix', '');
     if (!scanResult.fix_summary) {
@@ -917,6 +933,31 @@ function formatSkillImprovementPlan(result) {
     return lines.join('\n');
 }
 
+function LocalAnalysisResults({ analysis, onOpenFile }) {
+    const state = analysis?.status;
+    const labels = { completed: 'Completed — limited text review', partial: 'Partially checked', error: 'Analysis unavailable', not_assessed: 'Not assessed', skipped: 'Not requested for this scan' };
+    const findings = asArray(analysis?.findings);
+    const coverage = analysis?.coverage;
+    return <section className="local-ai-results" aria-labelledby="local-ai-results-title" data-local-ai-results="true">
+        <h3 id="local-ai-results-title">Local AI analysis</h3>
+        <p role="status"><strong>{labels[state] || 'Not included in this scan'}</strong></p>
+        {!analysis && <p>Run a fresh scan with Use local LLM selected to include local AI analysis.</p>}
+        {analysis?.model && <p>Model: <strong>{analysis.model}</strong>{Number.isFinite(analysis.duration_seconds) ? ` · ${analysis.duration_seconds.toFixed(1)} seconds` : ''}</p>}
+        {analysis?.reason && <p>{analysis.reason}</p>}
+        {coverage && <p>Text files selected: {coverage.selected_files ?? 0}. Files omitted or shortened: {coverage.omitted_or_clipped_files ?? 0}. This is a limited text review, not whole-package coverage.</p>}
+        {findings.length > 0 && <ul>{findings.map((finding, index) => <li key={index}>
+            <p><strong>{String(finding.severity || 'review').toUpperCase()}</strong> · {String(finding.category || 'observation').replaceAll('_', ' ')}</p>
+            <button type="button" onClick={() => onOpenFile?.(finding.path)}>{finding.path}</button>
+            <p>{finding.detail}</p>
+            <blockquote><code>{finding.evidence_excerpt}</code></blockquote>
+            <p className="home-muted">The excerpt was located in the submitted text. The model's interpretation still needs review.</p>
+        </li>)}</ul>}
+        {!findings.length && ['completed', 'partial'].includes(state) && <p>No evidence-backed observations were returned. This does not establish that the package is safe.</p>}
+        {analysis?.rejected_unsupported_observations > 0 && <p>{analysis.rejected_unsupported_observations} model observations were rejected because their quoted evidence could not be verified.</p>}
+        {analysis && !['skipped', 'not_assessed'].includes(state) && <p className="home-muted">Experimental, advisory analysis. Scanner findings and organization policy remain separate.</p>}
+    </section>;
+}
+
 function ProductHeader({ section, buildInfo, onBack, onNavigate, onClose, isClosing }) {
     return <header className="home-header">
         <div className="home-shell home-header-inner">
@@ -927,7 +968,6 @@ function ProductHeader({ section, buildInfo, onBack, onNavigate, onClose, isClos
             <div className="home-header-actions">
                 {buildInfo && <span className="home-version">{buildInfo.display_version}</span>}
                 {section === 'overview' && <a href="#research-updates" className="home-text-link">Research updates ↓</a>}
-                {onClose && <button onClick={onClose} disabled={isClosing} className="home-button workbench-close">{isClosing ? 'Closing…' : 'Close App'}</button>}
             </div>
         </div>
         {(onBack || onNavigate) && <nav className="home-shell workbench-nav" aria-label="Product sections">
@@ -1290,7 +1330,7 @@ function ArchitectureWorkbench({ onBack, onNavigate, buildInfo }) {
 
 const SKILL_FILES_PER_PAGE = 10;
 const SKILL_FINDINGS_PER_PAGE = 10;
-const SKILL_SCAN_TIMEOUT_MS = 150000;
+const SKILL_SCAN_TIMEOUT_MS = 255000;
 
 function ScanPageControls({ page, total, size, onChange, label }) {
     if (total <= size) return null;
@@ -1936,6 +1976,7 @@ function App({ onBack, onNavigate, buildInfo }) {
     const [payloadCategoriesError, setPayloadCategoriesError] = useState('');
     const [skillFile, setSkillFile] = useState(null);
     const [skillRuntime, setSkillRuntime] = useState('auto');
+    const [useLocalLLM, setUseLocalLLM] = useState(true);
     const [orgPolicy, setOrgPolicy] = useState('');
     const [orgPolicyNotice, setOrgPolicyNotice] = useState('');
     const [skillReaderPath, setSkillReaderPath] = useState(null);
@@ -2388,6 +2429,7 @@ function App({ onBack, onNavigate, buildInfo }) {
         try {
             const formData = new FormData();
             formData.append('target_runtime', skillRuntime);
+            formData.append('use_local_llm', String(useLocalLLM));
             if (orgPolicy.trim()) formData.append('org_policy', orgPolicy);
             formData.append('file', skillFile);
             // Keep this local selection retryable until success, replacement or clear.
@@ -2687,6 +2729,13 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         <select id="skill-runtime" name="target_runtime" value={skillRuntime} disabled={isScanningSkill} onChange={e => { setSkillRuntime(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2">
                                             {['auto', 'generic', 'claude-code', 'claude-upload', 'openai', 'openai-mcp-import', 'copilot', 'gemini', 'cursor', 'cascade', 'kiro', 'openclaw'].map(runtime => <option key={runtime} value={runtime}>{runtime === 'auto' ? 'Detect format automatically' : runtime === 'openai-mcp-import' ? 'OpenAI MCP skill import' : runtime}</option>)}
                                         </select>
+                                        <div className="local-ai-option">
+                                            <label htmlFor="use-local-llm">
+                                                <input id="use-local-llm" name="use_local_llm" type="checkbox" checked={useLocalLLM} disabled={isScanningSkill || disableControls} aria-describedby="local-llm-help" onChange={event => { setUseLocalLLM(event.target.checked); resetSkillScanState(); }} />
+                                                <span>Use local LLM</span>
+                                            </label>
+                                            <p id="local-llm-help">Add AI analysis using the model on this server. No provider key is needed. It reviews a limited text selection and may add up to 90 seconds. Uncheck to run the static scan only.</p>
+                                        </div>
                                         <details className="org-policy-input">
                                             <summary>Organization AI policy (optional){orgPolicy.trim() ? (orgPolicyNotice ? ' · needs fixing' : ' · policy loaded') : ''}</summary>
                                             <p id="org-policy-help" className="org-policy-help"><strong>What is this?</strong> Your organization's own rules for AI skills, written as JSON. For example: block skills that write to outside systems, or require approval when personal data is present. Injecticide checks this scan against each rule and lists which rules are triggered and which need a human check. Leave it empty to scan without a policy.</p>
@@ -2724,7 +2773,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                             className={`workbench-primary w-full py-2 rounded-lg text-sm font-semibold transition border border-blue-600/60 bg-blue-700/70 hover:bg-blue-600/80 ${disableControls || isScanningSkill || !skillFile ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             <i className={`fas ${isScanningSkill ? 'fa-spinner fa-spin' : 'fa-shield-alt'} mr-2`}></i>
-                                            {isScanningSkill ? 'Scanning…' : 'Scan Skill File/Bundle'}
+                                            {isScanningSkill ? (useLocalLLM ? 'Scanning package + local AI…' : 'Scanning…') : 'Scan Skill File/Bundle'}
                                         </button>
                                         {(skillFile || skillScanResult || isScanningSkill || skillScanError) && (
                                             <button type="button" onClick={clearSkillScan} className="text-sm text-gray-300 underline">
@@ -2848,7 +2897,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                                 onClick={() => downloadProcessFile(formatOrganizationPolicyMarkdown(skillScanResult, buildInfo), scanDownloadName(skillScanResult, buildInfo, 'report-organization-policy', 'md'), 'text/markdown;charset=utf-8')}>Export organization policy report (.md)</button>
                                             <button type="button" onClick={downloadSkillScanJson}>Download full data (JSON)</button>
                                             <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
-                                                {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
+                                                {skillScanResult.summary.total_findings > 0 ? 'Static findings to review' : 'No static findings'}
                                             </span>
                                         </div>
                                     </div>
@@ -2856,6 +2905,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                     sections={{
                                         overview: <>
                                     <WhatToFix fixSummary={skillScanResult.fix_summary} onOpenFile={openReaderFile} />
+                                    <LocalAnalysisResults analysis={skillScanResult.local_analysis} onOpenFile={openReaderFile} />
                                     <PolicyResults evaluation={skillScanResult.policy_evaluation} onOpenFile={openReaderFile} />
                                     <EvidenceInputNotice input={skillScanResult.evidence_input} />
                                     {(() => {

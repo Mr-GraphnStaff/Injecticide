@@ -52,13 +52,16 @@ from webapp.vendor_requirements import attach_vendor_check
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
 
 SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
-SKILL_SCAN_READ_TIMEOUT_SECONDS = 120
+SKILL_SCAN_READ_TIMEOUT_SECONDS = 225
 
 
-def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url, org_policy=""):
+def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url, org_policy="", use_local_llm=None):
     if not sandbox_url:
-        return attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence), org_policy))
+        options = {} if use_local_llm is None else {"use_local_llm": use_local_llm}
+        return attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence), org_policy, **options))
     form = {"target_runtime": target_runtime, "governance_evidence": evidence}
+    if use_local_llm is not None:
+        form["use_local_llm"] = "true" if use_local_llm else "false"
     if org_policy:
         # Forwarded as raw text; the sandbox validates it and reports errors in the result.
         form["org_policy"] = org_policy
@@ -569,7 +572,8 @@ async def root():
 
 @app.post("/api/skills/scan")
 async def scan_skill_file(request: Request, file: UploadFile = File(...), target_runtime: str = Form("auto"),
-                          governance_evidence: str = Form("{}"), org_policy: str = Form("")):
+                          governance_evidence: str = Form("{}"), org_policy: str = Form(""),
+                          use_local_llm: bool | None = Form(None)):
     request_id = request.state.scan_request_id
     started = time.monotonic()
     stage = "validation"
@@ -595,8 +599,9 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
         if len(data) > MAX_UPLOAD_BYTES:
             raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit")
         stage = "analysis"
+        options = {} if use_local_llm is None else {"use_local_llm": use_local_llm}
         result = await run_in_threadpool(_scan_skill_data, data, file.filename, file.content_type,
-                                        target_runtime, governance_evidence, os.getenv("SKILL_SANDBOX_URL"), org_policy)
+                                        target_runtime, governance_evidence, os.getenv("SKILL_SANDBOX_URL"), org_policy, **options)
         result["scan_request_id"] = request_id
         result["scan_diagnostics"] = {"stage": "completed", "elapsed_ms": round((time.monotonic() - started) * 1000),
                                      "payload_logged": False}

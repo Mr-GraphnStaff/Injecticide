@@ -4,11 +4,15 @@ The optional local analyzer adds `local_analysis` to the shared web/CLI/MCP scan
 
 ## Current dev-lane status
 
-Enabled and verified on November 8, 2026. Normal web scans now request local analysis. The existing report warning shows completion/partial/error status; the JSON report contains the evidence in `local_analysis`. An inert web-upload check completed in 19.44 seconds. This confirms the connection, not detection accuracy. Training has not started.
+David confirmed on November 8, 2026 that Injecticide is a working development environment with him as its only current user. Routine reversible development fixes, tests and deployments are authorized; this does not authorize unrelated services, spending, destructive changes or new internet exposure. Claude is unavailable; this work proceeds with Codex and independent code review.
+
+The deployed dev web UI now includes a checked-by-default **Use local LLM** control, a readable local-analysis result card and local-analysis sections in Markdown exports. Full JSON exports retain the section under `result.local_analysis` in the existing versioned envelope. Turning the control off skips inference; turning it on cannot bypass the operator setting. The obsolete Close App button is removed. Model output remains advisory and does not replace static findings or organization policy.
+
+The web and scanner UI preview is deployed and healthy. Focused backend checks passed (49 passed, two optional MCP-package tests skipped), and real Brave UI checks with synthetic responses passed. All five actual private-package browser cases passed in Brave: ZIP and extracted SKILL.md with local AI off/on, plus identical ZIP bytes submitted as a .skill filename. JSON/Markdown downloads, no Close App control, no page errors and unchanged original hashes were verified. No separate original .skill archive was found. These checks establish local transport/display behavior, not detection accuracy or public authenticated access. Training has not started.
 
 ## Runtime
 
-Initial candidate: Qwen3.5-2B (Apache-2.0) through Ollama. Model storage belongs on the Pi main drive, not in Git or its SD-card root filesystem. Pin the actual runtime archive SHA-256, base-image digest and model digest in the deployment receipt. The native ARM64 runtime is stored on the main drive and mounted into an existing cached base image to avoid large runtime-image extraction on the SD card. Do not enable cloud models or automatic fallback. The proposed 8GB-Pi settings are one request at a time, two CPU threads, 4096 context and at most 384 output tokens, with a 45-second request timeout. Measure latency and memory before changing limits.
+Initial candidate: Qwen3.5-2B (Apache-2.0) through Ollama. Model storage belongs on the Pi main drive, not in Git or its SD-card root filesystem. Pin the actual runtime archive SHA-256, base-image digest and model digest in the deployment receipt. The native ARM64 runtime is stored on the main drive and mounted into an existing cached base image to avoid large runtime-image extraction on the SD card. Do not enable cloud models or automatic fallback. The proposed 8GB-Pi settings are one request at a time, two CPU threads, 4096 context and at most 384 output tokens, with a 90-second total model deadline. Measure latency and memory before changing limits.
 
 Trusted operator settings:
 
@@ -22,7 +26,7 @@ Set `OLLAMA_NO_CLOUD=1` on the model server. Before sending source content, the 
 
 The versioned section records model name, input selection digest, completion/error/partial state, selected/clipped file counts, runtime and evidence-backed observations. Exact excerpts must occur in the supplied file and selected text. Fabricated paths/excerpts are rejected. Category/severity/shape are validated; clipped/incomplete/invalid responses are not successful clean scans. `completed` means the bounded model call completed, never that the package is safe. An empty list is not an approval. An error leaves static evidence intact and is explicitly reported in the model section. No company exceptions are learned or silently applied by the model.
 
-The first cut selects at most 3000 serialized UTF-8 bytes including JSON escaping and metadata. It does not implement whole-package semantic comprehension or reliable cross-file analysis outside that selection. Returned interpretation can still be wrong even when its excerpt is real. Report/schema JSON is available; a dedicated UI presentation and representative accuracy evaluation remain release work.
+The first cut selects at most 3000 serialized UTF-8 bytes including JSON escaping and metadata. It does not implement whole-package semantic comprehension or reliable cross-file analysis outside that selection. Returned interpretation can still be wrong even when its excerpt is real. The dedicated UI and exports present these limits. Representative accuracy evaluation remains release work.
 
 ## Training later
 
