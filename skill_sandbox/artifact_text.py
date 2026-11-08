@@ -1,20 +1,13 @@
 from __future__ import annotations
 
 import io
-import os
 import re
-import sqlite3
-import tempfile
 import zipfile
 from typing import Iterable, Tuple
 from xml.etree import ElementTree
 
 
 SQLITE_HEADER = b"SQLite format 3\x00"
-MAX_SQLITE_TABLES = 25
-MAX_SQLITE_ROWS_PER_TABLE = 50
-MAX_SQLITE_TEXT_CHARS = 100_000
-MAX_SQLITE_VALUE_CHARS = 4096
 MAX_OFFICE_PARTS = 50
 MAX_OFFICE_TEXT_CHARS = 100_000
 MAX_OFFICE_PART_BYTES = 1024 * 1024
@@ -64,124 +57,19 @@ def extract_sqlite_text(data: bytes) -> str | None:
 
 
 def extract_sqlite_projection(data: bytes):
-    """Return the bounded projection with measured sampling, never full-DB claims."""
-    evidence = {"status": "partial", "tables": [], "table_limit": MAX_SQLITE_TABLES,
-                "row_limit_per_table": MAX_SQLITE_ROWS_PER_TABLE,
-                "text_character_limit": MAX_SQLITE_TEXT_CHARS,
-                "value_character_limit": 200, "blob_values": "omitted",
-                "scope": "Sampled row text only; original database bytes are not exhaustively analyzed."}
-    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as handle:
-        db_path = handle.name
-        handle.write(data)
+    """Return (projection text, coverage evidence) from a complete, budgeted read.
 
+    Every row of every table is read; long values are chunked, not truncated.
+    Detection with table/column/row citations runs in
+    database_analysis.scan_database_entry; this projection serves callers that
+    only need text. The returned text is bounded for package-level analyses and
+    the evidence states how much of the database was read.
+    """
     try:
-        return _read_sqlite_rows(db_path, evidence), evidence
-    except sqlite3.DatabaseError:
-        evidence["reason"] = "SQLite projection unavailable within the safe parser and operation budget."
-        return None, evidence
-    finally:
-        os.unlink(db_path)
-
-
-def _read_sqlite_rows(db_path: str, evidence=None) -> str:
-    lines = []
-    total_chars = 0
-    connection = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-    operations = [0]
-    def budget():
-        operations[0] += 1
-        return operations[0] > 5000
-    connection.set_progress_handler(budget, 1000)
-    connection.execute("PRAGMA query_only=ON")
-    connection.execute("PRAGMA trusted_schema=OFF")
-
-    try:
-        tables = [
-            row[0]
-            for row in connection.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name LIMIT ?",
-                (MAX_SQLITE_TABLES,),
-            )
-        ]
-        if evidence is not None:
-            evidence["tables_seen"] = connection.execute(
-                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").fetchone()[0]
-
-        for table in tables:
-            quoted_table = table.replace('"', '""')
-            table_evidence = {"table": table, "sampled_rows": 0, "total_rows": None,
-                              "total_rows_status": "not_measured"}
-            if evidence is not None:
-                evidence["tables"].append(table_evidence)
-            columns = [row[1] for row in connection.execute(f'PRAGMA table_info("{quoted_table}")')]
-            if not columns:
-                continue
-
-            lines.append(f"table={table} columns={', '.join(columns)}")
-            total_chars += len(lines[-1]) + 1
-            if total_chars >= MAX_SQLITE_TEXT_CHARS:
-                break
-
-            # Slice TEXT inside SQLite so one large value is not copied into Python.
-            # BLOBs remain inventory only, as in _render_sqlite_value.
-            projections = []
-            for column in columns:
-                quoted_column = column.replace('"', '""')
-                identifier = f'"{quoted_column}"'
-                projections.append(
-                    f"CASE WHEN typeof({identifier}) = 'text' "
-                    f"THEN substr({identifier}, 1, {MAX_SQLITE_VALUE_CHARS}) "
-                    f"WHEN typeof({identifier}) = 'blob' THEN NULL ELSE {identifier} END"
-                )
-            query = (f'SELECT {", ".join(projections)} FROM "{quoted_table}" '
-                     f'LIMIT {MAX_SQLITE_ROWS_PER_TABLE}')
-            for row in connection.execute(query):
-                table_evidence["sampled_rows"] += 1
-                values = []
-                for column, value in zip(columns, row):
-                    rendered = _render_sqlite_value(value)
-                    if rendered:
-                        values.append(f"{column}={rendered}")
-                if not values:
-                    continue
-                line = f"table={table} " + " ".join(values)
-                lines.append(line)
-                total_chars += len(line) + 1
-                if total_chars >= MAX_SQLITE_TEXT_CHARS:
-                    break
-            if total_chars >= MAX_SQLITE_TEXT_CHARS:
-                break
-        if evidence is not None:
-            # Counts are independently bounded; an expensive count does not erase
-            # a successful projection or turn an unknown total into zero.
-            operations[0] = 0
-            for table_evidence in evidence["tables"]:
-                quoted_table = table_evidence["table"].replace('"', '""')
-                try:
-                    table_evidence["total_rows"] = connection.execute(f'SELECT count(*) FROM "{quoted_table}"').fetchone()[0]
-                    table_evidence["total_rows_status"] = "measured"
-                except sqlite3.DatabaseError:
-                    table_evidence["total_rows_status"] = "unavailable_within_budget"
-            evidence["sampled_rows"] = sum(row["sampled_rows"] for row in evidence["tables"])
-            evidence["projection_characters"] = len("\n".join(lines))
-    finally:
-        connection.close()
-
-    return "\n".join(lines)
-
-
-def _render_sqlite_value(value: object) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, bytes):
-        return ""
-
-    text = re.sub(r"\s+", " ", str(value)).strip()
-    if not text:
-        return ""
-    if len(text) > 200:
-        return text[:200].rstrip() + "..."
-    return text
+        from .database_analysis import project_database_text
+    except ImportError:  # pragma: no cover - flat import layout used by the container
+        from database_analysis import project_database_text
+    return project_database_text(data)
 
 
 def extract_office_document_text(data: bytes) -> str | None:
