@@ -221,6 +221,8 @@ main();
 
 def _directory_db(path, rng):
     connection = sqlite3.connect(path)
+    # These disposable synthetic files need no recovery journal on the SMB share.
+    connection.execute("PRAGMA journal_mode=MEMORY")
     connection.execute("CREATE TABLE employees (employee_id TEXT, full_name TEXT, email TEXT, phone TEXT, "
                        "title TEXT, department TEXT, manager TEXT, notes TEXT)")
     rows = []
@@ -258,6 +260,8 @@ def fts_module(connection):
 
 def _handbook_db(path):
     connection = sqlite3.connect(path)
+    # These disposable synthetic files need no recovery journal on the SMB share.
+    connection.execute("PRAGMA journal_mode=MEMORY")
     module = fts_module(connection)
     connection.execute(f"CREATE VIRTUAL TABLE handbook_fts USING {module}(title, body)")
     connection.execute("CREATE TABLE sections (id INTEGER PRIMARY KEY, title TEXT, owner_team TEXT)")
@@ -281,6 +285,8 @@ def _small_zip():
 
 def _registry_db(path):
     connection = sqlite3.connect(path)
+    # These disposable synthetic files need no recovery journal on the SMB share.
+    connection.execute("PRAGMA journal_mode=MEMORY")
     connection.execute("CREATE TABLE connectors (name TEXT, endpoint TEXT, bundle BLOB)")
     connection.execute("CREATE TABLE audit (note TEXT)")
     connection.execute("CREATE TRIGGER audit_sync AFTER INSERT ON connectors BEGIN "
@@ -295,6 +301,8 @@ def _registry_db(path):
 
 def _exceptions_db(path):
     connection = sqlite3.connect(path)
+    # These disposable synthetic files need no recovery journal on the SMB share.
+    connection.execute("PRAGMA journal_mode=MEMORY")
     connection.execute("CREATE TABLE exceptions (id INTEGER PRIMARY KEY, policy TEXT, reason TEXT, expires TEXT)")
     connection.executemany("INSERT INTO exceptions (policy, reason, expires) VALUES (?, ?, ?)",
                            [("travel", "Conference exception", "2027-01-31"),
