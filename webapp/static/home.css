@@ -321,3 +321,138 @@
 .process-focus-controls p { flex-basis:100%; margin:.1rem 0; overflow-wrap:anywhere; font-size:.85rem; }
 .process-node:focus-visible,.map-node:focus-visible { outline:3px solid #ffc966; outline-offset:4px; }
 @media(forced-colors:active) { .map-edge.connection-selected { stroke:Highlight; } .process-edge.dimmed,.map-edge.dimmed { opacity:.25; } }
+
+/* 0.16.0: decision-first results. Each panel states what the reviewer should do next. */
+.map-edge.dense { opacity:.35; }
+.finding-name { overflow-wrap:anywhere; }
+.finding-id { font-family:monospace; font-size:.72em; color:#a9c4ba; margin-inline-start:.25rem; }
+.file-link { color:#b4f0d6; text-decoration:underline; text-underline-offset:.2em; background:transparent; border:0; padding:.15rem 0; text-align:left; cursor:pointer; overflow-wrap:anywhere; font:inherit; }
+.file-link:hover { color:#e6fff4; }
+.file-link:focus-visible, .fix-files-toggle:focus-visible, .arch-area-card:focus-visible, .file-reader-list button:focus-visible, .file-reader-scope button:focus-visible, .reader-path:focus-visible { outline:3px solid #ffc966; outline-offset:2px; }
+.org-policy-input summary { cursor:pointer; font-weight:600; min-height:28px; }
+.org-policy-input label { display:block; margin-top:.5rem; }
+.org-policy-input textarea, .org-policy-input input[type=file] { display:block; width:100%; max-width:100%; }
+.org-policy-help { font-size:.85rem; line-height:1.55; color:#cfe2da; margin:.5rem 0; }
+.org-policy-links { display:flex; flex-wrap:wrap; gap:.4rem 1rem; font-size:.85rem; }
+.org-policy-links a { color:#a8e5d8; text-decoration:underline; text-underline-offset:.2em; }
+.org-policy-status { font-size:.8rem; color:#bad0c9; margin:.4rem 0; }
+.org-policy-error { font-size:.85rem; color:#ffd9c7; border-inline-start:3px solid #e39a74; padding:.3rem .6rem; margin:.4rem 0; background:#3a2219; }
+
+.fix-summary, .policy-results, .file-reader { border:1px solid #6aa791; border-radius:.75rem; padding:1rem; background:#0d2a21; min-width:0; overflow-wrap:anywhere; line-height:1.55; }
+.fix-summary h3, .policy-results h3, .file-reader h3 { font-size:1.25rem; font-weight:750; color:#effbf6; margin-bottom:.4rem; }
+.fix-items { list-style:none; padding:0; margin:.8rem 0 0; display:grid; gap:.6rem; }
+.fix-item { border:1px solid #476b5f; border-inline-start-width:5px; border-radius:.5rem; padding:.7rem .85rem; background:#0a231b; }
+.fix-item-block { border-inline-start-color:#ef8a6b; }
+.fix-item-review { border-inline-start-color:#e7c26f; }
+.fix-item-info { border-inline-start-color:#7fb3d9; }
+.fix-item-heading { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; }
+.fix-item-heading h4 { font-size:1rem; font-weight:700; margin:0; }
+.fix-priority { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; border-radius:999px; padding:.15rem .55rem; border:1px solid currentColor; }
+.fix-priority-block { color:#ffc2ad; background:#4a2219; }
+.fix-priority-review { color:#f6dd9f; background:#3f3418; }
+.fix-priority-info { color:#bfe0f7; background:#16324a; }
+.fix-priority-unknown { color:#d7e3de; }
+.fix-action { margin:.4rem 0; }
+.fix-meta { font-size:.82rem; color:#bad0c9; margin:.25rem 0; }
+.fix-files-toggle { margin-top:.4rem; min-height:36px; border:1px solid #659c8e; background:#153e32; color:#eefbf6; border-radius:.45rem; padding:.35rem .7rem; font-size:.85rem; }
+.fix-files-toggle:disabled { opacity:.5; }
+.fix-files { list-style:none; padding:.4rem 0 0 .5rem; margin:0; max-height:260px; overflow:auto; font-size:.85rem; }
+
+.policy-invalid { border:2px solid #e39a74; background:#3a2219; color:#ffe6d9; border-radius:.5rem; padding:.75rem; margin:.5rem 0; }
+.policy-invalid ol { padding-inline-start:1.3rem; margin-top:.4rem; }
+.policy-invalid li { margin:.35rem 0; }
+.policy-invalid code, .policy-results code { font-family:monospace; background:#0006; padding:0 .25rem; border-radius:.2rem; }
+.policy-effects { display:flex; flex-wrap:wrap; gap:.5rem; list-style:none; padding:0; margin:.6rem 0; }
+.policy-effect { border:1px solid #476b5f; border-radius:.45rem; padding:.35rem .7rem; font-size:.85rem; background:#0a231b; }
+.policy-effect strong { font-size:1.1rem; margin-inline-end:.25rem; }
+.policy-effect-block { border-color:#ef8a6b; }
+.policy-effect-require_approval { border-color:#e7c26f; }
+.policy-note { font-size:.82rem; color:#bad0c9; }
+.policy-results h4 { font-size:1rem; font-weight:700; margin:.9rem 0 .4rem; }
+.policy-rules { list-style:none; padding:0; display:grid; gap:.5rem; }
+.policy-rule { border:1px solid #476b5f; border-inline-start-width:5px; border-radius:.5rem; padding:.6rem .8rem; }
+.policy-rule-block { border-inline-start-color:#ef8a6b; }
+.policy-rule-require_approval { border-inline-start-color:#e7c26f; }
+.policy-rule-warn { border-inline-start-color:#c9b46a; }
+.policy-rule-allow { border-inline-start-color:#7fc6a0; }
+.policy-rule-heading { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; }
+.policy-rule-heading h5 { font-weight:700; margin:0; }
+.policy-effect-badge { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; border:1px solid currentColor; border-radius:999px; padding:.1rem .5rem; }
+.policy-rule-meta, .reader-meta { font-size:.8rem; color:#a9c4ba; }
+.policy-evidence { padding-inline-start:1.2rem; font-size:.85rem; }
+.policy-quiet summary, .reader-informational summary { cursor:pointer; min-height:28px; }
+.policy-not-checkable { border-top:1px solid #476b5f; margin-top:.8rem; }
+.policy-not-checkable ul { padding-inline-start:1.2rem; }
+.evidence-input-notice { border:2px solid #e7c26f; background:#3f3418; color:#fbefcf; border-radius:.6rem; padding:.75rem 1rem; }
+.evidence-input-notice ul { padding-inline-start:1.2rem; margin-top:.3rem; }
+
+.file-reader-layout { display:grid; grid-template-columns:minmax(220px,340px) minmax(0,1fr); gap:1rem; margin-top:.75rem; }
+.file-reader-list-panel, .file-reader-detail-panel { min-width:0; }
+.file-reader-scope { display:flex; flex-wrap:wrap; gap:.35rem; }
+.file-reader-scope button { min-height:36px; border:1px solid #659c8e; background:#153e32; color:#eefbf6; border-radius:.45rem; padding:.3rem .6rem; font-size:.82rem; }
+.file-reader-scope button[aria-pressed=true] { background:#286c56; border-color:#b5eedb; }
+.file-reader-filters { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.4rem; margin:.6rem 0; }
+.file-reader-filters label { display:grid; gap:.15rem; font-size:.78rem; color:#bad0c9; min-width:0; }
+.file-reader-filters label:first-child { grid-column:1/-1; }
+.file-reader-filters input, .file-reader-filters select { width:100%; min-width:0; background:#071e16; color:#eefbf6; border:1px solid #52796a; border-radius:.35rem; padding:.35rem .45rem; font-size:.85rem; }
+.file-reader-count { font-size:.78rem; color:#a9c4ba; }
+.file-reader-list { list-style:none; padding:0; margin:.3rem 0 0; max-height:560px; overflow:auto; border:1px solid #3e685c; border-radius:.45rem; }
+.file-reader-list button { display:block; width:100%; text-align:left; background:transparent; color:#e6f3ee; border:0; border-bottom:1px solid #2c4c42; padding:.45rem .6rem; cursor:pointer; }
+.file-reader-list button:hover { background:#173b32; }
+.file-reader-list button[aria-current=true] { background:#22543d; box-shadow:inset 4px 0 0 #9df0d1; }
+.file-reader-path { display:block; font-size:.85rem; overflow-wrap:anywhere; }
+.file-reader-tags { display:block; font-size:.72rem; color:#a9c4ba; }
+.reader-detail { border:1px solid #476b5f; border-radius:.55rem; padding:.85rem; background:#0a231b; }
+.reader-detail h5, .db-profile h4, .db-profile h5 { font-weight:700; margin:.9rem 0 .35rem; }
+.reader-path { font-family:monospace; font-size:1rem; font-weight:700; overflow-wrap:anywhere; }
+.reader-findings { list-style:none; padding:0; display:grid; gap:.5rem; }
+.reader-finding { border-inline-start:3px solid #52796a; padding:.35rem .7rem; }
+.reader-finding-heading { display:flex; flex-wrap:wrap; align-items:center; gap:.45rem; }
+.reader-severity { font-size:.75rem; color:#cfe2da; text-transform:uppercase; letter-spacing:.04em; }
+.reader-allowed { font-size:.75rem; color:#bdf0d2; border:1px solid #7fc6a0; border-radius:999px; padding:0 .45rem; }
+.reader-locations { font-size:.82rem; color:#d6ebe3; }
+.reader-samples p { font-size:.78rem; color:#a9c4ba; }
+.reader-samples ul { padding-inline-start:1.1rem; }
+.reader-samples code { font-family:monospace; font-size:.78rem; overflow-wrap:anywhere; white-space:pre-wrap; }
+.reader-steps, .reader-references ul { padding-inline-start:1.3rem; font-size:.88rem; }
+.reader-steps li, .reader-references li { margin:.2rem 0; }
+.reader-edge-label { color:#a9c4ba; font-size:.8rem; }
+.db-profile { border-top:1px solid #476b5f; margin-top:.8rem; }
+.db-coverage { border:1px solid #476b5f; border-radius:.5rem; padding:.6rem .8rem; margin:.4rem 0; }
+.db-coverage ul { padding-inline-start:1.2rem; font-size:.85rem; }
+.db-not-cleared { border:2px solid #ef8a6b; background:#4a2219; color:#ffe1d5; }
+.db-not-cleared strong { font-size:1.05rem; letter-spacing:.02em; }
+.db-complete { border-color:#7fc6a0; }
+.db-table { border:1px solid #3e685c; border-radius:.4rem; padding:.4rem .6rem; margin:.35rem 0; }
+.db-table summary { cursor:pointer; min-height:28px; }
+.db-columns-scroll { overflow-x:auto; }
+.db-columns { width:100%; border-collapse:collapse; font-size:.82rem; margin-top:.4rem; }
+.db-columns caption { text-align:left; font-size:.75rem; color:#a9c4ba; }
+.db-columns th, .db-columns td { border-bottom:1px solid #2c4c42; padding:.3rem .4rem; text-align:left; vertical-align:top; }
+.db-columns thead th { color:#a8e5d8; }
+.data-class-list { display:inline-flex; flex-wrap:wrap; gap:.25rem; }
+.data-class-badge { font-size:.7rem; border:1px solid #5d8f80; border-radius:999px; padding:0 .45rem; color:#d6ebe3; background:#123128; }
+.data-class-badge.sensitive { border-color:#ef8a6b; color:#ffd9c7; background:#4a2219; font-weight:700; }
+
+.architecture-views { display:grid; gap:1rem; min-width:0; }
+.architecture-view-switch button { min-height:40px; border:1px solid #659c8e; background:#153e32; color:#eefbf6; border-radius:.5rem; padding:.5rem .8rem; }
+.architecture-view-switch button[aria-pressed=true] { background:#286c56; border-color:#b5eedb; }
+.arch-overview { border:1px solid #669f91; border-radius:1rem; padding:1rem; background:#0d2a21; min-width:0; overflow-wrap:anywhere; line-height:1.55; }
+.arch-overview h4 { font-size:1.05rem; font-weight:700; margin:1rem 0 .4rem; }
+.arch-areas { list-style:none; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:.6rem; }
+.arch-area-card { width:100%; height:100%; display:flex; flex-direction:column; align-items:flex-start; gap:.3rem; text-align:left; border:2px solid #578f7b; background:#153c2e; color:#eefbf6; border-radius:.6rem; padding:.7rem; cursor:pointer; }
+.arch-area-card[aria-pressed=true] { border-color:#c3f8e5; background:#22543d; }
+.arch-area-source { font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; color:#b8e7d2; }
+.arch-area-counts { font-size:.8rem; color:#c1d8cd; }
+.arch-badges { display:flex; flex-wrap:wrap; gap:.25rem; }
+.arch-risk-badge { font-size:.7rem; border:1px solid #e7c26f; color:#f6dd9f; background:#3f3418; border-radius:999px; padding:0 .45rem; }
+.arch-area-files { margin-top:.6rem; }
+.arch-area-files ul, .arch-list, .arch-links { padding-inline-start:1.2rem; font-size:.88rem; }
+.arch-list li, .arch-links li { margin:.3rem 0; }
+.arch-coverage { font-size:.75rem; border:1px solid #7fc6a0; border-radius:999px; padding:0 .45rem; }
+.arch-coverage.not-cleared { border:2px solid #ef8a6b; color:#ffd9c7; background:#4a2219; font-weight:700; }
+.arch-untrusted, .arch-flag { color:#f6dd9f; font-weight:600; }
+.arch-entry { font-size:.75rem; color:#a8e5d8; }
+@media(max-width:900px) { .file-reader-layout { grid-template-columns:minmax(0,1fr); } .file-reader-list { max-height:320px; } }
+@media(max-width:420px) { .file-reader-filters { grid-template-columns:minmax(0,1fr); } }
+@media(forced-colors:active) { .fix-item, .policy-rule, .db-not-cleared, .data-class-badge.sensitive, .arch-coverage.not-cleared { border-color:CanvasText; } .file-reader-list button[aria-current=true] { outline:2px solid Highlight; } }

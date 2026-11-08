@@ -236,7 +236,8 @@ def test_large_sqlite_scanned_outside_references(large_sqlite, archive_type, db_
     assert not entry["skipped"]
     assert entry["detected_content_type"] == "sqlite"
     assert entry["reason"] == "Scanned SQLite database content."
-    assert "omitted records" in entry["analysis_scope"]
+    assert "BLOB images and archive contents are typed, not inspected" in entry["analysis_scope"]
+    assert entry["database_profile"]["coverage"]["rows_read"] == 900
     assert entry["findings"]
 
 
@@ -295,16 +296,17 @@ def test_archive_total_budget_still_enforced(monkeypatch, archive_type):
 
 
 def test_sqlite_projection_bounds_large_values_and_quotes_identifiers(tmp_path):
-    from skill_sandbox.artifact_text import _read_sqlite_rows
+    from skill_sandbox.artifact_text import extract_sqlite_projection
 
     database = tmp_path / "large-cell.db"
     with sqlite3.connect(database) as connection:
         connection.execute('CREATE TABLE "odd""table" ("odd""column" TEXT, payload BLOB, count INTEGER)')
         connection.execute('INSERT INTO "odd""table" VALUES (?, ?, ?)',
                            (" " * 5000 + "beyond-cell-budget", b"ignored-binary-marker", 42))
-    text = _read_sqlite_rows(str(database))
-    assert 'odd"table' in text
+    text, coverage = extract_sqlite_projection(database.read_bytes())
+    assert coverage["sampled_rows"] == 1
+    assert coverage["tables"][0]["table"] == 'odd"table'
     assert 'odd"column' in text
     assert 'count=42' in text
-    assert "beyond-cell-budget" not in text
-    assert "ignored-binary-marker" not in text
+    assert "beyond-cell-budget" in text
+    assert "ignored-binary-marker" in text

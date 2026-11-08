@@ -58,7 +58,8 @@ def build_token_footprint(text_sources, inventory=None, relationship_graph=None)
         texts[path] = supplied
         extraction = extraction_by_path.get(path, {})
         projection_complete = len(supplied) == len(text)
-        source_complete = extraction.get("status") not in {"partial", "not_performed"}
+        source_complete = (extraction.get("status") not in {"partial", "not_performed"}
+                           and extraction.get("original_binary_security_analysis") in (None, "not_applicable"))
         files.append({"path": path, "complete_text": projection_complete and source_complete,
                       "complete_extracted_projection": projection_complete,
                       "source_extraction_status": extraction.get("status", "not_reported"), **_measure(supplied)})

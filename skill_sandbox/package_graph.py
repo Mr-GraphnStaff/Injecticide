@@ -41,7 +41,20 @@ REFERENCE_LINK = re.compile(r"^\s{0,3}\[[^\]\n]{1,256}\]:\s*(?:<([^>\n]+)>|([^\s
 BACKTICK = re.compile(r"`([^`\n]{1,4096})`")
 HTML_LINK = re.compile(r"\b(?:src|href)\s*=\s*[\"']([^\"'\n]{1,4096})[\"']", re.I)
 URL = re.compile(r"(?:https?|wss?)://[^\s<>\"'`]+", re.I)
-BARE_PATH = re.compile(r"(?<![A-Za-z0-9_./:@+\\-])(?:\.{1,2}/)?(?:[A-Za-z0-9_.@+~-]+/)*[A-Za-z0-9_@+~-][A-Za-z0-9_.@+~-]*\." + PATH_EXTENSIONS + r"(?![A-Za-z0-9_-]|\.[A-Za-z0-9_-])", re.I)
+# ``\w`` is Unicode-aware: a name continuing a non-ASCII word is one token.
+BARE_PATH = re.compile(r"(?<![\w./:@+\\-])(?:\.{1,2}/)?(?:[\w.@+~-]+/)*[\w@+~-][\w.@+~-]*\." + PATH_EXTENSIONS + r"(?![\w-]|\.[\w-])", re.I)
+# A file name is not a separate reference when it continues a longer token:
+# ``environment.md`` inside ``wsr-environment.md`` written with a Unicode hyphen
+# or dash, or inside emphasis such as ``wsr-*environment.md*``.
+JOINING_DASHES = "­‐‑‒–—―−﹣－"
+EMPHASIS_MARKS = "*~"
+# Prose product and framework names that share a file extension. A bare
+# mention is not a package file unless a packaged file has that name.
+PROSE_PRODUCT_NAMES = frozenset({
+    "node.js", "vue.js", "next.js", "nuxt.js", "react.js", "express.js", "nest.js",
+    "angular.js", "ember.js", "backbone.js", "three.js", "d3.js", "chart.js",
+    "alpine.js", "p5.js", "moment.js",
+})
 ROOT_FILES = {"skill.md", "plugin.json", "manifest.json", "gemini-extension.json", "openclaw.plugin.json", "hooks.json", "mcp.json", ".mcp.json"}
 
 
@@ -98,7 +111,15 @@ class _Graph:
             self.paths.add(path)
             self.nodes.append({"path": path, "assessment_state": record.get("assessment_state", "unknown"),
                                "required_component": bool(record.get("required_component"))})
+        self.basenames = {posixpath.basename(p).casefold() for p in self.paths}
         self.skill_roots = sorted({posixpath.dirname(p) for p in self.paths if posixpath.basename(p).lower() == "skill.md"}, key=len, reverse=True)
+
+    def product_name(self, token):
+        """A bare product name (``Node.js``) unless a packaged file bears that name."""
+        name = token.casefold()
+        if "/" in name or "\\" in name or name not in PROSE_PRODUCT_NAMES:
+            return False
+        return name not in self.basenames
 
     def limit(self, kind, path=None):
         key = (kind, path)
@@ -259,7 +280,8 @@ class _Graph:
                     self.reference(path, value, line_no, "document_reference")
             commands = list(COMMAND_START.finditer(line))
             for match in BACKTICK.finditer(line):
-                if PATH_TOKEN.fullmatch(match[1].strip()) and parse_script_command(match[1].strip()) is None:
+                if (PATH_TOKEN.fullmatch(match[1].strip()) and parse_script_command(match[1].strip()) is None
+                        and not self.product_name(match[1].strip())):
                     self.reference(path, match[1], line_no, "resource_reference")
             for match in URL.finditer(line):
                 self.external_reference(path, match[0].rstrip(".,;)]}"), line_no, "destination_mention")
@@ -271,8 +293,11 @@ class _Graph:
             reserved.extend(match.span() for match in commands)
             if suffix in {".md", ".txt", ".skill"}:
                 for match in BARE_PATH.finditer(line):
-                    if not any(start <= match.start() < end for start, end in reserved):
-                        self.reference(path, match[0], line_no, "prose_resource_reference")
+                    if any(start <= match.start() < end for start, end in reserved):
+                        continue
+                    if _continues_token(line, match.start()) or self.product_name(match[0]):
+                        continue
+                    self.reference(path, match[0], line_no, "prose_resource_reference")
             for match in commands:
                 self.command_argument(path, match["command"], line_no)
         if suffix in {".py", ".pyw"}:
@@ -327,6 +352,11 @@ class _Graph:
                 capability = "file_write" if isinstance(mode, str) and any(c in mode for c in "wax+") else "file_read" if isinstance(mode, str) else "file_access_mode_unknown"
                 self.observe(path, line, capability, name)
                 self.reference(path, literal, line, "source_file_access")
+            elif name == "sqlite3.connect":
+                # Opening a database names the store; read or write is not established.
+                self.observe(path, line, "database_access", name)
+                if literal and literal != ":memory:" and not literal.startswith("file:"):
+                    self.reference(path, literal, line, "source_file_access")
             elif name in {"os.getenv", "os.environ.get"}:
                 self.observe(path, line, "environment_read", name)
             elif name in {"eval", "exec", "compile"}:
@@ -486,6 +516,22 @@ class _Graph:
                 "scope": "Declared references and recognized source syntax only; reachability is not execution or malicious intent. Unreferenced files remain scan inputs; missing/dynamic links require review. No network, imports, dependency installation or package execution performed.",
                 "supported_parsers": ["markdown_links", "inline_resource_paths", "prose_resource_paths", "documented_launcher_subset", "python_ast", "json_declarations", "pep723_inline_metadata_when_parsers_available"],
                 "unsupported_analysis": ["runtime_control_flow", "arbitrary_language_semantics", "dynamic_path_resolution"]}
+
+
+def _continues_token(line, start):
+    """True when a match continues a longer word through emphasis or a dash."""
+    index = start - 1
+    while index >= 0 and line[index] in EMPHASIS_MARKS:
+        index -= 1
+    if index < 0:
+        return False
+    char = line[index]
+    if char.isalnum() or char == "_":
+        return True
+    if char == "-" or char in JOINING_DASHES:
+        before = line[index - 1] if index else ""
+        return before.isalnum() or before == "_" or (before != "" and before in EMPHASIS_MARKS)
+    return False
 
 
 def _string(node):

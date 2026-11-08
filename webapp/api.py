@@ -52,17 +52,22 @@ from webapp.vendor_requirements import attach_vendor_check
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
 
 SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
+SKILL_SCAN_READ_TIMEOUT_SECONDS = 120
 
 
-def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url):
+def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url, org_policy=""):
     if not sandbox_url:
-        return attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence)))
+        return attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence), org_policy))
+    form = {"target_runtime": target_runtime, "governance_evidence": evidence}
+    if org_policy:
+        # Forwarded as raw text; the sandbox validates it and reports errors in the result.
+        form["org_policy"] = org_policy
     with requests.Session() as session:
         response = session.post(
             f"{sandbox_url.rstrip('/')}/scan",
             files={"file": (filename, data, content_type)},
-            data={"target_runtime": target_runtime, "governance_evidence": evidence},
-            timeout=(5, 45),
+            data=form,
+            timeout=(5, SKILL_SCAN_READ_TIMEOUT_SECONDS),
         )
         if response.status_code in {400, 413, 422, 429}:
             raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Scan rejected"))
@@ -564,7 +569,7 @@ async def root():
 
 @app.post("/api/skills/scan")
 async def scan_skill_file(request: Request, file: UploadFile = File(...), target_runtime: str = Form("auto"),
-                          governance_evidence: str = Form("{}")):
+                          governance_evidence: str = Form("{}"), org_policy: str = Form("")):
     request_id = request.state.scan_request_id
     started = time.monotonic()
     stage = "validation"
@@ -591,7 +596,7 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
             raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit")
         stage = "analysis"
         result = await run_in_threadpool(_scan_skill_data, data, file.filename, file.content_type,
-                                        target_runtime, governance_evidence, os.getenv("SKILL_SANDBOX_URL"))
+                                        target_runtime, governance_evidence, os.getenv("SKILL_SANDBOX_URL"), org_policy)
         result["scan_request_id"] = request_id
         result["scan_diagnostics"] = {"stage": "completed", "elapsed_ms": round((time.monotonic() - started) * 1000),
                                      "payload_logged": False}

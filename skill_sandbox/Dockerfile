@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY app.py /app/app.py
 COPY artifact_text.py /app/artifact_text.py
+COPY database_analysis.py /app/database_analysis.py
 COPY asset_inspection.py /app/asset_inspection.py
 COPY nested_archives.py /app/nested_archives.py
 COPY package_graph.py /app/package_graph.py
@@ -39,6 +40,9 @@ COPY package_checks.py /app/package_checks.py
 COPY inspection_evidence.py /app/inspection_evidence.py
 COPY evidence_redaction.py /app/evidence_redaction.py
 COPY official_validators.py /app/official_validators.py
+COPY architecture_overview.py /app/architecture_overview.py
+COPY org_policy.py /app/org_policy.py
+COPY fix_summary.py /app/fix_summary.py
 COPY vendor_validators /app/vendor_validators
 COPY schemas /app/schemas
 COPY rules /app/rules

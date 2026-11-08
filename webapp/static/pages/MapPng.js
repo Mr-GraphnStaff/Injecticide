@@ -8,12 +8,12 @@ async function downloadMapPng(map, filename, kindLabels = {}) {
         throw Error('The map contains unsupported component coordinates.');
     }
 
-    // Include the entire map, including Bezier control points beyond the cards.
+    // Include the entire map, including edge channels routed below the cards.
     // Raster allocation stays below 4096 pixels per side and 12 million pixels.
     const left = Math.min(...nodes.map(node => node.x)) - 64;
     const top = Math.min(...nodes.map(node => node.y)) - 24;
     const right = Math.max(...nodes.map(node => node.x)) + 284;
-    const bottom = Math.max(...nodes.map(node => node.y)) + 124;
+    const bottom = Math.max(...nodes.map(node => node.y)) + 144;
     const padding = 28, headerHeight = 110, footerHeight = 82;
     const width = Math.max(720, right - left + padding * 2);
     const height = bottom - top + headerHeight + footerHeight;
@@ -67,10 +67,21 @@ async function downloadMapPng(map, filename, kindLabels = {}) {
         context.strokeStyle = color;
         context.fillStyle = color;
         context.lineWidth = 2;
+        // Orthogonal routing, matching the on-screen map: edges between the same
+        // columns share a vertical channel instead of crossing as curves.
+        context.globalAlpha = edges.length > 40 && !(edge.untrusted || edge.write) ? 0.45 : 1;
         context.beginPath();
-        context.moveTo(source.x + 220, source.y + 50);
-        context.bezierCurveTo(source.x + 275, source.y + 50, target.x - 55, target.y + 50, target.x, target.y + 50);
+        const sx = source.x + 220, sy = source.y + 50, tx = target.x, ty = target.y + 50;
+        context.moveTo(sx, sy);
+        if (tx - sx >= 24) {
+            const mx = Math.round(sx + (tx - sx) / 2);
+            context.lineTo(mx, sy); context.lineTo(mx, ty); context.lineTo(tx, ty);
+        } else {
+            const lane = Math.abs(source.y - target.y) > 120 ? Math.round((Math.min(source.y, target.y) + 100 + Math.max(source.y, target.y)) / 2) : Math.max(source.y, target.y) + 118;
+            context.lineTo(sx + 18, sy); context.lineTo(sx + 18, lane); context.lineTo(tx - 18, lane); context.lineTo(tx - 18, ty); context.lineTo(tx, ty);
+        }
         context.stroke();
+        context.globalAlpha = 1;
         context.beginPath();
         context.moveTo(target.x, target.y + 50);
         context.lineTo(target.x - 10, target.y + 45);
@@ -94,7 +105,9 @@ async function downloadMapPng(map, filename, kindLabels = {}) {
         drawText(node.label || 'Unnamed component', node.x + 12, node.y + 44, 196, 2, 18);
         context.fillStyle = '#bed8cd';
         context.font = '11px system-ui, sans-serif';
-        drawText(`${node.trust || 'unknown'} · ${node.sensitivity || 'unknown'}`, node.x + 12, node.y + 85, 196, 1, 14);
+        // Only declared values are drawn; a repeated "unknown · unknown" line adds no information.
+        const footnote = [node.trust && node.trust !== 'unknown' ? `Trust: ${node.trust}` : '', node.sensitivity && node.sensitivity !== 'unknown' ? `Data: ${node.sensitivity}` : ''].filter(Boolean).join(' · ');
+        if (footnote) drawText(footnote, node.x + 12, node.y + 85, 196, 1, 14);
     }
     context.restore();
 

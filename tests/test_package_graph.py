@@ -165,3 +165,40 @@ def test_ambiguous_case_matches_never_choose_a_target_silently():
     assert edge["status"] == "ambiguous_case_reference"
     assert edge["case_mismatch_candidates"] == [{"path": "FORMS.md"}, {"path": "forms.md"}]
     assert result["reachable_paths"] == ["SKILL.md"]
+
+
+def test_prose_product_names_are_not_file_references():
+    result = graph({"SKILL.md": "Built on Node.js, Vue.js and Next.js; deploys to ASP.NET and .NET 8. "
+                                "Also `Node.js` in code marks."})
+    assert result["edges"] == []
+
+
+def test_product_named_file_that_is_packaged_is_still_referenced():
+    # Paired positive: the same spelling names a real packaged file.
+    result = graph({"SKILL.md": "Run the helper in node.js first.", "node.js": "console.log(1)"})
+    assert [(e["target"], e["status"]) for e in result["edges"]] == [("node.js", "resolved")]
+    # A path-qualified product-like name is a file reference, never a prose name.
+    result = graph({"SKILL.md": "See scripts/next.js.", "scripts/next.js": "x"})
+    assert [(e["target"], e["status"]) for e in result["edges"]] == [("scripts/next.js", "resolved")]
+
+
+def test_filename_inside_a_longer_name_is_not_a_separate_reference():
+    files = {"SKILL.md": "", "wsr-environment.md": "w", "environment.md": "e"}
+    for text in ("Load wsr‑environment.md.", "Load wsr–environment.md.",
+                 "Load wsr-*environment.md*.", "Load café-environment.md."):
+        result = graph({**files, "SKILL.md": text})
+        assert "environment.md" not in {e["target"] for e in result["edges"]}, text
+
+
+def test_standalone_filename_and_full_hyphenated_name_are_still_references():
+    files = {"wsr-environment.md": "w", "environment.md": "e"}
+    result = graph({**files, "SKILL.md": "Load wsr-environment.md, then *environment.md* — environment.md."})
+    assert {e["target"] for e in result["edges"]} == {"wsr-environment.md", "environment.md"}
+
+
+def test_sqlite_connect_names_the_data_store_without_claiming_a_write():
+    result = graph({"run.py": "import sqlite3\ndb = sqlite3.connect('vendors.sqlite')\nmem = sqlite3.connect(':memory:')",
+                    "vendors.sqlite": None})
+    assert [(e["target"], e["status"], e["line"]) for e in result["edges"]] == [("vendors.sqlite", "resolved", 2)]
+    capabilities = {o["capability"] for o in result["capability_observations"]}
+    assert "database_access" in capabilities and "file_write" not in capabilities

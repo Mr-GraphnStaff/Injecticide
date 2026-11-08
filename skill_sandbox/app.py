@@ -20,6 +20,7 @@ if __package__:
     from .evidence_redaction import redact_result
     from .disposition import normalize_observations
     from .artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
+    from .database_analysis import Budget as DatabaseBudget, PACKAGE_TIME_BUDGET_SECONDS, is_database_path, scan_database_entry
     from .behavior_analysis import analyze_behavior
     from .contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -29,6 +30,9 @@ if __package__:
     from .package_analysis import enrich_result
     from .package_formats import bounded_data, RUNTIMES
     from .inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
+    from .package_evidence import evidence_input_report
+    from .org_policy import evaluate_policy, RESULT_SCHEMA as POLICY_RESULT_SCHEMA
+    from .fix_summary import build_fix_summary
 else:
     from asset_inspection import inspect_asset
     from nested_archives import NestedArchiveBudget, inspect_nested_zip, is_nested_zip
@@ -36,6 +40,7 @@ else:
     from evidence_redaction import redact_result
     from disposition import normalize_observations
     from artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
+    from database_analysis import Budget as DatabaseBudget, PACKAGE_TIME_BUDGET_SECONDS, is_database_path, scan_database_entry
     from behavior_analysis import analyze_behavior
     from contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -45,6 +50,9 @@ else:
     from package_analysis import enrich_result
     from package_formats import bounded_data, RUNTIMES
     from inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
+    from package_evidence import evidence_input_report
+    from org_policy import evaluate_policy, RESULT_SCHEMA as POLICY_RESULT_SCHEMA
+    from fix_summary import build_fix_summary
 
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
@@ -78,7 +86,7 @@ MAX_TEXT_CHARS = 1024 * 1024
 
 @app.post("/scan")
 async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("auto"),
-                     governance_evidence: str = Form("{}")) -> Dict[str, object]:
+                     governance_evidence: str = Form("{}"), org_policy: str = Form("")) -> Dict[str, object]:
     if not file.filename:
         await file.close()
         raise HTTPException(status_code=400, detail="Missing filename")
@@ -89,7 +97,9 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
     try:
         upload_bytes = await file.read(MAX_UPLOAD_BYTES + 1)
         evidence = bounded_data(governance_evidence)
-        result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence)
+        # The policy is passed as raw text: its SHA-256 identifies the exact
+        # submitted policy, and an invalid policy is reported, not rejected.
+        result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence, org_policy)
         return result
     except (ValueError, zipfile.BadZipFile, tarfile.TarError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -99,7 +109,7 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
 
 
 def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None,
-                *, source_channel="uploaded_artifact") -> Dict[str, object]:
+                org_policy=None, *, source_channel="uploaded_artifact") -> Dict[str, object]:
     if not isinstance(source_channel, str) or source_channel not in SOURCE_CHANNELS:
         raise ValueError("Unsupported source channel")
     if len(upload_bytes) > MAX_UPLOAD_BYTES:
@@ -110,15 +120,33 @@ def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", gover
     lower_name = filename.lower()
 
     if lower_name.endswith(".zip") or zipfile.is_zipfile(io.BytesIO(upload_bytes)):
-        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel)
+        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel, org_policy=org_policy)
 
     if lower_name.endswith((".tar", ".tar.gz", ".tgz")):
-        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel)
+        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel, org_policy=org_policy)
 
-    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence, source_channel)
+    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence, source_channel, org_policy)
 
 
-def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact") -> Dict[str, object]:
+def _finalize_result(result, text_sources, governance_evidence=None, org_policy=None):
+    """Additive report sections computed after findings and redaction are final."""
+    evidence = result.get("governance_evidence") or {}
+    result["evidence_input"] = evidence_input_report(governance_evidence, evidence.get("artifact_sha256"),
+                                                     evidence.get("evidence_authentication"))
+    try:
+        result["policy_evaluation"] = evaluate_policy(org_policy, result, text_sources)
+    except Exception as exc:  # A policy problem must never fail the scan itself.
+        result["policy_evaluation"] = {
+            "schema": POLICY_RESULT_SCHEMA, "status": "invalid", "policy": None,
+            "errors": [{"path": "", "message": f"Policy could not be evaluated ({type(exc).__name__}).", "suggestion": None}],
+            "warnings": [], "rules": [], "not_statically_checkable": [], "verification_notes": [],
+            "effect_summary": {"block": 0, "require_approval": 0, "warn": 0, "allow": 0, "advisory_block": 0},
+            "decision": "not_evaluated"}
+    result["fix_summary"] = build_fix_summary(result)
+    return result
+
+
+def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact", org_policy=None) -> Dict[str, object]:
     warnings: List[str] = []
     excluded = []
     with tempfile.TemporaryDirectory() as temp_root:
@@ -132,15 +160,17 @@ def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_
 
         results, text_sources = _scan_extracted_files(extracted, excluded)
         result = _assemble_result(filename, archive_type, results, warnings, text_sources)
-        return enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text, source_channel=source_channel)
+        result = enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text, source_channel=source_channel)
+        return _finalize_result(result, text_sources, governance_evidence, org_policy)
 
 
-def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact") -> Dict[str, object]:
+def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact", org_policy=None) -> Dict[str, object]:
     entry, text = _scan_file_bytes(filename, upload_bytes)
     results = [entry]
     text_sources = _build_text_sources([(filename, text, entry["artifact_role"])])
-    return enrich_result(_assemble_result(filename, "skill", results, [], text_sources), text_sources,
-                         upload_bytes, target_runtime, governance_evidence, rescan=_scan_text, source_channel=source_channel)
+    result = enrich_result(_assemble_result(filename, "skill", results, [], text_sources), text_sources,
+                           upload_bytes, target_runtime, governance_evidence, rescan=_scan_text, source_channel=source_channel)
+    return _finalize_result(result, text_sources, governance_evidence, org_policy)
 
 
 def _max_scannable_file_bytes(path: str, header: bytes = b"") -> int:
@@ -269,6 +299,7 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str], excl
 
 def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> Tuple[List[Dict[str, object]], List[Dict[str, str]]]:
     results = []
+    database_budget = DatabaseBudget(seconds=PACKAGE_TIME_BUDGET_SECONDS)
     text_pairs: List[Tuple[str, str | None, str]] = []
     sorted_files = sorted(files, key=_priority_key)
     excluded = excluded if excluded is not None else []
@@ -296,7 +327,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
         }
         entry["analysis_coverage"]["extraction"]["reason"] = "Archive container bytes are not text; expanded descendants are analyzed as separate files."
         if is_probably_text(data):
-            fallback, readable = _scan_file_bytes(path, data)
+            fallback, readable = _scan_file_bytes(path, data, database_budget)
             entry["findings"] = fallback["findings"]
             entry["analysis_coverage"].update(fallback["analysis_coverage"])
             entry["_readable_text"] = readable
@@ -318,7 +349,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
                     containers[nested_path] = entry
                     text = entry.pop("_readable_text", None)
                 else:
-                    entry, text = _scan_file_bytes(nested_path, raw)
+                    entry, text = _scan_file_bytes(nested_path, raw, database_budget)
                     entry["archive_container"] = descendant["container_path"]
                     entry["archive_depth"] = descendant["depth"]
                 results.append(entry)
@@ -333,7 +364,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
                     "SKILL.md", "plugin.json", "hooks.json", "mcp.json", ".mcp.json", "manifest.json"}
                 excluded.append(omitted)
             continue
-        entry, text = _scan_file_bytes(rel_path, data)
+        entry, text = _scan_file_bytes(rel_path, data, database_budget)
         results.append(entry)
         text_pairs.append((rel_path, text, entry["artifact_role"]))
     return results, _build_text_sources(text_pairs)
@@ -351,7 +382,7 @@ def _priority_key(item: Tuple[str, Path]) -> Tuple[int, str]:
     return (2, rel_path.lower())
 
 
-def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | None]:
+def _scan_file_bytes(path: str, data: bytes, database_budget=None) -> Tuple[Dict[str, object], str | None]:
     entry = {
         "path": path,
         "size": len(data),
@@ -382,16 +413,16 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         return _scan_asset_entry(entry, asset, data)
     sampling = None
     try:
-        if looks_like_sqlite(data):
-            text, sampling = extract_sqlite_projection(data)
-            reason = "Scanned SQLite database content." if text is not None else "Binary or non-text content"
-        else:
-            text, reason = extract_scannable_text(data)
+        if looks_like_sqlite(data) or is_database_path(path):
+            return scan_database_entry(entry, data, _scan_text, budget=database_budget or DatabaseBudget(seconds=PACKAGE_TIME_BUDGET_SECONDS))
+        text, reason = extract_scannable_text(data)
     except ValueError as exc:
         entry.update(skipped=True, reason=str(exc), assessment_state="limited_or_truncated")
         entry["analysis_coverage"]["extraction"].update(status="partial", reason=entry["reason"])
         return entry, None
     if text is None:
+        if is_database_path(path):
+            return scan_database_entry(entry, data, _scan_text, budget=database_budget or DatabaseBudget(seconds=PACKAGE_TIME_BUDGET_SECONDS))
         if sampling is not None:
             entry["analysis_coverage"]["extraction"]["sampling"] = sampling
         entry["skipped"] = True

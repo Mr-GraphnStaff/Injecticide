@@ -28,6 +28,8 @@ unsupported compression and budget exclusions remain visible.
 
 ## What the result contains
 
+What is and is not detected, by threat type: [coverage.md](coverage.md).
+
 ### Context and blocking evidence (0.15.0)
 
 Detection retains `speech_act`, `imperative_evidence`, `target` and `confidence`

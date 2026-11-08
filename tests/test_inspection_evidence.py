@@ -1,5 +1,6 @@
 import io
 import json
+import sqlite3
 import zipfile
 
 import pytest
@@ -142,8 +143,19 @@ def test_tag_verification_uses_full_text_without_claiming_full_detection():
                                          ("example.db", "Scanned SQLite database content.")])
 def test_projected_binary_text_cannot_establish_true_original_file_eof(monkeypatch, name, reason):
     projection = TAG + f"<!-- END OF FILE: {name} -->"
-    monkeypatch.setattr("skill_sandbox.app.extract_scannable_text", lambda raw: (projection, reason))
-    result = scan_upload(b"\x00binaryfixture", name)
+    if name.endswith(".db"):
+        connection = sqlite3.connect(":memory:")
+        try:
+            connection.execute("CREATE TABLE notes (body TEXT)")
+            connection.execute("INSERT INTO notes VALUES (?)", (projection,))
+            connection.commit()
+            data = connection.serialize()
+        finally:
+            connection.close()
+    else:
+        monkeypatch.setattr("skill_sandbox.app.extract_scannable_text", lambda raw: (projection, reason))
+        data = b"\x00binaryfixture"
+    result = scan_upload(data, name)
     entry = result["files"][0]
     assert entry["assessment_state"] == "structured_content_analyzed"
     assert entry["creator_mitigation"]["status"] == "unverifiable"
