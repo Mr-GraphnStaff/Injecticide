@@ -330,7 +330,8 @@ class ColumnState:
 
     def observe_text(self, value: str):
         # Classify every value before bounded report observations are selected.
-        self.content_email_domains.update(match.group(1).lower() for match in EMAIL_ANY.finditer(value))
+        if "@" in value:
+            self.content_email_domains.update(match.group(1).lower() for match in EMAIL_ANY.finditer(value))
         for pattern, data_class in _content_class_patterns():
             if pattern.search(value):
                 self.content_classes.add(data_class)
@@ -1117,7 +1118,7 @@ def _sample(observation: Dict[str, object], detector_id: str) -> str:
 
 def _detector_line_text(line, dominant_domain):
     text = mask_work_emails(line.text, dominant_domain)
-    if line.citation.get("free_space"):
+    if line.citation.get("free_space") and "@" in text:
         # Raw slack can concatenate an address and the next SQLite value.
         # Such overlong DNS labels are not valid addresses (RFC1035 section2.3.4):
         # https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4
@@ -1146,7 +1147,7 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
         text = "\n".join(_detector_line_text(line, analysis.dominant_domain) for line in lines)
         # One value per line, scanned as line-delimited records so every match
         # keeps its own line and therefore its own table/column/row citation.
-        findings = scan_text(analysis.path + DETECTOR_PATH_SUFFIX, text, artifact_role, observation_limit=None)
+        findings = scan_text(analysis.path + DETECTOR_PATH_SUFFIX, text, artifact_role)
         redact_result({"findings": findings}, {analysis.path: text})
         if bucket == "contact":
             findings = [item for item in findings if item.get("id") not in {"pii_email_address", "pii_phone_number"}]
