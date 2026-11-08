@@ -21,6 +21,17 @@ The user's actual artifacts include skills, Markdown instructions, scripts, refe
 
 These boundaries inform the acceptance bar below; they are not assertions that Injecticide currently implements every layer.
 
+### Explicit package types requested by David (#60 event 569)
+
+| Package type | Inspection surface and benchmark interpretation |
+|---|---|
+| Skills | Instruction entry point, referenced text, scripts and bundled dependencies. Cisco Skill Scanner and Snyk Agent Scan are directly relevant comparators. |
+| Plugins | Claude Code/Codex-style manifest, commands, agents, hooks, bundled skills and MCP configuration. Check schema and effective permissions plus every executable/instruction surface; schema validity alone is not safety. The sources reviewed do not establish complete end-to-end plugin coverage for either agent-native comparator. Measure each surface instead of claiming a plugin is covered because one bundled skill was scanned. |
+| MCP server packages/configurations | Tool descriptions, transport/launch configuration, environment-secret references, source and resolved dependencies. Snyk Agent Scan supplies an agent-native comparator, with the discovery execution/cloud caveats below. Static inspection must not launch the target server. |
+| Generated artifacts | HTML/JavaScript/TypeScript pages/apps, assets, package manifests and external references. Inspect browser-code risks, data flows, dependencies and declared remote capabilities; report unavailable remote content. Do not render/run an untrusted app during the static scan. Artifacts need code-security comparators as well as agent-instruction checks. |
+
+**Artifact-code comparators:** [Semgrep CE](https://semgrep.dev/products/community-edition/) supplies local source analysis and JSON/SARIF, with no CE engine subscription fee. Its LGPL-2.1 engine license is separate from rule licenses: Semgrep-maintained rules have internal-use/competing-product restrictions, while third-party rules retain their own terms. **ESCALATE before bundling those rules in Injecticide**; own rules are an option, not proof of equivalent detection. [Licensing](https://semgrep.dev/docs/licensing). [CodeQL](https://codeql.github.com/docs/codeql-overview/supported-languages-and-frameworks/) supports JavaScript/TypeScript analysis, but that does not establish complete HTML/DOM, arbitrary generated-app or prompt-injection coverage. GitHub code scanning is available for public repositories and eligible organization repositories with Code Security enabled; arbitrary private/commercial scanning entitlement and price are **UNKNOWN** here. [Availability](https://docs.github.com/en/code-security/concepts/code-scanning/codeql/codeql-code-scanning). Neither tool was executed. Parser, framework, inline-script and cross-file coverage must be tested on an exact pinned release; do not transfer paid-engine features to a free engine.
+
 ## 2. Capability matrix
 
 “Documented” means an official maintainer/vendor describes the feature. “Not established” is deliberately not an assertion that the product can never do it.
