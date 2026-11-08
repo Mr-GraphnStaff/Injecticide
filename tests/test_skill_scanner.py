@@ -223,7 +223,9 @@ def test_scan_large_reference_sqlite_db_is_not_skipped():
     assert db_entry["skipped"] is False
     assert db_entry["reason"] == "Scanned SQLite database content."
     finding_ids = {finding["id"] for finding in db_entry["findings"]}
-    assert "pii_email_address" in finding_ids
+    assert "contact_directory" in finding_ids
+    assert "pii_email_address" not in finding_ids
+    assert db_entry["database_profile"]["coverage"]["rows_read"] == 900
 
 
 def test_scan_large_reference_pptx_is_not_skipped():

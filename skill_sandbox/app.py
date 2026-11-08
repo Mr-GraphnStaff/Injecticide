@@ -509,13 +509,13 @@ def _scan_asset_entry(entry, asset, original):
     return entry, text or None
 
 
-def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
-    findings = _scan_text_plain(path, text, artifact_role)
+def _scan_text(path: str, text: str, artifact_role: str, *, observation_limit=3) -> List[Dict[str, object]]:
+    findings = _scan_text_plain(path, text, artifact_role, observation_limit=observation_limit)
     projections, _ = decoded_projections(text)
     projection_context = None
     for projection in projections:
         # Decoded instructions are untrusted even when carried by a reference.
-        derived = _scan_text_plain(path + ".txt", projection["text"], "active")
+        derived = _scan_text_plain(path + ".txt", projection["text"], "active", observation_limit=observation_limit)
         for item in derived:
             item["evidence_scope"] = "decoded_text"
             item["projection"] = {k: v for k, v in projection.items() if k != "text"}
@@ -535,7 +535,7 @@ def _scan_text(path: str, text: str, artifact_role: str) -> List[Dict[str, objec
     return findings
 
 
-def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str, object]]:
+def _scan_text_plain(path: str, text: str, artifact_role: str, *, observation_limit=3) -> List[Dict[str, object]]:
     findings = []
     fact_context = None
     def get_fact_context():
@@ -593,15 +593,17 @@ def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str,
                         fact_context = prepare_observation_context(text)
                     matches.extend(annotate_observation_facts(pattern["id"], candidates, text, prepared_context=fact_context))
                     matches.sort(key=observation_fact_priority)
-                    del matches[3:]
+                    if observation_limit is not None:
+                        del matches[observation_limit:]
                 continue
             matches.extend(candidates)
             if pattern["id"] == "dynamic_exec":
                 matches.sort(key=lambda item: {"decoded_or_fetched_exec": 0, "direct_dynamic_exec": 1, "prose_mention": 2}.get(item.get("context_tag"), 3))
-                matches = matches[:3]
+                if observation_limit is not None:
+                    matches = matches[:observation_limit]
                 continue
-            if len(matches) >= 3:
-                matches = matches[:3]
+            if observation_limit is not None and len(matches) >= observation_limit:
+                matches = matches[:observation_limit]
                 break
         if not matches:
             continue

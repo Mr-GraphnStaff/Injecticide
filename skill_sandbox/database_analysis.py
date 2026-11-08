@@ -28,6 +28,7 @@ import sqlite3
 import time
 import zlib
 from collections import Counter
+from functools import lru_cache
 from pathlib import PurePosixPath
 from typing import Callable, Dict, List, Optional, Tuple
 
@@ -298,6 +299,18 @@ def _name_classes(table: str, column: str) -> List[str]:
     return classes
 
 
+@lru_cache(maxsize=1)
+def _content_class_patterns():
+    try:
+        from .sensitive_data import SENSITIVE_DATA_RULES
+    except ImportError:
+        from sensitive_data import SENSITIVE_DATA_RULES
+    classes = {"pii_ssn": "ssn", "pii_date_of_birth": "date_of_birth",
+               "phi_medical_record_number": "health"}
+    return [(rule["compiled_pattern"], classes[rule["id"]])
+            for rule in SENSITIVE_DATA_RULES if rule["id"] in classes]
+
+
 class ColumnState:
     def __init__(self, table: str, name: str, declared_type: str):
         self.name = name
@@ -312,8 +325,15 @@ class ColumnState:
         self.phones = 0
         self.ssns = 0
         self.classes: List[str] = []
+        self.content_classes = set()
+        self.content_email_domains = set()
 
     def observe_text(self, value: str):
+        # Classify every value before bounded report observations are selected.
+        self.content_email_domains.update(match.group(1).lower() for match in EMAIL_ANY.finditer(value))
+        for pattern, data_class in _content_class_patterns():
+            if pattern.search(value):
+                self.content_classes.add(data_class)
         self.text_values += 1
         self.text_chars += len(value)
         stripped = value.strip()
@@ -329,7 +349,9 @@ class ColumnState:
                 self.phones += 1
 
     def finalize(self, dominant_domain: Optional[str]):
-        classes = list(self.name_classes)
+        classes = list(self.name_classes) + sorted(self.content_classes)
+        if any(domain != dominant_domain for domain in self.content_email_domains):
+            classes.append("personal_email")
         base = max(self.text_values, 1)
         if self.email_values and self.email_values * 2 >= base:
             if dominant_domain and self.emails.get(dominant_domain):
@@ -1040,7 +1062,7 @@ def _merge_into(merged: Dict[Tuple, Dict], finding: Dict[str, object]):
     key = (finding.get("id"), finding.get("evidence_scope"))
     existing = merged.get(key)
     if existing is None:
-        merged[key] = finding
+        merged[key] = dict(finding, observations=list(finding.get("observations", []))[:MAX_OBSERVATIONS])
         return
     existing["count"] = int(existing.get("count") or 0) + int(finding.get("count") or 0)
     stronger = TIER_RANK.get(finding.get("tier"), 9) < TIER_RANK.get(existing.get("tier"), 9)
@@ -1093,14 +1115,26 @@ def _sample(observation: Dict[str, object], detector_id: str) -> str:
     return f"{where}: {text}"
 
 
+def _detector_line_text(line, dominant_domain):
+    text = mask_work_emails(line.text, dominant_domain)
+    if line.citation.get("free_space"):
+        # Raw slack can concatenate an address and the next SQLite value.
+        # Such overlong DNS labels are not valid addresses (RFC1035 section2.3.4):
+        # https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4
+        # Keep every character for instruction scanning, marking only the invalid @.
+        text = EMAIL_ANY.sub(lambda m: m.group(0).replace("@", "[invalid-at]", 1)
+                             if any(len(label) > 63 for label in m.group(1).split(".")) else m.group(0), text)
+    return text
+
+
 def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role: str) -> List[Dict[str, object]]:
     """Supply every projection line to the shared file detectors, chunked and cited."""
     _build_finding, redact_result, _cm, _dp = _lazy_imports()
     reader = analysis.reader
     merged: Dict[Tuple, Dict] = {}
-    # Keep columns separate: a rule's bounded display samples in an earlier
-    # column must not suppress classification evidence for a later column.
-    buffers, sizes, first_pending = {}, {}, {}
+    buffers = {"general": [], "contact": []}
+    sizes = {"general": 0, "contact": 0}
+    first_pending = {"general": None, "contact": None}
     cutoff = None
 
     def flush(bucket) -> bool:
@@ -1109,12 +1143,12 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
             return True
         if reader.budget.expired():
             return False
-        text = "\n".join(mask_work_emails(line.text, analysis.dominant_domain) for line in lines)
+        text = "\n".join(_detector_line_text(line, analysis.dominant_domain) for line in lines)
         # One value per line, scanned as line-delimited records so every match
         # keeps its own line and therefore its own table/column/row citation.
-        findings = scan_text(analysis.path + DETECTOR_PATH_SUFFIX, text, artifact_role)
+        findings = scan_text(analysis.path + DETECTOR_PATH_SUFFIX, text, artifact_role, observation_limit=None)
         redact_result({"findings": findings}, {analysis.path: text})
-        if bucket[0] == "contact":
+        if bucket == "contact":
             findings = [item for item in findings if item.get("id") not in {"pii_email_address", "pii_phone_number"}]
         _cite(findings, [line.citation for line in lines])
         for finding in findings:
@@ -1128,10 +1162,7 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
         return True
 
     for sequence, line in enumerate(reader.lines):
-        bucket = (line.bucket, line.table_index, line.contact_key)
-        buffers.setdefault(bucket, [])
-        sizes.setdefault(bucket, 0)
-        first_pending.setdefault(bucket, None)
+        bucket = line.bucket
         if first_pending[bucket] is None:
             first_pending[bucket] = sequence
         buffers[bucket].append(line)
@@ -1140,7 +1171,7 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
             cutoff = min(value for value in first_pending.values() if value is not None)
             break
     if cutoff is None:
-        for bucket in list(buffers):
+        for bucket in ("general", "contact"):
             if not flush(bucket):
                 pending = [value for value in first_pending.values() if value is not None]
                 cutoff = min(pending) if pending else None

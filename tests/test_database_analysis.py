@@ -153,6 +153,7 @@ def test_one_encoding_layer_is_decoded_and_opaque_values_counted():
 
 def test_deleted_rows_are_found_by_the_free_space_pass():
     def build(connection):
+        connection.execute("PRAGMA secure_delete=OFF")
         connection.execute("CREATE TABLE keep (v TEXT)")
         connection.execute("INSERT INTO keep VALUES ('kept value')")
         connection.execute("CREATE TABLE scratch (v TEXT)")
@@ -420,3 +421,11 @@ def test_skill_scan_timeout_chain_covers_database_deadline():
     ui = (root / "webapp/static/app.js").read_text(encoding="utf-8")
     browser = int(re.search(r"const SKILL_SCAN_TIMEOUT_MS = (\d+)", ui).group(1)) / 1000
     assert da.PACKAGE_TIME_BUDGET_SECONDS < SKILL_SCAN_READ_TIMEOUT_SECONDS < proxy < browser
+
+
+def test_slack_concatenation_is_not_a_valid_email_but_keeps_instructions():
+    value = "person@example.test" + "X"*100 + "; " + PAYLOAD + " contact user@gmail.com"
+    line = da.Line(value, {"table": None, "column": None, "row": None, "free_space": True})
+    projected = da._detector_line_text(line, "example.test")
+    assert "person[invalid-at]example.test" in projected
+    assert PAYLOAD in projected and "user@gmail.com" in projected
