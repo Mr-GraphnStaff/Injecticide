@@ -59,7 +59,7 @@ TOP_OPTIONAL = ("not_statically_checkable", "verification_notes")
 SOURCE_REQUIRED = ("id", "title")
 SOURCE_OPTIONAL = ("version", "date", "owner", "url", "notes")
 RULE_REQUIRED = ("id", "title", "source", "requirement", "when", "effect", "enforcement")
-RULE_OPTIONAL = ("section", "approver", "rationale")
+RULE_OPTIONAL = ("section", "approver", "rationale", "expires")
 NSC_FIELDS = ("source", "section", "requirement", "reason")
 
 # Policy capability names come from governance.policy_capabilities and
@@ -423,7 +423,9 @@ def validate_policy(policy):
                     if sid in source_ids:
                         report.error(f"{path}.id", f"Source {index + 1}: duplicate source id '{sid}'.")
                     source_ids.add(sid)
-                    clean_sources.append({"id": sid, "title": title})
+                    clean_source = {"id": sid, "title": title}
+                    clean_source.update({key: source[key] for key in SOURCE_OPTIONAL if key in source})
+                    clean_sources.append(clean_source)
 
     rules = policy.get("rules")
     clean_rules = []
@@ -461,6 +463,14 @@ def validate_policy(policy):
             section = _text(rule, "section", path, label, report, limit=200, required=False)
             approver = _text(rule, "approver", path, label, report, limit=200, required=False)
             rationale = _text(rule, "rationale", path, label, report, required=False)
+            expires = _text(rule, "expires", path, label, report, limit=10, required=False)
+            if "expires" in rule:
+                try:
+                    if not isinstance(expires, str) or not _DATE.fullmatch(expires):
+                        raise ValueError
+                    date.fromisoformat(expires)
+                except ValueError:
+                    report.error(f"{path}.expires", f"{label}: expires must be a calendar date written YYYY-MM-DD.")
             effect = rule.get("effect")
             if "effect" in rule and effect not in EFFECTS:
                 close = _closest(effect, EFFECTS)
@@ -479,7 +489,7 @@ def validate_policy(policy):
             if len(report.errors) == before and when is not None:
                 clean_rules.append({"id": rid, "title": title, "source": source, "section": section,
                                     "requirement": requirement, "when": when, "effect": effect,
-                                    "enforcement": enforcement, "approver": approver, "rationale": rationale})
+                                    "enforcement": enforcement, "approver": approver, "rationale": rationale, "expires": expires})
 
     def notes(key, objects):
         value = policy.get(key, [])
@@ -536,10 +546,10 @@ def parse_policy(raw):
             return None, digest, [{"path": "", "message": f"Policy: could not be read within the parser limits ({message}).", "suggestion": None}]
     try:
         canonical = json.dumps(raw, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, RecursionError):
         return None, None, [{"path": "", "message": "Policy: the policy must be JSON data.", "suggestion": None}]
     # Re-parse through the bounded parser so in-process callers get the same limits.
-    return parse_policy(canonical)[0], hashlib.sha256(canonical.encode("utf-8")).hexdigest(), []
+    return parse_policy(canonical)
 
 
 def is_empty_policy(raw):
@@ -748,8 +758,8 @@ def _evaluate(node, facts):
         for path, finding_id, _, finding in _finding_items(facts):
             if finding_id in coverage_findings:
                 evidence.append({"path": path, "finding_id": finding_id, "count": 1})
-        if value == "partial" and facts.result_coverage == "partial":
-            evidence.append({"path": None, "finding_id": None, "count": 1, "signal": "analysis_coverage:partial"})
+        if facts.result_coverage in wanted:
+            evidence.append({"path": None, "finding_id": None, "count": 1, "signal": "analysis_coverage:" + facts.result_coverage})
     return bool(evidence), evidence, matched
 
 
@@ -777,7 +787,7 @@ def _empty(status, *, policy=None, errors=(), warnings=()):
                      "enforcement, legal advice or compliance certification; the scanner's own verdict is unchanged."}
 
 
-def evaluate_policy(raw_policy, result, text_sources=None):
+def _evaluate_legacy_policy(raw_policy, result, text_sources=None):
     """Build ``result["policy_evaluation"]``. Never raises for bad policy input."""
     if is_empty_policy(raw_policy):
         return _empty("none")
@@ -826,4 +836,25 @@ def evaluate_policy(raw_policy, result, text_sources=None):
                           else "allow" if summary["allow"] else "no_rule_triggered")
     if not facts.texts_supplied:
         output["limits"] = ["Scanned text was not supplied; frontmatter fields and compatibility were read from the result only."]
+    return output
+
+
+def evaluate_policy(raw_policy, result, text_sources=None):
+    """Keep the legacy evaluation; add a separate, conservative company report.
+
+    Legacy allowance annotations are evidence labels only, never acceptance by
+    the organization report. This function does not change scanner verdicts.
+    """
+    try:
+        from .org_disposition import organization_report
+    except ImportError:
+        from org_disposition import organization_report
+    output = _evaluate_legacy_policy(raw_policy, result, text_sources)
+    policy = None
+    if output["status"] == "applied":
+        parsed, _, _ = parse_policy(raw_policy)
+        policy, _, _ = validate_policy(parsed)
+    report = organization_report(output, result, policy, _Facts(result, text_sources), _evaluate)
+    output["organization_report"] = report
+    output["organization_disposition"] = report["organization_disposition"]
     return output

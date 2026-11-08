@@ -42,6 +42,7 @@ COPY evidence_redaction.py /app/evidence_redaction.py
 COPY official_validators.py /app/official_validators.py
 COPY architecture_overview.py /app/architecture_overview.py
 COPY org_policy.py /app/org_policy.py
+COPY org_disposition.py /app/org_disposition.py
 COPY fix_summary.py /app/fix_summary.py
 COPY vendor_validators /app/vendor_validators
 COPY schemas /app/schemas

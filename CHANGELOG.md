@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.1 - 2026-11-08
+
+- Add a separate organization-policy-applied report showing company exceptions, approval requirements, full stops, residual findings and coverage limits while preserving the scanner verdict and evidence.
+- Identify supplied policies as unverified declarations, retain their exact hash, and explain expired or incomplete exceptions instead of silently accepting them.
+
 ## 0.16.0 - 2026-11-07
 
 - Analyze SQLite assets with complete budgeted row reads, schema and BLOB inspection, explicit unread coverage, and table/column/row citations. Mask business contacts and secrets; report contact directories separately from sensitive personal data (#78).
