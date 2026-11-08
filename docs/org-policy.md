@@ -10,7 +10,10 @@ evaluates it against the finished scan result and reports the outcome in
 - An invalid policy never fails the scan. The scan completes and
   `policy_evaluation.status` is `invalid`, with errors that say what to fix.
 - The policy result sits **beside** the scanner verdict. It never removes,
-  hides or downgrades a finding. `allow` only marks findings (see below).
+  hides or downgrades scanner evidence. The separate organization-policy-applied
+  report accounts for company exceptions, approval requirements and full stops.
+  Legacy `decision` and finding annotations are rule-match summaries, not the
+  company disposition.
 - This is a static check of a package. It is not runtime enforcement, legal
   advice or a compliance certificate.
 
@@ -289,3 +292,45 @@ reported in `result["evidence_input"]` instead of being dropped silently:
 | `applied` | Hash-bound recognised controls, or an authenticated evidence envelope, were used. |
 | `ignored` | Evidence was supplied but none of it could be used. `reasons` say why: no `artifact_sha256`, hash mismatch, no recognised keys, and any unknown keys by name. |
 | `rejected` | The evidence was not a JSON object, or its envelope failed authentication and nothing else applied. |
+
+
+## Organization-policy-applied report (0.16.1)
+
+The scanner verdict stays unchanged. `policy_evaluation.organization_report`
+contains a separate `organization_disposition`: `allow`, `require_approval` or
+`block`. The report states that its result is **per supplied policy (unverified)**.
+An uploaded policy, its named approver and its verification notes are declarations;
+JSON validation and a content hash do not authenticate company authority.
+
+The web interface provides **Export organization policy report (.md)** alongside
+the executive/summary and detailed exports whenever a policy was supplied,
+including when it was rejected. An older scan with no policy-applied report must
+be scanned again; legacy allowance annotations are not inferred approval.
+The JSON export retains the same policy-applied evidence.
+
+A mandatory block cannot be cancelled by an exception. Mandatory approval remains
+required even if a matching finding has an exception. An exception affects only
+its matched finding targets; unrelated findings retain their scanner defaults.
+Advisory rules do not alter the company disposition. Policy authority remains
+unverified even when every technical check succeeds.
+
+An effective exception uses `effect: "allow"`, `enforcement: "mandatory"`, a
+nonempty `rationale` and a named `approver`. It may include `expires: "YYYY-MM-DD"`;
+the expiry date is inclusive, evaluated against the current UTC calendar date.
+A missing rationale/approver or an expired exception is reported as not applied;
+legacy policies remain valid. A malformed expiry rejects the whole policy.
+
+Full-stop categories require a condition that explicitly requires their exact
+finding identifier. A capability or wildcard-style alternative cannot implicitly
+accept a full stop. Coverage acceptance must explicitly match the identified
+partial/opaque gap; it does not make unread content read or waive another gap.
+Without explicit coverage acceptance the company result cannot be `allow`.
+These are product exception controls, not assertions that a particular company
+has authorized an exception or appointed the declared approver.
+
+The report includes the original technical verdict, deciding rules, applied and
+rejected exceptions with reasons and approvers, residual findings, full stops,
+coverage gaps and acceptances, policy identity/date/hash/source declarations,
+validation errors, limitations and the requirements needing human/runtime checks.
+An invalid policy is rejected entirely and visibly falls back to scanner defaults;
+no valid-looking subset of its rules is applied.

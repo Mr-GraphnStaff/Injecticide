@@ -545,7 +545,7 @@ function scanDownloadName(result, buildInfo, kind, ext) {
 /* ---- Shared helpers for fix items, policy, files and databases. ---- */
 const FIX_PRIORITY_RANK = { block: 0, review: 1, info: 2 };
 const FIX_PRIORITY_TEXT = { block: 'Fix before use', review: 'Review', info: 'For information' };
-const POLICY_EFFECT_TEXT = { block: 'Block', require_approval: 'Needs approval', warn: 'Warn', allow: 'Allowed by policy' };
+const POLICY_EFFECT_TEXT = { block: 'Block', require_approval: 'Needs approval', warn: 'Warn', allow: 'Allow rule (match only)' };
 const SEVERITY_ORDER = ['critical', 'high', 'medium', 'low', 'info'];
 const DATA_CLASS_TEXT = {
     business_contact_email: 'Business email', work_phone: 'Work phone', person_name: 'Person name', job_title: 'Job title',
@@ -630,6 +630,60 @@ function mdText(value, limit = 2000) {
     return String(value ?? '').replace(/\s*\r?\n\s*/g, ' ').slice(0, limit);
 }
 
+function formatOrganizationPolicyMarkdown(scanResult, buildInfo) {
+    // Policy text is evidence, never HTML or executable Markdown supplied by an author.
+    const literal = value => String(value ?? '').replace(/\s*\r?\n\s*/g, ' ')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/[\\`*_{}\[\]()#!|]/g, '\\$&');
+    const value = item => literal(typeof item === 'object' && item !== null ? JSON.stringify(item) : item);
+    const evaluation = scanResult.policy_evaluation;
+    const report = evaluation?.organization_report;
+    const lines = ['# Organization policy applied report', '',
+        `- Package: ${literal(scanResult.filename || 'Unnamed package')}`,
+        `- Injecticide: ${literal(buildInfo?.display_version || scanResult.scanner_metadata?.scanner_version || 'Not reported')}`,
+        `- Generated: ${new Date().toISOString()}`, '',
+        'The scanner verdict and its evidence are unchanged. This report separately applies the supplied company policy; it is not authenticated approval, runtime enforcement or a compliance certificate.', ''];
+    if (!report) {
+        lines.push('**Policy-applied disposition unavailable.** Scan again with this version and an organization policy. No company acceptance is inferred from legacy allow annotations.', '');
+        asArray(evaluation?.errors).forEach(item => lines.push(`- ${value(item)}`));
+        return lines.join('\n');
+    }
+    lines.push('## Company disposition', '', `**${literal(report.organization_disposition || 'Not reported')}** — ${evaluation.status === 'applied' ? 'per supplied policy (unverified)' : 'scanner fallback; policy not applied'}.`,
+        `- Policy status: ${literal(evaluation.status || report.status)}`,
+        `- Original scanner verdict: ${value(report.technical_verdict)}`,
+        `- Authority: ${literal(report.authority || 'declared_unverified')}`,
+        `- Evaluated date: ${literal(report.evaluation_date)}`, '');
+    if (report.fallback_reason) lines.push(`**Policy not applied:** ${literal(report.fallback_reason)}`, '');
+    const policy = report.policy || evaluation.policy || {};
+    lines.push('## Policy identity', '', `- Name: ${literal(policy.name || 'Not reported')}`,
+        `- Organization: ${literal(policy.organization || 'Not reported')}`,
+        `- Compiled date: ${literal(policy.compiled_date || 'Not reported')}`,
+        `- SHA-256: ${literal(policy.sha256 || 'Not reported')}`, '');
+    const sections = [
+        ['Deciding rules', report.deciding_rules], ['Exceptions applied', report.exceptions_applied],
+        ['Exceptions not applied', report.exceptions_not_applied], ['Residual findings', report.residual_findings],
+        ['Full stops and their exception status', report.full_stops], ['Coverage limits and acceptances', report.coverage_limits],
+        ['Policy sources (declared)', policy.sources], ['Needs a human or runtime check', report.not_statically_checkable],
+        ['Policy errors', report.errors], ['Policy warnings', report.warnings], ['Limitations', report.limits]
+    ];
+    sections.forEach(([heading, rows]) => {
+        lines.push(`## ${heading}`, '');
+        if (!asArray(rows).length) lines.push('None reported.');
+        asArray(rows).forEach(row => {
+            if (typeof row !== 'object' || row === null) { lines.push(`- ${value(row)}`); return; }
+            lines.push(`- ${Object.entries(row).map(([key, item]) => `${literal(key)}: ${value(item)}`).join('; ')}`);
+        });
+        lines.push('');
+    });
+    lines.push('## Triggered policy rules', '');
+    asArray(evaluation.rules).filter(rule => rule.triggered).forEach(rule => {
+        lines.push(`- ${literal(rule.id)} — ${literal(rule.title)}; effect: ${literal(rule.effect)}; enforcement: ${literal(rule.enforcement)}; source: ${literal(rule.source)}; section: ${literal(rule.section || 'Not stated')}`,
+            `  - Requirement (supplied): ${literal(rule.requirement)}`);
+    });
+    lines.push('', 'See the detailed report and full data export for the original findings and complete scan evidence. An exception accepts a named issue for this policy assessment; it does not make the underlying content safe or read previously unread content.', '');
+    return lines.join('\n');
+}
+
 function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary') {
     const lines = [];
     const push = (...rows) => lines.push(...rows);
@@ -677,6 +731,9 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
 
     // 2. Policy results
     push('## Policy results', '');
+    if (scanResult.policy_evaluation?.organization_report && scanResult.policy_evaluation.status !== 'none') {
+        push(`Separate company disposition: **${mdText(scanResult.policy_evaluation.organization_disposition)}** — per supplied policy (unverified). See the Organization policy applied report for exceptions, residual findings and deciding rules. The technical verdict is unchanged.`, '');
+    }
     const policy = scanResult.policy_evaluation;
     if (!policy) push('Not reported by this scanner version.', '');
     else if (policy.status === 'none') push('No organization policy was supplied for this scan.', '');
@@ -689,7 +746,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         push(`- Policy: ${mdText(policy.policy?.name || 'Unnamed policy')}${policy.policy?.organization ? ` · ${mdText(policy.policy.organization)}` : ''}`);
         if (policy.policy?.sha256) push(`- Policy SHA-256: ${mdText(policy.policy.sha256, 128)}`);
         push(`- Effects: ${['block', 'require_approval', 'warn', 'allow'].map(effect => `${POLICY_EFFECT_TEXT[effect]} ${Number.isFinite(effects[effect]) ? effects[effect] : 0}`).join(' · ')}`);
-        push('- Policy results sit beside the scanner verdict. An allow rule marks findings as allowed by policy; it never hides them.', '');
+        push('- Rule-match counts include advisory effects and legacy annotations. Effective exceptions are listed in the separate organization policy report; the scanner verdict is unchanged.', '');
         const triggered = asArray(policy.rules).filter(rule => rule.triggered);
         push(`### Triggered rules (${triggered.length})`, '');
         if (!triggered.length) push('No rule was triggered by the statically checked evidence.');
@@ -754,7 +811,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         asArray(file.findings).forEach(finding => {
             const reviewClass = classifyReviewClass(finding, role);
             const locations = findingLocations(finding);
-            push(`- **${findingLabelText(finding.id)}** · ${finding.severity || 'severity not reported'} · ${classifyFindingLabel(reviewClass)}${locations.length ? ` · ${locations.slice(0, 10).join('; ')}${locations.length > 10 ? ` (+${locations.length - 10} more)` : ''}` : ''}${finding.policy_disposition === 'allowed_by_policy' ? ' · allowed by policy' : ''}`);
+            push(`- **${findingLabelText(finding.id)}** · ${finding.severity || 'severity not reported'} · ${classifyFindingLabel(reviewClass)}${locations.length ? ` · ${locations.slice(0, 10).join('; ')}${locations.length > 10 ? ` (+${locations.length - 10} more)` : ''}` : ''}${finding.policy_disposition === 'allowed_by_policy' ? ' · allow-rule match (see company report)' : ''}`);
             if (!detailed) return;
             if (finding.description) push(`  - Description: ${mdText(finding.description)}`);
             push(`  - Tier: ${finding.tier || 'review'} · Category: ${finding.finding_category || finding.category || 'signal'} · Subject: ${finding.subject || 'unknown'} · Action state: ${finding.action_state || 'present'} · Disposition: ${finding.disposition || 'unknown'}`);
@@ -762,7 +819,7 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
                 push(`  - Policy response: ${finding.policy_evaluation.action} · source ${finding.policy_evaluation.source_channel}`);
                 asArray(finding.policy_evaluation.observations).forEach(observation => push(`  - Speech act: ${observation.speech_act}; target: ${observation.target}; evidence strength: ${observation.confidence}; response: ${observation.action}; ${mdText(observation.reason)}`));
             }
-            if (finding.policy_disposition) push(`  - Organization policy: ${evidenceLabel(finding.policy_disposition)}${finding.policy_rule_id ? ` (rule ${mdText(finding.policy_rule_id, 200)})` : ''}`);
+            if (finding.policy_disposition) push(`  - Organization policy: ${finding.policy_disposition === 'allowed_by_policy' ? 'Legacy allow-rule match; see company report' : evidenceLabel(finding.policy_disposition)}${finding.policy_rule_id ? ` (rule ${mdText(finding.policy_rule_id, 200)})` : ''}`);
             if (asArray(finding.samples).length) push(`  - Samples (as reported, masked by the scanner where applicable): ${finding.samples.slice(0, 10).map(sample => mdText(sample, 500)).join(' | ')}`);
         });
         push('');
@@ -1517,6 +1574,11 @@ function PolicyResults({ evaluation, onOpenFile }) {
     const effects = evaluation.effect_summary || {};
     return <section className="policy-results" aria-labelledby="policy-results-title" data-policy-results="true">
         <h3 id="policy-results-title">Policy results</h3>
+        {evaluation.organization_report && evaluation.status !== 'none' && <div data-organization-disposition={evaluation.organization_disposition}>
+            <h4>{evaluation.status === 'applied' ? 'Company disposition' : 'Scanner fallback'}: {evaluation.organization_disposition || 'Not reported'}</h4>
+            <p>{evaluation.status === 'applied' ? 'Per supplied policy (unverified).' : 'The policy was not applied.'} The scanner verdict is unchanged. Export the organization policy report for exceptions, remaining findings and deciding rules.</p>
+            {evaluation.organization_report.fallback_reason && <p>{evaluation.organization_report.fallback_reason}</p>}
+        </div>}
         {evaluation.status === 'none' && <p>No organization policy was supplied for this scan. To check this skill against your organization's rules, add a policy under Scan configuration and scan again.</p>}
         {evaluation.status === 'invalid' && <div className="policy-invalid" data-policy-errors="true">
             <p><strong>Your policy was not applied: {errors.length} {errors.length === 1 ? 'problem' : 'problems'} found.</strong> Fix {errors.length === 1 ? 'it' : 'them'} and scan again. The scanner's own findings below are not affected.</p>
@@ -1531,7 +1593,7 @@ function PolicyResults({ evaluation, onOpenFile }) {
             <ul className="policy-effects" aria-label="Rule effects">{['block', 'require_approval', 'warn', 'allow'].map(effect => <li key={effect} className={`policy-effect policy-effect-${effect}`}>
                 <strong>{Number.isFinite(effects[effect]) ? effects[effect] : 0}</strong> {POLICY_EFFECT_TEXT[effect]}
             </li>)}</ul>
-            <p className="policy-note">Policy results sit beside the scanner's verdict. An "allow" rule marks findings as allowed by policy; it never hides them.</p>
+            <p className="policy-note">Rule-match counts include advisory effects and legacy annotations. Effective exceptions are listed in the separate organization policy report; the scanner verdict is unchanged.</p>
             <h4>Triggered rules ({triggered.length})</h4>
             {!triggered.length && <p>No rule was triggered by the statically checked evidence.</p>}
             <ul className="policy-rules">{triggered.map((rule, index) => <li key={`${rule.id}:${index}`} className={`policy-rule policy-rule-${['block', 'require_approval', 'warn', 'allow'].includes(rule.effect) ? rule.effect : 'unknown'}`}>
@@ -1623,7 +1685,7 @@ function ReaderFinding({ finding, artifactRole }) {
             <FindingName id={finding.id} />
             <span className={`px-2 py-0.5 rounded-full text-[10px] ${findingPillClass(reviewClass)}`}>{classifyFindingLabel(reviewClass)}</span>
             <span className="reader-severity">{finding.severity || 'severity not reported'}{finding.tier ? ` · ${finding.tier}` : ''}</span>
-            {finding.policy_disposition === 'allowed_by_policy' && <span className="reader-allowed">Allowed by policy{ruleId ? ` (${ruleId})` : ''}</span>}
+            {finding.policy_disposition === 'allowed_by_policy' && <span className="reader-allowed">Allow-rule match{ruleId ? ` (${ruleId})` : ''}</span>}
         </div>
         {finding.description && <p>{finding.description}</p>}
         <p className="reader-locations">{locations.length ? `Where: ${locations.slice(0, 20).join('; ')}${locations.length > 20 ? ` and ${locations.length - 20} more` : ''}` : 'Where: location not reported (whole-file finding).'}</p>
@@ -2780,6 +2842,9 @@ function App({ onBack, onNavigate, buildInfo }) {
                                                 Export {skillReportDepth === 'summary' ? 'Summary' : 'Detailed'}
                                             </button>
                                             <button type="button" onClick={() => downloadProcessFile(formatSkillImprovementPlan(skillScanResult), scanDownloadName(skillScanResult, buildInfo, 'improvement-plan', 'md'), 'text/markdown;charset=utf-8')}>Export improvement plan (.md)</button>
+                                            <button type="button" disabled={!skillScanResult.policy_evaluation || skillScanResult.policy_evaluation.status === 'none'}
+                                                title="Applies the supplied company policy separately; the scanner verdict stays unchanged"
+                                                onClick={() => downloadProcessFile(formatOrganizationPolicyMarkdown(skillScanResult, buildInfo), scanDownloadName(skillScanResult, buildInfo, 'report-organization-policy', 'md'), 'text/markdown;charset=utf-8')}>Export organization policy report (.md)</button>
                                             <button type="button" onClick={downloadSkillScanJson}>Download full data (JSON)</button>
                                             <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
                                                 {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
