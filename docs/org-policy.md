@@ -334,3 +334,11 @@ coverage gaps and acceptances, policy identity/date/hash/source declarations,
 validation errors, limitations and the requirements needing human/runtime checks.
 An invalid policy is rejected entirely and visibly falls back to scanner defaults;
 no valid-looking subset of its rules is applied.
+
+
+Displayed company-report evidence is limited to 1,000 rows per category, with
+`evidence_counts.total` and `evidence_counts.omitted` per category. The decision
+uses all scan findings and policy matches, including omitted rows. Coverage
+`accepted_by` entries are rule IDs rather than repeated policy bodies. The exact
+policy hash, deciding rule IDs and original scan evidence remain available for
+reconciliation; omission is never represented as complete displayed coverage.

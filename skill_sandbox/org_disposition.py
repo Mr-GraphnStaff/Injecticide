@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone, date
 
+MAX_REPORT_ROWS = 1000  # per evidence category; decisions always use complete facts
+
 RANK = {"allow": 0, "require_approval": 1, "block": 2}
 PROTECTED = {"hardcoded_secret", "embedded_executable_blob", "opaque_database"}
 BLOCK_INSTRUCTIONS = {"prompt_override", "system_exfiltration", "secret_exfiltration", "tool_escape"}
@@ -149,13 +151,25 @@ def organization_report(evaluation, result, policy, facts, evaluate, *, today=No
     report["technical_verdict"]["finding_disposition"] = technical_default
     if active:
         report["policy"]["sources"] = [dict(source) for source in policy["sources"]]
+    report["evidence_counts"] = {}
+    applied_rule_ids = set()
+
+    def add(category, row):
+        counts = report["evidence_counts"].setdefault(category, {"total": 0, "omitted": 0})
+        counts["total"] += 1
+        if len(report[category]) < MAX_REPORT_ROWS:
+            report[category].append(row)
+        else:
+            counts["omitted"] += 1
+
+    report["limits"].append("At most 1000 evidence rows per category are displayed; evidence_counts reports omissions. Decisions use all findings and matches.")
     triggered = []
     mandatory = []
     if active:
         for rule in policy["rules"]:
             hit, evidence, _ = evaluate(rule["when"], facts)
             if not hit and rule["effect"] == "allow":
-                report["exceptions_not_applied"].append({"rule_id": rule["id"], "path": None, "finding_id": None,
+                add("exceptions_not_applied", {"rule_id": rule["id"], "path": None, "finding_id": None,
                     "rationale": rule.get("rationale"), "approver": rule.get("approver"), "expires": rule.get("expires"),
                     "reason": "Rule condition did not match."})
             if hit:
@@ -190,26 +204,30 @@ def organization_report(evaluation, result, policy, facts, evaluate, *, today=No
                      "rationale": rule.get("rationale"), "approver": rule.get("approver"), "expires": rule.get("expires"),
                      "reason": rejected or "Explicit finding exception accepted; evidence is retained."}
             if rejected:
-                report["exceptions_not_applied"].append(event)
+                add("exceptions_not_applied", event)
             else:
                 accepted.add((row["path"], row["id"]))
-                report["exceptions_applied"].append(event)
+                applied_rule_ids.add(rule["id"])
+                add("exceptions_applied", event)
         for gap in matched_gaps:
             event = {"rule_id": rule["id"], "path": gap["path"], "finding_id": None,
                      "coverage": gap["status"], "rationale": rule.get("rationale"), "approver": rule.get("approver"),
                      "expires": rule.get("expires"), "reason": reason or "Explicit coverage gap acceptance; unread contents remain unread."}
             if reason:
-                report["exceptions_not_applied"].append(event)
+                add("exceptions_not_applied", event)
             else:
-                gap["accepted_by"].append(dict(event))
-                report["exceptions_applied"].append(event)
+                gap["accepted_by"].append(rule["id"])
+                applied_rule_ids.add(rule["id"])
+                add("exceptions_applied", event)
         if not matched and not matched_gaps:
-            report["exceptions_not_applied"].append({"rule_id": rule["id"], "path": None, "finding_id": None,
+            add("exceptions_not_applied", {"rule_id": rule["id"], "path": None, "finding_id": None,
                 "rationale": rule.get("rationale"), "approver": rule.get("approver"), "expires": rule.get("expires"),
                 "reason": reason or "No finding or identified coverage gap matched; blanket package exceptions are not supported."})
     residual = [row for row in records if row["scanner_disposition"] != "allow" and (row["path"], row["id"]) not in accepted]
-    report["residual_findings"] = residual
-    report["full_stops"] = [dict(row, excepted=(row["path"], row["id"]) in accepted) for row in records if row["protected"]]
+    full_stops = [dict(row, excepted=(row["path"], row["id"]) in accepted) for row in records if row["protected"]]
+    for category, rows in (("residual_findings", residual), ("full_stops", full_stops)):
+        report[category] = rows[:MAX_REPORT_ROWS]
+        report["evidence_counts"][category] = {"total": len(rows), "omitted": max(0, len(rows) - MAX_REPORT_ROWS)}
     dispositions = [row["scanner_disposition"] for row in residual]
     dispositions.extend(rule["effect"] for rule in mandatory)
     if any(not gap["accepted_by"] for gap in gaps.values()):
@@ -227,6 +245,6 @@ def organization_report(evaluation, result, policy, facts, evaluate, *, today=No
     report["organization_disposition"] = max(dispositions, key=RANK.get, default="allow")
     # An accepted exception cannot cancel a mandatory rule, including one in a
     # different file. Keep those rule ids visible beside the residual decision.
-    for rule_id in dict.fromkeys(event["rule_id"] for event in report["exceptions_applied"]):
+    for rule_id in sorted(applied_rule_ids):
         report["deciding_rules"].append({"id": rule_id, "effect": "allow_exception"})
     return report

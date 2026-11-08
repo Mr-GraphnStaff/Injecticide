@@ -254,3 +254,27 @@ def test_real_scan_adds_company_report_without_changing_technical_results():
     assert adjusted["governance_profile"] == original["governance_profile"]
     assert adjusted["files"] == original["files"]
     assert adjusted["policy_evaluation"]["organization_report"]["authority"] == "declared_unverified"
+
+
+def test_report_rows_are_bounded_without_truncating_decisions_or_rule_provenance():
+    from skill_sandbox.org_disposition import MAX_REPORT_ROWS
+    result = scan(*[(f"dir-{n}.db", "contact_directory", "review") for n in range(MAX_REPORT_ROWS + 7)])
+    first = exception(rid="A", when={"finding": "contact_directory"})
+    second = exception(rid="B", when={"finding": "contact_directory"})
+    actual = report(policy(first, second), result)
+    assert actual["organization_disposition"] == "allow"
+    assert not actual["residual_findings"]
+    assert len(actual["exceptions_applied"]) == MAX_REPORT_ROWS
+    assert actual["evidence_counts"]["exceptions_applied"] == {
+        "total": 2 * (MAX_REPORT_ROWS + 7), "omitted": MAX_REPORT_ROWS + 14}
+    assert {row["id"] for row in actual["deciding_rules"]} == {"A", "B"}
+
+
+def test_report_limit_cannot_hide_a_residual_block_from_the_decision():
+    from skill_sandbox.org_disposition import MAX_REPORT_ROWS
+    rows = [(f"script-{n}.py", "dynamic_exec", "review") for n in range(MAX_REPORT_ROWS + 1)]
+    rows.append(("last.txt", "hardcoded_secret", "block"))
+    actual = report(None, scan(*rows))
+    assert len(actual["residual_findings"]) == MAX_REPORT_ROWS
+    assert actual["evidence_counts"]["residual_findings"]["omitted"] == 2
+    assert actual["organization_disposition"] == "block"

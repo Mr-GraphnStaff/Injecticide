@@ -664,6 +664,7 @@ function formatOrganizationPolicyMarkdown(scanResult, buildInfo) {
         ['Exceptions not applied', report.exceptions_not_applied], ['Residual findings', report.residual_findings],
         ['Full stops and their exception status', report.full_stops], ['Coverage limits and acceptances', report.coverage_limits],
         ['Policy sources (declared)', policy.sources], ['Needs a human or runtime check', report.not_statically_checkable],
+        ['Evidence display counts', Object.entries(report.evidence_counts || {}).map(([category, counts]) => ({category, ...counts}))],
         ['Policy errors', report.errors], ['Policy warnings', report.warnings], ['Limitations', report.limits]
     ];
     sections.forEach(([heading, rows]) => {

@@ -423,7 +423,9 @@ def validate_policy(policy):
                     if sid in source_ids:
                         report.error(f"{path}.id", f"Source {index + 1}: duplicate source id '{sid}'.")
                     source_ids.add(sid)
-                    clean_sources.append({"id": sid, "title": title, **{key: source[key] for key in SOURCE_OPTIONAL if key in source}})
+                    clean_source = {"id": sid, "title": title}
+                    clean_source.update({key: source[key] for key in SOURCE_OPTIONAL if key in source})
+                    clean_sources.append(clean_source)
 
     rules = policy.get("rules")
     clean_rules = []
