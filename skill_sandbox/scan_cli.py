@@ -1,7 +1,8 @@
 """Offline skill/package inspection: python -m skill_sandbox.scan_cli PATH.
 
-Uses the same implementation as web/MCP scans. No model, package code,
-dependency installer or network destination is invoked by this command.
+Uses the same implementation as web/MCP scans. Package code and dependency
+installers are never invoked. Local model analysis runs only when the operator
+sets INJECTICIDE_LOCAL_LLM_ENABLED=1; otherwise no model request is made.
 Administrator-configured local signature verifiers retain their existing scope.
 """
 from __future__ import annotations

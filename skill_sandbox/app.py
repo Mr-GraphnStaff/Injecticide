@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import os
 import tarfile
 import tempfile
 import zipfile
@@ -143,6 +144,19 @@ def _finalize_result(result, text_sources, governance_evidence=None, org_policy=
             "effect_summary": {"block": 0, "require_approval": 0, "warn": 0, "allow": 0, "advisory_block": 0},
             "decision": "not_evaluated"}
     result["fix_summary"] = build_fix_summary(result)
+    if os.environ.get("INJECTICIDE_LOCAL_LLM_ENABLED") == "1":
+        if __package__:
+            from .local_analysis import analyze_local
+        else:
+            from local_analysis import analyze_local
+        result["local_analysis"] = analyze_local(text_sources, result)
+        local = result["local_analysis"]
+        result.setdefault("warnings", []).append(
+            "Local AI analysis: " + local["status"] + "; " + str(len(local["findings"]))
+            + " advisory observations. See local_analysis in the JSON report for evidence and limits. "
+            + "This does not replace the technical assessment or organization policy.")
+        # Apply normal credential hygiene to newly returned model evidence too.
+        redact_result(result, {source["path"]: source["text"] for source in text_sources})
     return result
 
 
