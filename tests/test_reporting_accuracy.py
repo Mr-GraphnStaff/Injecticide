@@ -31,7 +31,7 @@ def test_referenced_plaintext_boot_sequence_has_source_lines_not_execution_claim
     assert result["process_diagram"]["runtime_verified"] is False
 
 
-def test_database_sampling_reports_actual_row_counts_without_claiming_full_analysis():
+def test_database_full_row_coverage_keeps_projection_footprint_distinct():
     connection = sqlite3.connect(":memory:")
     try:
         connection.execute("CREATE TABLE entries (label TEXT)")
@@ -41,9 +41,10 @@ def test_database_sampling_reports_actual_row_counts_without_claiming_full_analy
         connection.close()
     result = scan_upload(data, "sample.db")
     extraction = result["files"][0]["analysis_coverage"]["extraction"]
-    assert extraction["status"] == "partial"
+    assert extraction["status"] == "complete"
     table = extraction["sampling"]["tables"][0]
-    assert table == {"table": "entries", "sampled_rows": 50, "total_rows": 75, "total_rows_status": "measured"}
+    assert table == {"table": "entries", "sampled_rows": 75, "total_rows": 75, "total_rows_status": "measured"}
+    assert result["files"][0]["database_profile"]["coverage"]["rows_read"] == 75
     assert result["token_footprint"]["largest_text_files"][0]["complete_text"] is False
 
 

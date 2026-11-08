@@ -1388,6 +1388,10 @@ def scan_database_entry(entry: Dict[str, object], data: bytes, scan_text: Callab
                                "Database partly read; unread areas are listed in database_profile.coverage and are "
                                "not certified safe.")
     entry["creator_mitigation"] = creator_mitigation(path, None)
+    entry["analysis_coverage"]["creator_markers"] = {
+        "status": "not_performed", "total_characters": None, "inspected_characters": None,
+        "reason": entry["creator_mitigation"]["reason"],
+        "scope": "Database projections cannot verify original binary EOF markers."}
     total_characters = analysis.reader.budget.used_chars
     entry["analysis_coverage"]["extraction"] = {
         "status": "complete" if complete else "partial", "extracted_characters": total_characters,
