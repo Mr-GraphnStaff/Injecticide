@@ -1,7 +1,110 @@
 {
+  "_comment": "Injecticide organisation AI policy template (injecticide-org-policy/v1). Keys that start with '_' are comments and are ignored by the validator. Replace every value with your organisation's own text. The organisation below is fictional.",
   "schema": "injecticide-org-policy/v1",
-  "name": "Placeholder policy template",
-  "organization": "Example organization",
-  "description": "Placeholder for UI testing only. Integration replaces this file with docs/org-policy-template.json; see docs/org-policy.md for the format.",
-  "rules": []
+  "_schema": "Must be exactly injecticide-org-policy/v1.",
+  "organization": "Example Widgets Ltd (fictional)",
+  "_organization": "Your organisation's name, as it should appear in scan reports.",
+  "policy_name": "Acceptable use of AI skills",
+  "_policy_name": "A short name for this policy.",
+  "compiled_date": "2026-11-01",
+  "_compiled_date": "The date this JSON was compiled from the source documents, written YYYY-MM-DD.",
+  "sources": [
+    {
+      "_comment": "One entry per source document the rules come from. 'id' and 'title' are required; 'version', 'date', 'owner', 'url' and 'notes' are optional text.",
+      "id": "AIUP",
+      "title": "Example Widgets AI Use Policy",
+      "version": "2.1",
+      "owner": "Information Security"
+    },
+    {
+      "id": "DPS",
+      "title": "Example Widgets Data Protection Standard",
+      "version": "4.0"
+    }
+  ],
+  "rules": [
+    {
+      "_comment": "Required: id, title, source (a sources[].id), requirement, when, effect, enforcement. Optional: section, approver (required when effect is require_approval), rationale.",
+      "id": "R1",
+      "title": "No credentials stored in skills",
+      "source": "AIUP",
+      "section": "4.2",
+      "requirement": "Skills must not contain passwords, API keys or tokens.",
+      "when": {"finding": "hardcoded_secret"},
+      "effect": "block",
+      "enforcement": "mandatory",
+      "approver": "Information Security",
+      "rationale": "Credentials in a shared skill can be copied by anyone who receives it."
+    },
+    {
+      "id": "R2",
+      "title": "Personal data needs a data protection review",
+      "source": "DPS",
+      "section": "3.1",
+      "requirement": "Skills that carry personal data need approval from the data protection officer.",
+      "when": {"any": [
+        {"data_class": ["personal_email", "ssn", "date_of_birth", "home_address", "health"]},
+        {"finding": ["pii_ssn", "pii_date_of_birth", "phi_patient_record"]}
+      ]},
+      "effect": "require_approval",
+      "enforcement": "mandatory",
+      "approver": "Data Protection Officer",
+      "rationale": "Personal data processing must have a recorded lawful basis."
+    },
+    {
+      "id": "R3",
+      "title": "Only approved web destinations",
+      "source": "AIUP",
+      "section": "5.1",
+      "requirement": "Skills may only contact services on the approved list.",
+      "when": {"external_origin": {"outside": ["*.examplewidgets.test", "api.approved-vendor.test"]}},
+      "effect": "warn",
+      "enforcement": "advisory",
+      "rationale": "Unlisted destinations have not had a supplier review."
+    },
+    {
+      "id": "R4",
+      "title": "Scripts are reviewed before use",
+      "source": "AIUP",
+      "section": "6.3",
+      "requirement": "Skills that run code or install packages need an engineering review.",
+      "when": {"capability": "code_execution"},
+      "effect": "require_approval",
+      "enforcement": "mandatory",
+      "approver": "Engineering review board"
+    },
+    {
+      "id": "R5",
+      "title": "Skills declare an owner",
+      "source": "AIUP",
+      "section": "2.4",
+      "requirement": "Every skill names an accountable owner in its metadata.",
+      "when": {"frontmatter_missing": ["owner"]},
+      "effect": "warn",
+      "enforcement": "advisory"
+    },
+    {
+      "id": "R6",
+      "title": "Internal staff directory is permitted",
+      "source": "DPS",
+      "section": "3.4",
+      "requirement": "Business contact details of staff may be used for internal routing.",
+      "when": {"finding": {"ids": ["contact_directory"], "include_info": true}},
+      "effect": "allow",
+      "enforcement": "mandatory",
+      "rationale": "Business contact data is covered by the staff privacy notice."
+    }
+  ],
+  "not_statically_checkable": [
+    {
+      "_comment": "Requirements from the source documents that a static scan cannot check. They are listed in the report so nobody assumes they were checked.",
+      "source": "AIUP",
+      "section": "7.1",
+      "requirement": "Users must review AI output before sending it to customers.",
+      "reason": "This is a behaviour at run time, not something in the skill package."
+    }
+  ],
+  "verification_notes": [
+    "Compiled from AIUP 2.1 and DPS 4.0. Rules R1 to R6 were checked against the source text by the policy owner."
+  ]
 }
