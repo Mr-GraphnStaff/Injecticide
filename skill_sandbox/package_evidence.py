@@ -61,6 +61,52 @@ def signature_evidence(records, extraction_root=None):
             "results": results, "scope": "signature_integrity_only_not_behavioral_safety"}
 
 
+EVIDENCE_CONTROLS = ("independent_review", "source_control", "version_pinning", "evaluation", "coexistence_evaluation",
+                     "tenant_access", "publishing_approval", "runtime_sandbox", "audit_logging", "deprecation")
+EVIDENCE_KEYS = ("artifact_sha256", "envelope") + EVIDENCE_CONTROLS
+
+
+def evidence_input_report(supplied, artifact_sha256, authentication=None):
+    """Say what happened to supplied governance evidence; never drop it silently.
+
+    ``applied``: hash-bound recognised controls or an authenticated envelope were used.
+    ``ignored``: evidence was supplied but nothing in it could be used (reasons list why).
+    ``rejected``: the input was not a JSON object, or its envelope failed authentication
+    and nothing else applied.
+    """
+    if supplied is None or supplied == {}:
+        return {"status": "none", "reasons": []}
+    if not isinstance(supplied, dict):
+        return {"status": "rejected", "reasons": ["Governance evidence must be a JSON object."]}
+    reasons = []
+    controls = [key for key in EVIDENCE_CONTROLS if key in supplied]
+    unknown = sorted(str(key)[:64] for key in supplied if key not in EVIDENCE_KEYS)
+    authenticated = isinstance(authentication, dict) and authentication.get("status") == "authenticated_issuer_assertion"
+    bound = supplied.get("artifact_sha256") == artifact_sha256
+    if "artifact_sha256" not in supplied:
+        reasons.append("No artifact_sha256: declared controls cannot be bound to this upload.")
+    elif not bound:
+        reasons.append("artifact_sha256 does not match this upload (hash mismatch); the evidence is for a different artifact.")
+    if not controls and "envelope" not in supplied:
+        reasons.append("No recognised evidence keys. Recognised keys: " + ", ".join(EVIDENCE_KEYS) + ".")
+    if unknown:
+        shown = unknown[:20]
+        reasons.append("Unknown keys ignored: " + ", ".join(shown) + (f" and {len(unknown) - 20} more." if len(unknown) > 20 else "."))
+    envelope_failed = "envelope" in supplied and not authenticated
+    if envelope_failed:
+        reason = authentication.get("reason") if isinstance(authentication, dict) else None
+        reasons.append("Evidence envelope not authenticated" + (f": {reason}." if reason else "."))
+    if authenticated or (bound and controls):
+        if bound and controls and not authenticated:
+            reasons.insert(0, "Hash-bound declared controls recorded as declared_unverified: " + ", ".join(controls) + ".")
+        if authenticated:
+            reasons.insert(0, "Authenticated, hash-bound evidence envelope applied.")
+        return {"status": "applied", "reasons": reasons}
+    if envelope_failed and not (bound and controls):
+        return {"status": "rejected", "reasons": reasons}
+    return {"status": "ignored", "reasons": reasons}
+
+
 def evidence_profile(records, texts, analysis, artifact_sha256, supplied=None, extraction_root=None):
     metadata = []
     for skill in analysis["skills"]:
@@ -73,8 +119,7 @@ def evidence_profile(records, texts, analysis, artifact_sha256, supplied=None, e
     bound = evidence.get("artifact_sha256") == artifact_sha256
     authenticated = verify_envelope(evidence.get("envelope"), artifact_sha256)
     checks = []
-    for key in ("independent_review", "source_control", "version_pinning", "evaluation", "coexistence_evaluation",
-                "tenant_access", "publishing_approval", "runtime_sandbox", "audit_logging", "deprecation"):
+    for key in EVIDENCE_CONTROLS:
         provided = key in evidence
         checks.append({"control": key, "status": "declared_unverified" if provided and bound else "not_assessed",
                        "reason": "Supplied evidence is hash-bound but has no independently verified issuer" if provided and bound else

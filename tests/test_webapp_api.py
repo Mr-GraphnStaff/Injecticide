@@ -181,3 +181,93 @@ def test_architecture_analysis_endpoint_returns_trace():
     assert payload["trace"]["scenario_id"] == "model_output_to_code_exec"
     assert "tool_invocation_abuse" in finding_ids
     assert "memory_contamination" in finding_ids
+
+
+def _org_policy_text(finding_id="pii_email_address"):
+    import json
+
+    return json.dumps({
+        "schema": "injecticide-org-policy/v1", "organization": "Example Org (fictional)",
+        "policy_name": "API test", "compiled_date": "2026-11-01",
+        "sources": [{"id": "S1", "title": "Example standard"}],
+        "rules": [{"id": "R1", "title": "Contact data needs review", "source": "S1",
+                   "requirement": "Contact data requires approval.", "when": {"finding": finding_id},
+                   "effect": "require_approval", "enforcement": "mandatory", "approver": "Privacy team"}],
+    })
+
+
+def test_scan_api_forwards_org_policy_and_returns_policy_and_fix_summary():
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/skills/scan",
+        files={"file": ("records.db", _build_sqlite_bytes(), "application/octet-stream")},
+        data={"org_policy": _org_policy_text()},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    evaluation = payload["policy_evaluation"]
+    assert evaluation["status"] == "applied"
+    assert evaluation["rules"][0]["triggered"] is True
+    assert evaluation["effect_summary"]["require_approval"] == 1
+    assert payload["fix_summary"]["items"]
+    assert payload["evidence_input"] == {"status": "none", "reasons": []}
+
+
+def test_scan_api_invalid_org_policy_is_reported_not_rejected():
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/skills/scan",
+        files={"file": ("notes.md", b"# Notes\n", "text/markdown")},
+        data={"org_policy": _org_policy_text("secret_in_file")},
+    )
+
+    assert response.status_code == 200
+    evaluation = response.json()["policy_evaluation"]
+    assert evaluation["status"] == "invalid"
+    assert evaluation["errors"][0]["suggestion"] == "hardcoded_secret"
+
+
+def test_scan_api_without_org_policy_reports_none():
+    client = TestClient(app)
+
+    response = client.post("/api/skills/scan", files={"file": ("notes.md", b"# Notes\n", "text/markdown")})
+
+    assert response.status_code == 200
+    assert response.json()["policy_evaluation"]["status"] == "none"
+
+
+def test_scan_api_sandbox_forwarding_includes_org_policy(monkeypatch):
+    from webapp import api as api_module
+
+    captured = {}
+
+    class FakeResponse:
+        status_code = 200
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"files": [], "summary": {}}
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def post(self, url, files=None, data=None, timeout=None):
+            captured.update(data)
+            return FakeResponse()
+
+    monkeypatch.setattr(api_module.requests, "Session", FakeSession)
+    monkeypatch.setattr(api_module, "attach_vendor_check", lambda result: result)
+    api_module._scan_skill_data(b"x", "x.md", "text/markdown", "auto", "{}", "http://sandbox.invalid", "{\"p\": 1}")
+    assert captured == {"target_runtime": "auto", "governance_evidence": "{}", "org_policy": "{\"p\": 1}"}
+    captured.clear()
+    api_module._scan_skill_data(b"x", "x.md", "text/markdown", "auto", "{}", "http://sandbox.invalid")
+    assert captured == {"target_runtime": "auto", "governance_evidence": "{}"}
