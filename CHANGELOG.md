@@ -6,6 +6,7 @@
 - Add an architecture overview grouped by areas, shared services, data stores and external systems; improve file kinds and reference resolution (#79, #80).
 - Add a grouped What to fix summary and optional organization AI policy with explicit validation and evidence-input status (#81, #82).
 - Improve per-file results, finding labels, report exports and documented scanner coverage; add synthetic enterprise-package acceptance tests (#83).
+- Share one database deadline across each package and align API, reverse-proxy and browser timeouts; report unsupported SQLite builds as opaque instead of failing the scan.
 
 ## 0.15.6 - 2026-11-07
 

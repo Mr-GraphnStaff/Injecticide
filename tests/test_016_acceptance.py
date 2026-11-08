@@ -36,7 +36,8 @@ PRIORITY_RANK = {"block": 0, "review": 1, "info": 2}
 # 19-32 s on the reference Windows workstation. A complete 20,000-row read adds
 # work, but the scan must stay usable from the web app; 180 s (about 6x the
 # slowest measured run) separates "slower" from "hung or quadratic".
-SCAN_SECONDS_LIMIT = 180
+# Keep the final limit below the API read timeout (120 s).
+SCAN_SECONDS_LIMIT = 110
 
 # The contract names the policy conditions and effects but not the key that
 # holds a rule's condition. "when" is assumed here; align with
@@ -45,13 +46,15 @@ CONDITION_KEY = "when"
 
 
 def _policy(rules):
-    return json.dumps({"schema": "injecticide-org-policy/v1", "name": "Example Corp AI package policy",
-                       "organization": "Example Corp (fictional)", "rules": rules})
+    return json.dumps({"schema": "injecticide-org-policy/v1", "policy_name": "Example Corp AI package policy",
+                       "organization": "Example Corp (fictional)", "compiled_date": "2026-11-07",
+                       "sources": [{"id": "TEST", "title": "Synthetic acceptance policy"}], "rules": rules})
 
 
 def _rule(rule_id, condition, effect, title=None):
     return {"id": rule_id, "title": title or rule_id.replace("-", " "), CONDITION_KEY: condition,
-            "effect": effect, "enforcement": "advisory", "approver": "AI review board"}
+            "effect": effect, "enforcement": "mandatory", "approver": "AI review board",
+            "source": "TEST", "requirement": title or rule_id.replace("-", " ")}
 
 
 VALID_POLICY = _policy([

@@ -36,7 +36,8 @@ SQLITE_HEADER = b"SQLite format 3\x00"
 DATABASE_SUFFIXES = {".db", ".sqlite", ".sqlite3", ".db3", ".sdb", ".s3db", ".sl3"}
 
 # Budgets: wall-clock and size, never a row cap.
-DB_TIME_BUDGET_SECONDS = 90.0          # reading + detection for one database
+DB_TIME_BUDGET_SECONDS = 90.0
+PACKAGE_TIME_BUDGET_SECONDS = 60  # shared deadline across database members in one package
 DB_TEXT_BUDGET_CHARS = 24 * 1024 * 1024  # projection characters supplied to detectors
 VALUE_CHUNK_CHARS = 4096               # long values are scanned in chunks of this size
 VALUE_CHUNK_OVERLAP = 256              # so a pattern spanning a chunk edge is still seen
@@ -368,6 +369,9 @@ def _open(data: bytes) -> sqlite3.Connection:
         # WAL-mode header: read the main file as a rollback-journal database.
         raw[18] = raw[19] = 1
     connection = sqlite3.connect(":memory:")
+    if not hasattr(connection, "deserialize"):
+        connection.close()
+        raise sqlite3.NotSupportedError("This SQLite build cannot deserialize database assets; contents are unread.")
     for flag, value in (("SQLITE_DBCONFIG_DEFENSIVE", True), ("SQLITE_DBCONFIG_TRUSTED_SCHEMA", False),
                         ("SQLITE_DBCONFIG_ENABLE_TRIGGER", False), ("SQLITE_DBCONFIG_ENABLE_VIEW", True)):
         if hasattr(sqlite3, flag) and hasattr(connection, "setconfig"):
@@ -1094,9 +1098,9 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
     _build_finding, redact_result, _cm, _dp = _lazy_imports()
     reader = analysis.reader
     merged: Dict[Tuple, Dict] = {}
-    buffers = {"general": [], "contact": []}
-    sizes = {"general": 0, "contact": 0}
-    first_pending = {"general": None, "contact": None}
+    # Keep columns separate: a rule's bounded display samples in an earlier
+    # column must not suppress classification evidence for a later column.
+    buffers, sizes, first_pending = {}, {}, {}
     cutoff = None
 
     def flush(bucket) -> bool:
@@ -1110,16 +1114,24 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
         # keeps its own line and therefore its own table/column/row citation.
         findings = scan_text(analysis.path + DETECTOR_PATH_SUFFIX, text, artifact_role)
         redact_result({"findings": findings}, {analysis.path: text})
-        if bucket == "contact":
+        if bucket[0] == "contact":
             findings = [item for item in findings if item.get("id") not in {"pii_email_address", "pii_phone_number"}]
         _cite(findings, [line.citation for line in lines])
         for finding in findings:
+            data_class = {"hardcoded_secret": "credential", "pii_email_address": "personal_email",
+                          "pii_ssn": "ssn", "pii_date_of_birth": "date_of_birth",
+                          "phi_medical_record_number": "health", "phi_patient_record": "health"}.get(finding.get("id"))
+            if data_class:
+                _mark_detected_columns(analysis, finding, data_class)
             _merge_into(merged, finding)
         buffers[bucket], sizes[bucket], first_pending[bucket] = [], 0, None
         return True
 
     for sequence, line in enumerate(reader.lines):
-        bucket = line.bucket
+        bucket = (line.bucket, line.table_index, line.contact_key)
+        buffers.setdefault(bucket, [])
+        sizes.setdefault(bucket, 0)
+        first_pending.setdefault(bucket, None)
         if first_pending[bucket] is None:
             first_pending[bucket] = sequence
         buffers[bucket].append(line)
@@ -1128,7 +1140,7 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
             cutoff = min(value for value in first_pending.values() if value is not None)
             break
     if cutoff is None:
-        for bucket in ("general", "contact"):
+        for bucket in list(buffers):
             if not flush(bucket):
                 pending = [value for value in first_pending.values() if value is not None]
                 cutoff = min(pending) if pending else None
@@ -1137,8 +1149,6 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
         _apply_detector_cutoff(analysis, cutoff)
     findings = list(merged.values())
     for finding in findings:
-        if finding.get("id") == "hardcoded_secret":
-            _mark_credential_columns(analysis, finding)
         finding["evidence_scope"] = finding.get("evidence_scope") or "database_values"
         finding["samples"] = list(dict.fromkeys(_sample(item, str(finding.get("id")))
                                                 for item in finding.get("observations", [])))[:3]
@@ -1148,7 +1158,7 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
     return findings
 
 
-def _mark_credential_columns(analysis, finding):
+def _mark_detected_columns(analysis, finding, data_class):
     reader = analysis.reader
     for observation in finding.get("observations", []):
         citation = observation.get("citation") or {}
@@ -1156,8 +1166,8 @@ def _mark_credential_columns(analysis, finding):
             if table["name"] != citation.get("table"):
                 continue
             for state in states:
-                if state.name == citation.get("column") and "credential" not in state.classes:
-                    state.classes.append("credential")
+                if state.name == citation.get("column") and data_class not in state.classes:
+                    state.classes.append(data_class)
     analysis.profile["tables"] = _build_profile(analysis)["tables"]
 
 

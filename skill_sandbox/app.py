@@ -20,7 +20,7 @@ if __package__:
     from .evidence_redaction import redact_result
     from .disposition import normalize_observations
     from .artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
-    from .database_analysis import is_database_path, scan_database_entry
+    from .database_analysis import Budget as DatabaseBudget, PACKAGE_TIME_BUDGET_SECONDS, is_database_path, scan_database_entry
     from .behavior_analysis import analyze_behavior
     from .contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -40,7 +40,7 @@ else:
     from evidence_redaction import redact_result
     from disposition import normalize_observations
     from artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
-    from database_analysis import is_database_path, scan_database_entry
+    from database_analysis import Budget as DatabaseBudget, PACKAGE_TIME_BUDGET_SECONDS, is_database_path, scan_database_entry
     from behavior_analysis import analyze_behavior
     from contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -299,6 +299,7 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str], excl
 
 def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> Tuple[List[Dict[str, object]], List[Dict[str, str]]]:
     results = []
+    database_budget = DatabaseBudget(seconds=PACKAGE_TIME_BUDGET_SECONDS)
     text_pairs: List[Tuple[str, str | None, str]] = []
     sorted_files = sorted(files, key=_priority_key)
     excluded = excluded if excluded is not None else []
@@ -326,7 +327,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
         }
         entry["analysis_coverage"]["extraction"]["reason"] = "Archive container bytes are not text; expanded descendants are analyzed as separate files."
         if is_probably_text(data):
-            fallback, readable = _scan_file_bytes(path, data)
+            fallback, readable = _scan_file_bytes(path, data, database_budget)
             entry["findings"] = fallback["findings"]
             entry["analysis_coverage"].update(fallback["analysis_coverage"])
             entry["_readable_text"] = readable
@@ -348,7 +349,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
                     containers[nested_path] = entry
                     text = entry.pop("_readable_text", None)
                 else:
-                    entry, text = _scan_file_bytes(nested_path, raw)
+                    entry, text = _scan_file_bytes(nested_path, raw, database_budget)
                     entry["archive_container"] = descendant["container_path"]
                     entry["archive_depth"] = descendant["depth"]
                 results.append(entry)
@@ -363,7 +364,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
                     "SKILL.md", "plugin.json", "hooks.json", "mcp.json", ".mcp.json", "manifest.json"}
                 excluded.append(omitted)
             continue
-        entry, text = _scan_file_bytes(rel_path, data)
+        entry, text = _scan_file_bytes(rel_path, data, database_budget)
         results.append(entry)
         text_pairs.append((rel_path, text, entry["artifact_role"]))
     return results, _build_text_sources(text_pairs)
@@ -381,7 +382,7 @@ def _priority_key(item: Tuple[str, Path]) -> Tuple[int, str]:
     return (2, rel_path.lower())
 
 
-def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | None]:
+def _scan_file_bytes(path: str, data: bytes, database_budget=None) -> Tuple[Dict[str, object], str | None]:
     entry = {
         "path": path,
         "size": len(data),
@@ -412,8 +413,8 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         return _scan_asset_entry(entry, asset, data)
     sampling = None
     try:
-        if looks_like_sqlite(data):
-            return scan_database_entry(entry, data, _scan_text)
+        if looks_like_sqlite(data) or is_database_path(path):
+            return scan_database_entry(entry, data, _scan_text, budget=database_budget or DatabaseBudget(seconds=PACKAGE_TIME_BUDGET_SECONDS))
         text, reason = extract_scannable_text(data)
     except ValueError as exc:
         entry.update(skipped=True, reason=str(exc), assessment_state="limited_or_truncated")
@@ -421,7 +422,7 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
         return entry, None
     if text is None:
         if is_database_path(path):
-            return scan_database_entry(entry, data, _scan_text)
+            return scan_database_entry(entry, data, _scan_text, budget=database_budget or DatabaseBudget(seconds=PACKAGE_TIME_BUDGET_SECONDS))
         if sampling is not None:
             entry["analysis_coverage"]["extraction"]["sampling"] = sampling
         entry["skipped"] = True

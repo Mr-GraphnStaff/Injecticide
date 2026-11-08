@@ -560,8 +560,34 @@ def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
     # capabilities are bounded so passing prose mentions cannot crowd files out.
     entry_items = [item for item in ranked({"file"}) if item["path"] in entries]
     shown = entry_items[:max_nodes]
+    # Keep complete, evidenced retrieval-to-action paths before filling the
+    # bounded view by degree. Otherwise truncation can erase the very scenario
+    # the planner needs to propose, even while retaining both endpoint kinds.
+    action_keys = {key for key, item in components.items()
+                   if item["map_kind"] in {"code", "tool", "mcp", "memory"}
+                   or (item["kind"] == "file" and is_code_file(
+                       item["path"], files.get(item["path"]), disguised))}
+    adjacency = {}
+    for source, target in relations:
+        adjacency.setdefault(source, []).append(target)
+    priority_pairs = set()
+    for start in sorted((key for key, item in components.items() if item["map_kind"] == "retrieval"), key=str):
+        queue, seen = [(start, [start])], {start}
+        for current, path in queue:
+            if current in action_keys and len(path) > 1:
+                additions = [components[key] for key in path if components[key] not in shown]
+                pairs = set(zip(path, path[1:]))
+                if len(shown) + len(additions) <= max_nodes and len(priority_pairs | pairs) <= max_edges:
+                    shown.extend(additions)
+                    priority_pairs.update(pairs)
+                break
+            for target in sorted(adjacency.get(current, ()), key=str):
+                if target not in seen:
+                    seen.add(target)
+                    queue.append((target, path + [target]))
     reserved = (ranked({"unresolved"})[:MAP_SIDE_SLOTS] + ranked({"system"})[:MAP_SIDE_SLOTS]
                 + ranked({"capability", "external"})[:MAP_SIDE_SLOTS])
+    reserved = [item for item in reserved if item not in shown]
     package_files = [item for item in ranked({"file"}) if item["path"] in files and item not in shown]
     shown += package_files[:max(0, max_nodes - len(shown) - len(reserved))]
     shown += reserved[:max(0, max_nodes - len(shown))]
@@ -657,7 +683,8 @@ def _playground_map(graph, documented, files, entries, lookup, evidence_edges):
     entry_keys = {("file", path) for path in entries}
     candidate_pairs = [pair for pair in relations if pair[0] in shown_keys and pair[1] in shown_keys]
     # Flagged (untrusted or write) links carry the planner's signal; keep them first.
-    candidate_pairs.sort(key=lambda pair: (not (relations[pair]["untrusted"] or relations[pair]["write"]),
+    candidate_pairs.sort(key=lambda pair: (pair not in priority_pairs,
+                                           not (relations[pair]["untrusted"] or relations[pair]["write"]),
                                            not (pair[0] in entry_keys or pair[1] in entry_keys),
                                            -(degree[pair[0]] + degree[pair[1]])))
     map_edges, used_edge_ids = [], set()

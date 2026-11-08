@@ -332,8 +332,9 @@ wired = pytest.mark.skipif(not hasattr(sandbox_app, "scan_database_entry"),
 
 @wired
 @pytest.mark.parametrize("name", ["data/vault.db", "data/vault.sqlite", "data/vault.sqlite3", "data/vault.db3"])
-def test_database_extension_without_sqlite_bytes_is_opaque_through_scan_upload(name):
-    result = sandbox_app.scan_upload(os.urandom(4096), name)
+@pytest.mark.parametrize("data", [b"not a readable SQLite database", b"\x00encrypted database\xff"])
+def test_database_extension_without_sqlite_bytes_is_opaque_through_scan_upload(name, data):
+    result = sandbox_app.scan_upload(data, name)
     entry = result["files"][0]
     assert entry["database_profile"]["coverage"]["status"] == "opaque"
     assert _finding(entry, "opaque_database") is not None
@@ -364,3 +365,58 @@ def test_twenty_thousand_row_directory_end_to_end():
     serialized = json.dumps(result)
     assert token not in serialized
     assert "@example-corp.test" not in serialized.replace("***@example-corp.test", "")
+
+
+def test_sqlite_build_without_deserialize_reports_unread_instead_of_crashing(monkeypatch):
+    data = _notes_table(1, 0)
+    class UnsupportedConnection:
+        closed = False
+        def close(self):
+            self.closed = True
+    connection = UnsupportedConnection()
+    monkeypatch.setattr(da.sqlite3, "connect", lambda *_args, **_kwargs: connection)
+    entry = _scan(data)
+    assert connection.closed
+    assert entry["database_profile"]["coverage"]["status"] == "opaque"
+    assert _finding(entry, "opaque_database") is not None
+
+
+def test_archive_databases_share_one_package_budget(tmp_path, monkeypatch):
+    seen = []
+    real = sandbox_app.scan_database_entry
+    def record(entry, data, scan_text, budget=None):
+        seen.append(budget)
+        return real(entry, data, scan_text, budget=budget)
+    monkeypatch.setattr(sandbox_app, "scan_database_entry", record)
+    files = []
+    for name in ("one.db", "two.db"):
+        path = tmp_path / name
+        path.write_bytes(_notes_table(1, 0))
+        files.append((name, path))
+    sandbox_app._scan_extracted_files(files)
+    assert len(seen) == 2 and seen[0] is seen[1]
+    assert seen[0].seconds == 60
+
+
+@pytest.mark.parametrize("chunk_chars", [256, da.DETECTOR_CHUNK_CHARS])
+def test_column_classes_survive_observation_display_truncation(monkeypatch, chunk_chars):
+    def build(connection):
+        connection.execute("CREATE TABLE records (notes_a TEXT, notes_b TEXT)")
+        connection.executemany("INSERT INTO records VALUES (?, ?)", [(f"SSN: 214-55-{8300+n:04d}", "routine") for n in range(20)] + [("routine", "SSN: 352-61-7048")])
+    monkeypatch.setattr(da, "DETECTOR_CHUNK_CHARS", chunk_chars)
+    entry = _scan(_db(build))
+    columns = {c["name"]: c["data_classes"] for c in entry["database_profile"]["tables"][0]["columns"]}
+    assert "ssn" in columns["notes_a"] and "ssn" in columns["notes_b"]
+
+
+def test_skill_scan_timeout_chain_covers_database_deadline():
+    import re
+    from pathlib import Path
+    from webapp.api import SKILL_SCAN_READ_TIMEOUT_SECONDS
+    root = Path(__file__).resolve().parents[1]
+    nginx = (root / "nginx.conf").read_text(encoding="utf-8")
+    api_location = nginx.split("location /api/ {", 1)[1].split("}", 1)[0]
+    proxy = int(re.search(r"proxy_read_timeout\s+(\d+)s", api_location).group(1))
+    ui = (root / "webapp/static/app.js").read_text(encoding="utf-8")
+    browser = int(re.search(r"const SKILL_SCAN_TIMEOUT_MS = (\d+)", ui).group(1)) / 1000
+    assert da.PACKAGE_TIME_BUDGET_SECONDS < SKILL_SCAN_READ_TIMEOUT_SECONDS < proxy < browser

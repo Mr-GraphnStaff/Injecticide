@@ -52,6 +52,7 @@ from webapp.vendor_requirements import attach_vendor_check
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
 
 SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
+SKILL_SCAN_READ_TIMEOUT_SECONDS = 120
 
 
 def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url, org_policy=""):
@@ -66,7 +67,7 @@ def _scan_skill_data(data, filename, content_type, target_runtime, evidence, san
             f"{sandbox_url.rstrip('/')}/scan",
             files={"file": (filename, data, content_type)},
             data=form,
-            timeout=(5, 45),
+            timeout=(5, SKILL_SCAN_READ_TIMEOUT_SECONDS),
         )
         if response.status_code in {400, 413, 422, 429}:
             raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Scan rejected"))

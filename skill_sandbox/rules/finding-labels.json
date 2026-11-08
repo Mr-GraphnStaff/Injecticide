@@ -84,5 +84,6 @@
   "skill_frontmatter": {"label": "Skill header problem", "plain": "The YAML header at the top of SKILL.md is missing, malformed or breaks a rule of the target product."},
   "frontmatter_extension": {"label": "Non-standard skill header field", "plain": "The SKILL.md header uses a field outside the shared standard; some products may ignore it."},
   "skill_version_declaration": {"label": "Skill version in the wrong place", "plain": "The skill declares its version somewhere other than a text value at metadata.version in the SKILL.md header; the version itself is optional."},
-  "skill_format_not_assessed": {"label": "Skill format not checked", "plain": "The SKILL.md format could not be parsed safely, so its header rules were not checked."}
+  "skill_format_not_assessed": {"label": "Skill format not checked", "plain": "The SKILL.md format could not be parsed safely, so its header rules were not checked."},
+  "suspicious_schema_object": {"label": "Instructions or code in database schema", "plain": "A database trigger, view, index or default contains instruction-like text, code or a URL. This is static evidence for review; no SQL or embedded code was executed."}
 }

@@ -173,6 +173,17 @@ def extract_declared_structure(text_sources, graph=None):
                     record("skill_mentions", {"value": name, "path": path, "line": line_no})
             if fence:
                 continue
+            # A named service operation is a write only when both its verb and
+            # the surrounding instruction declare a mutation. A bare identifier,
+            # allowed-tools entry, or negated instruction is not a write trace.
+            if not NEGATION.search(line) and re.search(
+                    r"\b(?:write|create|update|delete|publish|upload|submit|append|send)\b", line, re.I):
+                for operation in re.findall(r"`([A-Za-z][A-Za-z0-9]*_(?:[A-Za-z0-9]+_)*[A-Za-z0-9]+)`", line):
+                    parts = operation.lower().split("_")
+                    if len(parts) >= 3 and parts[1] in {
+                            "create", "update", "delete", "publish", "upload", "submit", "append", "send"}:
+                        record("tools", {"value": operation[:160], "path": path, "line": line_no,
+                                         "origin": "documented-operation", "direction": "write"})
             if URL.search(line):
                 reads, writes = bool(FETCH_VERB.search(line)), bool(WRITE_VERB.search(line))
                 if reads != writes:
@@ -247,7 +258,10 @@ def _routes(path, lines, body_start, line_targets, record):
             while index < len(lines) and (LIST_ITEM.match(lines[index]) or not lines[index].strip()):
                 item = LIST_ITEM.match(lines[index])
                 targets = [t for t in line_targets.get((path, index + 1), []) if t != path] if item else []
-                if item and targets:
+                # Index inventories list related files too; only conditional
+                # load instructions declare caller-need routing in list form.
+                routing = item and re.search(r"^(?:if|when|for)\b.*\b(?:load|read|use|consult)\b", item[1], re.I)
+                if routing and targets:
                     need = _plain(PATHISH.sub("", LINK.sub(lambda m: "" if PATHISH.search(m[0]) and _plain(m[1]) == "" else m[1], item[1])))
                     if len(need) >= 3:
                         rows.append({"path": path, "line": index + 1, "text": need, "form": "list",
@@ -357,10 +371,16 @@ def declared_tools(declared):
                 kind = "retrieval"
             elif lowered in SHELL_TOOLS:
                 kind = "code"
+        if item.get("origin") == "documented-operation" and item.get("direction") == "write":
+            direction = "write"
         if not name:
             continue
         entry = tools.setdefault((kind, name.lower()), {"name": name, "kind": kind, "direction": direction,
                                                         "untrusted": untrusted, "evidence": []})
+        if direction == "write":
+            entry["direction"] = "write"
+        if item.get("origin") == "documented-operation":
+            entry.setdefault("used_by_targets", set()).add(evidence["path"])
         if len(entry["evidence"]) < MAX_EVIDENCE and evidence not in entry["evidence"]:
             entry["evidence"].append(evidence)
     for route in _list((declared or {}).get("routes")):
@@ -535,8 +555,8 @@ def build_overview(report):
                 limits.append({"kind": "overview_shared_count"})
             owner_of[path] = min(users[path], key=lambda item: (item[0], _area_order(item[1])))[1]
 
-    entry_area = {"id": "area-entry", "label": "Skill entry", "source": "declared",
-                  "basis": "Skill entry point" + (" and router" if router_files - set(entries) else ""),
+    entry_area = {"id": "area-entry", "label": "Skill entry", "source": "inferred",
+                  "basis": "Inferred: skill entry filename" + (" and router location" if router_files - set(entries) else ""),
                   "seeds": entry_files}
     for path in entry_files:
         owner_of[path] = entry_area["id"]
@@ -636,15 +656,14 @@ def build_overview(report):
             steps_by_path[step["path"]] = steps_by_path.get(step["path"], 0) + 1
     disguised = disguised_paths(graph)
     out_areas = []
-    for area in [entry_area] + areas:
+    ordered_areas = ([entry_area] + areas if routes else areas + [entry_area]) if entry_files else areas
+    for area in ordered_areas:
         members = sorted(p for p, owner in owner_of.items() if owner == area["id"])
         out_areas.append({"id": area["id"], "label": area["label"], "source": area["source"],
                           "basis": area["basis"], "files": members,
                           "entry_files": [p for p in area["seeds"] if p in members][:20],
                           "risk_badges": risk_badges(members, files, disguised),
                           "steps": sum(steps_by_path.get(p, 0) for p in members)})
-    if not entry_files:
-        out_areas = out_areas[1:]
     assigned = set(owner_of)
     unassigned = sum(1 for p in inventory if p not in assigned)
     ordered_links = sorted(links.values(), key=lambda item: (-item["count"], item["source"], item["target"]))

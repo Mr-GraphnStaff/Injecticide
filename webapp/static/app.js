@@ -1232,7 +1232,7 @@ function ArchitectureWorkbench({ onBack, onNavigate, buildInfo }) {
 
 const SKILL_FILES_PER_PAGE = 10;
 const SKILL_FINDINGS_PER_PAGE = 10;
-const SKILL_SCAN_TIMEOUT_MS = 60000;
+const SKILL_SCAN_TIMEOUT_MS = 150000;
 
 function ScanPageControls({ page, total, size, onChange, label }) {
     if (total <= size) return null;
