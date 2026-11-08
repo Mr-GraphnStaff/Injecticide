@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.16.0 - 2026-11-07
+
+- Analyze SQLite assets with complete budgeted row reads, schema and BLOB inspection, explicit unread coverage, and table/column/row citations. Mask business contacts and secrets; report contact directories separately from sensitive personal data (#78).
+- Add an architecture overview grouped by areas, shared services, data stores and external systems; improve file kinds and reference resolution (#79, #80).
+- Add a grouped What to fix summary and optional organization AI policy with explicit validation and evidence-input status (#81, #82).
+- Improve per-file results, finding labels, report exports and documented scanner coverage; add synthetic enterprise-package acceptance tests (#83).
+
 ## 0.15.6 - 2026-11-07
 
 - Detect hardcoded secrets in scanned packages (`hardcoded_secret`). Before this
