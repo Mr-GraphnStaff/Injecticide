@@ -2,6 +2,10 @@
 
 The optional local analyzer adds `local_analysis` to the shared web/CLI/MCP scan report. This is model-generated advisory evidence; technical findings and organization policy remain authoritative independent sections. It is not a trained Injecticide model, malware certification, or a new safety verdict.
 
+## Current dev-lane status
+
+Enabled and verified on November 8, 2026. Normal web scans now request local analysis. The existing report warning shows completion/partial/error status; the JSON report contains the evidence in `local_analysis`. An inert web-upload check completed in 19.44 seconds. This confirms the connection, not detection accuracy. Training has not started.
+
 ## Runtime
 
 Initial candidate: Qwen3.5-2B (Apache-2.0) through Ollama. Model storage belongs on the Pi main drive, not in Git or its SD-card root filesystem. Pin the actual runtime archive SHA-256, base-image digest and model digest in the deployment receipt. The native ARM64 runtime is stored on the main drive and mounted into an existing cached base image to avoid large runtime-image extraction on the SD card. Do not enable cloud models or automatic fallback. The proposed 8GB-Pi settings are one request at a time, two CPU threads, 4096 context and at most 384 output tokens, with a 45-second request timeout. Measure latency and memory before changing limits.
