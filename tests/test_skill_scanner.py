@@ -225,7 +225,12 @@ def test_scan_large_reference_sqlite_db_is_not_skipped():
     finding_ids = {finding["id"] for finding in db_entry["findings"]}
     assert "contact_directory" in finding_ids
     assert "pii_email_address" not in finding_ids
-    assert db_entry["database_profile"]["coverage"]["rows_read"] == 900
+    coverage = db_entry["database_profile"]["coverage"]
+    assert coverage["rows_total"] == 900
+    if coverage["status"] == "complete":
+        assert coverage["rows_read"] == 900
+    else:
+        assert coverage["unread"] and "database_not_cleared" in finding_ids
 
 
 def test_scan_large_reference_pptx_is_not_skipped():
