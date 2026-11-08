@@ -401,6 +401,80 @@
           "counts_for_governance": false
         }
       }
+    },
+    {
+      "detector_id": "contact_directory",
+      "contexts": {
+        "contact_directory_small": {
+          "tier": "info",
+          "severity": "info",
+          "disposition": "info",
+          "is_actionable": false,
+          "counts_for_governance": false
+        },
+        "contact_directory_large": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "opaque_database",
+      "contexts": {
+        "pattern_match": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "database_not_cleared",
+      "contexts": {
+        "pattern_match": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "embedded_executable_blob",
+      "contexts": {
+        "executable_blob": {
+          "tier": "block",
+          "severity": "high",
+          "disposition": "block",
+          "is_actionable": true,
+          "counts_for_governance": true
+        },
+        "archive_blob": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
+    },
+    {
+      "detector_id": "suspicious_schema_object",
+      "contexts": {
+        "pattern_match": {
+          "tier": "review",
+          "severity": "medium",
+          "disposition": "require_approval",
+          "is_actionable": true,
+          "counts_for_governance": false
+        }
+      }
     }
   ]
 }

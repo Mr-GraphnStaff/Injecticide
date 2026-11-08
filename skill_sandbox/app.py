@@ -20,6 +20,7 @@ if __package__:
     from .evidence_redaction import redact_result
     from .disposition import normalize_observations
     from .artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
+    from .database_analysis import is_database_path, scan_database_entry
     from .behavior_analysis import analyze_behavior
     from .contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -36,6 +37,7 @@ else:
     from evidence_redaction import redact_result
     from disposition import normalize_observations
     from artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
+    from database_analysis import is_database_path, scan_database_entry
     from behavior_analysis import analyze_behavior
     from contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
@@ -383,15 +385,15 @@ def _scan_file_bytes(path: str, data: bytes) -> Tuple[Dict[str, object], str | N
     sampling = None
     try:
         if looks_like_sqlite(data):
-            text, sampling = extract_sqlite_projection(data)
-            reason = "Scanned SQLite database content." if text is not None else "Binary or non-text content"
-        else:
-            text, reason = extract_scannable_text(data)
+            return scan_database_entry(entry, data, _scan_text)
+        text, reason = extract_scannable_text(data)
     except ValueError as exc:
         entry.update(skipped=True, reason=str(exc), assessment_state="limited_or_truncated")
         entry["analysis_coverage"]["extraction"].update(status="partial", reason=entry["reason"])
         return entry, None
     if text is None:
+        if is_database_path(path):
+            return scan_database_entry(entry, data, _scan_text)
         if sampling is not None:
             entry["analysis_coverage"]["extraction"]["sampling"] = sampling
         entry["skipped"] = True

@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY app.py /app/app.py
 COPY artifact_text.py /app/artifact_text.py
+COPY database_analysis.py /app/database_analysis.py
 COPY asset_inspection.py /app/asset_inspection.py
 COPY nested_archives.py /app/nested_archives.py
 COPY package_graph.py /app/package_graph.py
