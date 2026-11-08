@@ -819,6 +819,162 @@
         "reason": "Locally approved deterministic gate passed",
         "updated": "2026-11-06T14:19:08+00:00"
       }
+    },
+    {
+      "sequence": 365,
+      "id": "obsession-06280ded3cb34508edf6f997116ba154a7773b79b4b59b6e0425173034e6e182",
+      "sha256": "06280ded3cb34508edf6f997116ba154a7773b79b4b59b6e0425173034e6e182",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Powers - Features - Docs - Kiro Skip to main content Loading image... Product About Kiro Agents IDE CLI Web Mobile Crew Pricing Downloads For Enterprise Startups Students Community Overview Ambassadors Case studies Discord Events Powers Shop Showcase Stories Resources Docs Blog Changelog FAQs Videos Report a bug Suggest an idea Billing support Social English Site Terms License Responsible AI Policy Legal Privacy Policy Cookie Preferences English Agents Apps Enterprise Pricing Docs Community Resources SIGN IN DOWNLOADS Get Started Installation Authentication Your first project Models Overview Available models Reasoning effort AWS GovCloud (US) models Features How Kiro works Local command sandbox ACP integrations Specs Steering Hooks MCP Permissions Custom agents Workflows Agent Skills Powers Install powers Create powers Cloud sessions Memory Compaction Kiroignore Checkpoints and rewind Built-in tools Configuration scopes IDE 1.x What's new in 1.0 Setup & First Run Editor Chat Experimental Troubleshooting 0.x reference CLI Setup & First Run Choose an agent harness Terminal UI Chat Fullscreen mode Voice mode Headless mode ACP Auto complete Experimental Troubleshooting Upgrade from CLI 2.x 2.x reference Crew Quick start Installation Running 24/7 Bots Chat Agent Capabilities Features Interfaces Apps System & storage Configuration Security Troubleshooting Web Setup & First Run Identity Center Connect your repositories Working with the agent Autonomous mode Schedule Configuration Sync Sandbox Mobile - Preview Overview Commands and Reference CLI commands Slash commands Built-in tools Exit codes Settings Billing Overview Managing your subscription Upgrading your plan Downgrading your plan Cancelling your plan Purchasing add-on credits Managing your payments Managing usage notifications Managing your taxes Contacting billing support Deleting your account Related questions Enterprise Concepts Onboarding quickstart Connecting your identity provider Deployment options Subscribe ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "9d7298e2afa71c6b465251a454862e55408cd694283ecb16430f5f6004088c88",
+          "source_id": "kiro",
+          "source_sha256": "4db161ef585b45f4cd9ee4cc4171b5f2aa230b67f1f28a92131df165f353c139",
+          "url": "https://kiro.dev/docs/powers/"
+        },
+        "provenance": {
+          "final_url": "https://kiro.dev/docs/powers/",
+          "previous_sha256": "9d7298e2afa71c6b465251a454862e55408cd694283ecb16430f5f6004088c88",
+          "retrieved": "2026-11-07T07:25:13+00:00",
+          "snapshot_id": 4010,
+          "source_id": "kiro",
+          "source_sha256": "4db161ef585b45f4cd9ee4cc4171b5f2aa230b67f1f28a92131df165f353c139",
+          "url": "https://kiro.dev/docs/powers/"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-07T15:23:27+00:00"
+      }
+    },
+    {
+      "sequence": 347,
+      "id": "obsession-7da77cca011f9fe81117a29d4acff0bebfb3fc3763380f6276868e2969c383a9",
+      "sha256": "7da77cca011f9fe81117a29d4acff0bebfb3fc3763380f6276868e2969c383a9",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugins for GitHub Copilot - GitHub Docs Skip to main content Skip to content GitHub Docs Search or ask Copilot / Menu Collapse sidebar Expand sidebar Home GitHub Copilot Concepts Customizations Plugins GitHub Copilot Get started About Copilot Where to use Copilot Copilot on GitHub.com Copilot in your IDE Copilot CLI quickstart Copilot app quickstart Copilot SDK quickstart Plans Enterprise and Copilot billing Best practices Enterprise AI governance Concepts Copilot surfaces GitHub Copilot app Copilot CLI Copilot on GitHub.com and Mobile Copilot in IDEs Agent capabilities About agents GitHub Copilot agents Third-party coding agents Agent apps Choosing and delegating agent work AI tools Agent management Copilot integrations Delegate and parallelize work Getting a second opinion Researching with agents Agent-powered workflows and operations Code review About automations Rationale, confidence, and approvals Dynamic workflows Agentic Workflows Copilot CLI in Actions About remote control Autopilot Tool search Computer use Image generation Prompting and context Prompt engineering Context management Custom instructions Copilot Memory Copilot Dreaming Prompt files Repository indexing Spaces Customizations Comparing customizations Agent skills Assisted permissions Custom agents MCP Connectors Hooks Extensions Plugins LSP servers Models Overview Copilot Fusion Auto model selection Bring your own key Utility models Base and LTS models Billing and usage Organizations and enterprises Billing Seats and billing cycles Budgets Individuals Billing Usage limits Copilot usage metrics All articles Copilot usage metrics Security, governance, and network settings Content exclusion Session data Local sandboxing Understanding local sandboxing Cloud sandboxes Risks and mitigations Network settings Enterprise Policies Default availability FedRAMP models New features and models MCP management Plugin standards OpenTelemetry Copilot-only enterprises How-tos Copilot on GitHub Set up Copilot Enabl",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "bbec15b9a082b83e26666467915ac29917be000fc2c6dce7c4b369f35b0d9d85",
+          "source_id": "copilot",
+          "source_sha256": "5ab6696b8a60895922429320b1208bdf639247ae8b38f1fedd8b97d009cdbea0",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "provenance": {
+          "final_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "previous_sha256": "bbec15b9a082b83e26666467915ac29917be000fc2c6dce7c4b369f35b0d9d85",
+          "retrieved": "2026-11-07T07:23:41+00:00",
+          "snapshot_id": 3980,
+          "source_id": "copilot",
+          "source_sha256": "5ab6696b8a60895922429320b1208bdf639247ae8b38f1fedd8b97d009cdbea0",
+          "url": "https://docs.github.com/en/copilot/concepts/agents/about-plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-07T15:23:27+00:00"
+      }
+    },
+    {
+      "sequence": 355,
+      "id": "obsession-8a03d9dd1abba375bd452db5e896d9e1e14c67dc2b903c7228f2975f9b752761",
+      "sha256": "8a03d9dd1abba375bd452db5e896d9e1e14c67dc2b903c7228f2975f9b752761",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugins for GitHub Copilot - GitHub Docs Skip to main content Skip to content GitHub Docs Search or ask Copilot / Menu Collapse sidebar Expand sidebar Home GitHub Copilot Concepts Customizations Plugins GitHub Copilot Get started About Copilot Where to use Copilot Copilot on GitHub.com Copilot in your IDE Copilot CLI quickstart Copilot app quickstart Copilot SDK quickstart Plans Enterprise and Copilot billing Best practices Enterprise AI governance Concepts Copilot surfaces GitHub Copilot app Copilot CLI Copilot on GitHub.com and Mobile Copilot in IDEs Agent capabilities About agents GitHub Copilot agents Third-party coding agents Agent apps Choosing and delegating agent work AI tools Agent management Copilot integrations Delegate and parallelize work Getting a second opinion Researching with agents Agent-powered workflows and operations Code review About automations Rationale, confidence, and approvals Dynamic workflows Agentic Workflows Copilot CLI in Actions About remote control Autopilot Tool search Computer use Image generation Prompting and context Prompt engineering Context management Custom instructions Copilot Memory Copilot Dreaming Prompt files Repository indexing Spaces Customizations Comparing customizations Agent skills Assisted permissions Custom agents MCP Connectors Hooks Extensions Plugins LSP servers Models Overview Copilot Fusion Auto model selection Bring your own key Utility models Base and LTS models Billing and usage Organizations and enterprises Billing Seats and billing cycles Budgets Individuals Billing Usage limits Copilot usage metrics All articles Copilot usage metrics Security, governance, and network settings Content exclusion Session data Local sandboxing Understanding local sandboxing Cloud sandboxes Risks and mitigations Network settings Enterprise Policies Default availability FedRAMP models New features and models MCP management Plugin standards OpenTelemetry Copilot-only enterprises How-tos Copilot on GitHub Set up Copilot Enabl",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "bbec15b9a082b83e26666467915ac29917be000fc2c6dce7c4b369f35b0d9d85",
+          "source_id": "requirements-copilot",
+          "source_sha256": "5ab6696b8a60895922429320b1208bdf639247ae8b38f1fedd8b97d009cdbea0",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "provenance": {
+          "final_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "previous_sha256": "bbec15b9a082b83e26666467915ac29917be000fc2c6dce7c4b369f35b0d9d85",
+          "retrieved": "2026-11-07T07:24:34+00:00",
+          "snapshot_id": 3995,
+          "source_id": "requirements-copilot",
+          "source_sha256": "5ab6696b8a60895922429320b1208bdf639247ae8b38f1fedd8b97d009cdbea0",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-07T15:23:27+00:00"
+      }
+    },
+    {
+      "sequence": 349,
+      "id": "obsession-db4d2d88e2538d6a541b8156363a2828b100f59a53183c4606ee569acd4c739e",
+      "sha256": "db4d2d88e2538d6a541b8156363a2828b100f59a53183c4606ee569acd4c739e",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Agent Skills - Features - Docs - Kiro Skip to main content Loading image... Product About Kiro Agents IDE CLI Web Mobile Crew Pricing Downloads For Enterprise Startups Students Community Overview Ambassadors Case studies Discord Events Powers Shop Showcase Stories Resources Docs Blog Changelog FAQs Videos Report a bug Suggest an idea Billing support Social English Site Terms License Responsible AI Policy Legal Privacy Policy Cookie Preferences English Agents Apps Enterprise Pricing Docs Community Resources SIGN IN DOWNLOADS Get Started Installation Authentication Your first project Models Overview Available models Reasoning effort AWS GovCloud (US) models Features How Kiro works Local command sandbox ACP integrations Specs Steering Hooks MCP Permissions Custom agents Workflows Agent Skills Powers Cloud sessions Memory Compaction Kiroignore Checkpoints and rewind Built-in tools Configuration scopes IDE 1.x What's new in 1.0 Setup & First Run Editor Chat Experimental Troubleshooting 0.x reference CLI Setup & First Run Choose an agent harness Terminal UI Chat Fullscreen mode Voice mode Headless mode ACP Auto complete Experimental Troubleshooting Upgrade from CLI 2.x 2.x reference Crew Quick start Installation Running 24/7 Bots Chat Agent Capabilities Features Interfaces Apps System & storage Configuration Security Troubleshooting Web Setup & First Run Identity Center Connect your repositories Working with the agent Autonomous mode Schedule Configuration Sync Sandbox Mobile - Preview Overview Commands and Reference CLI commands Slash commands Built-in tools Exit codes Settings Billing Overview Managing your subscription Upgrading your plan Downgrading your plan Cancelling your plan Purchasing add-on credits Managing your payments Managing usage notifications Managing your taxes Contacting billing support Deleting your account Related questions Enterprise Concepts Onboarding quickstart Connecting your identity provider Deployment options Subscribe your team Manage subscr",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "07f27410ab27550ec38a38a634f03464c8ef7c39faa6582af2b45ce44c89def6",
+          "source_id": "kiro",
+          "source_sha256": "f3b70e696b3b5d3ca350c74f1ac702e8628df5b1c20354d7ed53e33b5eea733c",
+          "url": "https://kiro.dev/docs/skills/"
+        },
+        "provenance": {
+          "final_url": "https://kiro.dev/docs/skills/",
+          "previous_sha256": "07f27410ab27550ec38a38a634f03464c8ef7c39faa6582af2b45ce44c89def6",
+          "retrieved": "2026-11-07T07:23:45+00:00",
+          "snapshot_id": 3982,
+          "source_id": "kiro",
+          "source_sha256": "f3b70e696b3b5d3ca350c74f1ac702e8628df5b1c20354d7ed53e33b5eea733c",
+          "url": "https://kiro.dev/docs/skills/"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-07T15:23:27+00:00"
+      }
     }
   ]
 }
