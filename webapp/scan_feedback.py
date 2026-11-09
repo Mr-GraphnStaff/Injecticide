@@ -73,7 +73,7 @@ def submit_feedback(report, event_id=None):
 
 def submit_scan_error(event_id, http_status, stage, kind="other"):
     # Only controlled server codes. Never serialize exception messages/tracebacks.
-    if http_status not in {500, 502, 503, 504} or stage not in {"analysis", "sandbox"}:
+    if http_status not in {500, 502, 503, 504} or stage not in {"validation", "upload", "analysis", "sandbox"}:
         return {"schema": ERROR_SCHEMA, "status": "not_applicable"}
     return _submit({"schema": ERROR_SCHEMA, "event_id": event_id, "http_status": http_status,
                     "stage": stage, "kind": kind if kind in ERROR_KINDS else "other",
