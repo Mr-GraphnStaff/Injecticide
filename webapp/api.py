@@ -51,6 +51,9 @@ from webapp.research_news import news_client
 from webapp.vendor_requirements import attach_vendor_check
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
 
+from webapp.scan_jobs import ScanJobs
+
+SKILL_SCAN_JOBS = ScanJobs()
 SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
 SKILL_SCAN_READ_TIMEOUT_SECONDS = 225
 
@@ -570,13 +573,52 @@ async def root():
         return HTMLResponse(content=html, headers={"Cache-Control": "no-store"})
     return {"message": "Injecticide API"}
 
+def _execute_skill_scan(data, filename, content_type, target_runtime, evidence, org_policy,
+                        use_local_llm, request_id, started):
+    def fail(status, message, stage="analysis"):
+        return status, {"detail": {"message": message, "stage": stage, "request_id": request_id}}
+    try:
+        options = {} if use_local_llm is None else {"use_local_llm": use_local_llm}
+        result = _scan_skill_data(data, filename, content_type, target_runtime, evidence,
+                                  os.getenv("SKILL_SANDBOX_URL"), org_policy, **options)
+        result["scan_request_id"] = request_id
+        result["scan_diagnostics"] = {"stage": "completed",
+            "elapsed_ms": round((time.monotonic() - started) * 1000), "payload_logged": False}
+        return 200, jsonable_encoder(result)
+    except requests.RequestException:
+        return fail(502, "Skill sandbox unavailable or timed out.", "sandbox")
+    except HTTPException as exc:
+        return fail(exc.status_code, "The analysis service could not accept this scan.", "sandbox")
+    except zipfile.BadZipFile:
+        return fail(400, "Invalid zip archive")
+    except ValueError:
+        return fail(400, "Package could not be analyzed within the supported format and resource limits.")
+    except Exception as exc:
+        logging.getLogger(__name__).error("Scan request %s failed (%s)", request_id, type(exc).__name__)
+        return fail(500, "Scan failed unexpectedly. Use the request ID when reporting the problem.")
+
+
+@app.get("/api/skills/scan/jobs/{job_id}")
+async def skill_scan_job(job_id: str):
+    headers = {"Cache-Control": "no-store"}
+    if len(job_id) != 32 or any(c not in "0123456789abcdef" for c in job_id):
+        return JSONResponse(status_code=404, content={"detail": {"message": "Scan job not found."}}, headers=headers)
+    job = SKILL_SCAN_JOBS.get(job_id)
+    if job is None:
+        return JSONResponse(status_code=404,
+            content={"detail": {"message": "Scan result expired or the service restarted. The file can be scanned again."}}, headers=headers)
+    return await run_in_threadpool(lambda: JSONResponse(
+        status_code=202 if job["status"] == "running" else 200, content=job, headers=headers))
+
+
 @app.post("/api/skills/scan")
 async def scan_skill_file(request: Request, file: UploadFile = File(...), target_runtime: str = Form("auto"),
                           governance_evidence: str = Form("{}"), org_policy: str = Form(""),
-                          use_local_llm: bool | None = Form(None)):
+                          use_local_llm: bool | None = Form(None), background: bool = Form(False)):
     request_id = request.state.scan_request_id
     started = time.monotonic()
     stage = "validation"
+    handed_off = False
 
     def failure(status, message, failed_stage=None):
         return JSONResponse(status_code=status, headers={"X-Scan-Request-ID": request_id},
@@ -599,13 +641,17 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
         if len(data) > MAX_UPLOAD_BYTES:
             raise ValueError(f"Upload exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB size limit")
         stage = "analysis"
-        options = {} if use_local_llm is None else {"use_local_llm": use_local_llm}
-        result = await run_in_threadpool(_scan_skill_data, data, file.filename, file.content_type,
-                                        target_runtime, governance_evidence, os.getenv("SKILL_SANDBOX_URL"), org_policy, **options)
-        result["scan_request_id"] = request_id
-        result["scan_diagnostics"] = {"stage": "completed", "elapsed_ms": round((time.monotonic() - started) * 1000),
-                                     "payload_logged": False}
-        return JSONResponse(content=jsonable_encoder(result), headers={"X-Scan-Request-ID": request_id})
+        arguments = (data, file.filename, file.content_type, target_runtime, governance_evidence,
+                     org_policy, use_local_llm, request_id, started)
+        headers = {"X-Scan-Request-ID": request_id, "Cache-Control": "no-store"}
+        if background:
+            job_id = SKILL_SCAN_JOBS.submit(lambda: _execute_skill_scan(*arguments), SKILL_SCAN_SLOT.release)
+            handed_off = True
+            return JSONResponse(status_code=202, headers=headers, content={
+                "status": "running", "job_id": job_id, "scan_request_id": request_id,
+                "status_url": "/api/skills/scan/jobs/" + job_id})
+        status, content = await run_in_threadpool(_execute_skill_scan, *arguments)
+        return JSONResponse(status_code=status, content=content, headers=headers)
     except requests.RequestException:
         return failure(502, "Skill sandbox unavailable or timed out. The file can be selected again to retry.", "sandbox")
     except HTTPException as exc:
@@ -624,7 +670,8 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
         logging.getLogger(__name__).error("Scan request %s failed at %s (%s)", request_id, stage, type(exc).__name__)
         return failure(500, "Scan failed unexpectedly. Use the request ID when reporting the problem.")
     finally:
-        SKILL_SCAN_SLOT.release()
+        if not handed_off:
+            SKILL_SCAN_SLOT.release()
         await file.close()
 
 

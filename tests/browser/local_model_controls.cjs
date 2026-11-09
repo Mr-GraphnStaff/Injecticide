@@ -20,7 +20,7 @@ const {chromium}=require(modulePath);
 const brave=path.join(process.env.LOCALAPPDATA,'BraveSoftware','Brave-Browser','Application','brave.exe');assert.ok(fs.existsSync(brave));
 const source=fs.readFileSync(path.join(root,'webapp/static/app.js'),'utf8').replace('ReactDOM.render(<Root />,','ReactDOM.render(<App />,');
 const hostile='<img src=x onerror="window.localModelInjected=true"> [unsafe](javascript:alert(1))';
-let mode='completed';const selections=[];
+let mode='completed';const selections=[];const jobs=new Map();let transientPolls=0;let totalPolls=0;let bodyDropSent=false;
 function report(selected) {
     return {filename:'fixture.skill',file_type:'skill',summary:{total_files:1,flagged_files:0,total_findings:0,info_findings:0},warnings:[],
         coverage:{status:'partial',analyzed_files:1,total_files:1},readiness:{status:'needs_review'},
@@ -37,7 +37,23 @@ const server=http.createServer((req,res)=>{
     if(req.url==='/home.css'){res.setHeader('Content-Type','text/css');return res.end(fs.readFileSync(path.join(root,'webapp/static/home.css')));}
     if(['/react.js','/react-dom.js','/babel.js'].includes(req.url)){res.setHeader('Content-Type','text/javascript; charset=utf-8');return res.end(fs.readFileSync(path.join(assets,req.url.slice(1))));}
     if(req.url==='/api/skills/scan'){
-        let raw='';req.on('data',chunk=>raw+=chunk);req.on('end',()=>{const selected=/name="use_local_llm"\r\n\r\ntrue/.test(raw);selections.push(selected);setTimeout(()=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify(report(selected)));},300);});return;
+        let raw='';req.on('data',chunk=>raw+=chunk);req.on('end',()=>{
+            assert.ok(/name="background"\r\n\r\ntrue/.test(raw));
+            const selected=/name="use_local_llm"\r\n\r\ntrue/.test(raw);selections.push(selected);
+            const id=require('node:crypto').randomBytes(16).toString('hex');
+            jobs.set(id,{result:report(selected),mode,polls:0});
+            res.writeHead(202,{'Content-Type':'application/json'});
+            res.end(JSON.stringify({job_id:id,status_url:'https://not-allowed.example/receipt',scan_request_id:'fixture-1'}));
+        });return;
+    }
+    if(req.url.startsWith('/api/skills/scan/jobs/')){
+        const job=jobs.get(req.url.split('/').at(-1));assert.ok(job);job.polls++;totalPolls++;
+        res.setHeader('Content-Type','application/json');
+        if(!transientPolls++){res.statusCode=503;return res.end('{}');}
+        if(!bodyDropSent){bodyDropSent=true;res.flushHeaders();res.write('{"status":');setTimeout(()=>res.destroy(),20);return;}
+        if(job.mode==='server-failed')return res.end(JSON.stringify({status:'failed',http_status:502,detail:{message:'Fixture analysis failed',stage:'sandbox',request_id:'fixture-1'}}));
+        if(job.polls<2||job.mode==='slow'){res.statusCode=202;return res.end('{"status":"running"}');}
+        return res.end(JSON.stringify({status:'completed',result:job.result}));
     }
     res.setHeader('Content-Type','application/json');res.end(JSON.stringify({categories:[],endpoints:[],payload_presets:[]}));
 });
@@ -58,7 +74,16 @@ const server=http.createServer((req,res)=>{
   await toggle.uncheck();await scan();assert.match(await card.innerText(),/Not requested for this scan/);assert.equal(selections.at(-1),false);
   await toggle.check();mode='partial';await scan();assert.match(await card.innerText(),/Partially checked/);assert.match(await card.innerText(),/omitted or shortened: 2/);
   mode='error';await scan();assert.match(await card.innerText(),/Analysis unavailable/);assert.ok(!(await card.innerText()).includes('No evidence-backed observations were returned'));
-  assert.deepEqual(errors,[]);assert.deepEqual(selections,[true,false,true,true]);
+  mode='server-failed';await page.getByLabel('Skill file',{exact:true}).setInputFiles({name:'fixture.skill',mimeType:'text/markdown',buffer:Buffer.from('inert fixture')});
+  await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();
+  await page.getByText(/Fixture analysis failed.*Stage: sandbox/).waitFor();
+  mode='slow';await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();
+  await page.getByRole('button',{name:'Stop waiting and clear',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Stop waiting and clear',exact:true}).click();
+  await page.waitForTimeout(1700);const stoppedPolls=totalPolls;
+  await page.waitForTimeout(1700);assert.equal(totalPolls,stoppedPolls,'Clearing must stop polling');
+  assert.deepEqual(errors,[]);assert.deepEqual(selections,[true,false,true,true,true,true]);
+  assert.ok(transientPolls>0);assert.equal(bodyDropSent,true);
   console.log(JSON.stringify({pass:true,browser:'Brave',executable:brave,version:browser.version(),selections,screenshot:path.join(output,'brave-local-ai-results.png')}));
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;server.close();});

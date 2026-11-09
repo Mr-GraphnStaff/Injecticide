@@ -2,6 +2,16 @@
 
 Status: ENABLED AND VERIFIED on November 8, 2026 after David explicitly confirmed activation. The existing Injecticide web scan endpoint returned completed local-model analysis in 19.44 seconds, with the recorded model digest and the normal policy/readiness fields preserved. Existing services were healthy after the switch.
 
+## Cloudflare-safe background scan deployment
+
+Current dev web image: `injecticide-web:local-ai-jobs`; scanner remains `injecticide-skill-sandbox:local-ai-ui-budget3`. Apply `/mnt/nvme/injecticide-llm/local-ai-jobs.compose.yml` after the existing base and scanner overrides. The previous `local-ai-ui-budget3.compose.yml` and image remain available for rollback. This change replaces only the web container and does not change the certificate gate, WAF, DNS or model settings.
+
+The live public scan at 2026-11-09T00:06:21Z returned Cloudflare 524 (ray `a5789230efb2b16e`), while the scanner finished later. LAN-only qualification had missed that edge timeout. The UI now starts a background job and polls through short requests; the old synchronous API default is retained for compatibility. Browser waiting is bounded at 360 seconds; internal model/API/proxy limits stay 90/225/240 seconds.
+
+Qualification passed: 33 focused tests, independent review, Brave recovery/cancellation tests, a generated inert public HTTPS scan (receipt 749 ms, completed result, longest poll 234 ms, unauthenticated 403), and the actual private ZIP in Brave (receipt 0.14 s, completed 136.7 s, JSON/Markdown exports, unchanged originals). Public qualification used the installed Windows certificate without exporting its key; private package uploads remained on the LAN.
+
+Earlier test-harness timings included saving large private evidence over SMB. The updated real-file test records completion before evidence writes; use its 136.7-second measurement for this scan. Model coverage and detection accuracy are unchanged by the transport fix.
+
 ## Working dev UI update
 
 David explicitly authorized routine reversible Injecticide development and deployment, with him as the only current user. The November 8 UI update replaces the web and scanner dev images with `injecticide-web:local-ai-ui-budget2` and `injecticide-skill-sandbox:local-ai-ui-budget3`. It adds the visible local-LLM choice, readable evidence and Markdown export sections, and removes Close App. The scanner memory limit is 768 MiB with no swap allowance after a real package caused an OOM kill at 256 MiB.

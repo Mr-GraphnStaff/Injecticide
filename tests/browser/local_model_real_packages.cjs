@@ -38,14 +38,16 @@ const executable=path.join(process.env.LOCALAPPDATA,'BraveSoftware','Brave-Brows
   assert.equal(await page.getByRole('button',{name:'Close App',exact:true}).count(),0);
   console.log('LIVE_BROWSER_TARGET',JSON.stringify({base,publicAccess,browser:'Brave',version:browser.version()}));
   async function scan(id,file,enabled,alias=false){
+   if(args.includes('--only')&&option('--only')!==id)return;
    await toggle.setChecked(enabled);
    if(alias)await page.getByLabel('Skill file',{exact:true}).setInputFiles({name:'original.skill',mimeType:'application/zip',buffer:fs.readFileSync(file)});
    else await page.getByLabel('Skill file',{exact:true}).setInputFiles(file);
-   const start=Date.now();const pending=page.waitForResponse(r=>r.url().endsWith('/api/skills/scan')&&r.request().method()==='POST',{timeout:270000}).then(response=>({response}),error=>({error}));
+   const start=Date.now();const pending=page.waitForResponse(r=>(r.url().endsWith('/api/skills/scan')&&r.request().method()==='POST'&&r.status()!==202)||(r.url().includes('/api/skills/scan/jobs/')&&r.request().method()==='GET'&&r.status()===200),{timeout:270000}).then(response=>({response}),error=>({error}));
+   const submission=page.waitForResponse(r=>r.url().endsWith('/api/skills/scan')&&r.request().method()==='POST',{timeout:30000});
    console.log('REAL_SCAN_START',JSON.stringify({id,enabled,buttonEnabled:await page.locator('#skill-scan').getByRole('button',{name:/Scan Skill File\/Bundle/}).isEnabled()}));
-   await page.locator('#skill-scan').getByRole('button',{name:/Scan Skill File\/Bundle/}).click({timeout:20000});const received=await pending;if(received.error)throw received.error;const response=received.response;
-   const report=await response.json();fs.writeFileSync(path.join(output,id+'.json'),JSON.stringify(report,null,2));
-   const local=report.local_analysis;const result={id,file:path.basename(file),filenameAlias:alias?'original.skill':null,enabled,status:response.status(),elapsedSeconds:(Date.now()-start)/1000,localStatus:local?.status,observations:local?.findings?.length,selectedFiles:local?.coverage?.selected_files,omittedFiles:local?.coverage?.omitted_or_clipped_files};
+   await page.locator('#skill-scan').getByRole('button',{name:/Scan Skill File\/Bundle/}).click({timeout:20000});const accepted=await submission;const submissionSeconds=(Date.now()-start)/1000;assert.equal(accepted.status(),202);console.log('REAL_JOB_ACCEPTED',JSON.stringify({id,submissionSeconds}));const received=await pending;if(received.error)throw received.error;const response=received.response;
+   const receivedBody=await response.json();const report=receivedBody.status==='completed'?receivedBody.result:receivedBody;const completedSeconds=(Date.now()-start)/1000;fs.writeFileSync(path.join(output,id+'.json'),JSON.stringify(report,null,2));
+   const local=report.local_analysis;const result={id,file:path.basename(file),filenameAlias:alias?'original.skill':null,enabled,status:response.status(),elapsedSeconds:completedSeconds,submissionSeconds,localStatus:local?.status,observations:local?.findings?.length,selectedFiles:local?.coverage?.selected_files,omittedFiles:local?.coverage?.omitted_or_clipped_files};
    cases.push(result);console.log('REAL_PACKAGE_SCAN',JSON.stringify(result));assert.equal(response.status(),200,JSON.stringify(report.detail));
    await page.locator('[data-local-ai-results]').waitFor({timeout:15000});
    if(!enabled)assert.equal(local.status,'skipped');else assert.ok(['completed','partial'].includes(local?.status),'Local analysis failed: '+JSON.stringify({status:local?.status,errorType:local?.error_type}));
