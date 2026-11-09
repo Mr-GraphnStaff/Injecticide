@@ -1,11 +1,10 @@
-# Opt-in connection to the separately provisioned local Ollama service.
-# Apply with the main docker-compose.yml; do not expose Ollama through nginx.
+# Local model is reachable only by the isolated scheduled research worker.
+# Pre-provision injecticide-research-agent-net and attach only the local Ollama
+# service with alias injecticide-local-llm. Never join the scanner or web services.
 services:
   skill_sandbox:
-    # The retained package report and bounded model client share this budget.
-    mem_limit: 768m
-    memswap_limit: 768m
     environment:
-      INJECTICIDE_LOCAL_LLM_ENABLED: "1"
-      INJECTICIDE_LOCAL_LLM_URL: http://injecticide-local-llm:11434
-      INJECTICIDE_LOCAL_MODEL: qwen3.5:2b
+      INJECTICIDE_LOCAL_LLM_ENABLED: "0"
+  research_mcp:
+    environment:
+      INJECTICIDE_RESEARCH_LLM_ENABLED: "0"

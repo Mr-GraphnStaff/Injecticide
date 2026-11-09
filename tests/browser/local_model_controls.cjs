@@ -63,17 +63,21 @@ const server=http.createServer((req,res)=>{
  try{
   const page=await browser.newPage({viewport:{width:1440,height:1100},acceptDownloads:true});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:'+server.address().port);
-  const toggle=page.getByRole('checkbox',{name:'Use local LLM',exact:true});await toggle.waitFor();assert.equal(await toggle.isChecked(),true);
+  assert.equal(await page.getByRole('checkbox',{name:'Use local LLM',exact:true}).count(),0);
   assert.equal(await page.getByRole('button',{name:'Close App',exact:true}).count(),0);
-  async function scan(){await page.getByLabel('Skill file',{exact:true}).setInputFiles({name:'fixture.skill',mimeType:'text/markdown',buffer:Buffer.from('inert fixture')});await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();assert.equal(await toggle.isDisabled(),true);await page.locator('[data-local-ai-results]').waitFor();}
-  await scan();const card=page.locator('[data-local-ai-results]');assert.match(await card.innerText(),/Completed.*limited text review/s);assert.ok((await card.innerText()).includes(hostile));assert.equal(await page.evaluate(()=>Boolean(window.localModelInjected)),false);
-  const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'Export Summary',exact:true}).click();const download=await downloadPromise;const markdown=fs.readFileSync(await download.path(),'utf8');
-  assert.match(markdown,/## Local AI analysis/);assert.ok(!markdown.includes('<img src=x'));assert.ok(markdown.includes('&lt;img'));
-  await page.screenshot({path:path.join(output,'brave-local-ai-results.png'),fullPage:true});
+  async function scan(){
+    await page.getByLabel('Skill file',{exact:true}).setInputFiles({name:'fixture.skill',mimeType:'text/markdown',buffer:Buffer.from('inert fixture')});
+    await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();
+    await page.getByRole('button',{name:'Export Summary',exact:true}).waitFor();
+    assert.equal(await page.locator('[data-local-ai-results]').count(),0);
+  }
+  await scan();
+  const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'Export Summary',exact:true}).click();
+  const download=await downloadPromise;const markdown=fs.readFileSync(await download.path(),'utf8');
+  assert.ok(!markdown.includes('## Local AI analysis'));
+  await page.screenshot({path:path.join(output,'brave-static-scan.png'),fullPage:true});
   for(const width of [390,1440]){await page.setViewportSize({width,height:1100});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'No horizontal overflow at '+width);}
-  await toggle.uncheck();await scan();assert.match(await card.innerText(),/Not requested for this scan/);assert.equal(selections.at(-1),false);
-  await toggle.check();mode='partial';await scan();assert.match(await card.innerText(),/Partially checked/);assert.match(await card.innerText(),/omitted or shortened: 2/);
-  mode='error';await scan();assert.match(await card.innerText(),/Analysis unavailable/);assert.ok(!(await card.innerText()).includes('No evidence-backed observations were returned'));
+  mode='partial';await scan();
   mode='server-failed';await page.getByLabel('Skill file',{exact:true}).setInputFiles({name:'fixture.skill',mimeType:'text/markdown',buffer:Buffer.from('inert fixture')});
   await page.getByRole('button',{name:'Scan Skill File/Bundle',exact:true}).click();
   await page.getByText(/Fixture analysis failed.*Stage: sandbox/).waitFor();
@@ -82,8 +86,8 @@ const server=http.createServer((req,res)=>{
   await page.getByRole('button',{name:'Stop waiting and clear',exact:true}).click();
   await page.waitForTimeout(1700);const stoppedPolls=totalPolls;
   await page.waitForTimeout(1700);assert.equal(totalPolls,stoppedPolls,'Clearing must stop polling');
-  assert.deepEqual(errors,[]);assert.deepEqual(selections,[true,false,true,true,true,true]);
+  assert.deepEqual(errors,[]);assert.deepEqual(selections,[false,false,false,false]);
   assert.ok(transientPolls>0);assert.equal(bodyDropSent,true);
-  console.log(JSON.stringify({pass:true,browser:'Brave',executable:brave,version:browser.version(),selections,screenshot:path.join(output,'brave-local-ai-results.png')}));
+  console.log(JSON.stringify({pass:true,browser:'Brave',executable:brave,version:browser.version(),selections,screenshot:path.join(output,'brave-static-scan.png')}));
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;server.close();});

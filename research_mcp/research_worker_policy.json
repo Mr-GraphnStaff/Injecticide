@@ -1,0 +1,15 @@
+{
+  "timezone": "America/Chicago",
+  "hour": 2,
+  "page_budget": 10,
+  "seeds": [
+    "https://genai.owasp.org/llm-top-10/",
+    "https://agentskills.io/specification",
+    "https://simonwillison.net/tags/prompt-injection/"
+  ],
+  "topics": [
+    "Verified prompt injection research and mitigations",
+    "AI agent skill and plugin security",
+    "Safe handling of technical findings without customer data"
+  ]
+}

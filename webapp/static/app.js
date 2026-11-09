@@ -518,7 +518,7 @@ function FindingName({ id }) {
     return <span className="finding-name" title={entry.plain || undefined}>{entry.label} <small className="finding-id">{id}</small></span>;
 }
 
-/* ---- Download names: <name>-injecticide-<version>-<YYYYMMDD-HHMM>-<kind>.<ext> ---- */
+/* ---- Shared download names, capped at 80 characters including the extension. ---- */
 function filenameTimestamp(date = new Date()) {
     const pad = value => String(value).padStart(2, '0');
     return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
@@ -533,8 +533,20 @@ function injecticideVersionLabel(buildInfo, fallback) {
 function injecticideFilename({ name, kind, ext, buildInfo, fallbackVersion, stripExtension = false }) {
     let base = String(name || '').trim();
     if (stripExtension) base = base.replace(/\.[a-z0-9]{1,8}$/i, '');
-    const stem = slugifyFilename(base).replace(/^\.+|\.+$/g, '').slice(0, 80) || 'untitled';
-    return `${stem}-injecticide-${injecticideVersionLabel(buildInfo, fallbackVersion)}-${filenameTimestamp()}-${slugifyFilename(kind) || 'export'}.${ext}`;
+    const extension = /^[a-z0-9]{1,8}$/i.test(String(ext || '')) ? String(ext).toLowerCase() : 'bin';
+    const type = slugifyFilename(String(kind || 'export')).replace(/\./g, '-').slice(0, 20).replace(/-+$/, '') || 'export';
+    const version = injecticideVersionLabel(buildInfo, fallbackVersion).slice(0, 12);
+    const suffix = `-injecticide-${version}-${filenameTimestamp()}-${type}.${extension}`;
+    const budget = Math.min(32, 80 - suffix.length);
+    let stem = slugifyFilename(base).replace(/\./g, '-').replace(/^-+|-+$/g, '') || 'untitled';
+    if (stem.length > budget) {
+        // A stable name hint reduces collisions between equal truncated prefixes.
+        let hint = 2166136261;
+        for (let index = 0; index < base.length; index++) hint = Math.imul(hint ^ base.charCodeAt(index), 16777619);
+        const identifier = (hint >>> 0).toString(16).padStart(8, '0');
+        stem = stem.slice(0, budget - identifier.length - 1).replace(/-+$/, '') + '-' + identifier;
+    }
+    return stem + suffix;
 }
 
 function scanDownloadName(result, buildInfo, kind, ext) {
@@ -710,22 +722,6 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
     push(`- Informational findings: ${summary.info_findings ?? 0}`);
     push('', '> Raw scan data is not part of this report. Use "Download full data (JSON)" in Injecticide for the complete machine-readable record.', '');
     push('## Headline', '', `**${assessment.title}.** ${assessment.body}`, '');
-
-    if (scanResult.local_analysis) {
-        const local = scanResult.local_analysis;
-        const literal = value => String(value ?? '').replace(/\s*\r?\n\s*/g, ' ')
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/[\\`*_{}\[\]()#!|]/g, '\\$&');
-        push('## Local AI analysis', '', `Status: ${literal(local.status)}`, '');
-        if (local.model) push(`Model: ${literal(local.model)}`, '');
-        if (local.reason) push(literal(local.reason), '');
-        if (local.coverage) push(`Text files selected: ${local.coverage.selected_files ?? 0}; omitted or shortened: ${local.coverage.omitted_or_clipped_files ?? 0}.`, '');
-        for (const finding of asArray(local.findings)) {
-            push(`### ${literal(finding.category)} · ${literal(finding.severity)}`, '', `File: ${literal(finding.path)}`, '', literal(finding.detail), '', `Evidence: ${literal(finding.evidence_excerpt)}`, '');
-        }
-        if (!asArray(local.findings).length && ['completed', 'partial'].includes(local.status)) push('No evidence-backed observations returned. This is not a safety determination.', '');
-        push('Model analysis is limited and advisory; scanner findings and organization policy remain separate.', '');
-    }
 
     // 1. What to fix
     push('## What to fix', '');
@@ -931,31 +927,6 @@ function formatSkillImprovementPlan(result) {
     lines.push('## Scope and limits', '', '```json', JSON.stringify({ scope: plan.scope, priority_policy: plan.priority_policy, limits: plan.limits }, null, 2).replace(/`/g, '\\u0060'), '```', '',
         'After changes: rescan the same package, compare the new findings, and perform the separate runtime/vendor checks that remain unassessed.', '');
     return lines.join('\n');
-}
-
-function LocalAnalysisResults({ analysis, onOpenFile }) {
-    const state = analysis?.status;
-    const labels = { completed: 'Completed — limited text review', partial: 'Partially checked', error: 'Analysis unavailable', not_assessed: 'Not assessed', skipped: 'Not requested for this scan' };
-    const findings = asArray(analysis?.findings);
-    const coverage = analysis?.coverage;
-    return <section className="local-ai-results" aria-labelledby="local-ai-results-title" data-local-ai-results="true">
-        <h3 id="local-ai-results-title">Local AI analysis</h3>
-        <p role="status"><strong>{labels[state] || 'Not included in this scan'}</strong></p>
-        {!analysis && <p>Run a fresh scan with Use local LLM selected to include local AI analysis.</p>}
-        {analysis?.model && <p>Model: <strong>{analysis.model}</strong>{Number.isFinite(analysis.duration_seconds) ? ` · ${analysis.duration_seconds.toFixed(1)} seconds` : ''}</p>}
-        {analysis?.reason && <p>{analysis.reason}</p>}
-        {coverage && <p>Text files selected: {coverage.selected_files ?? 0}. Files omitted or shortened: {coverage.omitted_or_clipped_files ?? 0}. This is a limited text review, not whole-package coverage.</p>}
-        {findings.length > 0 && <ul>{findings.map((finding, index) => <li key={index}>
-            <p><strong>{String(finding.severity || 'review').toUpperCase()}</strong> · {String(finding.category || 'observation').replaceAll('_', ' ')}</p>
-            <button type="button" onClick={() => onOpenFile?.(finding.path)}>{finding.path}</button>
-            <p>{finding.detail}</p>
-            <blockquote><code>{finding.evidence_excerpt}</code></blockquote>
-            <p className="home-muted">The excerpt was located in the submitted text. The model's interpretation still needs review.</p>
-        </li>)}</ul>}
-        {!findings.length && ['completed', 'partial'].includes(state) && <p>No evidence-backed observations were returned. This does not establish that the package is safe.</p>}
-        {analysis?.rejected_unsupported_observations > 0 && <p>{analysis.rejected_unsupported_observations} model observations were rejected because their quoted evidence could not be verified.</p>}
-        {analysis && !['skipped', 'not_assessed'].includes(state) && <p className="home-muted">Experimental, advisory analysis. Scanner findings and organization policy remain separate.</p>}
-    </section>;
 }
 
 function ProductHeader({ section, buildInfo, onBack, onNavigate, onClose, isClosing }) {
@@ -2024,7 +1995,6 @@ function App({ onBack, onNavigate, buildInfo }) {
     const [payloadCategoriesError, setPayloadCategoriesError] = useState('');
     const [skillFile, setSkillFile] = useState(null);
     const [skillRuntime, setSkillRuntime] = useState('auto');
-    const [useLocalLLM, setUseLocalLLM] = useState(true);
     const [orgPolicy, setOrgPolicy] = useState('');
     const [orgPolicyNotice, setOrgPolicyNotice] = useState('');
     const [skillReaderPath, setSkillReaderPath] = useState(null);
@@ -2477,7 +2447,6 @@ function App({ onBack, onNavigate, buildInfo }) {
         try {
             const formData = new FormData();
             formData.append('target_runtime', skillRuntime);
-            formData.append('use_local_llm', String(useLocalLLM));
             formData.append('background', 'true');
             if (orgPolicy.trim()) formData.append('org_policy', orgPolicy);
             formData.append('file', skillFile);
@@ -2784,13 +2753,6 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         <select id="skill-runtime" name="target_runtime" value={skillRuntime} disabled={isScanningSkill} onChange={e => { setSkillRuntime(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2">
                                             {['auto', 'generic', 'claude-code', 'claude-upload', 'openai', 'openai-mcp-import', 'copilot', 'gemini', 'cursor', 'cascade', 'kiro', 'openclaw'].map(runtime => <option key={runtime} value={runtime}>{runtime === 'auto' ? 'Detect format automatically' : runtime === 'openai-mcp-import' ? 'OpenAI MCP skill import' : runtime}</option>)}
                                         </select>
-                                        <div className="local-ai-option">
-                                            <label htmlFor="use-local-llm">
-                                                <input id="use-local-llm" name="use_local_llm" type="checkbox" checked={useLocalLLM} disabled={isScanningSkill || disableControls} aria-describedby="local-llm-help" onChange={event => { setUseLocalLLM(event.target.checked); resetSkillScanState(); }} />
-                                                <span>Use local LLM</span>
-                                            </label>
-                                            <p id="local-llm-help">Add AI analysis using the model on this server. No provider key is needed. It reviews a limited text selection and may add up to 90 seconds. Uncheck to run the static scan only.</p>
-                                        </div>
                                         <details className="org-policy-input">
                                             <summary>Organization AI policy (optional){orgPolicy.trim() ? (orgPolicyNotice ? ' · needs fixing' : ' · policy loaded') : ''}</summary>
                                             <p id="org-policy-help" className="org-policy-help"><strong>What is this?</strong> Your organization's own rules for AI skills, written as JSON. For example: block skills that write to outside systems, or require approval when personal data is present. Injecticide checks this scan against each rule and lists which rules are triggered and which need a human check. Leave it empty to scan without a policy.</p>
@@ -2828,7 +2790,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                             className={`workbench-primary w-full py-2 rounded-lg text-sm font-semibold transition border border-blue-600/60 bg-blue-700/70 hover:bg-blue-600/80 ${disableControls || isScanningSkill || !skillFile ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             <i className={`fas ${isScanningSkill ? 'fa-spinner fa-spin' : 'fa-shield-alt'} mr-2`}></i>
-                                            {isScanningSkill ? (useLocalLLM ? 'Scanning package + local AI…' : 'Scanning…') : 'Scan Skill File/Bundle'}
+                                            {isScanningSkill ? 'Scanning…' : 'Scan Skill File/Bundle'}
                                         </button>
                                         {(skillFile || skillScanResult || isScanningSkill || skillScanError) && (
                                             <button type="button" onClick={clearSkillScan} className="text-sm text-gray-300 underline">
@@ -2960,7 +2922,6 @@ function App({ onBack, onNavigate, buildInfo }) {
                                     sections={{
                                         overview: <>
                                     <WhatToFix fixSummary={skillScanResult.fix_summary} onOpenFile={openReaderFile} />
-                                    <LocalAnalysisResults analysis={skillScanResult.local_analysis} onOpenFile={openReaderFile} />
                                     <PolicyResults evaluation={skillScanResult.policy_evaluation} onOpenFile={openReaderFile} />
                                     <EvidenceInputNotice input={skillScanResult.evidence_input} />
                                     {(() => {

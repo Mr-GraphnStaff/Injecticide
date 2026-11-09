@@ -27,7 +27,7 @@ if __package__:
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from .governance import build_governance_profile, SOURCE_CHANNELS
     from .speech_acts import annotate_observation_facts, prepare_observation_context, observation_fact_priority, FACT_DETECTORS
-    from .scan_rules import build_scan_units, compile_patterns, find_rule_matches
+    from .scan_rules import build_scan_units, compile_patterns, find_rule_matches, rule_may_match
     from .package_analysis import enrich_result
     from .package_formats import bounded_data, RUNTIMES
     from .inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
@@ -47,7 +47,7 @@ else:
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from governance import build_governance_profile, SOURCE_CHANNELS
     from speech_acts import annotate_observation_facts, prepare_observation_context, observation_fact_priority, FACT_DETECTORS
-    from scan_rules import build_scan_units, compile_patterns, find_rule_matches
+    from scan_rules import build_scan_units, compile_patterns, find_rule_matches, rule_may_match
     from package_analysis import enrich_result
     from package_formats import bounded_data, RUNTIMES
     from inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
@@ -148,24 +148,11 @@ def _finalize_result(result, text_sources, governance_evidence=None, org_policy=
             "effect_summary": {"block": 0, "require_approval": 0, "warn": 0, "allow": 0, "advisory_block": 0},
             "decision": "not_evaluated"}
     result["fix_summary"] = build_fix_summary(result)
-    if os.environ.get("INJECTICIDE_LOCAL_LLM_ENABLED") == "1" and use_local_llm is not False:
-        if __package__:
-            from .local_analysis import analyze_local
-        else:
-            from local_analysis import analyze_local
-        result["local_analysis"] = analyze_local(text_sources, result)
-        local = result["local_analysis"]
-        result.setdefault("warnings", []).append(
-            "Local AI analysis: " + local["status"] + "; " + str(len(local["findings"]))
-            + " advisory observations. See local_analysis in the JSON report for evidence and limits. "
-            + "This does not replace the technical assessment or organization policy.")
-        # Apply normal credential hygiene to newly returned model evidence too.
-        redact_result(result, {source["path"]: source["text"] for source in text_sources})
-    elif use_local_llm is not None:
+    if use_local_llm is not None:
         result["local_analysis"] = {
             "schema": "injecticide.local-analysis.v1", "advisory_only": True, "findings": [],
             "status": "skipped" if use_local_llm is False else "not_assessed",
-            "reason": "Not requested for this scan" if use_local_llm is False else "Local analysis is not enabled on this server"}
+            "reason": "Local model review has moved to background research; scans use static analysis."}
     return result
 
 
@@ -609,6 +596,8 @@ def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str,
             continue
         matches = []
         for unit in scan_units:
+            if not rule_may_match(pattern, unit):
+                continue
             candidates = find_rule_matches(pattern, unit, fact_context_provider=get_fact_context)
             if pattern["id"] in FACT_DETECTORS:
                 if candidates:

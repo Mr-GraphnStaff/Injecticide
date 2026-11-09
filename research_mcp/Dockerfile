@@ -5,7 +5,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt \
     && groupadd --gid 10001 research \
     && useradd --uid 10001 --gid 10001 --no-create-home research \
-    && mkdir /data && chown research:research /data
+    && mkdir /data /outbox /signals /research-inbox && chown research:research /data /outbox /signals /research-inbox
 COPY . /app/research_mcp
 USER 10001:10001
 EXPOSE 8200

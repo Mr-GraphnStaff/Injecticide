@@ -72,8 +72,8 @@ def skill_scanner_capabilities() -> dict[str, object]:
     """Describe implemented inspection stages, input limits and unassessed stages."""
     nesting = NestedArchiveBudget()
     return {
-        "transport": "local_stdio", "provider_dependency": "local_ollama" if os.environ.get("INJECTICIDE_LOCAL_LLM_ENABLED") == "1" else "none",
-        "model_completion_used": os.environ.get("INJECTICIDE_LOCAL_LLM_ENABLED") == "1", "arbitrary_url_or_local_path_inputs": False,
+        "transport": "local_stdio", "provider_dependency": "none",
+        "model_completion_used": False, "arbitrary_url_or_local_path_inputs": False,
         "scanner_metadata": scanner_metadata(),
         "supported_stages": [
             "zip_and_tar_inventory_with_exclusion_evidence",

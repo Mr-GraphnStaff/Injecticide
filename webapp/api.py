@@ -52,6 +52,8 @@ from webapp.vendor_requirements import attach_vendor_check
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
 
 from webapp.scan_jobs import ScanJobs
+from webapp.scan_feedback import submit_feedback, submit_scan_error
+from research_mcp.research_signals import publish_signal
 
 SKILL_SCAN_JOBS = ScanJobs()
 SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
@@ -575,8 +577,11 @@ async def root():
 
 def _execute_skill_scan(data, filename, content_type, target_runtime, evidence, org_policy,
                         use_local_llm, request_id, started):
-    def fail(status, message, stage="analysis"):
-        return status, {"detail": {"message": message, "stage": stage, "request_id": request_id}}
+    def fail(status, message, stage="analysis", kind="other"):
+        detail = {"message": message, "stage": stage, "request_id": request_id}
+        if status >= 500:
+            detail["bug_report"] = submit_scan_error(request_id, status, stage, kind)
+        return status, {"detail": detail}
     try:
         options = {} if use_local_llm is None else {"use_local_llm": use_local_llm}
         result = _scan_skill_data(data, filename, content_type, target_runtime, evidence,
@@ -584,9 +589,11 @@ def _execute_skill_scan(data, filename, content_type, target_runtime, evidence, 
         result["scan_request_id"] = request_id
         result["scan_diagnostics"] = {"stage": "completed",
             "elapsed_ms": round((time.monotonic() - started) * 1000), "payload_logged": False}
+        result["research_feedback"] = submit_feedback(result, request_id)
+        result["research_signals"] = publish_signal(result, request_id)
         return 200, jsonable_encoder(result)
-    except requests.RequestException:
-        return fail(502, "Skill sandbox unavailable or timed out.", "sandbox")
+    except requests.RequestException as exc:
+        return fail(502, "Skill sandbox unavailable or timed out.", "sandbox", type(exc).__name__)
     except HTTPException as exc:
         return fail(exc.status_code, "The analysis service could not accept this scan.", "sandbox")
     except zipfile.BadZipFile:
@@ -595,7 +602,7 @@ def _execute_skill_scan(data, filename, content_type, target_runtime, evidence, 
         return fail(400, "Package could not be analyzed within the supported format and resource limits.")
     except Exception as exc:
         logging.getLogger(__name__).error("Scan request %s failed (%s)", request_id, type(exc).__name__)
-        return fail(500, "Scan failed unexpectedly. Use the request ID when reporting the problem.")
+        return fail(500, "Scan failed unexpectedly. Use the request ID when reporting the problem.", kind=type(exc).__name__)
 
 
 @app.get("/api/skills/scan/jobs/{job_id}")
