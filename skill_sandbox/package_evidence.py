@@ -14,7 +14,7 @@ from pathlib import Path
 import subprocess
 from datetime import date
 
-SCANNER_VERSION = "0.17.0"
+SCANNER_VERSION = "0.18.0"
 
 try:
     from .package_formats import bounded_data
@@ -181,6 +181,11 @@ def scanner_metadata():
         engine_digest.update(source.name.encode("utf-8") + b"\0")
         engine_digest.update(len(raw).to_bytes(8, "big"))
         engine_digest.update(raw)
+    for source in sorted((base / "rules").glob("*.json"), key=lambda item: item.name):
+        raw=source.read_bytes()
+        engine_digest.update(("rules/"+source.name).encode("utf-8")+b"\0")
+        engine_digest.update(len(raw).to_bytes(8,"big"))
+        engine_digest.update(raw)
     manifest = base / "vendor_validators" / "manifest.json"
     if manifest.is_file():
         engine_digest.update(b"vendor_validators/manifest.json\0" + manifest.read_bytes())
@@ -196,8 +201,8 @@ def scanner_metadata():
                          "age_days": age})
     return {"scanner_version": SCANNER_VERSION, "adapter_version": "2026-10-29", "catalogs": catalogs,
             "engine_source_sha256": engine_digest.hexdigest(),
-            "engine_fingerprint_scope": "Sorted local scanner Python modules and shipped validator manifest; excludes uploaded content.",
-            "update_policy": "reviewed_application_release", "automatic_research_activation": False,
+            "engine_fingerprint_scope": "Sorted scanner Python modules, shipped rule catalogs and validator manifest; excludes uploaded content.",
+            "update_policy": "reviewed_application_release_and_gated_correction_packs", "automatic_research_activation": False,
             "network_access_during_static_analysis": False,
             "network_scope": "Built-in static analyzers never connect; optional administrator verifier isolation is operator-managed",
             "optional_signature_verifier": "administrator_configured_local_process"}

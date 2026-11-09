@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0] - 2026-11-09
+
+- Connect trusted, synthetic reviewed false positives to offline local-model correction proposals.
+- Gate bounded deterministic corrections against protected examples, bind local approval to actual scanner evidence, and deliver approved packs from Research MCP to subsequent static scans.
+- Keep customer content out of model inputs and preserve the worker/MCP one-way boundary; public clients cannot approve or invoke corrections.
+- Make activation auditable and reversible; absent, stale or unavailable packs restore baseline scanning.
+
 ## 0.17.0 - 2026-11-09
 
 - Run isolated local-model public research daily at 02:00 America/Chicago, with durable scheduling and a one-way, read-only inbox into Research MCP.

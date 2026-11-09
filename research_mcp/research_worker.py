@@ -17,6 +17,7 @@ from zoneinfo import ZoneInfo
 from .local_model import complete
 from .public_web import PublicWeb,public_url
 from .research_signals import SIGNALS,model_signals,read_signals
+from .correction_learning import CorrectionLearning
 
 SCHEMA="injecticide.scheduled-research.v1"
 PLAN={"type":"object","additionalProperties":False,"required":["queries","urls"],"properties":{
@@ -121,7 +122,7 @@ class ResearchWorker:
             with self.db() as db:
                 db.execute("UPDATE runs SET state='complete',lease=0,output=? WHERE day=? AND attempts=?",
                            (result["run_id"],day,attempt))
-            return {"status":"complete","day":day,"run_id":result["run_id"],"proposals":len(result["proposals"])}
+            return {"status":"complete","day":day,"run_id":result["run_id"],"proposals":len(result["proposals"]),"corrections":getattr(self,"correction_result",None)}
         except Exception as error:
             with self.db() as db:
                 db.execute("UPDATE runs SET state='failed',lease=?,error=? WHERE day=? AND attempts=?",
@@ -132,6 +133,7 @@ class ResearchWorker:
             return result
 
     def research(self,day):
+        self.correction_result=CorrectionLearning(self.state,self.signals,self.outbox,model=self.model,clock=self.clock).cycle()
         signals=read_signals(self.signals)
         technical=model_signals(signals)
         # These are reconstructed constants. No file/report/record data enters a model prompt.

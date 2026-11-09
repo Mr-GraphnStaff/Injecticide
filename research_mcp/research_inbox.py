@@ -66,7 +66,10 @@ class ResearchInbox:
                 with os.fdopen(fd,"rb") as stream:raw=stream.read(65537)
                 digest=hashlib.sha256(raw).hexdigest()
                 if len(raw)>65536 or path.stem!=digest:raise ValueError("Inbox integrity")
-                value=validate_record(json.loads(raw))
+                parsed=json.loads(raw)
+                if isinstance(parsed,dict) and parsed.get("schema")=="injecticide.correction-proposal.v1":
+                    continue
+                value=validate_record(parsed)
                 with self.catalog.db() as db:
                     if db.execute("SELECT count(*) FROM scheduled_research").fetchone()[0]>=1000:
                         raise ValueError("Retained research capacity")

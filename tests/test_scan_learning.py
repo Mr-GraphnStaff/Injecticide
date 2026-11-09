@@ -16,7 +16,7 @@ TEXT = "Prompt injection uses untrusted instructions. Review source boundaries."
 def event(number=1):
     return {"schema": SCHEMA, "event_id": format(number, "032x"),
             "coverage": "partial", "rules": {"prompt_override": 1},
-            "scanner_version": "0.17.0", "engine_sha256": None}
+            "scanner_version": "0.18.0", "engine_sha256": None}
 
 
 @pytest.fixture
@@ -238,7 +238,7 @@ def test_internal_queue_route_and_read_only_mcp(learning, monkeypatch):
     assert asyncio.run(post(dict(event(), text="not accepted"))).status_code == 400
     assert asyncio.run(post(dict(event(), rules={"bad": 1}, extra="x"*20000))).status_code == 413
     error = {"schema": "injecticide.scan-error.v1", "event_id": "f"*32, "http_status": 502,
-             "stage": "sandbox", "kind": "Timeout", "scanner_version": "0.17.0"}
+             "stage": "sandbox", "kind": "Timeout", "scanner_version": "0.18.0"}
     assert asyncio.run(post(error, "/feedback/error")).status_code == 202
     assert asyncio.run(post(dict(error, text="private"), "/feedback/error")).status_code == 400
     from mcp.client import Client
