@@ -306,3 +306,90 @@ successful check. Research does not automatically change scanner rules or payloa
 The DAF-TECH sphere in `webapp/static/images/daf-tech-sphere.png` is the parent-brand
 asset reused from Better CaptionKeep v6 (`teams-captions-saver/icons/daf-tech-sphere.png`, optimized shipping size).
 Injecticide uses its own product name and the signature "Another DAF-TECH Product".
+
+## Scheduled local research and privacy boundary (0.17.0)
+
+The headless research worker runs daily at **02:00 America/Chicago**. A persistent
+per-day lease prevents duplicate runs after restart; failed runs back off one
+hour with at most three attempts that day. A missed spring-DST 02:00 runs at the
+first valid later time. Starting after the scheduled time catches up today's run.
+
+A completed web scan emits only categories from the finite vocabulary in
+`research_signals.py`. Rule IDs are mapped to shipped technical concepts;
+unrecognized IDs become `unclassified_finding`. The model's descriptions are
+reconstructed from trusted constants. No uploaded prose, evidence excerpts,
+filenames, paths, identifiers, contacts, record values, organization policies,
+credentials or generated summaries cross this boundary. This is an allowlist,
+not a claim that regex redaction can recognize every sensitive value. Technical
+categories such as data_protection may reveal the type of finding, as authorized.
+
+The worker can discover public HTTPS documentation beyond the collector's fixed
+registry. It uses Crossref's unauthenticated REST API for scholarly discovery,
+operator seed pages, model-proposed public URLs and discovered links. Public
+fetches pin DNS, reject private/link-local/loopback targets, use verified TLS,
+send no cookies or credentials, respect robots exclusions and bound redirects,
+bytes, page counts and time. JavaScript, code execution, authenticated sites,
+paywall bypass and arbitrary HTTP methods are unavailable. Public search metadata
+and model interpretations remain unverified. These are bounded document reads,
+not a full-browser or comprehensive-web coverage claim.
+
+The worker has its own state volume, a **read-only sanitized-signal volume** and
+a writable output inbox. It has no scan/report/MCP database mount and no HTTP or
+MCP listener. Web, scanner and Research MCP do not join the model's network.
+The local model is attached only to `injecticide-research-agent-net` for this
+application. Pre-provision that external Docker network and attach the separately
+managed Ollama container with alias `injecticide-local-llm`; keep cloud disabled.
+
+The one-way handoff is `research-inbox`: worker writes, Research MCP mounts it
+read-only. The importer checks file hashes, schema and exact source quotations.
+MCP clients can read `research_get_scheduled_status` and
+`research_list_scheduled(after_id, limit, state)`; they cannot submit prompts,
+URLs, schedules, training jobs or worker controls. The old in-MCP learning worker
+is forcibly disabled, even if an inherited environment flag says otherwise.
+Existing approved-source refresh and requirements tools do not reach the LLM.
+
+The Pi review selects at most three literal public excerpts of 800 characters,
+with a 6,000-byte actual JSON context budget and at most two proposals. This
+bounded selection does not establish full-page or comprehensive research coverage.
+
+Each output contains public source URLs/hashes, model identity and candidate
+review tasks. It stays `STATUS: UNKNOWN — UNVERIFIED` until trusted local review.
+No output activates scanner rules or proves that an individual private finding
+has been diagnosed. Unknown findings can guide generic research through their
+technical category; private context is deliberately unavailable to the model.
+
+Trusted review and offline public dataset export:
+`python -m research_mcp.research_inbox --db /data/research.sqlite3 review --sha256 HASH --state approved`
+and `python -m research_mcp.research_inbox --db /data/research.sqlite3 training-export`.
+Only approved public examples are exported; active sessions and customer records
+are never training examples. Exporting JSONL does not train weights. Model training,
+holdout evaluation and activation are separate offline release operations.
+
+The queues are bounded: 10,000 retained technical-signal files and 1,000 immutable
+research outputs. Full queues fail closed and retain evidence. Service logs contain
+statuses and error classes rather than source bodies or private error messages.
+
+### Operational scan issues
+
+Unexpected analysis failures and upstream 5xx/timeouts are submitted separately
+to the internal statistics-only `POST /feedback/error` route. Input rejections
+(400/413/422), busy responses (429) and user cancellation do not automatically
+become bugs. No exception message, traceback, filename or package text is sent.
+Scan feedback also records the scanner version and, when present, its engine
+source hash so observations from different engines remain distinguishable.
+
+Use the read-only `research_list_scan_errors(after_id, limit, state)` MCP tool.
+Matching status/stage/exception-category/scanner-version signatures are grouped,
+with occurrence counts and the five latest request IDs. Re-delivery of an event
+is idempotent. A repeated resolved issue reopens as untriaged. These are operational
+issues, not confirmed bugs or training labels. The JSON error response reports
+whether delivery was recorded, disabled or unavailable; queue outages do not hide
+the original scan error. When Research MCP is unreachable, existing server logs
+remain available, but durable remote issue delivery is not guaranteed.
+
+Reviews are trusted local operations, with occurrence-count/state checks:
+`python -m research_mcp.scan_errors --db /data/research.sqlite3 list`
+and `python -m research_mcp.scan_errors --db /data/research.sqlite3 review --id ID --state investigating --expected-count COUNT`.
+States are untriaged, investigating, confirmed, rejected and resolved. Reviews
+are audited; no MCP write tool or automatic external issue creation is exposed.
+At 10,000 error events, storage refuses new events rather than purging evidence.

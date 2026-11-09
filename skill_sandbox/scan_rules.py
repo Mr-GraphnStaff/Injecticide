@@ -159,6 +159,17 @@ def find_rule_matches(rule: Dict[str, object], unit: object, *, fact_context_pro
     return positive_matches[:3]
 
 
+
+_DEDICATED_MATCHERS = {"prompt_override", "unicode_deception", "system_exfiltration",
+    "secret_exfiltration", "sensitive_topic", "dynamic_exec", "runtime_dependency_install"}
+
+def rule_may_match(rule, unit):
+    """A negative result is exact: generic detectors require a positive regex match."""
+    if rule["id"] in _DEDICATED_MATCHERS:
+        return True
+    text, _line = _unit_text_and_line(unit)
+    return any(pattern.search(text) for pattern in rule.get("compiled_patterns", ()))
+
 def build_scan_units(path: str, text: str) -> List[Dict[str, object]]:
     """Split text into units that reduce unrelated cross-line keyword matches."""
 
@@ -500,9 +511,10 @@ def _observations_for_pattern(
     result = []
     fact_matcher = detector_id in {"prompt_override", "system_exfiltration", "secret_exfiltration"} and fact_context_provider is not None
     candidates = pattern.finditer(text) if fact_matcher else islice(pattern.finditer(text), 3)
-    boundaries = _clause_separator_spans(text) if fact_matcher else []
-    boundary_ends = [end for _, end in boundaries]
+    boundary_ends = None
     for match in candidates:
+        if fact_matcher and boundary_ends is None:
+            boundary_ends = [end for _, end in _clause_separator_spans(text)]
         match_line = line_number + (source_layout or text).count("\n", 0, match.start()) if isinstance(line_number, int) else None
         observation = _observation(match.group(0), match_line, context_tag, confidence)
         context_start = max(0, match.start()-512)

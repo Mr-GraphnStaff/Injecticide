@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.17.0 - 2026-11-09
+
+- Run isolated local-model public research daily at 02:00 America/Chicago, with durable scheduling and a one-way, read-only inbox into Research MCP.
+- Admit only finite scanner-owned technical categories to model input; exclude all scan-derived prose, PII/PHI/PCI values, paths, identifiers and customer/session data by construction.
+- Add trusted review and offline export of approved public research examples; MCP users cannot prompt the model, control research tools, change schedules or start training.
+
+- Limit complete map/report export filenames to 80 safe ASCII characters, preserving extensions and a stable identifier for truncated names. Exported titles and contents are unchanged.
+
+- Record unexpected scan failures and service outages in a separate, deduplicated operational issue list with counts, request IDs and trusted local review. Invalid uploads and busy responses are not automatically filed as bugs.
+
+- Move local model inference out of public package scans into optional background Research MCP proposal generation.
+- Capture bounded scanner-owned rule counts and coverage without retaining uploaded text, paths, policy or credentials.
+- Persist deduplicated feedback and source-anchored, unverified review proposals with retry and capacity limits; preserve deterministic scan decisions. This does not retrain model weights or activate rules.
+
 ## 0.16.1 - 2026-11-08
 
 - Add a separate organization-policy-applied report showing company exceptions, approval requirements, full stops, residual findings and coverage limits while preserving the scanner verdict and evidence.

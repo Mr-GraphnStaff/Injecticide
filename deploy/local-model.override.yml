@@ -1,0 +1,10 @@
+# Local model is reachable only by the isolated scheduled research worker.
+# Pre-provision injecticide-research-agent-net and attach only the local Ollama
+# service with alias injecticide-local-llm. Never join the scanner or web services.
+services:
+  skill_sandbox:
+    environment:
+      INJECTICIDE_LOCAL_LLM_ENABLED: "0"
+  research_mcp:
+    environment:
+      INJECTICIDE_RESEARCH_LLM_ENABLED: "0"

@@ -420,6 +420,7 @@ def test_skill_scan_timeout_chain_covers_database_deadline():
     proxy = int(re.search(r"proxy_read_timeout\s+(\d+)s", api_location).group(1))
     ui = (root / "webapp/static/app.js").read_text(encoding="utf-8")
     browser = int(re.search(r"const SKILL_SCAN_TIMEOUT_MS = (\d+)", ui).group(1)) / 1000
+    # Model inference is no longer part of a public scan or its timeout chain.
     assert da.PACKAGE_TIME_BUDGET_SECONDS < SKILL_SCAN_READ_TIMEOUT_SECONDS < proxy < browser
 
 

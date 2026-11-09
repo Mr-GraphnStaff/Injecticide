@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import os
 import tarfile
 import tempfile
 import zipfile
@@ -26,7 +27,7 @@ if __package__:
     from .finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from .governance import build_governance_profile, SOURCE_CHANNELS
     from .speech_acts import annotate_observation_facts, prepare_observation_context, observation_fact_priority, FACT_DETECTORS
-    from .scan_rules import build_scan_units, compile_patterns, find_rule_matches
+    from .scan_rules import build_scan_units, compile_patterns, find_rule_matches, rule_may_match
     from .package_analysis import enrich_result
     from .package_formats import bounded_data, RUNTIMES
     from .inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
@@ -46,7 +47,7 @@ else:
     from finding_enrichment import build_finding, classify_artifact_role, detect_special_findings
     from governance import build_governance_profile, SOURCE_CHANNELS
     from speech_acts import annotate_observation_facts, prepare_observation_context, observation_fact_priority, FACT_DETECTORS
-    from scan_rules import build_scan_units, compile_patterns, find_rule_matches
+    from scan_rules import build_scan_units, compile_patterns, find_rule_matches, rule_may_match
     from package_analysis import enrich_result
     from package_formats import bounded_data, RUNTIMES
     from inspection_evidence import creator_mitigation, mitigation_finding, initial_coverage
@@ -86,7 +87,8 @@ MAX_TEXT_CHARS = 1024 * 1024
 
 @app.post("/scan")
 async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("auto"),
-                     governance_evidence: str = Form("{}"), org_policy: str = Form("")) -> Dict[str, object]:
+                     governance_evidence: str = Form("{}"), org_policy: str = Form(""),
+                     use_local_llm: bool | None = Form(None)) -> Dict[str, object]:
     if not file.filename:
         await file.close()
         raise HTTPException(status_code=400, detail="Missing filename")
@@ -99,7 +101,8 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
         evidence = bounded_data(governance_evidence)
         # The policy is passed as raw text: its SHA-256 identifies the exact
         # submitted policy, and an invalid policy is reported, not rejected.
-        result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence, org_policy)
+        options = {} if use_local_llm is None else {"use_local_llm": use_local_llm}
+        result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence, org_policy, **options)
         return result
     except (ValueError, zipfile.BadZipFile, tarfile.TarError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -109,7 +112,9 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
 
 
 def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None,
-                org_policy=None, *, source_channel="uploaded_artifact") -> Dict[str, object]:
+                org_policy=None, *, source_channel="uploaded_artifact", use_local_llm=None) -> Dict[str, object]:
+    if use_local_llm is not None and not isinstance(use_local_llm, bool):
+        raise ValueError("Local model selection must be a boolean")
     if not isinstance(source_channel, str) or source_channel not in SOURCE_CHANNELS:
         raise ValueError("Unsupported source channel")
     if len(upload_bytes) > MAX_UPLOAD_BYTES:
@@ -120,15 +125,15 @@ def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", gover
     lower_name = filename.lower()
 
     if lower_name.endswith(".zip") or zipfile.is_zipfile(io.BytesIO(upload_bytes)):
-        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel, org_policy=org_policy)
+        return _scan_archive(upload_bytes, filename, archive_type="zip", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel, org_policy=org_policy, use_local_llm=use_local_llm)
 
     if lower_name.endswith((".tar", ".tar.gz", ".tgz")):
-        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel, org_policy=org_policy)
+        return _scan_archive(upload_bytes, filename, archive_type="tar", target_runtime=target_runtime, governance_evidence=governance_evidence, source_channel=source_channel, org_policy=org_policy, use_local_llm=use_local_llm)
 
-    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence, source_channel, org_policy)
+    return _scan_single_file(upload_bytes, filename, target_runtime, governance_evidence, source_channel, org_policy, use_local_llm)
 
 
-def _finalize_result(result, text_sources, governance_evidence=None, org_policy=None):
+def _finalize_result(result, text_sources, governance_evidence=None, org_policy=None, use_local_llm=None):
     """Additive report sections computed after findings and redaction are final."""
     evidence = result.get("governance_evidence") or {}
     result["evidence_input"] = evidence_input_report(governance_evidence, evidence.get("artifact_sha256"),
@@ -143,10 +148,15 @@ def _finalize_result(result, text_sources, governance_evidence=None, org_policy=
             "effect_summary": {"block": 0, "require_approval": 0, "warn": 0, "allow": 0, "advisory_block": 0},
             "decision": "not_evaluated"}
     result["fix_summary"] = build_fix_summary(result)
+    if use_local_llm is not None:
+        result["local_analysis"] = {
+            "schema": "injecticide.local-analysis.v1", "advisory_only": True, "findings": [],
+            "status": "skipped" if use_local_llm is False else "not_assessed",
+            "reason": "Local model review has moved to background research; scans use static analysis."}
     return result
 
 
-def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact", org_policy=None) -> Dict[str, object]:
+def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact", org_policy=None, use_local_llm=None) -> Dict[str, object]:
     warnings: List[str] = []
     excluded = []
     with tempfile.TemporaryDirectory() as temp_root:
@@ -161,16 +171,16 @@ def _scan_archive(upload_bytes: bytes, filename: str, archive_type: str, target_
         results, text_sources = _scan_extracted_files(extracted, excluded)
         result = _assemble_result(filename, archive_type, results, warnings, text_sources)
         result = enrich_result(result, text_sources, upload_bytes, target_runtime, governance_evidence, temp_path, excluded, _scan_text, source_channel=source_channel)
-        return _finalize_result(result, text_sources, governance_evidence, org_policy)
+        return _finalize_result(result, text_sources, governance_evidence, org_policy, use_local_llm)
 
 
-def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact", org_policy=None) -> Dict[str, object]:
+def _scan_single_file(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None, source_channel="uploaded_artifact", org_policy=None, use_local_llm=None) -> Dict[str, object]:
     entry, text = _scan_file_bytes(filename, upload_bytes)
     results = [entry]
     text_sources = _build_text_sources([(filename, text, entry["artifact_role"])])
     result = enrich_result(_assemble_result(filename, "skill", results, [], text_sources), text_sources,
                            upload_bytes, target_runtime, governance_evidence, rescan=_scan_text, source_channel=source_channel)
-    return _finalize_result(result, text_sources, governance_evidence, org_policy)
+    return _finalize_result(result, text_sources, governance_evidence, org_policy, use_local_llm)
 
 
 def _max_scannable_file_bytes(path: str, header: bytes = b"") -> int:
@@ -586,6 +596,8 @@ def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str,
             continue
         matches = []
         for unit in scan_units:
+            if not rule_may_match(pattern, unit):
+                continue
             candidates = find_rule_matches(pattern, unit, fact_context_provider=get_fact_context)
             if pattern["id"] in FACT_DETECTORS:
                 if candidates:

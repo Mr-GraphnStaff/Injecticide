@@ -16,9 +16,12 @@ services:
       - PYTHONUNBUFFERED=1
       - SKILL_SANDBOX_URL=http://skill_sandbox:9001
       - RESEARCH_MCP_URL=http://research_mcp:8200
+      - INJECTICIDE_SCAN_FEEDBACK_ENABLED=1
+      - INJECTICIDE_RESEARCH_SIGNALS_DIR=/research-signals
     volumes:
       - ${INJECTICIDE_REPORTS_DIR:-./reports}:/app/reports
       - ./configs:/app/configs
+      - research-signals:/research-signals
     networks:
       - injecticide-network
       - skill-sandbox-net
@@ -73,11 +76,15 @@ services:
     ports:
       - "127.0.0.1:8200:8200"
     environment:
+      - INJECTICIDE_SCAN_FEEDBACK_ENABLED=1
+      - INJECTICIDE_RESEARCH_LLM_ENABLED=0
+      - RESEARCH_INBOX_DIR=/research-inbox
       - RESEARCH_INTERVAL_SECONDS=${INJECTICIDE_RESEARCH_INTERVAL_SECONDS:-86400}
       - RESEARCH_PAGE_BUDGET=${INJECTICIDE_RESEARCH_PAGE_BUDGET:-100}
       - RESEARCH_CYCLE_SECONDS=${INJECTICIDE_RESEARCH_CYCLE_SECONDS:-600}
     volumes:
       - research-data:/data
+      - research-inbox:/research-inbox:ro
       - ./research_mcp/sources.json:/app/research_mcp/sources.json:ro
     read_only: true
     tmpfs:
@@ -104,6 +111,39 @@ services:
       retries: 3
       start_period: 20s
 
+  research_agent:
+    image: injecticide-research-mcp:${INJECTICIDE_IMAGE_TAG:-local}
+    container_name: injecticide-research-agent
+    command: ["python", "-m", "research_mcp.research_worker"]
+    environment:
+      - INJECTICIDE_LOCAL_LLM_URL=http://injecticide-local-llm:11434
+      - INJECTICIDE_LOCAL_MODEL=qwen3.5:2b
+    volumes:
+      - research-agent-state:/data
+      - research-signals:/signals:ro
+      - research-inbox:/outbox
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.5
+    networks:
+      - research-agent-net
+    logging: *bounded-logging
+    restart: unless-stopped
+    stop_grace_period: 120s
+    healthcheck:
+      test: ["CMD", "python", "-c", "from pathlib import Path; assert Path('/data/research-worker.sqlite3').is_file()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
   nginx:
     image: nginx:alpine
     container_name: injecticide-nginx
@@ -122,6 +162,9 @@ services:
     restart: unless-stopped
 
 networks:
+  research-agent-net:
+    external: true
+    name: injecticide-research-agent-net
   research-net:
     driver: bridge
   injecticide-network:
@@ -130,4 +173,7 @@ networks:
     internal: true
 
 volumes:
+  research-signals:
+  research-inbox:
+  research-agent-state:
   research-data:

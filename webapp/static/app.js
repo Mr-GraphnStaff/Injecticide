@@ -518,7 +518,7 @@ function FindingName({ id }) {
     return <span className="finding-name" title={entry.plain || undefined}>{entry.label} <small className="finding-id">{id}</small></span>;
 }
 
-/* ---- Download names: <name>-injecticide-<version>-<YYYYMMDD-HHMM>-<kind>.<ext> ---- */
+/* ---- Shared download names, capped at 80 characters including the extension. ---- */
 function filenameTimestamp(date = new Date()) {
     const pad = value => String(value).padStart(2, '0');
     return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
@@ -533,8 +533,20 @@ function injecticideVersionLabel(buildInfo, fallback) {
 function injecticideFilename({ name, kind, ext, buildInfo, fallbackVersion, stripExtension = false }) {
     let base = String(name || '').trim();
     if (stripExtension) base = base.replace(/\.[a-z0-9]{1,8}$/i, '');
-    const stem = slugifyFilename(base).replace(/^\.+|\.+$/g, '').slice(0, 80) || 'untitled';
-    return `${stem}-injecticide-${injecticideVersionLabel(buildInfo, fallbackVersion)}-${filenameTimestamp()}-${slugifyFilename(kind) || 'export'}.${ext}`;
+    const extension = /^[a-z0-9]{1,8}$/i.test(String(ext || '')) ? String(ext).toLowerCase() : 'bin';
+    const type = slugifyFilename(String(kind || 'export')).replace(/\./g, '-').slice(0, 20).replace(/-+$/, '') || 'export';
+    const version = injecticideVersionLabel(buildInfo, fallbackVersion).slice(0, 12);
+    const suffix = `-injecticide-${version}-${filenameTimestamp()}-${type}.${extension}`;
+    const budget = Math.min(32, 80 - suffix.length);
+    let stem = slugifyFilename(base).replace(/\./g, '-').replace(/^-+|-+$/g, '') || 'untitled';
+    if (stem.length > budget) {
+        // A stable name hint reduces collisions between equal truncated prefixes.
+        let hint = 2166136261;
+        for (let index = 0; index < base.length; index++) hint = Math.imul(hint ^ base.charCodeAt(index), 16777619);
+        const identifier = (hint >>> 0).toString(16).padStart(8, '0');
+        stem = stem.slice(0, budget - identifier.length - 1).replace(/-+$/, '') + '-' + identifier;
+    }
+    return stem + suffix;
 }
 
 function scanDownloadName(result, buildInfo, kind, ext) {
@@ -927,7 +939,6 @@ function ProductHeader({ section, buildInfo, onBack, onNavigate, onClose, isClos
             <div className="home-header-actions">
                 {buildInfo && <span className="home-version">{buildInfo.display_version}</span>}
                 {section === 'overview' && <a href="#research-updates" className="home-text-link">Research updates ↓</a>}
-                {onClose && <button onClick={onClose} disabled={isClosing} className="home-button workbench-close">{isClosing ? 'Closing…' : 'Close App'}</button>}
             </div>
         </div>
         {(onBack || onNavigate) && <nav className="home-shell workbench-nav" aria-label="Product sections">
@@ -1290,7 +1301,55 @@ function ArchitectureWorkbench({ onBack, onNavigate, buildInfo }) {
 
 const SKILL_FILES_PER_PAGE = 10;
 const SKILL_FINDINGS_PER_PAGE = 10;
-const SKILL_SCAN_TIMEOUT_MS = 150000;
+const SKILL_SCAN_TIMEOUT_MS = 360000;
+
+const scanPollPause = signal => new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(new DOMException('Aborted', 'AbortError'));
+    const abort = () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')); };
+    const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, 1500);
+    signal.addEventListener('abort', abort, { once: true });
+});
+
+async function waitForSkillScan(receipt, signal) {
+    if (!/^[a-f0-9]{32}$/.test(receipt?.job_id || '')) throw new Error('Invalid scan receipt.');
+    // Construct a same-origin path; never follow a server-supplied arbitrary URL.
+    const url = '/api/skills/scan/jobs/' + receipt.job_id;
+    let transientFailures = 0;
+    while (!signal.aborted) {
+        await scanPollPause(signal);
+        let response;
+        try { response = await fetch(url, { signal, cache: 'no-store' }); }
+        catch (error) {
+            if (signal.aborted || ++transientFailures > 10) throw error;
+            continue;
+        }
+        if ([429, 502, 503, 504, 520, 522, 524].includes(response.status)) {
+            if (++transientFailures > 10) throw new Error('Cannot retrieve scan status (HTTP ' + response.status + ').');
+            continue;
+        }
+        let job;
+        try { job = await response.json(); }
+        catch (error) {
+            if (signal.aborted) throw error;
+            if (response.ok && ++transientFailures <= 10) continue;
+            throw new Error('Cannot read scan status (HTTP ' + response.status + ').');
+        }
+        if (!response.ok || !job) throw new Error(
+            job?.detail?.message || 'Cannot retrieve scan status (HTTP ' + response.status + ').');
+        transientFailures = 0;
+        if (job.status === 'running' && response.status === 202) continue;
+        if (job.status === 'completed' && job.result) return job.result;
+        if (job.status === 'failed') {
+            const error = new Error((job.detail?.message || 'Scan failed') + ' (HTTP ' + job.http_status + ').');
+            error.scanStage = job.detail?.stage || 'analysis';
+            error.scanRequestId = job.detail?.request_id || receipt.scan_request_id;
+            throw error;
+        }
+        throw new Error('Invalid scan status response.');
+    }
+    throw new DOMException('Aborted', 'AbortError');
+}
+
 
 function ScanPageControls({ page, total, size, onChange, label }) {
     if (total <= size) return null;
@@ -2388,6 +2447,7 @@ function App({ onBack, onNavigate, buildInfo }) {
         try {
             const formData = new FormData();
             formData.append('target_runtime', skillRuntime);
+            formData.append('background', 'true');
             if (orgPolicy.trim()) formData.append('org_policy', orgPolicy);
             formData.append('file', skillFile);
             // Keep this local selection retryable until success, replacement or clear.
@@ -2404,14 +2464,18 @@ function App({ onBack, onNavigate, buildInfo }) {
             if (!response.ok) {
                 const errorDetails = await response.json().catch(() => ({}));
                 const detail = errorDetails?.detail;
-                const failure = new Error(typeof detail === 'string' ? detail : detail?.message || response.statusText || 'Scan failed');
+                const failure = new Error(typeof detail === 'string' ? detail : detail?.message || ('Scan failed (HTTP ' + response.status + ')'));
                 pending.stage = typeof detail?.stage === 'string' ? detail.stage.slice(0, 80) : pending.stage;
                 pending.requestId = safeRequestId(detail?.request_id) || pending.requestId;
                 throw failure;
             }
 
             pending.stage = 'reading scan response';
-            const data = await response.json();
+            let data = await response.json();
+            if (response.status === 202) {
+                pending.stage = 'waiting for scan result';
+                data = await waitForSkillScan(data, pending.controller.signal);
+            }
             if (skillScanRequest.current === pending && !pending.controller.signal.aborted) {
                 const requestId = pending.requestId || safeRequestId(data.scan_request_id) || safeRequestId(data.request_id);
                 setSkillScanResult({ ...data, ...(requestId ? { scan_request_id: requestId } : {}) });
@@ -2420,6 +2484,8 @@ function App({ onBack, onNavigate, buildInfo }) {
             }
         } catch (error) {
             if (skillScanRequest.current === pending) {
+                if (error.scanStage) pending.stage = error.scanStage;
+                if (error.scanRequestId) pending.requestId = safeRequestId(error.scanRequestId);
                 const message = pending.timedOut ? 'Scan timed out.' : error.message || 'Scan failed';
                 const connectionHint = pending.stage === 'upload or connection'
                     ? ' A connection or authentication problem may have interrupted the request; the cause is not confirmed.' : '';
@@ -2728,7 +2794,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         </button>
                                         {(skillFile || skillScanResult || isScanningSkill || skillScanError) && (
                                             <button type="button" onClick={clearSkillScan} className="text-sm text-gray-300 underline">
-                                                {isScanningSkill ? 'Cancel and clear scan' : 'Clear scan'}
+                                                {isScanningSkill ? 'Stop waiting and clear' : 'Clear scan'}
                                             </button>
                                         )}
                                         <p id="skill-upload-help" className="text-xs text-gray-400">Selecting another file clears the previous scan. Failed uploads remain selected for manual retry; successful scans release the file. Full findings remain available in the report export.</p>
@@ -2815,7 +2881,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                     <div className="workbench-results" ref={resultWorkspace}>
                         <section id="package-results" aria-busy={isScanningSkill} hidden={activeResultView !== 'package'} aria-labelledby="package-results-title" className="workbench-result-panel bg-gray-800/90 backdrop-blur rounded-xl p-6 shadow-2xl border border-gray-700/50">
                             <h2 id="package-results-title" className="workbench-section-title mb-6">Skill and plugin scan results</h2>
-                            <div role="status">{isScanningSkill && <p className="home-muted mb-4">Scanning package and checking vendor requirements…</p>}</div>
+                            <div role="status">{isScanningSkill && <p className="home-muted mb-4">Scanning package and checking vendor requirements. Results will appear here when ready; the connection is checked automatically.</p>}</div>
                             {skillScanError && <p id="skill-scan-error" role="alert" tabIndex={-1} className="home-warning">{skillScanError}</p>}
                             {!skillScanResult && !isScanningSkill && !skillScanError && <p className="home-muted">Choose a file in Scan configuration to review its findings, coverage and report here.</p>}
                             {skillScanResult && (
@@ -2848,7 +2914,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                                 onClick={() => downloadProcessFile(formatOrganizationPolicyMarkdown(skillScanResult, buildInfo), scanDownloadName(skillScanResult, buildInfo, 'report-organization-policy', 'md'), 'text/markdown;charset=utf-8')}>Export organization policy report (.md)</button>
                                             <button type="button" onClick={downloadSkillScanJson}>Download full data (JSON)</button>
                                             <span className={`px-2 py-1 rounded-full text-[10px] uppercase tracking-wide ${skillScanResult.summary.total_findings > 0 ? 'bg-red-600/40 text-red-200' : 'bg-green-600/30 text-green-200'}`}>
-                                                {skillScanResult.summary.total_findings > 0 ? 'Review' : 'Clean'}
+                                                {skillScanResult.summary.total_findings > 0 ? 'Static findings to review' : 'No static findings'}
                                             </span>
                                         </div>
                                     </div>

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -16,27 +17,104 @@ from .news import build_news
 from .requirements import Requirements
 from .reference_library import ReferenceLibrary
 from .obsession import Obsession
+from .scan_learning import ScanLearning
+from .scan_errors import ScanErrors
+from .research_inbox import ResearchInbox
 
 
 def create_server(catalog: Catalog, collector: Collector, start_collector: bool = True) -> MCPServer:
     requirements = Requirements(catalog)
     references = ReferenceLibrary()
     obsession = Obsession(catalog)
+    learning = ScanLearning(catalog)
+    learning.enabled = False  # MCP clients can never start or reach model inference.
+    inbox = ResearchInbox(catalog, Path(os.environ.get('RESEARCH_INBOX_DIR', '/research-inbox')))
+    scan_errors = ScanErrors(catalog)
     collector.after_collection = obsession.cycle
     obsession.driver_thread = collector.thread
     @asynccontextmanager
     async def lifespan(server):
         if start_collector:
             collector.thread.start()
+            inbox.thread.start()
         try:
             yield {"catalog": catalog}
         finally:
+            await asyncio.to_thread(inbox.close)
+            await asyncio.to_thread(learning.close)
             await asyncio.to_thread(obsession.close)
             await asyncio.to_thread(collector.close)
 
-    server = MCPServer("injecticide_research_mcp", version="0.16.1", lifespan=lifespan)
+    server = MCPServer("injecticide_research_mcp", version="0.17.0", lifespan=lifespan)
     read = {"readOnlyHint": True, "destructiveHint": False,
             "idempotentHint": True, "openWorldHint": False}
+
+    @server.custom_route("/feedback/scan", methods=["POST"])
+    async def receive_scan_feedback(request):
+        # Internal statistics-only endpoint; never a public upload/model interface.
+        if os.environ.get("INJECTICIDE_SCAN_FEEDBACK_ENABLED") != "1":
+            return JSONResponse({"status": "disabled"}, status_code=404)
+        body = bytearray()
+        async for block in request.stream():
+            if len(body) + len(block) > 16384:
+                return JSONResponse({"error": "Statistics exceed budget"}, status_code=413)
+            body.extend(block)
+        import json
+        try:
+            event = json.loads(body)
+            result = await asyncio.to_thread(learning.enqueue, event)
+        except (ValueError, TypeError, KeyError):
+            return JSONResponse({"error": "Invalid scan statistics"}, status_code=400)
+        except sqlite3.Error:
+            return JSONResponse({"error": "Feedback storage unavailable"}, status_code=503)
+        except OverflowError:
+            return JSONResponse({"error": "Feedback queue full"}, status_code=429)
+        return JSONResponse(result, status_code=202, headers={"Cache-Control": "no-store"})
+
+    @server.custom_route("/feedback/error", methods=["POST"])
+    async def receive_scan_error(request):
+        if os.environ.get("INJECTICIDE_SCAN_FEEDBACK_ENABLED") != "1":
+            return JSONResponse({"status": "disabled"}, status_code=404)
+        body = bytearray()
+        async for block in request.stream():
+            if len(body) + len(block) > 2048:
+                return JSONResponse({"error": "Error metadata exceeds budget"}, status_code=413)
+            body.extend(block)
+        import json
+        try:
+            result = await asyncio.to_thread(scan_errors.enqueue, json.loads(body))
+        except (ValueError, TypeError, KeyError):
+            return JSONResponse({"error": "Invalid error metadata"}, status_code=400)
+        except sqlite3.Error:
+            return JSONResponse({"error": "Issue storage unavailable"}, status_code=503)
+        except OverflowError:
+            return JSONResponse({"error": "Issue capacity reached"}, status_code=429)
+        return JSONResponse(result, status_code=202, headers={"Cache-Control": "no-store"})
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_list_scan_errors(after_id: int = 0, limit: int = 20, state: str = "") -> dict[str, object]:
+        """Read deduplicated operational issues; untriaged errors are not confirmed bugs."""
+        return scan_errors.list(after_id, limit, state)
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_get_scheduled_status() -> dict[str, object]:
+        """Read one-way inbox status. Cannot trigger research or change the schedule."""
+        return inbox.status()
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_list_scheduled(after_id: int = 0, limit: int = 20, state: str = "") -> dict[str, object]:
+        """Read source-linked candidates from the isolated worker; no model/tool passthrough."""
+        return inbox.list(after_id, limit, state)
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_get_learning_status() -> dict[str, object]:
+        """Read queue/worker state. Does not invoke the local model or train weights."""
+        return learning.status()
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_list_learning_proposals(after_id: int = 0, limit: int = 20) -> dict[str, object]:
+        """Read bounded unverified proposals with source hashes; never activates rules."""
+        return learning.list(after_id, limit)
 
     @server.tool(annotations=read, structured_output=True)
     def obsession_get_status() -> dict[str, object]:
@@ -111,7 +189,8 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         """Get worker status and configured collection budgets. Freshness is reported separately per source."""
         return {**collector.status, "worker_alive": collector.thread.is_alive(),
                 "interval_seconds": collector.interval, "page_budget": collector.page_budget,
-                "authority": "research_evidence_not_active_rules", "obsession": obsession.status()}
+                "authority": "research_evidence_not_active_rules", "obsession": obsession.status(),
+                "learning": learning.status(), "scheduled_research": inbox.status()}
 
     @server.tool(annotations=read, structured_output=True)
     def research_get_releases(source_id: str, limit: int = 10) -> dict[str, object]:
