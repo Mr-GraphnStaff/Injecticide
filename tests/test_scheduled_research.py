@@ -209,3 +209,20 @@ def test_public_unicode_context_obeys_actual_wire_budget(tmp_path,monkeypatch):
     worker.web=UnicodeWeb()
     assert worker.tick(datetime(2026,11,9,8,0,tzinfo=timezone.utc))["status"]=="complete"
     assert len(captured[-1]["public_sources"])<=3
+
+
+@pytest.mark.parametrize("quote,accepted",[
+    ('"untrusted source instructions"',True),
+    ('\u201cuntrusted source instructions\u201d',True),
+    ('"fabricated source instructions"',False),
+])
+def test_citation_wrappers_preserve_literal_evidence(tmp_path,monkeypatch,quote,accepted):
+    def model(system,data,schema):
+        return ({"queries":[],"urls":[]} if "queries" in schema["required"] else
+            {"proposals":[{"source_id":1,"quote":quote,"summary":"Review instruction priority."}]}),{"name":"synthetic","digest":"a"*64}
+    worker=make_worker(tmp_path,monkeypatch,model=model)
+    result=worker.tick(datetime(2026,11,9,8,0,tzinfo=timezone.utc))
+    assert result["status"]==("complete" if accepted else "failed")
+    if accepted:
+        record=json.loads(next(worker.outbox.glob("*.json")).read_text())
+        assert record["proposals"][0]["quote"]=="untrusted source instructions"
