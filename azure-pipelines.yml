@@ -35,7 +35,7 @@ stages:
       - job: Tests
         displayName: Tests and container builds
         pool:
-          vmImage: ubuntu-24.04
+          vmImage: ubuntu-26.04
         timeoutInMinutes: 30
         steps:
           - task: UsePythonVersion@0
