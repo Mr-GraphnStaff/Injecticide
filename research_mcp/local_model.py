@@ -9,30 +9,40 @@ from urllib.parse import urlsplit
 
 REQUEST_DEADLINE_SECONDS = 90
 MAX_RESPONSE_BYTES = 65536
+class ModelTransportError(RuntimeError):
+    def __init__(self,kind,http_status=None):
+        super().__init__("Local model transport failed")
+        self.kind=kind if kind in {"TimeoutError","HTTPError","URLError","ValueError","JSONDecodeError","OSError"} else "OtherError"
+        self.http_status=http_status if type(http_status) is int and 100<=http_status<=599 else None
+
+
 WORKER = r"""
 import json,sys,urllib.request
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self,*args):return None
-opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
-endpoint,payload=json.load(sys.stdin)
-def request(path,body=None):
-    data=None if body is None else json.dumps(body).encode()
-    req=urllib.request.Request(endpoint+path,data=data,headers={"Content-Type":"application/json"})
-    with opener.open(req,timeout=85) as response:raw=response.read(65537)
-    if len(raw)>65536:raise ValueError("response_budget")
-    return json.loads(raw)
-status=request("/api/status")
-if status.get("cloud",{}).get("disabled") is not True:raise ValueError("cloud_must_be_disabled")
-metadata=request("/api/show",{"model":payload["model"]})
-if metadata.get("remote_host") or metadata.get("remote_model") or metadata.get("details",{}).get("format")!="gguf":
-    raise ValueError("local_weights_required")
-tags=request("/api/tags")
-entry=next((x for x in tags.get("models",[]) if x.get("name")==payload["model"]),None)
-if not entry or not entry.get("digest") or entry.get("remote_host") or entry.get("remote_model"):
-    raise ValueError("local_model_identity_required")
-result=request("/api/chat",payload)
-result["_local_model_digest"]=entry["digest"]
-print(json.dumps(result))
+try:
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self,*args):return None
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
+    endpoint,payload=json.load(sys.stdin)
+    def request(path,body=None):
+        data=None if body is None else json.dumps(body).encode()
+        req=urllib.request.Request(endpoint+path,data=data,headers={"Content-Type":"application/json"})
+        with opener.open(req,timeout=85) as response:raw=response.read(65537)
+        if len(raw)>65536:raise ValueError("response_budget")
+        return json.loads(raw)
+    status=request("/api/status")
+    if status.get("cloud",{}).get("disabled") is not True:raise ValueError("cloud_must_be_disabled")
+    metadata=request("/api/show",{"model":payload["model"]})
+    if metadata.get("remote_host") or metadata.get("remote_model") or metadata.get("details",{}).get("format")!="gguf":
+        raise ValueError("local_weights_required")
+    tags=request("/api/tags")
+    entry=next((x for x in tags.get("models",[]) if x.get("name")==payload["model"]),None)
+    if not entry or not entry.get("digest") or entry.get("remote_host") or entry.get("remote_model"):
+        raise ValueError("local_model_identity_required")
+    result=request("/api/chat",payload)
+    result["_local_model_digest"]=entry["digest"]
+    print(json.dumps(result))
+except Exception as error:
+    print(json.dumps({'_transport_error':type(error).__name__,'_http_status':getattr(error,'code',None)}))
 """
 
 def _chat(endpoint, payload):
@@ -42,7 +52,10 @@ def _chat(endpoint, payload):
                          timeout=REQUEST_DEADLINE_SECONDS, check=True)
     if len(run.stdout) > MAX_RESPONSE_BYTES + 1024:
         raise ValueError("response_budget")
-    return json.loads(run.stdout)
+    result=json.loads(run.stdout)
+    if "_transport_error" in result:
+        raise ModelTransportError(result["_transport_error"],result.get("_http_status"))
+    return result
 def complete(system, data, schema, *, transport=None):
     endpoint = os.environ.get("INJECTICIDE_LOCAL_LLM_URL", "http://127.0.0.1:11434").rstrip("/")
     model = os.environ.get("INJECTICIDE_LOCAL_MODEL", "qwen3.5:2b")

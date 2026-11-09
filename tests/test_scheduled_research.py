@@ -191,3 +191,21 @@ def test_offline_dataset_includes_approved_outputs_beyond_first_page(tmp_path,mo
     assert len(examples)==101
     assert all("data_protection" in x["messages"][0]["content"] for x in examples)
     assert all(value not in json.dumps(examples) for value in CANARIES)
+
+
+
+def test_public_unicode_context_obeys_actual_wire_budget(tmp_path,monkeypatch):
+    captured=[]
+    def model(system,data,schema):
+        captured.append(data)
+        if "public_sources" in data:
+            assert len(json.dumps(data,ensure_ascii=True).encode())<=6000
+        return ({"queries":[],"urls":[]} if "queries" in schema["required"] else {"proposals":[]}),{"name":"synthetic","digest":"a"*64}
+    class UnicodeWeb(Web):
+        def page(self,url):
+            text="界"*10000
+            return Response(url,200,{"content-type":"text/plain"},text.encode()),text,[]
+    worker=make_worker(tmp_path,monkeypatch,model=model)
+    worker.web=UnicodeWeb()
+    assert worker.tick(datetime(2026,11,9,8,0,tzinfo=timezone.utc))["status"]=="complete"
+    assert len(captured[-1]["public_sources"])<=3

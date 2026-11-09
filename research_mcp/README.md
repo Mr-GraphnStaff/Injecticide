@@ -348,6 +348,10 @@ URLs, schedules, training jobs or worker controls. The old in-MCP learning worke
 is forcibly disabled, even if an inherited environment flag says otherwise.
 Existing approved-source refresh and requirements tools do not reach the LLM.
 
+The Pi review selects at most three literal public excerpts of 800 characters,
+with a 6,000-byte actual JSON context budget and at most two proposals. This
+bounded selection does not establish full-page or comprehensive research coverage.
+
 Each output contains public source URLs/hashes, model identity and candidate
 review tasks. It stays `STATUS: UNKNOWN — UNVERIFIED` until trusted local review.
 No output activates scanner rules or proves that an individual private finding

@@ -38,7 +38,7 @@ def test_transport_checks_server_cloud_status_before_sending_content():
     import threading
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
     import pytest
-    from research_mcp.local_model import _chat
+    from research_mcp.local_model import _chat, ModelTransportError
     calls = []
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args): pass
@@ -52,7 +52,7 @@ def test_transport_checks_server_cloud_status_before_sending_content():
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
     try:
-        with pytest.raises(subprocess.CalledProcessError):
+        with pytest.raises(ModelTransportError):
             _chat("http://127.0.0.1:"+str(server.server_port), {"model":"qwen3.5:2b","messages":[{"content":"private"}]})
         assert calls == ["/api/status"]
     finally:

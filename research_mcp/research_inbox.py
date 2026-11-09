@@ -81,7 +81,7 @@ class ResearchInbox:
         with self.catalog.db() as db:
             rows=db.execute("""SELECT * FROM scheduled_research WHERE seq>? AND (?='' OR state=?)
                 ORDER BY seq LIMIT ?""",(after_id,state,state,limit)).fetchall()
-        return {"authority":"unverified_public_research_not_active_rules","items":[
+        return {"authority":"unverified_public_research_not_active_rules","untrusted_content":True,"items":[
             {"sequence":r["seq"],"sha256":r["sha256"],"state":r["state"],"payload":json.loads(r["payload"])} for r in rows]}
 
     def status(self):
