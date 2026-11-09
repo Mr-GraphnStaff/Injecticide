@@ -393,3 +393,63 @@ and `python -m research_mcp.scan_errors --db /data/research.sqlite3 review --id 
 States are untriaged, investigating, confirmed, rejected and resolved. Reviews
 are audited; no MCP write tool or automatic external issue creation is exposed.
 At 10,000 error events, storage refuses new events rather than purging evidence.
+
+
+## Reviewed correction loop (0.18.0)
+
+Reviewed false positives can now produce data-only correction packs that the
+actual deterministic scanner applies. This is offline learning from reviewed
+synthetic examples; it does not update model weights or call the model during
+a scan.
+
+An operator selects a shipped synthetic case representing the reviewed mistake.
+Only its finite case ID and correction-contract digest enter the signal volume.
+The worker reconstructs examples from the shipped synthetic corpus. Uploaded
+text, report excerpts, database cells, filenames and private identifiers are
+never accepted by this correction-learning interface. Unknown cases require a
+source change and review; raw scan content cannot become training material.
+
+At the existing daily 02:00 America/Chicago run, the local model proposes rules
+from finite, source-owned features and permitted actions. It cannot emit code,
+regexes or arbitrary conditions. Failed or incomplete proposals back off and
+cannot activate. Research MCP imports valid proposals in review state only.
+The existing public-research path remains available independently.
+
+Use the host-only operator tool from the production checkout:
+
+```sh
+python3 tools/corrections_admin.py record --case cross_reference_benign
+python3 tools/corrections_admin.py research
+python3 tools/corrections_admin.py list
+python3 tools/corrections_admin.py approve --sha PACK_SHA256
+python3 tools/corrections_admin.py deactivate --expected-revision ACTIVE_REVISION
+```
+
+Use `python -m research_mcp.correction_feedback list` inside the web container
+to discover the exact shipped case IDs. The example ID above must exist in that
+release. The research command runs the same offline correction learner immediately;
+it does not expose a listener or accept arbitrary model input.
+
+Approval runs the actual, running sandbox scanner against the immutable synthetic
+corpus. Its receipt binds the exact pack, correction contract, scanner version
+and source digest. A pack must reduce an actionable false positive while retaining
+every complete finding outcome in protected cases, including severity, evidence
+and observation multiplicity. The host tool checks that the scanner and MCP
+release containers do not change during this operation. Approval receipts are
+privileged operator attestations, not cryptographic proof against a compromised
+host. This finite corpus demonstrates its covered cases; it cannot establish
+zero regressions for every possible document.
+
+The web service reads the approved envelope from Research MCP on each scan and
+passes it through the internal sandbox interface. The sandbox verifies its own
+engine identity before applying it. Public upload requests cannot supply packs
+or approvals. Metadata records the applied pack and matched observations.
+A missing, stale, incompatible or unavailable approval falls back to the baseline
+scanner. Deactivation takes effect on the next scan; no model or release is
+needed to restore baseline behavior. A changed engine requires a fresh actual
+scanner gate and approval.
+
+Research MCP exposes only read-only correction status/list tools and the internal
+`GET /corrections/active` delivery endpoint. Model calls, case review, approval
+and deactivation remain trusted local CLI operations. Research/scanner/model
+network and mount boundaries from 0.17.0 remain in force.

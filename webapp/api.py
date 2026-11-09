@@ -53,6 +53,7 @@ from skill_sandbox.package_formats import bounded_data, RUNTIMES
 
 from webapp.scan_jobs import ScanJobs
 from webapp.scan_feedback import submit_feedback, submit_scan_error
+from webapp.correction_client import fetch_approved_corrections
 from research_mcp.research_signals import publish_signal
 
 SKILL_SCAN_JOBS = ScanJobs()
@@ -61,10 +62,20 @@ SKILL_SCAN_READ_TIMEOUT_SECONDS = 225
 
 
 def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url, org_policy="", use_local_llm=None):
+    correction_envelope, correction_delivery = fetch_approved_corrections()
     if not sandbox_url:
         options = {} if use_local_llm is None else {"use_local_llm": use_local_llm}
-        return attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence), org_policy, **options))
+        if correction_envelope is not None:
+            from skill_sandbox.approved_corrections import approved_pack
+            from skill_sandbox.package_evidence import scanner_metadata
+            try:options["correction_pack"]=approved_pack(correction_envelope,scanner_metadata())
+            except (ValueError,TypeError,KeyError):correction_delivery="rejected"
+        result=attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence), org_policy, **options))
+        result.setdefault("correction_application",{}).setdefault("delivery_state",correction_delivery)
+        return result
     form = {"target_runtime": target_runtime, "governance_evidence": evidence}
+    if correction_envelope is not None:
+        form["correction_pack"]=json.dumps(correction_envelope)
     if use_local_llm is not None:
         form["use_local_llm"] = "true" if use_local_llm else "false"
     if org_policy:
@@ -80,7 +91,9 @@ def _scan_skill_data(data, filename, content_type, target_runtime, evidence, san
         if response.status_code in {400, 413, 422, 429}:
             raise HTTPException(status_code=response.status_code, detail=response.json().get("detail", "Scan rejected"))
         response.raise_for_status()
-        return attach_vendor_check(response.json())
+        result=attach_vendor_check(response.json())
+        result.setdefault("correction_application",{}).setdefault("delivery_state",correction_delivery)
+        return result
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"

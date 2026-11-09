@@ -8,6 +8,9 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY app.py /app/app.py
+COPY correction_rules.py /app/correction_rules.py
+COPY approved_corrections.py /app/approved_corrections.py
+COPY correction_gate.py /app/correction_gate.py
 COPY artifact_text.py /app/artifact_text.py
 COPY database_analysis.py /app/database_analysis.py
 COPY asset_inspection.py /app/asset_inspection.py

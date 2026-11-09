@@ -38,6 +38,8 @@ DYNAMIC_SITES = {
 
 # Dict literals that carry an "id" but are not findings. Each needs a reason.
 NON_FINDING_SITES = {
+    ("correction_rules.py", "evaluate_pack"): "source-owned synthetic interpreter gate, never emitted by scanner",
+    ("correction_gate.py", "_database_findings"): "offline gate-only profile fingerprint, never emitted by scanner",
     ("governance.py", "build_governance_profile"): "copies an existing finding id into blocking_findings",
     ("improvement_plan.py", "add"): "improvement-plan row id (plan_<hash>); rule_id refers to an existing finding",
     ("process_diagram.py", "node"): "diagram node id (n<index>)",
@@ -72,6 +74,9 @@ class _Collector(ast.NodeVisitor):
     visit_AsyncFunctionDef = visit_FunctionDef
 
     def visit_Dict(self, node):
+        if (self.module,self.stack[-1] if self.stack else "<module>") in NON_FINDING_SITES:
+            self.generic_visit(node)
+            return
         keys = {k.value for k in node.keys if isinstance(k, ast.Constant)}
         spread = any(k is None for k in node.keys)
         if "id" in keys and (keys & FINDING_KEYS or spread):

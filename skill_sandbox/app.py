@@ -6,6 +6,7 @@ import tarfile
 import tempfile
 import zipfile
 import hashlib
+import json
 import re
 import threading
 from pathlib import Path, PurePosixPath
@@ -55,6 +56,15 @@ else:
     from org_policy import evaluate_policy, RESULT_SCHEMA as POLICY_RESULT_SCHEMA
     from fix_summary import build_fix_summary
 
+try:
+    from .correction_rules import using_pack, apply_corrections
+    from .approved_corrections import approved_pack, pack_digest as correction_digest
+    from .package_evidence import scanner_metadata
+except ImportError:
+    from correction_rules import using_pack, apply_corrections
+    from approved_corrections import approved_pack, pack_digest as correction_digest
+    from package_evidence import scanner_metadata
+
 app = FastAPI(title="Injecticide Skill Sandbox", version="1.0.0")
 
 MAX_UPLOAD_BYTES = 32 * 1024 * 1024
@@ -88,7 +98,7 @@ MAX_TEXT_CHARS = 1024 * 1024
 @app.post("/scan")
 async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("auto"),
                      governance_evidence: str = Form("{}"), org_policy: str = Form(""),
-                     use_local_llm: bool | None = Form(None)) -> Dict[str, object]:
+                     use_local_llm: bool | None = Form(None), correction_pack: str = Form("")) -> Dict[str, object]:
     if not file.filename:
         await file.close()
         raise HTTPException(status_code=400, detail="Missing filename")
@@ -102,7 +112,18 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
         # The policy is passed as raw text: its SHA-256 identifies the exact
         # submitted policy, and an invalid policy is reported, not rejected.
         options = {} if use_local_llm is None else {"use_local_llm": use_local_llm}
+        correction_state="baseline"
+        if correction_pack:
+            try:
+                if len(correction_pack.encode())>32768:
+                    raise ValueError("Correction budget")
+                envelope=json.loads(correction_pack)
+                options["correction_pack"]=approved_pack(envelope,scanner_metadata())
+                correction_state=envelope["state"]
+            except (ValueError,TypeError,KeyError,RecursionError):
+                correction_state="rejected"
         result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence, org_policy, **options)
+        result["correction_application"]["delivery_state"]=correction_state
         return result
     except (ValueError, zipfile.BadZipFile, tarfile.TarError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -112,6 +133,20 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
 
 
 def scan_upload(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None,
+                org_policy=None, *, source_channel="uploaded_artifact", use_local_llm=None,
+                correction_pack=None) -> Dict[str, object]:
+    with using_pack(correction_pack) as stats:
+        result=_scan_upload_baseline(upload_bytes,filename,target_runtime,governance_evidence,org_policy,
+                                    source_channel=source_channel,use_local_llm=use_local_llm)
+        result["correction_application"]={
+            "schema":"injecticide.correction-application.v1",
+            "state":"enabled" if correction_pack else "baseline",
+            "pack_sha256":correction_digest(correction_pack) if correction_pack else None,
+            "matched_observations":stats["matched_observations"],"rules":sorted(stats["rules"])}
+        return result
+
+
+def _scan_upload_baseline(upload_bytes: bytes, filename: str, target_runtime="auto", governance_evidence=None,
                 org_policy=None, *, source_channel="uploaded_artifact", use_local_llm=None) -> Dict[str, object]:
     if use_local_llm is not None and not isinstance(use_local_llm, bool):
         raise ValueError("Local model selection must be a boolean")
@@ -622,7 +657,7 @@ def _scan_text_plain(path: str, text: str, artifact_role: str) -> List[Dict[str,
 
     findings.extend(detect_contextual_findings(path, text, artifact_role, contextual_finding))
     findings.extend(detect_special_findings(path, text, artifact_role))
-    return findings
+    return apply_corrections(path,text,findings)
 
 
 def _assemble_result(

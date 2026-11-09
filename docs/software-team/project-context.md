@@ -403,3 +403,32 @@ merge under the lead's explicit release authorization, protected full Pi rebuild
 and live authenticated public upload/coverage/redaction/request-ID smoke checks.
 This source record describes candidate-time evidence; deployment runs record
 actual publication and target verification separately.
+
+
+## 2026-11-09 — reviewed correction loop 0.18.0
+
+Avery coordinated implementation in Codex. Ishan implemented the finite correction
+interpreter and reviewed the coupled model grammar; Elena independently reviewed
+the privacy/authority boundary and protected-outcome gate; Lena independently
+reviewed delivery and database coverage. Their static findings were corrected:
+protected outcomes now use complete finding fingerprints with multiplicity,
+native SQLite cases include database-profile evidence, and web delivery preserves
+a scanner rejection. Reviewers did not claim to run the coordinator's tests.
+
+Candidate verification: native Pi full suite 1,905 passed, one skipped before the
+isolated model-grammar refinement; 53 targeted tests passed after that refinement,
+and 18 correction-loop tests passed after adding explicit native database-path
+assertions. The actual local model generated seven finite rules from seven
+reviewed source-owned cases. Its proposal stayed review-only until an actual
+scanner gate passed: 15 actionable false-positive reductions, 37 protected
+finding/profile outcomes preserved, zero losses across the shipped synthetic
+corpus. Local MCP approval and deactivation both passed. These finite fixtures
+do not establish zero regressions for every possible input.
+
+This is reviewed example learning and gated deterministic scanner updates,
+not weight training. Customer source text and private record values cannot be
+submitted through the correction-learning interface. Public clients have no
+model, review or approval controls. The daily schedule remains 02:00
+America/Chicago. Candidate evidence does not claim production deployment:
+exact-revision Azure checks, image builds and live Pi activation/rollback are
+release gates recorded separately by the deployment run.

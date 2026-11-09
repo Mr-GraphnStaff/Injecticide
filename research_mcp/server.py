@@ -20,6 +20,7 @@ from .obsession import Obsession
 from .scan_learning import ScanLearning
 from .scan_errors import ScanErrors
 from .research_inbox import ResearchInbox
+from .correction_store import CorrectionStore
 
 
 def create_server(catalog: Catalog, collector: Collector, start_collector: bool = True) -> MCPServer:
@@ -30,6 +31,7 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
     learning.enabled = False  # MCP clients can never start or reach model inference.
     inbox = ResearchInbox(catalog, Path(os.environ.get('RESEARCH_INBOX_DIR', '/research-inbox')))
     scan_errors = ScanErrors(catalog)
+    corrections = CorrectionStore(catalog, Path(os.environ.get("RESEARCH_INBOX_DIR","/research-inbox")))
     collector.after_collection = obsession.cycle
     obsession.driver_thread = collector.thread
     @asynccontextmanager
@@ -37,15 +39,17 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
         if start_collector:
             collector.thread.start()
             inbox.thread.start()
+            corrections.thread.start()
         try:
             yield {"catalog": catalog}
         finally:
             await asyncio.to_thread(inbox.close)
+            await asyncio.to_thread(corrections.close)
             await asyncio.to_thread(learning.close)
             await asyncio.to_thread(obsession.close)
             await asyncio.to_thread(collector.close)
 
-    server = MCPServer("injecticide_research_mcp", version="0.17.0", lifespan=lifespan)
+    server = MCPServer("injecticide_research_mcp", version="0.18.0", lifespan=lifespan)
     read = {"readOnlyHint": True, "destructiveHint": False,
             "idempotentHint": True, "openWorldHint": False}
 
@@ -105,6 +109,23 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
     def research_list_scheduled(after_id: int = 0, limit: int = 20, state: str = "") -> dict[str, object]:
         """Read source-linked candidates from the isolated worker; no model/tool passthrough."""
         return inbox.list(after_id, limit, state)
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_get_correction_status() -> dict[str, object]:
+        """Read correction review/activation status; cannot invoke or approve a model."""
+        return corrections.status()
+
+    @server.tool(annotations=read, structured_output=True)
+    def research_list_corrections(after_id: int=0, limit: int=20) -> dict[str, object]:
+        """Read untrusted, gated technical correction proposals; no activation controls."""
+        return corrections.list(after_id,limit)
+
+    @server.custom_route("/corrections/active",methods=["GET"])
+    async def active_corrections(request):
+        if request.query_params:
+            return JSONResponse({"error":"No correction query inputs are accepted"},status_code=400)
+        return JSONResponse(await asyncio.to_thread(corrections.active),
+                            headers={"Cache-Control":"no-store"})
 
     @server.tool(annotations=read, structured_output=True)
     def research_get_learning_status() -> dict[str, object]:

@@ -332,9 +332,20 @@ class ColumnState:
         # Classify every value before bounded report observations are selected.
         if "@" in value:
             self.content_email_domains.update(match.group(1).lower() for match in EMAIL_ANY.finditer(value))
+        if __package__:
+            from .correction_rules import corrects_data_value
+        else:
+            from correction_rules import corrects_data_value
+        typed_phone = None
+        def reviewed_non_ssn():
+            nonlocal typed_phone
+            if typed_phone is None:
+                typed_phone=corrects_data_value("pii_ssn",value,self.name)
+            return typed_phone
         for pattern, data_class in _content_class_patterns():
             if pattern.search(value):
-                self.content_classes.add(data_class)
+                if data_class != "ssn" or not reviewed_non_ssn():
+                    self.content_classes.add(data_class)
         self.text_values += 1
         self.text_chars += len(value)
         stripped = value.strip()
@@ -344,9 +355,9 @@ class ColumnState:
                 self.email_values += 1
                 self.emails[email.group(1).lower()] += 1
                 return
-            if SSN_VALUE.match(stripped):
+            if SSN_VALUE.match(stripped) and not reviewed_non_ssn():
                 self.ssns += 1
-            elif PHONE_VALUE.match(stripped) and len(re.sub(r"\D", "", stripped)) >= 7:
+            elif PHONE_VALUE.match(stripped) and len(re.sub(r"\D", "", stripped)) >= 7 and not corrects_data_value("pii_phone_number",value,self.name):
                 self.phones += 1
 
     def finalize(self, dominant_domain: Optional[str]):
@@ -1148,6 +1159,12 @@ def run_detectors(analysis: DatabaseAnalysis, scan_text: Callable, artifact_role
         # One value per line, scanned as line-delimited records so every match
         # keeps its own line and therefore its own table/column/row citation.
         findings = scan_text(analysis.path + DETECTOR_PATH_SUFFIX, text, artifact_role)
+        if __package__:
+            from .correction_rules import apply_database_corrections
+        else:
+            from correction_rules import apply_database_corrections
+        findings=apply_database_corrections(analysis.path,[line.text for line in lines],
+                                          [line.citation.get("column","") for line in lines],findings)
         redact_result({"findings": findings}, {analysis.path: text})
         if bucket == "contact":
             findings = [item for item in findings if item.get("id") not in {"pii_email_address", "pii_phone_number"}]
