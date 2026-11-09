@@ -329,3 +329,21 @@ def apply_database_corrections(path, texts, columns, findings):
                 for item in corrected.get("observations",[]):item["line"]=number
                 result.append(corrected)
     return result
+
+def trusted_informational_correction(finding):
+    """Only a downgrade applied in this request can survive later policy."""
+    pack,stats=_ACTIVE_PACK.get(),_APPLIED.get()
+    marker=finding.get("correction")
+    if (not pack or not stats or not isinstance(marker,dict)
+            or set(marker)!={"version","rules"} or marker["version"]!=pack["version"]
+            or not isinstance(marker["rules"],list) or not marker["rules"]
+            or any(not isinstance(value,str) for value in marker["rules"])
+            or len(marker["rules"])!=len(set(marker["rules"]))
+            or finding.get("severity")!="info" or finding.get("tier")!="info"
+            or finding.get("is_actionable") is not False
+            or finding.get("counts_for_governance") is not False
+            or finding.get("action_state")!="reviewed_contextual_reference"):
+        return False
+    allowed={rule["id"] for rule in pack["rules"]
+             if rule["detector"]==finding.get("id") and rule["action"]=="downgrade"}
+    return set(marker["rules"]).issubset(allowed & stats["rules"])

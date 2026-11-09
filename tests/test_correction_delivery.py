@@ -13,7 +13,7 @@ def envelope():
     return dict(schema=SCHEMA,revision=1,state="active",pack=pack(),
       pack_sha256=receipt["pack_sha256"],scanner_version=receipt["scanner_version"],
       scanner_source_sha256=receipt["scanner_source_sha256"],
-      contract_sha256=receipt["contract_sha256"],gate_revision=1)
+      contract_sha256=receipt["contract_sha256"],gate_revision=receipt["gate_revision"])
 
 def test_sandbox_rejects_wrong_engine_and_web_preserves_rejection(monkeypatch):
     import skill_sandbox.app as sandbox
