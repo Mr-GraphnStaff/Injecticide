@@ -31,6 +31,22 @@ def apply_instruction_policy(scan_results, source_channel="uploaded_artifact"):
         for finding in item.get("findings", []):
             if finding.get("id") not in INSTRUCTION_POLICY_RULES:
                 continue
+            try:
+                from .correction_rules import trusted_informational_correction
+            except ImportError:
+                from correction_rules import trusted_informational_correction
+            if trusted_informational_correction(finding):
+                finding["policy_evaluation"]={
+                    "action":"allow_log","source_channel":source_channel,
+                    "observations":[{"speech_act":o.get("speech_act","ambiguous"),
+                        "target":o.get("target","unspecified"),
+                        "confidence":o.get("confidence","medium"),
+                        "imperative_evidence":bool(o.get("imperative_evidence")),
+                        "action":"allow_log","reason":"Trusted reviewed correction retained this technical reference as informational.",
+                        "line":o.get("line"),"line_end":o.get("line_end")}
+                        for o in finding.get("observations",[])],
+                    "scope":"static_recommendation_not_runtime_enforcement"}
+                continue
             decisions = []
             for observation in finding.get("observations", []):
                 act = observation.get("speech_act", "ambiguous")

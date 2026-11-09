@@ -432,3 +432,26 @@ model, review or approval controls. The daily schedule remains 02:00
 America/Chicago. Candidate evidence does not claim production deployment:
 exact-revision Azure checks, image builds and live Pi activation/rollback are
 release gates recorded separately by the deployment run.
+
+
+## 2026-11-09 — final-report correction preservation 0.18.1
+
+Live 0.18.0 verification found that instruction-policy enrichment restored a
+review severity after a real model rule downgraded a benign reference. The 0.18.0
+lower-level gate did not establish correct final-report behavior. Typed-value
+suppressions were separate; the observed downgrade failure is corrected here.
+
+Elena and Lena independently reviewed the revised source and found no remaining
+blocker in this fix. Informational preservation requires the active request pack,
+matching detector/version/downgrade IDs and evidence those rules actually applied
+in this request. Raw observations and adapter-supplied source context survive.
+The revision-2 approval gate executes complete scan_upload reports for text and
+native databases, fingerprints full protected findings/profiles, and requires
+each proposed rule/feature to act and remain nonactionable after enrichment.
+
+Verification before publication: 45 targeted tests passed, then 1,918 full-suite
+tests passed with one environment-specific skip. New regressions cover all five
+source channels, forged markers, operative instructions, and late re-elevation
+masked by successful corrections elsewhere. Actual-model/full-report and
+standalone container-entry gates are required before commit; exact-head CI and
+live approval/deactivation/reactivation remain deployment verification gates.

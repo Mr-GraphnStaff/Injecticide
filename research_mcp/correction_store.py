@@ -16,8 +16,8 @@ from .correction_rules import contract_digest, validate_pack, load_cases
 
 ENVELOPE = "injecticide.approved-corrections.v1"
 RECEIPT = "injecticide.correction-gate.v1"
-SCANNER_VERSION = "0.18.0"
-GATE_REVISION = 1
+SCANNER_VERSION = "0.18.1"
+GATE_REVISION = 2
 
 def validate_receipt(value, pack, *, fresh=True):
     fields={"schema","pack_sha256","contract_sha256","scanner_source_sha256","scanner_version",
@@ -40,13 +40,20 @@ def validate_receipt(value, pack, *, fresh=True):
     known=set(corpus)
     reductions=preserved=losses=0
     observed=set()
+    verified=set()
+    rule_ids={rule["id"] for rule in pack["rules"]}
     for item in value["cases"]:
-        if (not isinstance(item,dict) or set(item)!={"id","baseline","corrected","expected","baseline_outcomes","corrected_outcomes"}
+        if (not isinstance(item,dict) or set(item)!={"id","baseline","corrected","expected","baseline_outcomes","corrected_outcomes","applied_rules"}
                 or item["id"] not in known or item["id"] in observed
                 or not isinstance(item["baseline"],list) or not isinstance(item["corrected"],list)
                 or any(not isinstance(x,str) or not re.fullmatch(r"[a-z0-9_]{1,64}",x)
                        for x in item["baseline"]+item["corrected"])):
             raise ValueError("Invalid scanner contrastive case evidence")
+        applied=item["applied_rules"]
+        if (not isinstance(applied,list) or len(applied)>32
+                or any(not isinstance(rule,str) or rule not in rule_ids for rule in applied)
+                or len(applied)!=len(set(applied))):
+            raise ValueError("Invalid applied correction evidence")
         source=corpus[item["id"]]
         if item["expected"]!=source["expected"]:
             raise ValueError("Operator receipt changed source-owned labels")
@@ -62,11 +69,16 @@ def validate_receipt(value, pack, *, fresh=True):
             losses+=sum((original-updated).values())
         elif any(rule["detector"]==source["detector"] and source["feature"] in rule["all_features"] for rule in pack["rules"]):
             reductions+=int(source["detector"] in before-after)
+        if source["expected"]=="correct" and source["detector"] not in after:
+            verified.update((rule["id"],source["feature"]) for rule in pack["rules"]
+                            if rule["id"] in applied and rule["detector"]==source["detector"]
+                            and source["feature"] in rule["all_features"])
         observed.add(item["id"])
     if (value["fp_reductions"]!=reductions or value["protected_preserved"]!=preserved
             or value["protected_losses"]!=losses or losses):
         raise ValueError("Actual scanner outcome counts do not match evidence")
-    if observed!=known or gate_summary(pack)["passed"] is not True:
+    if (observed!=known or gate_summary(pack)["passed"] is not True
+            or not all((rule["id"],feature) in verified for rule in pack["rules"] for feature in rule["all_features"])):
         raise ValueError("Incomplete source-owned scanner gate")
     return value
 

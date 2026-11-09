@@ -22,7 +22,7 @@ def approved_pack(envelope, scanner_identity=None):
             or type(envelope["revision"]) is not int or envelope["revision"]<0
             or envelope["state"] not in {"active","disabled","stale"}
             or envelope["scanner_version"]!=SCANNER_VERSION
-            or envelope["contract_sha256"]!=contract_digest() or type(envelope["gate_revision"]) is not int or envelope["gate_revision"]!=1):
+            or envelope["contract_sha256"]!=contract_digest() or type(envelope["gate_revision"]) is not int or envelope["gate_revision"]!=2):
         raise ValueError("Correction approval envelope mismatch")
     if envelope["state"]!="active":
         if envelope["pack"] is not None:

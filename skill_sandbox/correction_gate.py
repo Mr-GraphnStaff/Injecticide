@@ -17,7 +17,7 @@ else:
     from package_evidence import scanner_metadata
 
 RECEIPT_SCHEMA = "injecticide.correction-gate.v1"
-GATE_REVISION = 1
+GATE_REVISION = 2
 MAX_PACK_BYTES = 65536
 
 
@@ -56,36 +56,30 @@ def _actionable_ids(findings):
 def _outcomes(findings):
     return sorted(hashlib.sha256(canonical(item)).hexdigest() for item in findings)
 
-def _database_findings(case):
+def _native_findings(case,pack):
     if __package__:
         from .app import scan_upload
     else:
         from app import scan_upload
-    spec=case["database"]
-    connection=sqlite3.connect(":memory:")
-    try:
-        columns=spec["columns"]
-        connection.execute("CREATE TABLE facts ("+",".join('"'+c+'" TEXT' for c in columns)+")")
-        connection.executemany("INSERT INTO facts VALUES ("+",".join("?" for c in columns)+")",spec["rows"])
-        connection.commit()
-        raw=connection.serialize()
-    finally:
-        connection.close()
-    # Outer gate context supplies its pack, while scan_upload starts a request
-    # context. Use the native database entry reader under that outer context.
-    if __package__:
-        from .database_analysis import scan_database_entry
-        from .inspection_evidence import initial_coverage
-        from .app import _scan_text
-    else:
-        from database_analysis import scan_database_entry
-        from inspection_evidence import initial_coverage
-        from app import _scan_text
-    entry={"path":case["path"],"artifact_role":"active","findings":[],"analysis_coverage":initial_coverage()}
-    result=scan_database_entry(entry,raw,_scan_text)[0]
-    findings=list(result["findings"])
-    findings.append({"id":"database_profile","severity":"info","profile":result["database_profile"]})
-    return findings
+    raw=case["text"].encode("utf-8")
+    if "database" in case:
+        spec=case["database"]
+        connection=sqlite3.connect(":memory:")
+        try:
+            columns=spec["columns"]
+            connection.execute("CREATE TABLE facts ("+",".join('"'+c+'" TEXT' for c in columns)+")")
+            connection.executemany("INSERT INTO facts VALUES ("+",".join("?" for c in columns)+")",spec["rows"])
+            connection.commit()
+            raw=connection.serialize()
+        finally:
+            connection.close()
+    value=scan_upload(raw,case["path"],correction_pack=pack)
+    findings=[]
+    for entry in value["files"]:
+        findings.extend(entry["findings"])
+        if "database_profile" in entry:
+            findings.append({"id":"database_profile","severity":"info","profile":entry["database_profile"]})
+    return findings,value["correction_application"]["rules"]
 
 
 def run_gate(pack, scanner=None):
@@ -103,13 +97,19 @@ def run_gate(pack, scanner=None):
     before_identity = scanner_metadata()
     cases = []
     reductions = preserved = losses = 0
+    verified=set()
     for case in load_cases():
-        with using_pack(None):
-            baseline_findings=_database_findings(case) if native_scanner and "database" in case else scanner(case["path"], case["text"], "active")
-            baseline = _actionable_ids(baseline_findings)
-        with using_pack(pack, gate=False):
-            corrected_findings=_database_findings(case) if native_scanner and "database" in case else scanner(case["path"], case["text"], "active")
-            corrected = _actionable_ids(corrected_findings)
+        if native_scanner:
+            baseline_findings,_=_native_findings(case,None)
+            corrected_findings,applied=_native_findings(case,pack)
+        else:
+            with using_pack(None):
+                baseline_findings=scanner(case["path"],case["text"],"active")
+            with using_pack(pack,gate=False) as stats:
+                corrected_findings=scanner(case["path"],case["text"],"active")
+                applied=sorted(stats["rules"])
+        baseline=_actionable_ids(baseline_findings)
+        corrected=_actionable_ids(corrected_findings)
         original, updated = set(baseline), set(corrected)
         before_outcomes,after_outcomes=_outcomes(baseline_findings),_outcomes(corrected_findings)
         if case["expected"] == "keep":
@@ -121,7 +121,11 @@ def run_gate(pack, scanner=None):
             # Both removal and downgrade count only when an actionable target
             # actually existed. Already informational/absent cases count zero.
             reductions += int(case["detector"] in original - updated)
-        cases.append({"id": case["id"], "baseline": baseline,
+        if case["expected"]=="correct" and case["detector"] not in updated:
+            verified.update((rule["id"],case["feature"]) for rule in pack["rules"]
+                            if rule["id"] in applied and rule["detector"]==case["detector"]
+                            and case["feature"] in rule["all_features"])
+        cases.append({"applied_rules":applied,"id": case["id"], "baseline": baseline,
                       "corrected": corrected, "expected": case["expected"],
                       "baseline_outcomes":before_outcomes,"corrected_outcomes":after_outcomes})
     after_identity = scanner_metadata()
@@ -136,7 +140,8 @@ def run_gate(pack, scanner=None):
             "gate_revision": GATE_REVISION,
             "issued_at": datetime.now(timezone.utc).isoformat(),
             "passed": interpretation.get("passed") is True and identity_stable
-                      and reductions > 0 and preserved > 0 and losses == 0,
+                      and reductions > 0 and preserved > 0 and losses == 0
+                      and all((rule["id"],feature) in verified for rule in pack["rules"] for feature in rule["all_features"]),
             "fp_reductions": reductions, "protected_preserved": preserved,
             "protected_losses": losses, "cases": cases}
 

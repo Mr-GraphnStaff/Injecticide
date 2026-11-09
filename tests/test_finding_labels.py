@@ -39,7 +39,7 @@ DYNAMIC_SITES = {
 # Dict literals that carry an "id" but are not findings. Each needs a reason.
 NON_FINDING_SITES = {
     ("correction_rules.py", "evaluate_pack"): "source-owned synthetic interpreter gate, never emitted by scanner",
-    ("correction_gate.py", "_database_findings"): "offline gate-only profile fingerprint, never emitted by scanner",
+    ("correction_gate.py", "_native_findings"): "offline gate-only profile fingerprint, never emitted by scanner",
     ("governance.py", "build_governance_profile"): "copies an existing finding id into blocking_findings",
     ("improvement_plan.py", "add"): "improvement-plan row id (plan_<hash>); rule_id refers to an existing finding",
     ("process_diagram.py", "node"): "diagram node id (n<index>)",

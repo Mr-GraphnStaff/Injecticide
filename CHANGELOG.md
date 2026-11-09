@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.18.1] - 2026-11-09
+
+- Preserve request-validated informational corrections through final instruction-policy evaluation.
+- Gate every proposed rule against complete scan reports, including final governance and native database evidence; reject a broken feature even when other corrections succeed.
+
 ## [0.18.0] - 2026-11-09
 
 - Connect trusted, synthetic reviewed false positives to offline local-model correction proposals.
