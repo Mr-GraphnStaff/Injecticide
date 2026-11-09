@@ -1,3 +1,9 @@
+> Superseded by 0.17.0 on November 9, 2026. Scan-time model analysis is retired,
+> including its raw-text library API. The isolated daily worker receives only
+> allowlisted technical categories and public research. The historical preview
+> notes below are not activation instructions. See
+> [the current privacy boundary](../research_mcp/README.md#scheduled-local-research-and-privacy-boundary-0170).
+
 # Local model first cut: prepared scanner switch
 
 Status: ENABLED AND VERIFIED on November 8, 2026 after David explicitly confirmed activation. The existing Injecticide web scan endpoint returned completed local-model analysis in 19.44 seconds, with the recorded model digest and the normal policy/readiness fields preserved. Existing services were healthy after the switch.

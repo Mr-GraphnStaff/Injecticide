@@ -1,3 +1,9 @@
+> Superseded by 0.17.0 on November 9, 2026. Scan-time model analysis is retired,
+> including its raw-text library API. The isolated daily worker receives only
+> allowlisted technical categories and public research. The historical preview
+> notes below are not activation instructions. See
+> [the current privacy boundary](../research_mcp/README.md#scheduled-local-research-and-privacy-boundary-0170).
+
 # Local model analysis: first cut
 
 The optional local analyzer adds `local_analysis` to the shared web/CLI/MCP scan report. This is model-generated advisory evidence; technical findings and organization policy remain authoritative independent sections. It is not a trained Injecticide model, malware certification, or a new safety verdict.

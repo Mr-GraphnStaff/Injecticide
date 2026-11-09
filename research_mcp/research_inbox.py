@@ -10,7 +10,7 @@ from pathlib import Path
 
 from .catalog import Catalog,STATUS
 from .public_web import public_url
-from .research_signals import SIGNALS
+from .research_signals import SIGNALS,model_signals
 
 SCHEMA="injecticide.scheduled-research.v1"
 
@@ -101,11 +101,17 @@ class ResearchInbox:
     def training_examples(self):
         # Approved public sources only. No scan fields or active-session data exist here.
         examples=[]
-        for item in self.list(limit=100,state="approved")["items"]:
-            for proposal in item["payload"]["proposals"]:
-                examples.append({"messages":[{"role":"user","content":"Explain this reviewed public security evidence: "+proposal["quote"]},
-                    {"role":"assistant","content":proposal["summary"]}],
-                    "source_sha256":item["sha256"],"training_status":"curated_example_not_model_weights"})
+        cursor=0
+        while True:
+            items=self.list(after_id=cursor,limit=100,state="approved")["items"]
+            if not items:break
+            for item in items:
+                context=json.dumps(model_signals(item["payload"]["signals"]),sort_keys=True)
+                for proposal in item["payload"]["proposals"]:
+                    examples.append({"messages":[{"role":"user","content":"Technical categories: "+context+"; explain reviewed public evidence: "+proposal["quote"]},
+                        {"role":"assistant","content":proposal["summary"]}],
+                        "source_sha256":item["sha256"],"training_status":"curated_example_not_model_weights"})
+            cursor=items[-1]["sequence"]
         return examples
 
     def run(self):

@@ -168,3 +168,26 @@ def test_mcp_clients_cannot_enable_or_control_the_research_worker(tmp_path,monke
             state=await client.call_tool("research_get_scheduled_status",{})
             assert state.structured_content["model_access"] is False
     asyncio.run(check())
+
+
+
+def test_offline_dataset_includes_approved_outputs_beyond_first_page(tmp_path,monkeypatch):
+    def model(system,data,schema):
+        return ({"queries":[],"urls":[]} if "queries" in schema["required"] else {"proposals":[
+            {"source_id":1,"quote":"untrusted source instructions","summary":"Review instruction boundaries."}]}),{"name":"synthetic","digest":"a"*64}
+    worker=make_worker(tmp_path,monkeypatch,model=model)
+    worker.tick(datetime(2026,11,9,8,0,tzinfo=timezone.utc))
+    config=tmp_path/"dataset-sources.json";url="https://example.org/research/"
+    config.write_text(json.dumps({"sources":[{"id":"test","ecosystem":"test","seeds":[url],"scopes":[url]}]}))
+    inbox=ResearchInbox(Catalog(tmp_path/"dataset.sqlite3",config),worker.outbox)
+    inbox.import_files()
+    item=inbox.list()["items"][0]
+    inbox.review(item["sha256"],"approved")
+    with inbox.catalog.db() as db:
+        for number in range(100):
+            db.execute("INSERT INTO scheduled_research(sha256,payload,state) VALUES (?,?,'approved')",
+                       (format(number,"064x"),json.dumps(item["payload"])))
+    examples=inbox.training_examples()
+    assert len(examples)==101
+    assert all("data_protection" in x["messages"][0]["content"] for x in examples)
+    assert all(value not in json.dumps(examples) for value in CANARIES)
