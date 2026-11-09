@@ -627,10 +627,12 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
     stage = "validation"
     handed_off = False
 
-    def failure(status, message, failed_stage=None):
+    def failure(status, message, failed_stage=None, kind="other"):
+        detail = {"message": message, "stage": failed_stage or stage, "request_id": request_id}
+        if status >= 500:
+            detail["bug_report"] = submit_scan_error(request_id, status, detail["stage"], kind)
         return JSONResponse(status_code=status, headers={"X-Scan-Request-ID": request_id},
-            content={"detail": {"message": message, "stage": failed_stage or stage,
-                                "request_id": request_id}})
+                            content={"detail": detail})
 
     if not file.filename:
         await file.close()
@@ -659,8 +661,8 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
                 "status_url": "/api/skills/scan/jobs/" + job_id})
         status, content = await run_in_threadpool(_execute_skill_scan, *arguments)
         return JSONResponse(status_code=status, content=content, headers=headers)
-    except requests.RequestException:
-        return failure(502, "Skill sandbox unavailable or timed out. The file can be selected again to retry.", "sandbox")
+    except requests.RequestException as exc:
+        return failure(502, "Skill sandbox unavailable or timed out. The file can be selected again to retry.", "sandbox", type(exc).__name__)
     except HTTPException as exc:
         # Do not reflect an arbitrary upstream exception object or uploaded text.
         return failure(exc.status_code, "The analysis service could not accept this scan.", "sandbox")
@@ -675,7 +677,7 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
         return failure(400, message)
     except Exception as exc:
         logging.getLogger(__name__).error("Scan request %s failed at %s (%s)", request_id, stage, type(exc).__name__)
-        return failure(500, "Scan failed unexpectedly. Use the request ID when reporting the problem.")
+        return failure(500, "Scan failed unexpectedly. Use the request ID when reporting the problem.", kind=type(exc).__name__)
     finally:
         if not handed_off:
             SKILL_SCAN_SLOT.release()

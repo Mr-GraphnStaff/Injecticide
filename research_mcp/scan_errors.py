@@ -21,7 +21,7 @@ def validate(event):
     if (not isinstance(event, dict) or set(event) != required or event["schema"] != SCHEMA
             or not isinstance(event["event_id"], str) or not re.fullmatch(r"[a-f0-9]{32}", event["event_id"])
             or type(event["http_status"]) is not int or event["http_status"] not in {500, 502, 503, 504}
-            or event["stage"] not in {"analysis", "sandbox"}
+            or event["stage"] not in {"validation", "upload", "analysis", "sandbox"}
             or event["kind"] not in KINDS or not isinstance(event["scanner_version"], str)
             or not re.fullmatch(r"[0-9]{1,4}\.[0-9]{1,4}\.[0-9]{1,4}", event["scanner_version"])):
         raise ValueError("Invalid operational error metadata")

@@ -371,7 +371,7 @@ statuses and error classes rather than source bodies or private error messages.
 
 ### Operational scan issues
 
-Unexpected analysis failures and upstream 5xx/timeouts are submitted separately
+Unexpected submission/analysis failures and upstream 5xx/timeouts are submitted separately
 to the internal statistics-only `POST /feedback/error` route. Input rejections
 (400/413/422), busy responses (429) and user cancellation do not automatically
 become bugs. No exception message, traceback, filename or package text is sent.
