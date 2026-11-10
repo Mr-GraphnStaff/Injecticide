@@ -1,5 +1,6 @@
 import json
 import time
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -13,10 +14,13 @@ URL = "https://example.org/research/"
 TEXT = "Prompt injection uses untrusted instructions. Review source boundaries."
 
 
+RELEASE_VERSION = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+
+
 def event(number=1):
     return {"schema": SCHEMA, "event_id": format(number, "032x"),
             "coverage": "partial", "rules": {"prompt_override": 1},
-            "scanner_version": "0.18.1", "engine_sha256": None}
+            "scanner_version": RELEASE_VERSION, "engine_sha256": None}
 
 
 @pytest.fixture
