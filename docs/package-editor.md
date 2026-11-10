@@ -68,3 +68,17 @@ Profiles are based on official documentation reviewed November 10, 2026:
 Claude's help article specifies a 200-character description while its API
 documentation permits 1,024. The Claude.ai profile reports this discrepancy.
 Unknown product limits remain unverified; local safety caps may be stricter.
+
+
+## Operation status and Office scope
+
+The editor reports the actual server stage and elapsed time. Stop waiting stops browser polling; it does not cancel server processing. Drafts and accepted edits remain available after a failure or stopped wait.
+
+Office inspection covers ElementTree-exposed XML text/tails and attributes in XML, relationships, VML and SVG, including supported embedded OOXML. It does not certify rendering, OCR, opaque binary execution, XML comments/processing instructions/namespace declarations, or unreferenced ZIP bytes. Shared limits are 2,000 members, 50 MiB expanded bytes, 1,024 XML parts, 5 MiB XML bytes, 1 MiB projected text and ten seconds of cooperative Office work; an individual Office input/member is limited to 8 MiB, and each XML part to 1 MiB. Parser errors and actual work-limit exhaustion stay blocked.
+
+Optional code/decoding refinements can report bounded partial analysis after raw extraction and text-pattern input inspection complete. Every reported limitation remains visible and requires explicit acknowledgement for that artifact before download. A completed copy is not certified safe to execute or install.
+
+Incomplete database inspection remains a download blocker. The failure names the
+file and reports rows read versus reported rows; matching row counts alone do not
+prove complete database coverage when other unread content remains. This differs
+from acknowledged limits of optional refinement or binary runtime analysis.

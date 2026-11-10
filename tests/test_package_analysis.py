@@ -297,7 +297,8 @@ def test_web_api_forwards_profile_and_evidence(monkeypatch):
 
 
 def test_structured_projection_is_partial():
-    document = archive({'word/document.xml': '<document><text>Fixture</text></document>'})
+    document = archive({'[Content_Types].xml': '<Types/>',
+                        'word/document.xml': '<document><text>Fixture</text></document>'})
     result = scan({'demo/SKILL.md': skill(), 'demo/references/document.docx': document})
     assert result['coverage']['status'] == 'partial'
     assert result['coverage']['states']['structured_content_analyzed'] == 1

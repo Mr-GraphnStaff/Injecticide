@@ -13,6 +13,7 @@ from starlette.responses import JSONResponse
 
 from .catalog import Catalog
 from .collector import Collector
+from .recovery import health_status
 from .news import build_news
 from .requirements import Requirements
 from .reference_library import ReferenceLibrary
@@ -32,7 +33,14 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
     inbox = ResearchInbox(catalog, Path(os.environ.get('RESEARCH_INBOX_DIR', '/research-inbox')))
     scan_errors = ScanErrors(catalog)
     corrections = CorrectionStore(catalog, Path(os.environ.get("RESEARCH_INBOX_DIR","/research-inbox")))
-    collector.after_collection = obsession.cycle
+    def triage_collected_evidence():
+        result = obsession.cycle()
+        # A not-due/leased response after failure is not proof of recovery.
+        if obsession.status().get("last_error"):
+            raise RuntimeError("Research triage has an unresolved persisted failure")
+        return result
+
+    collector.after_collection = triage_collected_evidence
     obsession.driver_thread = collector.thread
     @asynccontextmanager
     async def lifespan(server):
@@ -49,7 +57,7 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
             await asyncio.to_thread(obsession.close)
             await asyncio.to_thread(collector.close)
 
-    server = MCPServer("injecticide_research_mcp", version="0.19.0", lifespan=lifespan)
+    server = MCPServer("injecticide_research_mcp", version="0.19.1", lifespan=lifespan)
     read = {"readOnlyHint": True, "destructiveHint": False,
             "idempotentHint": True, "openWorldHint": False}
 
@@ -208,7 +216,8 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
     @server.tool(annotations=read, structured_output=True)
     def research_get_status() -> dict[str, object]:
         """Get worker status and configured collection budgets. Freshness is reported separately per source."""
-        return {**collector.status, "worker_alive": collector.thread.is_alive(),
+        return {**collector.status, "triage_recovery": collector.triage.status,
+                "worker_alive": collector.thread.is_alive(),
                 "interval_seconds": collector.interval, "page_budget": collector.page_budget,
                 "authority": "research_evidence_not_active_rules", "obsession": obsession.status(),
                 "learning": learning.status(), "scheduled_research": inbox.status()}
@@ -248,9 +257,15 @@ def create_server(catalog: Catalog, collector: Collector, start_collector: bool 
 
     @server.custom_route("/health", methods=["GET"])
     async def health(request):
-        healthy = not start_collector or collector.thread.is_alive()
-        return JSONResponse({"status": "ok" if healthy else "worker_stopped",
-                             **collector.status}, status_code=200 if healthy else 503)
+        triage = obsession.status()
+        state = health_status(not start_collector or collector.thread.is_alive(),
+                              collector.status.get("last_error"), collector.triage.status,
+                              triage.get("last_error"))
+        return JSONResponse({**collector.status, "status": state,
+                             "triage_recovery": collector.triage.status,
+                             "triage_last_error": triage.get("last_error")},
+                            status_code=200 if state == "ok" else 503,
+                            headers={"Cache-Control": "no-store"})
 
     @server.custom_route("/news", methods=["GET"])
     async def news(request):

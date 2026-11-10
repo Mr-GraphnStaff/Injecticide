@@ -486,3 +486,34 @@ existing approved correction pack must be regated against matching live release
 containers after deployment. Exact-revision CI, deployment and live proof are
 recorded with the release PR/pipeline; local expanded correction regression hit
 a six-minute timeout and is not counted as a completed check.
+
+
+## 2026-11-10 - resumed delivery and bounded research recovery
+
+The lead authorized adding self-healing/self-updating to the plan and continuing
+delivery. See docs/self-healing-delivery-plan.md for the ordered acceptance gates.
+The 0.19.1 package-editor/Office work is preserved; its browser failure is being
+reproduced and checked separately from research recovery.
+
+Research recovery: native disposable Pi QA passed all 50 affected tests, including
+the real MCP HTTP health 503-to-200 recovery route, retained-evidence retries,
+retry exhaustion and legacy completed-capture shutdown behavior. Windows runs
+were not substituted for this native result: SDK-dependent checks skipped there
+and a separate existing fixture hit a network-share SQLite readonly error.
+Lena independently reviewed supplied recovery/collector/server source excerpts
+and found no material blocker; she did not independently execute the tests.
+This is candidate evidence, not a deployed release or complete autonomous
+standards-to-scanner verification. Full-suite, integration and exact-revision
+CI/deployment proof remain required.
+
+Subsequent candidate verification: 94 affected native tests passed, including
+normal deferred triage due times, held leases, invalid schedules, database
+diagnostic precedence/privacy, and final Python rebuild/download. The starvation
+regression failed before its fix. Mara reproduced the browser clock leak with a
+1,500 ms response and passed all 19 groups after the scoped harness fix.
+Lena reviewed recovery/UI excerpts and actual UI source; Elena reviewed the core
+Office/gate diff and the later narrow gate diagnostics. Their reviews were static.
+Actual archive Office coverage: PPTX 298/298 XML parts and DOCX 20/20, no omissions.
+Two SQLite assets remain partially inspected; unchanged-archive export is correctly
+blocked. Initial native full suite had four failures; their affected paths were
+corrected and retested, with clean exact-commit CI still required before release.

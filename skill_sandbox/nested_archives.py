@@ -51,11 +51,15 @@ def _preflight(data: bytes, remaining_files: int) -> tuple[str | None, int | Non
     disk, directory_disk, disk_count, total_count, directory_size, directory_offset, comment_size = struct.unpack_from("<HHHHIIH", data, position + 4)
     if position + 22 + comment_size != len(data):
         return "ZIP end record has inconsistent comment length or trailing bytes.", None
+    if position >= 20 and data[position - 20:position - 16] == b'PK\x06\x07':
+        return 'ZIP64 locator is unsupported for nested inspection.', None
     if disk or directory_disk or disk_count != total_count:
         return "Multipart ZIP archives are not supported for nested inspection.", None
     if total_count == 0xffff or directory_size == 0xffffffff or directory_offset == 0xffffffff:
         return "ZIP64 inner archives are not supported for nested inspection.", None
-    if directory_offset + directory_size > position:
+    if directory_size > 2 * 1024 * 1024:
+        return 'ZIP central directory exceeds the local 2 MiB safety limit.', None
+    if directory_offset + directory_size != position:
         return "ZIP central-directory bounds exceed the end record.", None
     if total_count > max(0, remaining_files):
         return "Nested archive member count exceeds the remaining shared file budget.", total_count
@@ -67,6 +71,13 @@ def _preflight(data: bytes, remaining_files: int) -> tuple[str | None, int | Non
         if observed >= total_count or cursor + 46 > directory_end or data[cursor:cursor + 4] != b"PK\x01\x02":
             return "ZIP central-directory record bounds or count are inconsistent.", None
         name_size, extra_size, member_comment_size = struct.unpack_from("<HHH", data, cursor + 28)
+        compressed, expanded = struct.unpack_from('<II', data, cursor + 20)
+        start_disk = struct.unpack_from('<H', data, cursor + 34)[0]
+        local_offset = struct.unpack_from('<I', data, cursor + 42)[0]
+        if compressed == 0xffffffff or expanded == 0xffffffff or local_offset == 0xffffffff or start_disk:
+            return 'ZIP64 or multipart inner member is unsupported.', None
+        if not name_size:
+            return 'ZIP central-directory filename is empty.', None
         cursor += 46 + name_size + extra_size + member_comment_size
         observed += 1
     if cursor != directory_end or observed != total_count:

@@ -110,24 +110,34 @@ class EditorJobs:
             if self.clock() - finished_at >= self.ttl or index < len(finished) - self.retained:
                 del self.jobs[key]
 
-    def submit(self, owner, work, release):
+    def submit(self, owner, work, release, *, with_progress=False):
         key = uuid.uuid4().hex
+        started = self.clock()
         with self.lock:
             self._prune()
-            self.jobs[key] = {"owner": owner, "status": "running"}
+            self.jobs[key] = {"owner": owner, "status": "running", "started": started,
+                              "progress": {"stage": "queued", "message": "Waiting for the package worker."}}
+
+        def progress(stage, message):
+            with self.lock:
+                job = self.jobs.get(key)
+                if job and job["status"] == "running":
+                    job["progress"] = {"stage": stage, "message": message}
 
         def run():
             try:
-                result, artifact = work()
-                outcome = {"status": "ready", "result": result, "artifact": artifact}
+                result, artifact = work(progress) if with_progress else work()
+                outcome = {"status": "ready", "result": result, "artifact": artifact,
+                           "progress": {"stage": "ready", "message": "The rebuilt copy passed its supported checks and is ready for review."}}
             except PackageEditError as error:
                 outcome = {"status": "failed", "error": {
                     "message": "Package validation failed. Review the reported issues.",
                     "stage": "validation", "validation": getattr(error, "validation", None)}}
             except RescanIncomplete as error:
-                outcome = {"status": "failed", "error": {"message": str(error), "stage": "rescan"}}
+                outcome = {"status": "failed", "error": error.detail}
             except HTTPException as error:
-                detail = error.detail if isinstance(error.detail, dict) else {"message": "The analysis service could not verify this package.", "stage": "sandbox"}
+                detail = error.detail if isinstance(error.detail, dict) else {
+                    "message": "The analysis service could not verify this package.", "stage": "sandbox"}
                 outcome = {"status": "failed", "error": detail}
             except requests.RequestException:
                 outcome = {"status": "failed", "error": {
@@ -141,7 +151,11 @@ class EditorJobs:
             finally:
                 release()
             with self.lock:
-                self.jobs[key] = dict(outcome, owner=owner, finished=self.clock())
+                if outcome["status"] == "failed":
+                    previous = self.jobs.get(key, {}).get("progress", {})
+                    outcome["progress"] = {"stage": "failed", "message": "Build failed. Review the reported issue; no download was released.",
+                                           "failed_stage": previous.get("stage")}
+                self.jobs[key] = dict(outcome, owner=owner, started=started, finished=self.clock())
                 self._prune()
 
         try:
@@ -162,8 +176,12 @@ class EditorJobs:
                 if job["status"] != "ready":
                     return None
                 return job["artifact"], job["result"]["filename"], job["result"]["sha256"]
-            return {name: value for name, value in job.items()
-                    if name not in {"owner", "artifact", "finished"}}
+            result = {name: value for name, value in job.items()
+                      if name not in {"owner", "artifact", "finished", "started"}}
+            result["progress"] = dict(job.get("progress", {}),
+                                      elapsed_seconds=max(0, round(job.get("finished", self.clock()) - job["started"], 1)))
+            return result
+
 
 
 def create_editor_router(scan_candidate, scan_slot, jobs=None):
@@ -221,7 +239,8 @@ def create_editor_router(scan_candidate, scan_slot, jobs=None):
                 raise HTTPException(422, "Choose skill or zip as the output format.")
             filename = file.filename
 
-            def work():
+            def work(progress):
+                progress('validating_and_building', 'Validating destination format and rebuilding your accepted changes.')
                 built = build_package(data, filename, edits, target_profile, output_format)
                 candidate = built["bytes"]
                 if not isinstance(candidate, bytes) or len(candidate) > MAX_UPLOAD:
@@ -231,7 +250,9 @@ def create_editor_router(scan_candidate, scan_slot, jobs=None):
                     raise ValueError("Rebuilt digest mismatch")
                 # Independent reopening validates the final archive, not only edits.
                 final_manifest = inspect_package(candidate, built["filename"])
+                progress('rescanning', 'The scanner is inspecting the actual rebuilt package bytes.')
                 scan_result = scan_candidate(candidate, built["filename"], target_runtime)
+                progress('checking_coverage', 'Checking the rescan coverage and final artifact hashes.')
                 verification = _verify_scan(scan_result, final_manifest, digest)
                 result = {"filename": built["filename"], "sha256": digest,
                           "validation": built["validation"],
@@ -243,10 +264,11 @@ def create_editor_router(scan_candidate, scan_slot, jobs=None):
                           "privacy": "No uploaded content was sent to an LLM."}
                 return result, candidate
 
-            key = jobs.submit(owner, work, scan_slot.release)
+            key = jobs.submit(owner, work, scan_slot.release, with_progress=True)
             handed_off = True
             return JSONResponse({"job_id": key, "status": "running",
-                                 "status_url": "/api/skills/editor/jobs/" + key},
+                                 "status_url": "/api/skills/editor/jobs/" + key,
+                                 "progress": (jobs.get(key, owner) or {}).get('progress')},
                                 status_code=202, headers=HEADERS)
         finally:
             if not handed_off:
@@ -285,7 +307,12 @@ def create_editor_router(scan_candidate, scan_slot, jobs=None):
 
 
 class RescanIncomplete(ValueError):
-    pass
+    def __init__(self, message, *, code='coverage_incomplete', path=None, reason=None, assessment_state=None):
+        super().__init__(message)
+        self.detail = {'message': message, 'stage': 'checking_coverage', 'code': code}
+        if path is not None: self.detail['path'] = path
+        if reason: self.detail['reason'] = str(reason)[:500]
+        if assessment_state: self.detail['assessment_state'] = assessment_state
 
 
 def _verify_scan(report, manifest, digest):
@@ -308,6 +335,7 @@ def _verify_scan(report, manifest, digest):
             raise RescanIncomplete("The rescan returned conflicting file records.")
         records[entry["path"]] = entry
     limited_assets = []
+    analysis_limitations = []
     for expected in manifest["entries"]:
         path = expected["path"]
         entry = records.get(path)
@@ -321,20 +349,65 @@ def _verify_scan(report, manifest, digest):
         if state in {"text_analyzed", "structured_content_analyzed"}:
             if entry.get("skipped"):
                 raise RescanIncomplete("The rescan skipped a required file: " + path)
-            if (stages.get("extraction", {}).get("status") != "complete"
-                    or stages.get("text_patterns", {}).get("status") != "complete_input"):
-                raise RescanIncomplete("The rescan did not complete text inspection for: " + path)
-            for key in ("extraction", "text_patterns", "embedded_code", "decoded_text", "result_display"):
-                stage = stages.get(key, {})
-                if not isinstance(stage, dict) or str(stage.get("status", "")).startswith(("partial", "error", "failed", "limited")):
-                    raise RescanIncomplete("The rescan reached an inspection limit in: " + path)
             database = entry.get("database_profile")
             if isinstance(database, dict):
                 db = database.get("coverage", {})
-                if (db.get("status") != "complete" or db.get("unread")
+                if (not isinstance(db, dict) or db.get("status") != "complete" or db.get("unread")
                         or not isinstance(db.get("rows_total"), int)
                         or db.get("rows_read") != db.get("rows_total")):
-                    raise RescanIncomplete("Database inspection was incomplete: " + path)
+                    db = db if isinstance(db, dict) else {}
+                    read = db.get("rows_read")
+                    total = db.get("rows_total")
+                    read = read if type(read) is int and read >= 0 else "unknown"
+                    total = total if type(total) is int and total >= 0 else "unknown"
+                    raise RescanIncomplete(
+                        f"Database inspection is incomplete: {path}. Read {read} of {total} reported rows. "
+                        "Review its coverage details or remove this asset from the edited copy.",
+                        code='database_coverage_incomplete', path=path,
+                        reason='Database content was not completely inspected.',
+                        assessment_state=state)
+            if (not isinstance(stages.get("extraction"), dict) or not isinstance(stages.get("text_patterns"), dict)
+                    or stages["extraction"].get("status") != "complete"
+                    or stages.get("text_patterns", {}).get("status") != "complete_input"):
+                raise RescanIncomplete("The rescan did not complete text inspection for: " + path)
+            office = entry.get('office_profile')
+            if path.lower().endswith(('.docx', '.pptx', '.xlsx')):
+                oc = office.get('coverage', {}) if isinstance(office, dict) else {}
+                container = office.get('container_inspection', {}) if isinstance(office, dict) else {}
+                if (not isinstance(office, dict) or office.get('schema') != 'injecticide.office-projection.v1'
+                        or office.get('sha256') != entry.get('sha256')
+                        or office.get('structure_status') != 'inspected'
+                        or not isinstance(container, dict) or container.get('status') != 'inspected'
+                        or container.get('sha256') != entry.get('sha256')
+                        or not isinstance(container.get('checks'), list) or not container['checks']
+                        or type(office.get('excluded_member_count')) is not int or office['excluded_member_count'] != 0
+                        or not isinstance(oc, dict) or oc.get('status') != 'complete' or oc.get('omitted') != []
+                        or type(oc.get('xml_parts_total')) is not int or oc['xml_parts_total'] < 1
+                        or type(oc.get('xml_parts_read')) is not int or oc['xml_parts_read'] != oc['xml_parts_total']
+                        or stages['extraction'].get('original_binary_security_analysis') != 'not_performed'):
+                    raise RescanIncomplete('Office inspection evidence is incomplete: ' + path,
+                                           code='office_evidence_incomplete', path=path)
+                limited_assets.append(path)
+            for key in ('embedded_code', 'decoded_text', 'result_display', 'code_security'):
+                stage = stages.get(key)
+                if stage is None:
+                    raise RescanIncomplete('The scanner omitted an expected analysis stage for: ' + path, code='analysis_stage_missing', path=path, reason=key)
+                if not isinstance(stage, dict):
+                    raise RescanIncomplete('The scanner returned invalid analysis coverage for: ' + path, path=path)
+                status = stage.get('status')
+                if not isinstance(status, str):
+                    raise RescanIncomplete('The scanner returned an invalid analysis status for: ' + path, path=path)
+                if key == 'result_display' and status == 'not_performed':
+                    raise RescanIncomplete('The scanner did not report finding-display coverage for: ' + path, path=path)
+                if status == 'partial':
+                    analysis_limitations.append({'path': path, 'stage': key, 'status': status,
+                                                 'reason': str(stage.get('reason') or 'This optional analysis reached its supported limit.')[:500],
+                                                 'scope': str(stage.get('scope') or '')[:500]})
+                elif status not in ({'complete', 'complete_input', 'complete_supported_candidates', 'not_performed'}
+                                    | ({'complete_supported_syntax', 'complete_supported_embedded_syntax'}
+                                       if key == 'code_security' else set())):
+                    raise RescanIncomplete('The rescan reported an unsuccessful analysis stage in: ' + path,
+                                           code='analysis_stage_incomplete', path=path, reason=key + ': ' + str(status))
         elif state in {"asset_structure_inspected", "archive_structure_inspected"}:
             inspection = entry.get("asset_inspection") or entry.get("archive_inspection")
             if not isinstance(inspection, dict) or inspection.get("status") != "inspected" or not inspection.get("checks"):
@@ -346,7 +419,8 @@ def _verify_scan(report, manifest, digest):
                 raise RescanIncomplete("A supported or executable asset was not inspected: " + path)
             limited_assets.append(path)
         else:
-            raise RescanIncomplete("A rebuilt file was rejected, truncated, or not inspected: " + path)
+            reason = str(entry.get('reason') or 'The scanner did not report a supported completed inspection.')[:500]
+            raise RescanIncomplete('Rebuilt file inspection failed: ' + path + '. ' + reason, code=entry.get('office_error_code') or 'file_inspection_incomplete', path=path, reason=reason, assessment_state=state)
     for entry in report["files"]:
         if entry.get("assessment_state") in {"limited_or_truncated", "rejected_unsafe_entry", "executable_not_analyzed"}:
             raise RescanIncomplete("The rebuilt package contains incomplete inspection results.")
@@ -355,5 +429,6 @@ def _verify_scan(report, manifest, digest):
             raise RescanIncomplete("A nested container could not be inspected.")
     return {"coverage_status": coverage["status"],
             "limited_assets": limited_assets,
-            "requires_acknowledgement": bool(limited_assets or report.get("summary", {}).get("total_findings", 0)),
+            "analysis_limitations": analysis_limitations,
+            "requires_acknowledgement": bool(limited_assets or analysis_limitations or report.get("summary", {}).get("total_findings", 0)),
             "scope": "Format and supported static checks only; binary execution and downstream installation were not verified."}
