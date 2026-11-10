@@ -2479,8 +2479,7 @@ function App({ onBack, onNavigate, buildInfo }) {
             if (skillScanRequest.current === pending && !pending.controller.signal.aborted) {
                 const requestId = pending.requestId || safeRequestId(data.scan_request_id) || safeRequestId(data.request_id);
                 setSkillScanResult({ ...data, ...(requestId ? { scan_request_id: requestId } : {}) });
-                setSkillFile(null);
-                if (skillFileInput.current) skillFileInput.current.value = '';
+                // Retain the original browser File for explicit review/edit actions until clear or replacement.
             }
         } catch (error) {
             if (skillScanRequest.current === pending) {
@@ -2797,7 +2796,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                                 {isScanningSkill ? 'Stop waiting and clear' : 'Clear scan'}
                                             </button>
                                         )}
-                                        <p id="skill-upload-help" className="text-xs text-gray-400">Selecting another file clears the previous scan. Failed uploads remain selected for manual retry; successful scans release the file. Full findings remain available in the report export.</p>
+                                        <p id="skill-upload-help" className="text-xs text-gray-400">Selecting another file clears the previous scan. The original file stays in this browser until Clear scan or replacement. Scan, Inspect and Build upload it only when you choose those actions. Full findings remain available in the report export.</p>
 
                                     </div>
                                 </div>
@@ -2884,6 +2883,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                             <div role="status">{isScanningSkill && <p className="home-muted mb-4">Scanning package and checking vendor requirements. Results will appear here when ready; the connection is checked automatically.</p>}</div>
                             {skillScanError && <p id="skill-scan-error" role="alert" tabIndex={-1} className="home-warning">{skillScanError}</p>}
                             {!skillScanResult && !isScanningSkill && !skillScanError && <p className="home-muted">Choose a file in Scan configuration to review its findings, coverage and report here.</p>}
+                            {skillFile && skillScanResult && <PackageEditor file={skillFile} targetRuntime={skillRuntime} scanResult={skillScanResult} />}
                             {skillScanResult && (
                                 <SkillReportViews key={skillScanResult.scan_request_id || skillScanResult.filename} active={skillReportScope} setActive={setSkillReportScope}
                                     toolbar={<>                                    <div className="scan-report-toolbar flex flex-wrap items-center justify-between gap-3">

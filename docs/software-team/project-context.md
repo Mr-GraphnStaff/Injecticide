@@ -455,3 +455,34 @@ source channels, forged markers, operative instructions, and late re-elevation
 masked by successful corrections elsewhere. Actual-model/full-report and
 standalone container-entry gates are required before commit; exact-head CI and
 live approval/deactivation/reactivation remain deployment verification gates.
+
+
+## 2026-11-10 - package review and repackaging 0.19.0
+
+Avery integrated the editor API, immutable artifact jobs, rescan gates and release.
+Ishan authored bounded deterministic archive editing and destination profiles; Mara
+authored accessible review/edit UI and browser verification. Morgan supplied
+independent security findings; Lena independently verified the core API/UI gates.
+
+The original remains in browser memory until clear/replacement. Explicit accepted
+text edits and file removals bind to original file hashes. Destinations and ZIP/.skill
+extensions are separate selections. Existing format detection supplies structural
+metadata; selected destination validation remains independent of security findings.
+Artifacts require full archive/member hash correspondence and complete required
+inspection stages, with explicit acknowledgement for remaining findings or limited
+asset inspection. Uploaded content never enters a model; guidance uses reviewed
+local templates and the asynchronous research boundary remains unchanged.
+
+Verification artifacts: tests/test_package_editor.py, tests/test_package_editor_api.py,
+tests/test_package_editor_live.py and tests/browser/package_editor.cjs. Real local
+full-app verification covered scan, retained original, visible evidence, keyboard
+acceptance, rebuild/rescan and hash-matched download with actual CSS. Temporary
+service teardown was verified. Native vendor installation remains untested; see
+docs/package-editor.md for bounded coverage, preview and compatibility limitations.
+
+The sandbox suffered a confirmed 256 MiB memory-cgroup OOM on November 10; this
+release raises its hard cap to 512 MiB and retains single-flight admission. The
+existing approved correction pack must be regated against matching live release
+containers after deployment. Exact-revision CI, deployment and live proof are
+recorded with the release PR/pipeline; local expanded correction regression hit
+a six-minute timeout and is not counted as a completed check.

@@ -16,7 +16,7 @@ from .correction_rules import contract_digest, validate_pack, load_cases
 
 ENVELOPE = "injecticide.approved-corrections.v1"
 RECEIPT = "injecticide.correction-gate.v1"
-SCANNER_VERSION = "0.18.1"
+SCANNER_VERSION = "0.19.0"
 GATE_REVISION = 2
 
 def validate_receipt(value, pack, *, fresh=True):

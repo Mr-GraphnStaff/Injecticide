@@ -52,7 +52,8 @@ services:
     security_opt:
       - no-new-privileges:true
     pids_limit: 128
-    mem_limit: 256m
+    # Measured production OOM at 256 MiB; retain a hard cap and single-flight admission.
+    mem_limit: 512m
     networks:
       - skill-sandbox-net
     logging: *bounded-logging

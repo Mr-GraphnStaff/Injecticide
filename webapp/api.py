@@ -584,6 +584,7 @@ async def root():
         html = html.replace("/static/pages/Home.jsx", f"/static/pages/Home.jsx?v={asset_version}")
         html = html.replace("/static/pages/ArchitectureCanvas.jsx", f"/static/pages/ArchitectureCanvas.jsx?v={asset_version}")
         html = html.replace("/static/app.js", f"/static/app.js?v={asset_version}")
+        html = html.replace("/static/components/PackageEditor.jsx", f"/static/components/PackageEditor.jsx?v={asset_version}")
         html = html.replace("/static/home.css", f"/static/home.css?v={asset_version}")
         return HTMLResponse(content=html, headers={"Cache-Control": "no-store"})
     return {"message": "Injecticide API"}
@@ -712,6 +713,18 @@ async def close_application():
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# Editing uses the same single-flight admission gate and isolated scanner.
+from webapp.package_editor_api import create_editor_router
+
+def _rescan_edited_package(data, filename, target_runtime):
+    status, result = _execute_skill_scan(data, filename, "application/zip",
+        target_runtime, "{}", "", False, uuid.uuid4().hex, time.monotonic())
+    if status != 200:
+        raise HTTPException(status_code=status, detail=result.get("detail", {}))
+    return result
+
+app.include_router(create_editor_router(_rescan_edited_package, SKILL_SCAN_SLOT))
 
 if __name__ == "__main__":
     import uvicorn
