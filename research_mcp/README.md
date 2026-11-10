@@ -5,7 +5,7 @@ plugins, project configuration and security documentation. This service uses the
 [official Python MCP SDK](https://py.sdk.modelcontextprotocol.io/run/) with
 Streamable HTTP, stateless JSON responses and a persistent SQLite catalog.
 
-The 0.6.0 candidate adds `research_check_requirements(runtime, refresh=True)`
+Official requirement verification exposes `research_check_requirements(runtime, refresh=True)`
 and the bounded web-scanner route `POST /requirements/check`. Official skill and
 plugin requirement checks cover OpenAI, Anthropic, Google Gemini CLI and GitHub
 Copilot CLI only. See [vendor requirements](../docs/vendor-requirements.md) for
@@ -42,6 +42,31 @@ This is an operator-local endpoint with Host/Origin validation, not a public
 authenticated service. Local users and host administrators are trusted. Remote
 public exposure requires a separate identity/TLS design and review.
 
+## Pipeline health and bounded recovery
+
+The shipped Compose defaults are a 24-hour collection interval, 100 document
+attempts per cycle and a 600-second cycle deadline. On November 10, 2026 the
+registry contained 52 enabled sources and 88 explicit seed pages. These are
+configuration counts, not a claim that every source fetch succeeds.
+
+When triage is not due at collection time, its next due time is scheduled independently
+of the next document collection; deferred work does not record a false completion.
+Held leases are revisited no more frequently than every 30 seconds.
+
+Post-collection triage retries retained evidence after 300 and 600 seconds, up to
+three attempts. Pending retries retain their attempt budget across another
+collection. Exhaustion remains visible; a later successful collection may begin
+a new bounded group. A process restart resets in-memory retry counters, while
+the durable triage error continues to make health unhealthy until processing
+succeeds. Retry does not fetch documents, invoke a model or approve scanner rules.
+
+`/health` returns 503 for a stopped collector, a failed collection, or unresolved
+current/persisted triage failure. `research_get_status` includes
+`triage_recovery`. An OK pipeline health response does not establish complete
+source coverage: inspect collection failures, deferred pages and per-source
+freshness separately. Source capture, queued/approved research, deployed data and
+active scanner corrections are separate stages.
+
 ## Collection and discovery
 
 The October 27 source expansion adds official validator source monitoring,
@@ -50,9 +75,9 @@ MCP security pages. See [source authority and coverage](../docs/research/2026-10
 for applicability, validator limitations, source conflicts and remaining work.
 The October 28 documentation ingestion expands the Agent Skills source to all
 nine pages listed in both its official index and sitemap, plus the indexes.
-The registry still has 42 sources, with additional explicit documentation seeds;
-the 40-attempt rotating cycle does
-not guarantee an hourly refresh of every URL. Collection does not execute vendor
+The registry now has 52 sources and 88 explicit seed URLs. The default 100-attempt
+cycle accommodates this configured seed count; failed or deferred fetches remain
+coverage gaps. Collection does not execute vendor
 scripts or automatically promote retrieved text into scanner rejection rules.
 
 ### Captured Agent Skills reference library
@@ -109,7 +134,7 @@ Existing discovered URLs and snapshots are preserved in SQLite when retired,
 but excluded from active collection/status and current evidence queries.
 This is a registry configuration change, not a claim that all sources are reachable.
 
-On startup and hourly thereafter, one worker retrieves approved seeds,
+On startup and at the configured interval (24 hours by default), one worker retrieves approved seeds,
 follows scoped HTTPS redirects,
 and compares raw content SHA-256 hashes. Changes include initial baselines and
 cosmetic HTML changes; no semantic vulnerability or control conclusion is inferred.
@@ -133,15 +158,15 @@ Configuration:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `INJECTICIDE_RESEARCH_INTERVAL_SECONDS` | 3600 | Compose refresh interval, minimum 300 seconds |
-| `INJECTICIDE_RESEARCH_PAGE_BUDGET` | 40 | Document attempts per cycle, range 1–100 |
+| `INJECTICIDE_RESEARCH_INTERVAL_SECONDS` | 86400 | Compose refresh interval, minimum 300 seconds |
+| `INJECTICIDE_RESEARCH_PAGE_BUDGET` | 100 | Document attempts per cycle, range 1–100 |
 | `RESEARCH_SOURCES` | packaged `sources.json` | In-container source-registry path |
 | `RESEARCH_DB` | `/data/research.sqlite3` | In-container catalog path |
 | Source `max_response_bytes` | 1048576 | Per-response streaming limit; integer from 1 byte through the hard 8 MiB ceiling |
 | Source `discovery` | true for compatibility | All shipped web/feed sources set false; fetch only declared seeds |
 | Source `enabled` | true | False disables collection/refresh while retaining source inventory and evidence |
 
-Budgets: 100 tracked pages/source, 8 selected pages/source/cycle, 240-second cycle
+Budgets: 100 tracked pages/source, 100 document attempts/cycle by default, 600-second cycle
 deadline checked between requests, 1 MiB/response by default, 20-second response deadline,
 8-second socket timeouts, 4 redirects, minimum 1 second/host, and 60-second manual
 refresh cooldown/source. DNS resolver latency is OS-controlled. Robots requests
@@ -184,8 +209,8 @@ verified simply because their freshness is current.
 - `research_get_releases`: structured, cached release records from approved GitHub APIs.
 
 Local catalog queries support pagination; upstream API collection in this
-increment does not. There is no background push notification or automatic
-rescan integration in this release. Cursor gaps are possible after retention pruning.
+increment does not. Collection does not automatically rescan previous user uploads. Qualified data
+updates and approved correction packs affect subsequent scans after delivery. Cursor gaps are possible after retention pruning.
 Collected material is explicitly `STATUS: UNKNOWN — UNVERIFIED`, including official
 documents: attribution/integrity records are not verification of research claims.
 Consumers must treat excerpts as untrusted content, including prompt injection.

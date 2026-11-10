@@ -153,10 +153,21 @@ def test_projected_binary_text_cannot_establish_true_original_file_eof(monkeypat
         finally:
             connection.close()
     else:
-        monkeypatch.setattr("skill_sandbox.app.extract_scannable_text", lambda raw: (projection, reason))
-        data = b"\x00binaryfixture"
-    result = scan_upload(data, name)
-    entry = result["files"][0]
+        import io
+        import zipfile
+        from xml.sax.saxutils import escape
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, 'w') as archive:
+            archive.writestr('[Content_Types].xml', '<Types/>')
+            archive.writestr('ppt/presentation.xml', '<presentation><text>' + escape(projection) + '</text></presentation>')
+        office_data = buffer.getvalue()
+        package = io.BytesIO()
+        with zipfile.ZipFile(package, 'w') as archive:
+            archive.writestr('example/SKILL.md', '---\nname: example\ndescription: Read this example.\n---\n# Example\n')
+            archive.writestr('example/' + name, office_data)
+        data = package.getvalue()
+    result = scan_upload(data, name if name.endswith('.db') else 'example.skill')
+    entry = next(item for item in result["files"] if item["path"].endswith(name))
     assert entry["assessment_state"] == "structured_content_analyzed"
     assert entry["creator_mitigation"]["status"] == "unverifiable"
     assert entry["creator_mitigation"]["eof_verified"] is False

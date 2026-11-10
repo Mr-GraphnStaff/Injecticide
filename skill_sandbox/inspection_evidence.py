@@ -153,4 +153,4 @@ def mitigation_finding(evidence):
 def initial_coverage():
     return {name: {"status": "not_performed", "inspected_characters": None,
                    "reason": "No supported text supplied to this stage."}
-            for name in ("extraction", "text_patterns", "embedded_code", "result_display")}
+            for name in ("extraction", "text_patterns", "embedded_code", "decoded_text", "code_security", "result_display")}

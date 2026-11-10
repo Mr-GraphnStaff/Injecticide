@@ -21,7 +21,7 @@ if __package__:
     from .text_projections import decoded_projections
     from .evidence_redaction import redact_result
     from .disposition import normalize_observations
-    from .artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
+    from .artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text, OfficeBudget, OfficeProjectionError, extract_office_projection
     from .database_analysis import Budget as DatabaseBudget, PACKAGE_TIME_BUDGET_SECONDS, is_database_path, scan_database_entry
     from .behavior_analysis import analyze_behavior
     from .contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
@@ -41,7 +41,7 @@ else:
     from text_projections import decoded_projections
     from evidence_redaction import redact_result
     from disposition import normalize_observations
-    from artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text
+    from artifact_text import extract_scannable_text, extract_sqlite_projection, looks_like_sqlite, is_probably_text, OfficeBudget, OfficeProjectionError, extract_office_projection
     from database_analysis import Budget as DatabaseBudget, PACKAGE_TIME_BUDGET_SECONDS, is_database_path, scan_database_entry
     from behavior_analysis import analyze_behavior
     from contextual_rules import CONTEXTUAL_RULE_IDS, detect_contextual_findings
@@ -345,6 +345,7 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str], excl
 def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> Tuple[List[Dict[str, object]], List[Dict[str, str]]]:
     results = []
     database_budget = DatabaseBudget(seconds=PACKAGE_TIME_BUDGET_SECONDS)
+    office_budget = OfficeBudget()
     text_pairs: List[Tuple[str, str | None, str]] = []
     sorted_files = sorted(files, key=_priority_key)
     excluded = excluded if excluded is not None else []
@@ -372,7 +373,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
         }
         entry["analysis_coverage"]["extraction"]["reason"] = "Archive container bytes are not text; expanded descendants are analyzed as separate files."
         if is_probably_text(data):
-            fallback, readable = _scan_file_bytes(path, data, database_budget)
+            fallback, readable = _scan_file_bytes(path, data, database_budget, office_budget=office_budget)
             entry["findings"] = fallback["findings"]
             entry["analysis_coverage"].update(fallback["analysis_coverage"])
             entry["_readable_text"] = readable
@@ -394,7 +395,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
                     containers[nested_path] = entry
                     text = entry.pop("_readable_text", None)
                 else:
-                    entry, text = _scan_file_bytes(nested_path, raw, database_budget)
+                    entry, text = _scan_file_bytes(nested_path, raw, database_budget, office_budget=office_budget)
                     entry["archive_container"] = descendant["container_path"]
                     entry["archive_depth"] = descendant["depth"]
                 results.append(entry)
@@ -409,7 +410,7 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
                     "SKILL.md", "plugin.json", "hooks.json", "mcp.json", ".mcp.json", "manifest.json"}
                 excluded.append(omitted)
             continue
-        entry, text = _scan_file_bytes(rel_path, data, database_budget)
+        entry, text = _scan_file_bytes(rel_path, data, database_budget, office_budget=office_budget)
         results.append(entry)
         text_pairs.append((rel_path, text, entry["artifact_role"]))
     return results, _build_text_sources(text_pairs)
@@ -427,7 +428,32 @@ def _priority_key(item: Tuple[str, Path]) -> Tuple[int, str]:
     return (2, rel_path.lower())
 
 
-def _scan_file_bytes(path: str, data: bytes, database_budget=None) -> Tuple[Dict[str, object], str | None]:
+def _scan_office_entry(entry, data, office_budget):
+    path = entry['path']
+    try:
+        projected = extract_office_projection(data, path, office_budget)
+        if projected is None:
+            raise OfficeProjectionError('office_required_parts', 'Office content lacks a supported container core.')
+        text, profile = projected
+    except OfficeProjectionError as error:
+        entry.update(skipped=True, assessment_state='limited_or_truncated', reason=str(error), office_profile=error.profile)
+        entry['office_error_code'] = error.code
+        entry['analysis_coverage']['extraction'].update(status='partial', reason=str(error), error_code=error.code, original_binary_security_analysis='not_performed')
+        return entry, None
+    entry.update(assessment_state='structured_content_analyzed', office_profile=profile, analysis_scope=profile['scope'], reason='Scanned Office document content.')
+    entry['creator_mitigation'] = creator_mitigation(path, None)
+    entry['analysis_coverage']['creator_markers'] = {'status': 'not_performed', 'reason': 'Native Office projection does not establish Markdown creator-header conventions.'}
+    entry['analysis_coverage']['extraction'] = {'status': 'complete', 'extracted_characters': len(text), 'reason': profile['scope'], 'original_binary_security_analysis': 'not_performed', 'office_coverage': profile['coverage']}
+    entry['analysis_coverage']['office_structure'] = {'status': 'complete_supported_checks', 'sha256': profile['sha256'], 'scope': profile['scope']}
+    entry['artifact_role'] = classify_artifact_role(path, text)
+    entry['analysis_coverage']['text_patterns'] = {'status': 'complete_input', 'total_characters': len(text), 'supplied_characters': len(text), 'inspected_characters': None, 'supplied_range': {'start_character': 0, 'end_character': len(text)}, 'reason': 'Complete bounded Office XML projection supplied to deterministic text rules; this does not certify binary runtime behavior.'}
+    entry['findings'] = _scan_text(path, text, entry['artifact_role'])
+    entry['analysis_coverage']['decoded_text'] = decoded_projections(text)[1]
+    entry['analysis_coverage']['result_display'] = {'status': 'complete', 'findings_before_limit': len(entry['findings']), 'findings_displayed': len(entry['findings']), 'reason': 'No file finding display limit reached.'}
+    return entry, text
+
+
+def _scan_file_bytes(path: str, data: bytes, database_budget=None, *, office_budget=None) -> Tuple[Dict[str, object], str | None]:
     entry = {
         "path": path,
         "size": len(data),
@@ -456,6 +482,8 @@ def _scan_file_bytes(path: str, data: bytes, database_budget=None) -> Tuple[Dict
     asset = inspect_asset(data, path)
     if asset is not None:
         return _scan_asset_entry(entry, asset, data)
+    if Path(path).suffix.lower() in {'.docx', '.pptx', '.xlsx'}:
+        return _scan_office_entry(entry, data, office_budget or OfficeBudget())
     sampling = None
     try:
         if looks_like_sqlite(data) or is_database_path(path):

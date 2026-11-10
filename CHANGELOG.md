@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.19.1
+
+- Accept successful bounded Python analysis states during rebuild verification and identify incomplete database coverage with file and row counts.
+
+- Wake retained-evidence research triage at its own due time, retry failures with bounded backoff, and expose unresolved live or persisted failures in health and research status.
+
+- Show package-operation stages and elapsed time, preserve review edits on failure or stopped waiting, and allow ready-download retries.
+- Read bounded Office XML text, attributes and embedded workbooks without silent text clipping; report measured scope, shared limits and parser failures.
+- Keep incomplete raw inspection blocked while preserving optional refinement limits as explicitly acknowledged download limitations.
+
 ## [0.19.0] - 2026-11-10
 
 - Add explicit review, hash-bound text edits and binary removal for single-skill archives; preserve the original upload.

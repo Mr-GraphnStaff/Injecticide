@@ -109,7 +109,8 @@ def test_real_sdk_stdio_subprocess_roundtrip():
     async def run():
         params = StdioServerParameters(command=sys.executable, args=["-m", "skill_sandbox.mcp_server"],
                                        cwd=str(Path(__file__).resolve().parents[1]),
-                                       env={"PYTHONPATH": os.environ.get("PYTHONPATH", "")})
+                                       env={**{key: os.environ[key] for key in ("TMPDIR", "TMP", "TEMP", "PYTHONDONTWRITEBYTECODE") if key in os.environ},
+                                            "PYTHONPATH": os.environ.get("PYTHONPATH", "")})
         async with mcp.Client(params, read_timeout_seconds=30) as client:
             tools = await client.list_tools()
             assert {tool.name for tool in tools.tools} == {"skill_scan_package", "skill_scanner_capabilities"}

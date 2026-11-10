@@ -13,6 +13,7 @@ from urllib.parse import urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
 
 from .catalog import Catalog, now
+from .recovery import TriageRecovery
 from .fetch import USER_AGENT, MAX_BYTES, canonical_url, fetch, in_scope
 from .apis import API_CONNECTORS, GITHUB_HEADERS, api_connector, normalize_api
 
@@ -112,6 +113,7 @@ class Collector:
         self.thread = threading.Thread(target=self.run, name="research-collector", daemon=True)
         self.source_cursor = 0
         self.after_collection = None
+        self.triage = TriageRecovery(lambda: self.after_collection() if self.after_collection else None)
 
     def request(self, source_id: str) -> dict:
         if source_id not in self.catalog.sources:
@@ -262,10 +264,8 @@ class Collector:
                     self.status["last_result"] = self.collect(None if periodic else requested)
                     self.status["last_error"] = None
                     if self.after_collection is not None:
-                        try:
-                            self.after_collection()
-                        except Exception:
-                            LOG.exception("Post-collection research triage failed; evidence collection retained")
+                        self.triage.schedule()
+                        self.triage.run_due()
                 except Exception as error:
                     self.status["last_error"] = type(error).__name__
                     LOG.exception("Research cycle failed")
@@ -276,7 +276,10 @@ class Collector:
                     # Anchor the period to the start, avoiding a growing daily
                     # drift of one complete collection duration per cycle.
                     next_cycle = cycle_started + self.interval
-            self.wake.wait(min(30, max(0, next_cycle - time.monotonic())))
+            if not self.stop_event.is_set():
+                self.triage.run_due()
+            self.wake.wait(min(30, max(0, next_cycle - time.monotonic()),
+                               self.triage.wait_seconds()))
 
     def close(self):
         self.stop_event.set()
