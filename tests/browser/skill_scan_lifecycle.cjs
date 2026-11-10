@@ -150,7 +150,7 @@ const server = http.createServer((req, res) => {
 
         await select('first.skill');
         await scan.click();
-        assert.equal(await input.evaluate(el => el.files.length), 1, 'in-flight upload stays selected for manual retry; success releases it');
+        assert.equal(await input.evaluate(el => el.files.length), 1, 'in-flight upload stays selected; success retains it for explicit editing');
         await respond('first.skill', true);
         await waitReport('first.skill');
         assert.equal(await page.locator('[data-skill-file]').count(), 10);
@@ -188,7 +188,7 @@ const server = http.createServer((req, res) => {
             await scan.click();
             await respond(`repeat-${i}.skill`, true);
             await waitReport(`repeat-${i}.skill`);
-            assert.equal(await input.evaluate(el => el.files.length), 0);
+            assert.equal(await input.evaluate(el => el.files.length), 1, 'successful scan retains the original File for explicit editing');
             assert.equal(await page.locator('[data-skill-file]').count(), 10);
             assert.equal(await page.locator('[data-skill-finding]').count(), 100);
             await cdp.send('HeapProfiler.collectGarbage');
@@ -220,7 +220,7 @@ const server = http.createServer((req, res) => {
             maxVisibleFiles:10, maxVisibleFindings:100,
             postGCHeapMiB:measurements.map(m => +(m.usedSize / 1024 / 1024).toFixed(2)),
             postGCNodes:measurements.map(m => m.nodes),
-            checked:['real package report','partial coverage headline','policy bypass distinct from malware','package evidence pagination','fingerprint and checks export','file release','replacement','stale response','pagination','complete export','clear','timeout','unmount']}, null, 2));
+            checked:['real package report','partial coverage headline','policy bypass distinct from malware','package evidence pagination','fingerprint and checks export','successful File retention','replacement','stale response','pagination','complete export','clear','timeout','unmount']}, null, 2));
     } finally {
         await browser.close();
     }

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.19.0] - 2026-11-10
+
+- Add explicit review, hash-bound text edits and binary removal for single-skill archives; preserve the original upload.
+- Rebuild deterministic .skill or .zip packages with cited Claude, OpenAI/Codex, Gemini CLI and Agent Skills validation profiles.
+- Gate downloads on final archive/member hashes and static rescan coverage; require acknowledgement of remaining findings and limited binary inspection.
+- Keep uploaded content outside every LLM, with local reviewed remediation templates and expiring browser-capability-scoped artifacts.
+- Raise the isolated scanner memory cap to 512 MiB after a measured 256 MiB container OOM; preserve single-flight scan admission.
+- Document editing, preview, archive, signature and unverified native-installation limits in docs/package-editor.md.
+
 ## [0.18.1] - 2026-11-09
 
 - Preserve request-validated informational corrections through final instruction-policy evaluation.
