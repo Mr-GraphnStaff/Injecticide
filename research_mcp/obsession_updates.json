@@ -4641,6 +4641,279 @@
         "reason": "Locally approved deterministic gate passed",
         "updated": "2026-11-14T19:13:50+00:00"
       }
+    },
+    {
+      "sequence": 871,
+      "id": "obsession-86cbfc1c250131cc3d99baca45be98b257418ce9f392c6d6eb1fd002c100e977",
+      "sha256": "86cbfc1c250131cc3d99baca45be98b257418ce9f392c6d6eb1fd002c100e977",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "How to create custom skills | Claude Help Center Skip to main content API docs Release notes How to get support English Français Deutsch Bahasa Indonesia Italiano 日本語 한국어 Português Pусский 简体中文 Español 繁體中文 English Search ⌘ K Claude Pro, Max, and Ultra plans Team and Enterprise plans Identity management (SSO, JIT, SCIM) Claude Cowork Claude Code Claude Desktop Claude Mobile apps Claude API and Console Connectors Claude in Chrome Claude for Education Privacy and legal Safeguards Amazon Bedrock All Collections Claude Features and capabilities How to create custom skills How to create custom skills Updated over 2 weeks ago Copy for LLM Skills are available for users on Free, Pro, Max, Ultra, Team, and Enterprise plans. This feature requires code execution to be enabled . Skills are also available in beta for Claude Code users and for all API users using the code execution tool. Custom skills let you enhance Claude with specialized knowledge and workflows specific to your organization or personal work style. This article explains how to create, structure, and test your own skills. Skills can be as simple as a few lines of instructions or as complex as multi-file packages with executable code. The best skills: Solve a specific, repeatable task Have clear instructions that Claude can follow Include examples when helpful Define when they should be used Are focused on one workflow rather than trying to do everything Record a skill Recording a skill is available on Pro, Max, Ultra, and Team plans, in Cowork in Claude for Mac. It isn't available in chat, on Windows, or on Free and Enterprise plans. Instead of writing a skill by hand, you can record yourself doing a task and let Claude build the skill from what it observes. You send Claude a video of your screen, clicks, typing, and voice, and Claude proposes a skill for you to review before you save it. Before you record Update to the latest version of Claude for Mac. Grant the macOS permissions Claude asks for the first time",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "9f82a0f03c2724d93041125a7a502e42734e5cfc33ab741fab2b34fb025b1910",
+          "source_id": "requirements-claude-upload",
+          "source_sha256": "8e1af6a0dc2791fd524ae42f2174ba9023cfd33794ec48db7b4388d96a058b99",
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+        },
+        "provenance": {
+          "final_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "previous_sha256": "9f82a0f03c2724d93041125a7a502e42734e5cfc33ab741fab2b34fb025b1910",
+          "retrieved": "2026-11-15T11:30:58+00:00",
+          "snapshot_id": 4581,
+          "source_id": "requirements-claude-upload",
+          "source_sha256": "8e1af6a0dc2791fd524ae42f2174ba9023cfd33794ec48db7b4388d96a058b99",
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-15T19:13:51+00:00"
+      }
+    },
+    {
+      "sequence": 870,
+      "id": "obsession-958c85b445d43a48be79c722a03eaa6158f978afd3af778c8af646fc88ac27af",
+      "sha256": "958c85b445d43a48be79c722a03eaa6158f978afd3af778c8af646fc88ac27af",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Extend Claude with skills\n\n> Create, manage, and share skills to extend Claude's capabilities in Claude Code. Includes custom commands and bundled skills.\n\nSkills extend what Claude can do. Create a `SKILL.md` file with instructions, and Claude adds it to its toolkit. Claude uses skills when relevant, or you can invoke one directly with `/skill-name`.\n\nCreate a skill when you keep pasting the same instructions, checklist, or multi-step procedure into chat, or when a section of CLAUDE.md has grown into a procedure rather than a fact. Unlike CLAUDE.md content, a skill's body loads only when it's used, so long reference material costs almost nothing until you need it.\n\n> [!NOTE]\n>\n> For built-in commands like `/help` and `/compact`, and bundled skills like `/debug` and `/code-review`, see the [commands reference](https://code.claude.com/docs/en/commands.md).\n>\n> **Custom commands have been merged into skills.** Your existing `.claude/commands/` files keep working. Claude can invoke them without you typing the command. Edit a command to stop Claude from invoking it on its own, or convert a command that needs more than one file to a skill:\n>\n> * **Stop Claude from invoking a command on its own**: add [`disable-model-invocation: true`](#control-who-invokes-a-skill) to the command file's [frontmatter](#frontmatter-reference)\n> * **Add [supporting files](#add-supporting-files) such as scripts**: convert the command to a skill. For example, move `.claude/commands/deploy.md` to `.claude/skills/deploy/SKILL.md`. The [folder name becomes the command](#how-a-skill-gets-its-command-name), so you still type `/deploy`.\n\nClaude Code skills follow the [Agent Skills](https://agentskills.io) open standard, which works across multiple AI tools. Claude Code extends the standard with additional features lik",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "8bc8fae653e47e3cb305800c26eba63b8768fbfa63bcc32b93b02a0fb0d28dc4",
+          "source_id": "requirements-claude-code",
+          "source_sha256": "654fd3e23932c9a0e0f79f382a348a231ed8add3944c7ef3e3cec543589a6060",
+          "url": "https://code.claude.com/docs/en/skills.md"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/skills.md",
+          "previous_sha256": "8bc8fae653e47e3cb305800c26eba63b8768fbfa63bcc32b93b02a0fb0d28dc4",
+          "retrieved": "2026-11-15T11:30:56+00:00",
+          "snapshot_id": 4580,
+          "source_id": "requirements-claude-code",
+          "source_sha256": "654fd3e23932c9a0e0f79f382a348a231ed8add3944c7ef3e3cec543589a6060",
+          "url": "https://code.claude.com/docs/en/skills.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-15T19:13:51+00:00"
+      }
+    },
+    {
+      "sequence": 876,
+      "id": "obsession-96b2bb67ce3629d136710368be125a604d2bd1f93eee28e4a2e71a76dc287377",
+      "sha256": "96b2bb67ce3629d136710368be125a604d2bd1f93eee28e4a2e71a76dc287377",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Specification - Agent Skills Documentation Index Fetch the complete documentation index at: /llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Agent Skills now has an official Discord server . See the announcement for details. Agent Skills home page Agent Skills Search... ⌘ K Ask Assistant ⌘ I agentskills/agentskills agentskills/agentskills Search... Navigation Specification Overview Specification Client Showcase For skill creators Quickstart Best practices Optimizing descriptions Evaluating skills Using scripts For client implementors Adding skills support On this page Back to top Directory structure SKILL.md format Frontmatter name field description field license field compatibility field metadata field allowed-tools field Body content Optional directories scripts/ references/ assets/ Progressive disclosure File references Validation Specification Copy page Copy page The complete format specification for Agent Skills. Copy page Copy page Directory structure A skill is a directory containing, at minimum, a SKILL.md file: skill-name/ ├── SKILL.md # Required: metadata + instructions ├── scripts/ # Optional: executable code ├── references/ # Optional: documentation ├── assets/ # Optional: templates, resources └── ... # Any additional files or directories SKILL.md format The SKILL.md file must contain YAML frontmatter followed by Markdown content. Frontmatter Field Required Constraints name Yes Max 64 characters. Lowercase letters, numbers, and hyphens only. Must not start or end with a hyphen. description Yes Max 1024 characters. Non-empty. Describes what the skill does and when to use it. license No License name or reference to a bundled license file. compatibility No Max 500 characters. Indicates environment requirements (intended product, system packages, network access, etc.). metadata No Arbitrary key-value mapping for additional metadata (a ma",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "8688063e4b103e613618451332d773863367262a33f2ef3a803bdd7bff8f9fe7",
+          "source_id": "agent-skills",
+          "source_sha256": "1133b01f5993cddfa32a0bec317c89c006894192dd028fb73c3f164825cc3763",
+          "url": "https://agentskills.io/specification"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/specification",
+          "previous_sha256": "8688063e4b103e613618451332d773863367262a33f2ef3a803bdd7bff8f9fe7",
+          "retrieved": "2026-11-15T11:31:20+00:00",
+          "snapshot_id": 4586,
+          "source_id": "agent-skills",
+          "source_sha256": "1133b01f5993cddfa32a0bec317c89c006894192dd028fb73c3f164825cc3763",
+          "url": "https://agentskills.io/specification"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-15T19:13:51+00:00"
+      }
+    },
+    {
+      "sequence": 859,
+      "id": "obsession-a55d0903a2a9b67e2f638848fa3d9fa9bc0da8422e6f78e66b4d756f70ffff08",
+      "sha256": "a55d0903a2a9b67e2f638848fa3d9fa9bc0da8422e6f78e66b4d756f70ffff08",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Settings files and precedence - Claude Code Docs Documentation Index Fetch the complete documentation index at: /docs/llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Claude Code Docs home page English Search... ⌘ K Ask Assistant ⌘ I Claude Developer Platform Open Claude Code Open Claude Code Search... Navigation Settings Settings files and precedence Getting started Build with Claude Code Plugins Administration Configuration Reference Agent SDK Resources Settings Settings files and precedence All settings Example settings files Permissions and sandboxing Permissions Permission modes Auto mode classifier charges Bash sandbox Sandbox environments Environments Cloud environments Self-hosted environments Model and responses Model configuration Speed up responses with fast mode Escalate hard decisions with the advisor tool Code Mode Output styles Interface Terminal configuration Fullscreen rendering Screen reader mode Voice dictation Customize status line Customize keyboard shortcuts On this page Back to top Settings files and who they affect Compare the scope of each settings file Find or create your settings files Share settings with your team Keep personal settings out of a repository Where Claude Code keeps the local file in a git repository Check what your organization enforces Change a setting Use the /config menu Edit a settings file Change a setting for one session When edits take effect Confirm what loaded Fix a broken settings file Settings precedence Lists merge instead of overriding Precedence examples Team settings override personal settings Organization settings override everything The command line overrides your files for one session A flag or environment variable sets the same thing Troubleshoot a setting that doesn’t apply A value you set is ignored A change you made in Claude Code is lost in new sessions A managed change hasn’t reac",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "48b748fd4f24534388fbe3a9cba94213c18ef9ccbf7b909c0fb4dde8e60dd66d",
+          "source_id": "claude-code",
+          "source_sha256": "df03a6a4f48cc5fda98fcf83b326999d0f800ed18093d3064c3036c7f8825d2e",
+          "url": "https://code.claude.com/docs/en/settings"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/settings",
+          "previous_sha256": "48b748fd4f24534388fbe3a9cba94213c18ef9ccbf7b909c0fb4dde8e60dd66d",
+          "retrieved": "2026-11-15T11:30:13+00:00",
+          "snapshot_id": 4569,
+          "source_id": "claude-code",
+          "source_sha256": "df03a6a4f48cc5fda98fcf83b326999d0f800ed18093d3064c3036c7f8825d2e",
+          "url": "https://code.claude.com/docs/en/settings"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-15T19:13:51+00:00"
+      }
+    },
+    {
+      "sequence": 860,
+      "id": "obsession-ad2c07d526864f787970b11d86575be6ef136b7dd7cdb1386bcd214756fabe9e",
+      "sha256": "ad2c07d526864f787970b11d86575be6ef136b7dd7cdb1386bcd214756fabe9e",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Skills for enterprise - Claude Platform Docs Claude Platform Docs Messages Managed Agents Admin Resources  Best practices Models & pricing SDKs, CLI, and libraries Claude API skill Release notes  API reference  English   Console Log in   Search Ctrl K First steps Intro to Claude Get your API key Quickstart Authentication Building with Claude Features overview Using the Messages API Stop reasons and fallback Refusals and fallback Fallback credit Text watermark Model capabilities Task budgets (beta) Fast mode Structured outputs Citations Streaming Messages Batch processing Search results Streaming refusals Multilingual support Embeddings Effort Thinking Tools Overview How tool use works Tutorial: Build a tool-using agent Define tools Handle tool calls Parallel tool use Tool runner (SDK) Strict tool use Server tools Web search tool Web fetch tool Code execution tool Advisor tool Tool search tool Memory tool Bash tool Text editor tool Browser and computer use (SDK) Computer use tool Browser use tool Troubleshooting Tool infrastructure Tool reference Manage tool context Tool combinations Tool use with prompt caching Programmatic tool calling Fine-grained tool streaming Context management Context windows Context editing Prompt caching Message threads Mid-conversation messages Build an orchestration mode Cache diagnostics Token counting Compaction Working with files Files API PDF support Images and vision Skills Overview Quickstart Best practices Skills for enterprise Skills in the API MCP Remote MCP servers MCP connector MCP tunnels OpenTelemetry Overview Get Anthropic SDK spans Get Claude API spans Claude on cloud platforms Amazon Bedrock (mantle) Amazon Bedrock (runtime) Claude Platform on AWS Microsoft Foundry Google Cloud  Console Messages  Skills Skills for enterprise  Copy page  Governance, security review, evaluation, and organizational guidance for deploying Agent Skills at enterprise scale.  Copy page  This guide is for enterprise admins and architec",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "29a4096e5fca0275f68898fcb3b94fda50693c50d2abc8d2d37be5cf9e2087b3",
+          "source_id": "claude-platform",
+          "source_sha256": "1e72db698ef65ae0119c2c6f9489bc4a4d245bc448b9903e8a7312b316fe0025",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise"
+        },
+        "provenance": {
+          "final_url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise",
+          "previous_sha256": "29a4096e5fca0275f68898fcb3b94fda50693c50d2abc8d2d37be5cf9e2087b3",
+          "retrieved": "2026-11-15T11:30:25+00:00",
+          "snapshot_id": 4570,
+          "source_id": "claude-platform",
+          "source_sha256": "1e72db698ef65ae0119c2c6f9489bc4a4d245bc448b9903e8a7312b316fe0025",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-15T19:13:51+00:00"
+      }
+    },
+    {
+      "sequence": 881,
+      "id": "obsession-ba538e4dc3968d3bed08a3cbdb5b9d2df8d4d93012da55cf2f8cb092fe32a822",
+      "sha256": "ba538e4dc3968d3bed08a3cbdb5b9d2df8d4d93012da55cf2f8cb092fe32a822",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugin manifest reference - Claude Code Docs Documentation Index Fetch the complete documentation index at: /docs/llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Claude Code Docs home page English Search... ⌘ K Ask Assistant ⌘ I Claude Developer Platform Open Claude Code Open Claude Code Search... Navigation Reference Plugin manifest reference Getting started Build with Claude Code Plugins Administration Configuration Reference Agent SDK Resources Plugins Overview Use plugins Install and manage plugins Anthropic's marketplaces Code intelligence Security and trust Create plugins Create a plugin Add components Dependencies Test plugins with evals Publish a plugin Measure cost and usage Recommend from your CLI Mods Overview Create a mod Build Test and troubleshoot Reference Run a marketplace Create a marketplace Host a marketplace Recommend plugins Manage plugins for your organization Manage plugins for your organization Manage mods for your organization Troubleshooting Troubleshooting Loading reference Reference Manifest reference Marketplace reference Plugin commands On this page Back to top Manifest file Unrecognized fields Validate the manifest Fields name displayName version metadata Directory listing fields defaultEnabled dependencies Component path forms Path-only fields commands hooks mcpServers lspServers monitors Path rules Containment and existence How each key combines with its default location User configuration Limit a field to fixed options Where values are stored Reference a saved value Fields that run through a shell Channels Environment variables Where each variable resolves Quoting and path separators Standard layout Marketplace entries and the manifest How entry fields combine with plugin.json Metadata precedence Next steps Reference Plugin manifest reference Copy page Copy page Complete reference for plugin.json: fields with ty",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "97fad9f71f7b92e15a6c592ed0035dc323b313bb71d608d9bfb27db22be76f40",
+          "source_id": "claude-code",
+          "source_sha256": "a573587e8a6d31d6eea155fa7c3fa482ac5eeeb626d9ed9c6849b65c90c0d726",
+          "url": "https://code.claude.com/docs/en/plugins-reference"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/plugins-reference",
+          "previous_sha256": "97fad9f71f7b92e15a6c592ed0035dc323b313bb71d608d9bfb27db22be76f40",
+          "retrieved": "2026-11-15T11:31:57+00:00",
+          "snapshot_id": 4591,
+          "source_id": "claude-code",
+          "source_sha256": "a573587e8a6d31d6eea155fa7c3fa482ac5eeeb626d9ed9c6849b65c90c0d726",
+          "url": "https://code.claude.com/docs/en/plugins-reference"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-15T19:13:51+00:00"
+      }
+    },
+    {
+      "sequence": 877,
+      "id": "obsession-d212200943a731c0aa67a4ec6124ef263a3de6d1818067c9fd154901b7f5f683",
+      "sha256": "d212200943a731c0aa67a4ec6124ef263a3de6d1818067c9fd154901b7f5f683",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Extend Claude with skills - Claude Code Docs Documentation Index Fetch the complete documentation index at: /docs/llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Claude Code Docs home page English Search... ⌘ K Ask Assistant ⌘ I Claude Developer Platform Open Claude Code Open Claude Code Search... Navigation Skills Extend Claude with skills Getting started Build with Claude Code Plugins Administration Configuration Reference Agent SDK Resources Agents and parallel work Overview Create custom subagents Agent view Run agent teams Cross-session messaging Dynamic workflows Isolate sessions with worktrees MCP Quickstart Reference Skills Extend Claude with skills Artifacts Share session output as artifacts Automation Automate with hooks Push external events to Claude Run prompts on a schedule Goals Programmatic usage Launch sessions from links Guides Monorepos and large repos Troubleshooting Troubleshoot installation and login Troubleshoot performance and stability Debug configuration Error reference On this page Back to top Bundled skills Check your setup with /doctor Run and verify your app Run your checks before each commit Work on Claude API projects Getting started Create your first skill Choose where skills load Load skills in monorepos and subdirectories Load skills from a directory outside the project Run a same-named skill from an added directory Resolve skills that share a name Use skills in Cowork and cloud sessions Skills synced from claude.ai Where synced skills load When a synced skill name matches another command Names reserved for synced skills How Claude Code handles the frontmatter of a synced skill How Claude Code handles the body of a synced skill Edit a skill during a session Remove a skill Configure skills Types of skill content Frontmatter reference Using skill frontmatter outside Claude Code How a skill gets its command name Ch",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "5eb907bd38218e34fd73259699020f5b62afc573efbc361a9064a00601a2b67f",
+          "source_id": "claude-code",
+          "source_sha256": "5afbd40da35fa61e4b7f62cb7eaac2859ebca4ece7a4cbcde84d3d0b0df8ce52",
+          "url": "https://code.claude.com/docs/en/skills"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/skills",
+          "previous_sha256": "5eb907bd38218e34fd73259699020f5b62afc573efbc361a9064a00601a2b67f",
+          "retrieved": "2026-11-15T11:31:22+00:00",
+          "snapshot_id": 4587,
+          "source_id": "claude-code",
+          "source_sha256": "5afbd40da35fa61e4b7f62cb7eaac2859ebca4ece7a4cbcde84d3d0b0df8ce52",
+          "url": "https://code.claude.com/docs/en/skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-15T19:13:51+00:00"
+      }
     }
   ]
 }
