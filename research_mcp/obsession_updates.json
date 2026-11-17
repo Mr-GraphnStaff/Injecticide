@@ -4914,6 +4914,318 @@
         "reason": "Locally approved deterministic gate passed",
         "updated": "2026-11-15T19:13:51+00:00"
       }
+    },
+    {
+      "sequence": 884,
+      "id": "obsession-0a958e2a8a76ead8ad9eeb8530e0dea494798b98472205c0c5bbebedd1ca0501",
+      "sha256": "0a958e2a8a76ead8ad9eeb8530e0dea494798b98472205c0c5bbebedd1ca0501",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Build skills – Plugins | OpenAI Developers For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT Start searching API Dashboard Try ChatGPT Theme Light Dark System Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Agent Access Allow verified ChatGPT browser visits to your website Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Plugins Sign in with ChatGPT Commerce Agent Access Ads Workspace Agents User Docs Search the ChatGPT docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Theme Light Dark System Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background mode St",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "779506f7dbf4ad0b443e702e0a140ccbeb7fe0328291040946e3bd1bd83e41cc",
+          "source_id": "openai-plugins",
+          "source_sha256": "e3787b2bfdf3c557c4049865f916540072b3349de9d4d30c1d62189012037d15",
+          "url": "https://developers.openai.com/plugins/build/skills"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/build/skills",
+          "previous_sha256": "779506f7dbf4ad0b443e702e0a140ccbeb7fe0328291040946e3bd1bd83e41cc",
+          "retrieved": "2026-11-16T11:24:57+00:00",
+          "snapshot_id": 4594,
+          "source_id": "openai-plugins",
+          "source_sha256": "e3787b2bfdf3c557c4049865f916540072b3349de9d4d30c1d62189012037d15",
+          "url": "https://developers.openai.com/plugins/build/skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-16T19:13:54+00:00"
+      }
+    },
+    {
+      "sequence": 901,
+      "id": "obsession-2e8ce4e86ecb263dec23d6f80d9fddb94a7a69037abe4a5ebba02a9fed53707d",
+      "sha256": "2e8ce4e86ecb263dec23d6f80d9fddb94a7a69037abe4a5ebba02a9fed53707d",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "How to create custom skills | Claude Help Center Skip to main content API docs Release notes How to get support English Français Deutsch Bahasa Indonesia Italiano 日本語 한국어 Português Pусский 简体中文 Español 繁體中文 English Search ⌘ K Claude Pro, Max, and Ultra plans Team and Enterprise plans Identity management (SSO, JIT, SCIM) Claude Cowork Claude Code Claude Desktop Claude Mobile apps Claude API and Console Connectors Claude in Chrome Claude for Education Privacy and legal Safeguards Amazon Bedrock All Collections Claude Features and capabilities How to create custom skills How to create custom skills Updated over 2 weeks ago Copy for LLM Skills are available for users on Free, Pro, Max, Ultra, Team, and Enterprise plans. This feature requires code execution to be enabled . Skills are also available in beta for Claude Code users and for all API users using the code execution tool. Custom skills let you enhance Claude with specialized knowledge and workflows specific to your organization or personal work style. This article explains how to create, structure, and test your own skills. Skills can be as simple as a few lines of instructions or as complex as multi-file packages with executable code. The best skills: Solve a specific, repeatable task Have clear instructions that Claude can follow Include examples when helpful Define when they should be used Are focused on one workflow rather than trying to do everything Record a skill Recording a skill is available on Pro, Max, Ultra, and Team plans, in Cowork in Claude for Mac. It isn't available in chat, on Windows, or on Free and Enterprise plans. Instead of writing a skill by hand, you can record yourself doing a task and let Claude build the skill from what it observes. You send Claude a video of your screen, clicks, typing, and voice, and Claude proposes a skill for you to review before you save it. Before you record Update to the latest version of Claude for Mac. Grant the macOS permissions Claude asks for the first time",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "8e1af6a0dc2791fd524ae42f2174ba9023cfd33794ec48db7b4388d96a058b99",
+          "source_id": "requirements-claude-upload",
+          "source_sha256": "b874675d391e201620d0d11f57dc32036b2911f5adbcace6f27ece8438c204d4",
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+        },
+        "provenance": {
+          "final_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "previous_sha256": "8e1af6a0dc2791fd524ae42f2174ba9023cfd33794ec48db7b4388d96a058b99",
+          "retrieved": "2026-11-16T11:25:58+00:00",
+          "snapshot_id": 4611,
+          "source_id": "requirements-claude-upload",
+          "source_sha256": "b874675d391e201620d0d11f57dc32036b2911f5adbcace6f27ece8438c204d4",
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-16T19:13:54+00:00"
+      }
+    },
+    {
+      "sequence": 887,
+      "id": "obsession-31a6666897eb6df3e5c28f9b98043d13ec32fa1610694a20b55362bc529f3508",
+      "sha256": "31a6666897eb6df3e5c28f9b98043d13ec32fa1610694a20b55362bc529f3508",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Skills for enterprise - Claude Platform Docs Claude Platform Docs Messages Managed Agents Admin Resources  Best practices Models & pricing SDKs, CLI, and libraries Claude API skill Release notes  API reference  English   Console Log in   Search Ctrl K First steps Intro to Claude Get your API key Quickstart Authentication Building with Claude Features overview Using the Messages API Stop reasons and fallback Refusals and fallback Fallback credit Text watermark Model capabilities Task budgets (beta) Fast mode Structured outputs Citations Streaming Messages Batch processing Search results Streaming refusals Multilingual support Embeddings Effort Thinking Tools Overview How tool use works Tutorial: Build a tool-using agent Define tools Handle tool calls Parallel tool use Tool runner (SDK) Strict tool use Server tools Web search tool Web fetch tool Code execution tool Advisor tool Tool search tool Memory tool Bash tool Text editor tool Browser and computer use (SDK) Computer use tool Browser use tool Troubleshooting Tool infrastructure Tool reference Manage tool context Tool combinations Tool use with prompt caching Programmatic tool calling Fine-grained tool streaming Context management Context windows Context editing Prompt caching Message threads Mid-conversation messages Build an orchestration mode Cache diagnostics Token counting Compaction Working with files Files API PDF support Images and vision Skills Overview Quickstart Best practices Skills for enterprise Skills in the API MCP Remote MCP servers MCP connector MCP tunnels OpenTelemetry Overview Get Anthropic SDK spans Get Claude API spans Claude on cloud platforms Amazon Bedrock (mantle) Amazon Bedrock (runtime) Claude Platform on AWS Microsoft Foundry Google Cloud  Console Messages  Skills Skills for enterprise  Copy page  Governance, security review, evaluation, and organizational guidance for deploying Agent Skills at enterprise scale.  Copy page  This guide is for enterprise admins and architec",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "1e72db698ef65ae0119c2c6f9489bc4a4d245bc448b9903e8a7312b316fe0025",
+          "source_id": "claude-platform",
+          "source_sha256": "aed56654f2f0d1a64c2256c42c3aa1c8e107599a19492cca811906bc00390226",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise"
+        },
+        "provenance": {
+          "final_url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise",
+          "previous_sha256": "1e72db698ef65ae0119c2c6f9489bc4a4d245bc448b9903e8a7312b316fe0025",
+          "retrieved": "2026-11-16T11:25:04+00:00",
+          "snapshot_id": 4597,
+          "source_id": "claude-platform",
+          "source_sha256": "aed56654f2f0d1a64c2256c42c3aa1c8e107599a19492cca811906bc00390226",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-16T19:13:54+00:00"
+      }
+    },
+    {
+      "sequence": 902,
+      "id": "obsession-3ea2ce79a0a3d196fcce8bfb670cb4899d1523e8481649a12fb1a0446e18f7aa",
+      "sha256": "3ea2ce79a0a3d196fcce8bfb670cb4899d1523e8481649a12fb1a0446e18f7aa",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugins for GitHub Copilot - GitHub Docs Skip to main content Skip to content GitHub Docs Search or ask Copilot / Menu Collapse sidebar Expand sidebar Home GitHub Copilot Concepts Customizations Plugins GitHub Copilot Get started About Copilot Where to use Copilot Copilot on GitHub.com Copilot in your IDE Copilot CLI quickstart Copilot app quickstart Copilot SDK quickstart Plans Enterprise and Copilot billing Best practices Enterprise AI governance Concepts Copilot surfaces GitHub Copilot app Copilot CLI Copilot on GitHub.com and Mobile Copilot in IDEs Agent capabilities About agents GitHub Copilot agents Third-party coding agents Agent apps Choosing and delegating agent work AI tools Agent management Copilot integrations Delegate and parallelize work Getting a second opinion Researching with agents Agent-powered workflows and operations Code review About automations Rationale, confidence, and approvals Dynamic workflows Agentic Workflows Copilot CLI in Actions About remote control Autopilot Tool search Computer use Image generation Prompting and context Prompt engineering Context management Custom instructions Copilot Memory Copilot Dreaming Prompt files Repository indexing Spaces Customizations Comparing customizations Agent skills Assisted permissions Custom agents MCP Connectors Hooks Extensions Plugins LSP servers Models Overview Copilot Fusion Auto model selection Bring your own key Utility models Base and LTS models Billing and usage Organizations and enterprises Billing Seats and billing cycles Budgets Individuals Billing Usage limits Copilot usage metrics All articles Copilot usage metrics Security, governance, and network settings Content exclusion Session data Local sandboxing Understanding local sandboxing Cloud sandboxes Risks and mitigations Network settings Enterprise Policies Governance controls Default availability FedRAMP models New features and models MCP management Plugin standards OpenTelemetry Copilot-only enterprises How-tos Copilot on GitHub ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "8092aa1e41e5efeb231396cf301deeffe5d2b0636d2d81ae4fc413b8b242da98",
+          "source_id": "requirements-copilot",
+          "source_sha256": "c233a51fbe3ea0b5204011aa197a5636acb665ca8162437fe7f748fe1f2d92cc",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "provenance": {
+          "final_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "previous_sha256": "8092aa1e41e5efeb231396cf301deeffe5d2b0636d2d81ae4fc413b8b242da98",
+          "retrieved": "2026-11-16T11:25:58+00:00",
+          "snapshot_id": 4612,
+          "source_id": "requirements-copilot",
+          "source_sha256": "c233a51fbe3ea0b5204011aa197a5636acb665ca8162437fe7f748fe1f2d92cc",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-16T19:13:54+00:00"
+      }
+    },
+    {
+      "sequence": 908,
+      "id": "obsession-672f9fa462a907e3b4c6d944922baf1276b64fbf9b05d87b560518ebe91c680e",
+      "sha256": "672f9fa462a907e3b4c6d944922baf1276b64fbf9b05d87b560518ebe91c680e",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugin UI changelog – Plugins | OpenAI Developers For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT Start searching API Dashboard Try ChatGPT Theme Light Dark System Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Agent Access Allow verified ChatGPT browser visits to your website Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Plugins Sign in with ChatGPT Commerce Agent Access Ads Workspace Agents User Docs Search the ChatGPT docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Theme Light Dark System Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "67589cf5254509e3b57eacf0b51fc282389a013f58a46ed6fe100d1e1ff0d7e3",
+          "source_id": "openai-plugins",
+          "source_sha256": "2a012e120c32f0f7f4b19dd41e16db284b272910f7ed9fceea3788ac6cc6df99",
+          "url": "https://developers.openai.com/plugins/changelog"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/changelog",
+          "previous_sha256": "67589cf5254509e3b57eacf0b51fc282389a013f58a46ed6fe100d1e1ff0d7e3",
+          "retrieved": "2026-11-16T11:26:22+00:00",
+          "snapshot_id": 4618,
+          "source_id": "openai-plugins",
+          "source_sha256": "2a012e120c32f0f7f4b19dd41e16db284b272910f7ed9fceea3788ac6cc6df99",
+          "url": "https://developers.openai.com/plugins/changelog"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-16T19:13:54+00:00"
+      }
+    },
+    {
+      "sequence": 888,
+      "id": "obsession-72765bde8e4f3086406a3d39cb43fe0b7804aeff290cc2ee866ae5c093cc0e4f",
+      "sha256": "72765bde8e4f3086406a3d39cb43fe0b7804aeff290cc2ee866ae5c093cc0e4f",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugins for GitHub Copilot - GitHub Docs Skip to main content Skip to content GitHub Docs Search or ask Copilot / Menu Collapse sidebar Expand sidebar Home GitHub Copilot Concepts Customizations Plugins GitHub Copilot Get started About Copilot Where to use Copilot Copilot on GitHub.com Copilot in your IDE Copilot CLI quickstart Copilot app quickstart Copilot SDK quickstart Plans Enterprise and Copilot billing Best practices Enterprise AI governance Concepts Copilot surfaces GitHub Copilot app Copilot CLI Copilot on GitHub.com and Mobile Copilot in IDEs Agent capabilities About agents GitHub Copilot agents Third-party coding agents Agent apps Choosing and delegating agent work AI tools Agent management Copilot integrations Delegate and parallelize work Getting a second opinion Researching with agents Agent-powered workflows and operations Code review About automations Rationale, confidence, and approvals Dynamic workflows Agentic Workflows Copilot CLI in Actions About remote control Autopilot Tool search Computer use Image generation Prompting and context Prompt engineering Context management Custom instructions Copilot Memory Copilot Dreaming Prompt files Repository indexing Spaces Customizations Comparing customizations Agent skills Assisted permissions Custom agents MCP Connectors Hooks Extensions Plugins LSP servers Models Overview Copilot Fusion Auto model selection Bring your own key Utility models Base and LTS models Billing and usage Organizations and enterprises Billing Seats and billing cycles Budgets Individuals Billing Usage limits Copilot usage metrics All articles Copilot usage metrics Security, governance, and network settings Content exclusion Session data Local sandboxing Understanding local sandboxing Cloud sandboxes Risks and mitigations Network settings Enterprise Policies Governance controls Default availability FedRAMP models New features and models MCP management Plugin standards OpenTelemetry Copilot-only enterprises How-tos Copilot on GitHub ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "8092aa1e41e5efeb231396cf301deeffe5d2b0636d2d81ae4fc413b8b242da98",
+          "source_id": "copilot",
+          "source_sha256": "c233a51fbe3ea0b5204011aa197a5636acb665ca8162437fe7f748fe1f2d92cc",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "provenance": {
+          "final_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "previous_sha256": "8092aa1e41e5efeb231396cf301deeffe5d2b0636d2d81ae4fc413b8b242da98",
+          "retrieved": "2026-11-16T11:25:08+00:00",
+          "snapshot_id": 4598,
+          "source_id": "copilot",
+          "source_sha256": "c233a51fbe3ea0b5204011aa197a5636acb665ca8162437fe7f748fe1f2d92cc",
+          "url": "https://docs.github.com/en/copilot/concepts/agents/about-plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-16T19:13:54+00:00"
+      }
+    },
+    {
+      "sequence": 914,
+      "id": "obsession-9922781cba3d9de09752d16db9bfe0e1e93c8093cb051c56605cd76484971acf",
+      "sha256": "9922781cba3d9de09752d16db9bfe0e1e93c8093cb051c56605cd76484971acf",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Package your plugin – Plugins | OpenAI Developers For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT Start searching API Dashboard Try ChatGPT Theme Light Dark System Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Agent Access Allow verified ChatGPT browser visits to your website Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Plugins Sign in with ChatGPT Commerce Agent Access Ads Workspace Agents User Docs Search the ChatGPT docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Theme Light Dark System Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "30c42773f833c8a97242cca1991c6452608dd17e063eff6068de6ff2f16192c4",
+          "source_id": "openai-plugins",
+          "source_sha256": "eb0c6f0dd610dcb97a7020f8c71f2ca1dd99893bfae55bc072708f8c4a17fa66",
+          "url": "https://developers.openai.com/plugins/build/plugins"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/build/plugins",
+          "previous_sha256": "30c42773f833c8a97242cca1991c6452608dd17e063eff6068de6ff2f16192c4",
+          "retrieved": "2026-11-16T11:26:48+00:00",
+          "snapshot_id": 4624,
+          "source_id": "openai-plugins",
+          "source_sha256": "eb0c6f0dd610dcb97a7020f8c71f2ca1dd99893bfae55bc072708f8c4a17fa66",
+          "url": "https://developers.openai.com/plugins/build/plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-16T19:13:54+00:00"
+      }
+    },
+    {
+      "sequence": 885,
+      "id": "obsession-c187560fcb89b1794b5e6d61f7e8dd2e87a59720a831fffcd0f3a278c42afb68",
+      "sha256": "c187560fcb89b1794b5e6d61f7e8dd2e87a59720a831fffcd0f3a278c42afb68",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Build skills | ChatGPT Learn For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT Start searching API Dashboard Try ChatGPT Theme Light Dark System Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Agent Access Allow verified ChatGPT browser visits to your website Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Features Configuration Developers Security Administration Use Cases Resources Search the docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Theme Light Dark System Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background mode Streaming WebSocket mode Mid",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "0c896b771ddd62185a1e6601230203824b54ca2e4f94b19a5a4667fc9a9e2ffc",
+          "source_id": "openai-codex",
+          "source_sha256": "9877cab6aff797b494d0bff2afbf3ddeb99d0a6cfcb604779c8c63ac4a927298",
+          "url": "https://learn.chatgpt.com/docs/build-skills"
+        },
+        "provenance": {
+          "final_url": "https://learn.chatgpt.com/docs/build-skills",
+          "previous_sha256": "0c896b771ddd62185a1e6601230203824b54ca2e4f94b19a5a4667fc9a9e2ffc",
+          "retrieved": "2026-11-16T11:24:59+00:00",
+          "snapshot_id": 4595,
+          "source_id": "openai-codex",
+          "source_sha256": "9877cab6aff797b494d0bff2afbf3ddeb99d0a6cfcb604779c8c63ac4a927298",
+          "url": "https://learn.chatgpt.com/docs/build-skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-16T19:13:54+00:00"
+      }
     }
   ]
 }
