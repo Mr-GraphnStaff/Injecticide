@@ -5226,6 +5226,123 @@
         "reason": "Locally approved deterministic gate passed",
         "updated": "2026-11-16T19:13:54+00:00"
       }
+    },
+    {
+      "sequence": 950,
+      "id": "obsession-30a1a8d1fed93a3b49c9fa2db2f6a9d75085778a244558ff6200bf02084417e4",
+      "sha256": "30a1a8d1fed93a3b49c9fa2db2f6a9d75085778a244558ff6200bf02084417e4",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "# Build an MCP server\n\n> For the complete documentation index, see [llms.txt](/llms.txt). Markdown versions of documentation pages are available by appending `.md` to the page URL.\n\nAdd an MCP server when a plugin use case needs live data, authentication,\ncontrolled actions, or code that runs on infrastructure you operate. The\nserver defines the tools available to ChatGPT and Codex. It does not need to\nreturn custom UI.\n\nStart from the supported goals in your\n[use-case inventory](https://developers.openai.com/plugins/plan/use-case). Each tool should help complete a\nrecognizable user goal and should expose only the data and actions required for\nthat goal.\n\nBuild the tools first. After the server works without custom UI, you can [add\n  UI to the MCP server](https://developers.openai.com/plugins/build/chatgpt-ui) for workflows that need\n  visual interaction.\n\n## Choose an MCP software development kit\n\nThe official software development kits provide schema helpers, server scaffolding, and streamable\nHTTP transport:\n\n- [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk),\n  published as `@modelcontextprotocol/sdk`.\n- [Python SDK](https://github.com/modelcontextprotocol/python-sdk), published\n  as `mcp`.\n\nInstall the SDK that matches your server stack:\n\n```bash\n# TypeScript\nnpm install @modelcontextprotocol/sdk zod\n\n# Python\npip install mcp\n```\n\n\n\n\nFor the Ruby examples, use Ruby 3.3 and install `mcp` version `1.10.0`, `rackup` version `2.3`, and `webrick`. Save one complete server example as `main.rb`, then run `ruby main.rb`. It listens for Streamable HTTP requests at `http://localhost:3000/mcp`.\n\n\n\n\n## Create the server\n\nCreate an MCP server with a stable name and version:\n\nCreate an MCP server\n\n```typescript\nimport { McpServer } from \"@modelcontextprotocol/sdk/server/mcp.js\";\n\nconst server = new McpServer({\n  name: \"acme-projects\",\n  version: \"1.0.0\",\n});\n```\n\n```ruby\nrequire \"mcp\"\nrequire \"rackup\"\nrequire \"rackup/handler/webrick\"\n\nserver = MCP::Ser",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "7ac78ed1bcd4399a7c152f70238fc6388dfe9089e72f097cb16c4cd6997a5970",
+          "source_id": "requirements-openai-mcp-import",
+          "source_sha256": "e7831c0c32b9bde3c928d164adf586a93cf0a49962c14bee21d28bdd139fc98d",
+          "url": "https://developers.openai.com/plugins/build/mcp-server.md"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/build/mcp-server.md",
+          "previous_sha256": "7ac78ed1bcd4399a7c152f70238fc6388dfe9089e72f097cb16c4cd6997a5970",
+          "retrieved": "2026-11-18T03:25:35+00:00",
+          "snapshot_id": 4660,
+          "source_id": "requirements-openai-mcp-import",
+          "source_sha256": "e7831c0c32b9bde3c928d164adf586a93cf0a49962c14bee21d28bdd139fc98d",
+          "url": "https://developers.openai.com/plugins/build/mcp-server.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-18T03:29:27+00:00"
+      }
+    },
+    {
+      "sequence": 929,
+      "id": "obsession-a1863e0c6632e9092eba886d449dbc1308b090ad50a4e90506e4be56d0e58ea4",
+      "sha256": "a1863e0c6632e9092eba886d449dbc1308b090ad50a4e90506e4be56d0e58ea4",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "# Configuration Reference\n\n> For the complete documentation index, see [llms.txt](https://learn.chatgpt.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to the page URL.\n\nUse this page as a searchable reference for Codex configuration files. For conceptual guidance and examples, start with [Config basics](https://learn.chatgpt.com/docs/config-file/config-basic) and [Advanced Config](https://learn.chatgpt.com/docs/config-file/config-advanced).\n\n<a id=\"settings-for-synced-chatgpt-work\"></a>\n\n## Settings for Local computer access with Work Cloud\n\nWith Local computer access with Work Cloud enabled, OpenAI's cloud coordinates the task while supported tools run in the cloud or on a connected computer. Requirements set limits; configuration values provide defaults.\n\nUse the policy API to manage Global settings. To manage Local or Codex Cloud settings, use the Agent Security UI. Existing Global API workflows remain available after migration. Test your scripts and Terraform integrations, and confirm that policy assignments and ordering are unchanged. Support for a `requirements.toml` field does not by itself establish API compatibility.\n\n| Setting or setting family                                           | Scope in Local computer access with Work Cloud                                                                                   | Guidance                                                                                                                                                                                                                                                                                                                                                                                                                                            |\n| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "f6bef51b85be81c6e02e93eee3d98fa7ba78785d2c858187ee45c3ec0b65128b",
+          "source_id": "openai-codex",
+          "source_sha256": "5dc519915a3c5253e046d1fb9e365a7c588872f1b26f973e656b2961b5242be4",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "provenance": {
+          "final_url": "https://learn.chatgpt.com/docs/config-file/config-reference.md",
+          "previous_sha256": "f6bef51b85be81c6e02e93eee3d98fa7ba78785d2c858187ee45c3ec0b65128b",
+          "retrieved": "2026-11-18T03:22:38+00:00",
+          "snapshot_id": 4639,
+          "source_id": "openai-codex",
+          "source_sha256": "5dc519915a3c5253e046d1fb9e365a7c588872f1b26f973e656b2961b5242be4",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-18T03:29:27+00:00"
+      }
+    },
+    {
+      "sequence": 947,
+      "id": "obsession-c02a804594182232fc32459aba39418019f76df7b1c8890f21d743efcd7e55c9",
+      "sha256": "c02a804594182232fc32459aba39418019f76df7b1c8890f21d743efcd7e55c9",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Extend Claude with skills\n\n> Create, manage, and share skills to extend Claude's capabilities in Claude Code. Includes custom commands and bundled skills.\n\nSkills extend what Claude can do. Create a `SKILL.md` file with instructions, and Claude adds it to its toolkit. Claude uses skills when relevant, or you can invoke one directly with `/skill-name`.\n\nCreate a skill when you keep pasting the same instructions, checklist, or multi-step procedure into chat, or when a section of CLAUDE.md has grown into a procedure rather than a fact. Unlike CLAUDE.md content, a skill's body loads only when it's used, so long reference material costs almost nothing until you need it.\n\n> [!NOTE]\n>\n> For built-in commands like `/help` and `/compact`, and bundled skills like `/debug` and `/code-review`, see the [commands reference](https://code.claude.com/docs/en/commands.md).\n>\n> **Custom commands have been merged into skills.** Your existing `.claude/commands/` files keep working. Claude can invoke them without you typing the command. Edit a command to stop Claude from invoking it on its own, or convert a command that needs more than one file to a skill:\n>\n> * **Stop Claude from invoking a command on its own**: add [`disable-model-invocation: true`](#control-who-invokes-a-skill) to the command file's [frontmatter](#frontmatter-reference)\n> * **Add [supporting files](#add-supporting-files) such as scripts**: convert the command to a skill. For example, move `.claude/commands/deploy.md` to `.claude/skills/deploy/SKILL.md`. The [folder name becomes the command](#how-a-skill-gets-its-command-name), so you still type `/deploy`.\n\nClaude Code skills follow the [Agent Skills](https://agentskills.io) open standard, which works across multiple AI tools. Claude Code extends the standard with additional features lik",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "654fd3e23932c9a0e0f79f382a348a231ed8add3944c7ef3e3cec543589a6060",
+          "source_id": "requirements-claude-code",
+          "source_sha256": "632e75ce5b55590853a15a1539dbfccfcd02e884a2acf93abc176c3356954fad",
+          "url": "https://code.claude.com/docs/en/skills.md"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/skills.md",
+          "previous_sha256": "654fd3e23932c9a0e0f79f382a348a231ed8add3944c7ef3e3cec543589a6060",
+          "retrieved": "2026-11-18T03:25:20+00:00",
+          "snapshot_id": 4657,
+          "source_id": "requirements-claude-code",
+          "source_sha256": "632e75ce5b55590853a15a1539dbfccfcd02e884a2acf93abc176c3356954fad",
+          "url": "https://code.claude.com/docs/en/skills.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-18T03:29:27+00:00"
+      }
     }
   ]
 }
