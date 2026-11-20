@@ -5226,6 +5226,45 @@
         "reason": "Locally approved deterministic gate passed",
         "updated": "2026-11-16T19:13:54+00:00"
       }
+    },
+    {
+      "sequence": 929,
+      "id": "obsession-a1863e0c6632e9092eba886d449dbc1308b090ad50a4e90506e4be56d0e58ea4",
+      "sha256": "a1863e0c6632e9092eba886d449dbc1308b090ad50a4e90506e4be56d0e58ea4",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "# Configuration Reference\n\n> For the complete documentation index, see [llms.txt](https://learn.chatgpt.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to the page URL.\n\nUse this page as a searchable reference for Codex configuration files. For conceptual guidance and examples, start with [Config basics](https://learn.chatgpt.com/docs/config-file/config-basic) and [Advanced Config](https://learn.chatgpt.com/docs/config-file/config-advanced).\n\n<a id=\"settings-for-synced-chatgpt-work\"></a>\n\n## Settings for Local computer access with Work Cloud\n\nWith Local computer access with Work Cloud enabled, OpenAI's cloud coordinates the task while supported tools run in the cloud or on a connected computer. Requirements set limits; configuration values provide defaults.\n\nUse the policy API to manage Global settings. To manage Local or Codex Cloud settings, use the Agent Security UI. Existing Global API workflows remain available after migration. Test your scripts and Terraform integrations, and confirm that policy assignments and ordering are unchanged. Support for a `requirements.toml` field does not by itself establish API compatibility.\n\n| Setting or setting family                                           | Scope in Local computer access with Work Cloud                                                                                   | Guidance                                                                                                                                                                                                                                                                                                                                                                                                                                            |\n| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "f6bef51b85be81c6e02e93eee3d98fa7ba78785d2c858187ee45c3ec0b65128b",
+          "source_id": "openai-codex",
+          "source_sha256": "5dc519915a3c5253e046d1fb9e365a7c588872f1b26f973e656b2961b5242be4",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "provenance": {
+          "final_url": "https://learn.chatgpt.com/docs/config-file/config-reference.md",
+          "previous_sha256": "f6bef51b85be81c6e02e93eee3d98fa7ba78785d2c858187ee45c3ec0b65128b",
+          "retrieved": "2026-11-18T03:22:38+00:00",
+          "snapshot_id": 4639,
+          "source_id": "openai-codex",
+          "source_sha256": "5dc519915a3c5253e046d1fb9e365a7c588872f1b26f973e656b2961b5242be4",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-18T03:29:27+00:00"
+      }
     }
   ]
 }
