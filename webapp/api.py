@@ -50,6 +50,7 @@ from webapp.skill_scanner import scan_upload, MAX_UPLOAD_BYTES
 from webapp.research_news import news_client
 from webapp.vendor_requirements import attach_vendor_check
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
+from skill_sandbox.nested_archives import ArchiveFileLimitError
 
 from webapp.scan_jobs import ScanJobs
 from webapp.scan_feedback import submit_feedback, submit_scan_error
@@ -61,6 +62,18 @@ SKILL_SCAN_SLOT = threading.BoundedSemaphore(1)
 SKILL_SCAN_READ_TIMEOUT_SECONDS = 225
 
 
+def _scan_rejection_message(detail):
+    """Expose only bounded numeric diagnostics, never arbitrary upstream text."""
+    if isinstance(detail, dict) and detail.get("code") == "archive_file_limit":
+        count, limit, index = (detail.get(key) for key in ("count", "limit", "skill_index"))
+        if (type(count) is int and 0 <= count <= 1000000
+                and type(limit) is int and 0 < limit <= 10000
+                and (index is None or type(index) is int and 0 < index <= 10000)):
+            scope = f"Skill #{index}" if index is not None else "Shared plugin/package content"
+            return f"{scope} contains {count} files; the limit is {limit} files per skill or shared package area. Reduce that area's file count and rescan."
+    return "The analysis service could not accept this scan."
+
+
 def _scan_skill_data(data, filename, content_type, target_runtime, evidence, sandbox_url, org_policy="", use_local_llm=None):
     correction_envelope, correction_delivery = fetch_approved_corrections()
     if not sandbox_url:
@@ -70,7 +83,10 @@ def _scan_skill_data(data, filename, content_type, target_runtime, evidence, san
             from skill_sandbox.package_evidence import scanner_metadata
             try:options["correction_pack"]=approved_pack(correction_envelope,scanner_metadata())
             except (ValueError,TypeError,KeyError):correction_delivery="rejected"
-        result=attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence), org_policy, **options))
+        try:
+            result=attach_vendor_check(scan_upload(data, filename, target_runtime, bounded_data(evidence), org_policy, **options))
+        except ArchiveFileLimitError as exc:
+            raise HTTPException(status_code=400, detail=exc.detail) from exc
         result.setdefault("correction_application",{}).setdefault("delivery_state",correction_delivery)
         return result
     form = {"target_runtime": target_runtime, "governance_evidence": evidence}
@@ -609,7 +625,7 @@ def _execute_skill_scan(data, filename, content_type, target_runtime, evidence, 
     except requests.RequestException as exc:
         return fail(502, "Skill sandbox unavailable or timed out.", "sandbox", type(exc).__name__)
     except HTTPException as exc:
-        return fail(exc.status_code, "The analysis service could not accept this scan.", "sandbox")
+        return fail(exc.status_code, _scan_rejection_message(exc.detail), "sandbox")
     except zipfile.BadZipFile:
         return fail(400, "Invalid zip archive")
     except ValueError:
@@ -679,7 +695,7 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
         return failure(502, "Skill sandbox unavailable or timed out. The file can be selected again to retry.", "sandbox", type(exc).__name__)
     except HTTPException as exc:
         # Do not reflect an arbitrary upstream exception object or uploaded text.
-        return failure(exc.status_code, "The analysis service could not accept this scan.", "sandbox")
+        return failure(exc.status_code, _scan_rejection_message(exc.detail), "sandbox")
     except zipfile.BadZipFile:
         return failure(400, "Invalid zip archive")
     except ValueError:
