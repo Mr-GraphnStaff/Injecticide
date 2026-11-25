@@ -31,7 +31,7 @@ def test_nested_zip_skill_instructions_are_actually_scanned():
 
 
 def test_inner_members_inherit_whole_scan_file_budget(monkeypatch):
-    monkeypatch.setattr(sandbox, "MAX_ARCHIVE_FILES", 3)
+    monkeypatch.setattr(sandbox, "MAX_PACKAGE_FILES", 3)
     nested = zipped([("SKILL.md", skill()), ("notes.md", "notes")])
     result = sandbox.scan_upload(zipped([("first.zip", nested), ("second.zip", nested)]), "outer.zip")
     entries = {entry["path"]: entry for entry in result["files"]}

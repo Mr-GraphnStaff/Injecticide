@@ -17,6 +17,52 @@ import struct
 import zipfile
 import zlib
 
+MAX_PACKAGE_FILES = 10000
+
+
+class ArchiveFileLimitError(ValueError):
+    """Bounded public diagnostics; never reflect arbitrary uploaded text."""
+
+    def __init__(self, count, limit, skill_index=None):
+        self.detail = {"code": "archive_file_limit", "count": count, "limit": limit,
+                       "skill_index": skill_index}
+        scope = f"Skill #{skill_index}" if skill_index is not None else "Shared package content"
+        super().__init__(f"{scope} contains too many files ({count}); limit is {limit} per skill or shared package area.")
+
+
+class SkillFileBudget:
+    """Nearest skill ownership persists across ``!/`` expansion boundaries."""
+
+    def __init__(self, limit=200):
+        self.limit = limit
+        self.roots = set()
+        self.counts = {}
+
+    def add(self, names):
+        # Names must already be validated. Discover all roots in this archive
+        # before counting, independent of central-directory member order.
+        names = list(names)
+        roots = self.roots | {str(PurePosixPath(name).parent) for name in names
+                              if PurePosixPath(name).name == "SKILL.md"}
+        counts = dict(self.counts)
+        for name in names:
+            root = next((str(parent) for parent in PurePosixPath(name).parents
+                         if str(parent) in roots), None)
+            counts[root] = counts.get(root, 0) + 1
+        for index, root in enumerate(sorted(roots), 1):
+            if counts.get(root, 0) > self.limit:
+                raise ArchiveFileLimitError(counts[root], self.limit, index)
+        if counts.get(None, 0) > self.limit:
+            raise ArchiveFileLimitError(counts[None], self.limit)
+        self.roots, self.counts = roots, counts
+
+
+def check_skill_file_counts(names, limit=200):
+    """Validate an outer inventory and return its cumulative ownership budget."""
+    budget = SkillFileBudget(limit)
+    budget.add(names)
+    return budget
+
 
 @dataclass
 class NestedArchiveBudget:
@@ -25,6 +71,7 @@ class NestedArchiveBudget:
     max_bytes: int = 64 * 1024 * 1024
     max_member_bytes: int = 5 * 1024 * 1024
     max_depth: int = 3
+    skill_files: SkillFileBudget | None = None
     files_used: int = 0
     bytes_used: int = 0
     seen_paths: set[str] = field(default_factory=set)
@@ -144,6 +191,13 @@ def inspect_nested_zip(data: bytes, path: str, budget: NestedArchiveBudget | Non
                 container["status"] = "malformed"
                 incomplete("ZIP central-directory entry count disagrees with the end record.", size=len(data))
                 return result
+            if budget.skill_files is not None:
+                try:
+                    budget.skill_files.add([f"{path}!/{name}" for info in members if not info.is_dir()
+                                           if (name := _member_name(info)) is not None])
+                except ArchiveFileLimitError as exc:
+                    incomplete(str(exc), size=len(data), **exc.detail)
+                    return result
             local_names = set()
             for index, info in enumerate(members):
                 if budget.files_used >= budget.max_files:

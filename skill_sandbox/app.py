@@ -17,7 +17,8 @@ from starlette.concurrency import run_in_threadpool
 
 if __package__:
     from .asset_inspection import inspect_asset
-    from .nested_archives import NestedArchiveBudget, inspect_nested_zip, is_nested_zip
+    from .nested_archives import (NestedArchiveBudget, inspect_nested_zip, is_nested_zip,
+                                  check_skill_file_counts, ArchiveFileLimitError, MAX_PACKAGE_FILES)
     from .text_projections import decoded_projections
     from .evidence_redaction import redact_result
     from .disposition import normalize_observations
@@ -37,7 +38,8 @@ if __package__:
     from .fix_summary import build_fix_summary
 else:
     from asset_inspection import inspect_asset
-    from nested_archives import NestedArchiveBudget, inspect_nested_zip, is_nested_zip
+    from nested_archives import (NestedArchiveBudget, inspect_nested_zip, is_nested_zip,
+                                 check_skill_file_counts, ArchiveFileLimitError, MAX_PACKAGE_FILES)
     from text_projections import decoded_projections
     from evidence_redaction import redact_result
     from disposition import normalize_observations
@@ -125,6 +127,8 @@ async def scan_skill(file: UploadFile = File(...), target_runtime: str = Form("a
         result = await run_in_threadpool(scan_upload, upload_bytes, file.filename, target_runtime, evidence, org_policy, **options)
         result["correction_application"]["delivery_state"]=correction_state
         return result
+    except ArchiveFileLimitError as exc:
+        raise HTTPException(status_code=400, detail=exc.detail) from exc
     except (ValueError, zipfile.BadZipFile, tarfile.TarError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     finally:
@@ -242,8 +246,10 @@ def _safe_extract_zip(upload_bytes: bytes, root: Path, warnings: List[str], excl
     with zipfile.ZipFile(io.BytesIO(upload_bytes)) as archive:
         members = [info for info in archive.infolist() if not info.is_dir()]
 
-        if len(members) > MAX_ARCHIVE_FILES:
-            raise ValueError("Zip archive contains too many files.")
+        if len(members) > MAX_PACKAGE_FILES:
+            raise ValueError("Zip archive exceeds the overall package file budget.")
+        check_skill_file_counts([name for info in members
+                                if (name := _sanitize_member_name(info.filename))], MAX_ARCHIVE_FILES)
 
         for info in members:
             total_uncompressed += info.file_size
@@ -292,8 +298,10 @@ def _safe_extract_tar(upload_bytes: bytes, root: Path, warnings: List[str], excl
     with tarfile.open(fileobj=io.BytesIO(upload_bytes), mode="r:*") as archive:
         members = [member for member in archive.getmembers() if not member.isdir()]
 
-        if len(members) > MAX_ARCHIVE_FILES:
-            raise ValueError("Tar archive contains too many files.")
+        if len(members) > MAX_PACKAGE_FILES:
+            raise ValueError("Tar archive exceeds the overall package file budget.")
+        check_skill_file_counts([name for member in members
+                                if (name := _sanitize_member_name(member.name))], MAX_ARCHIVE_FILES)
 
         for member in members:
             total_uncompressed += member.size
@@ -350,7 +358,10 @@ def _scan_extracted_files(files: Iterable[Tuple[str, Path]], excluded=None) -> T
     sorted_files = sorted(files, key=_priority_key)
     excluded = excluded if excluded is not None else []
     budget = NestedArchiveBudget(
-        max_files=MAX_ARCHIVE_FILES, max_bytes=MAX_ARCHIVE_TOTAL_BYTES,
+        max_files=MAX_PACKAGE_FILES, max_bytes=MAX_ARCHIVE_TOTAL_BYTES,
+        skill_files=check_skill_file_counts(
+            [name for name, _ in sorted_files] +
+            [name for item in excluded if (name := _sanitize_member_name(item["path"]))], MAX_ARCHIVE_FILES),
         max_member_bytes=MAX_FILE_BYTES,
         files_used=len(sorted_files) + len(excluded),
         bytes_used=sum(path.stat().st_size for _, path in sorted_files) + sum(item.get("size", 0) for item in excluded),

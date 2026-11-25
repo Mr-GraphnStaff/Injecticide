@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.19.2 - 2026-11-25
+
+- Apply archive file limits per skill instead of rejecting multi-skill plugins
+  above 200 combined files. Give shared package files their own allowance while
+  retaining separate overall expansion budgets. Explain per-skill file-count
+  rejections in web scan diagnostics.
+
 ## 0.19.1
 
 - Accept successful bounded Python analysis states during rebuild verification and identify incomplete database coverage with file and row counts.

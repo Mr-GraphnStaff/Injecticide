@@ -14,7 +14,7 @@ import os
 import binascii
 import re
 
-from .app import (SCAN_SLOT, MAX_ARCHIVE_FILES, MAX_ARCHIVE_TOTAL_BYTES,
+from .app import (SCAN_SLOT, MAX_ARCHIVE_FILES, MAX_PACKAGE_FILES, MAX_ARCHIVE_TOTAL_BYTES,
                   MAX_FILE_BYTES, MAX_TEXT_CHARS, scan_upload)
 from .asset_inspection import MAX_ASSET_BYTES, MAX_METADATA_BYTES
 from .nested_archives import NestedArchiveBudget
@@ -90,6 +90,8 @@ def skill_scanner_capabilities() -> dict[str, object]:
             "mcp_artifact_bytes": MAX_MCP_ARTIFACT_BYTES,
             "mcp_base64_characters": MAX_MCP_BASE64_CHARACTERS,
             "archive_files": MAX_ARCHIVE_FILES,
+            "archive_files_scope": "per_skill_or_shared_package_area",
+            "package_files": MAX_PACKAGE_FILES,
             "archive_expanded_bytes": MAX_ARCHIVE_TOTAL_BYTES,
             "ordinary_file_bytes": MAX_FILE_BYTES,
             "text_characters": MAX_TEXT_CHARS,

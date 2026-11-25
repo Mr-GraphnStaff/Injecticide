@@ -11,15 +11,17 @@ from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit, urlunsp
 
 try:
     from .secret_detection import FORMATS as SECRET_FORMATS, _placeholder as _secret_placeholder
+    from .nested_archives import MAX_PACKAGE_FILES
 except ImportError:  # flat sandbox image layout
     from secret_detection import FORMATS as SECRET_FORMATS, _placeholder as _secret_placeholder
+    from nested_archives import MAX_PACKAGE_FILES
 
 REDACTED = "[REDACTED]"
 MAX_SECRET_VALUES = 128
 MAX_SECRET_CHARACTERS = 32768
 MAX_RESULT_NODES = 1_000_000
 MAX_SOURCE_CHARACTERS = 1024 * 1024
-MAX_SOURCE_FILES = 200
+MAX_SOURCE_FILES = MAX_PACKAGE_FILES
 URL_RE = re.compile(r"(?:https?|wss?)://[^\s<>\"'`]+", re.I)
 SENSITIVE_KEY = re.compile(r"(?:api[-_]?key|(?:access|refresh|session|auth)[-_]?token|authorization|password|passwd|secret|credential|private[-_]?key|signature|bearer)", re.I)
 DECLARATION = re.compile(

@@ -26,6 +26,19 @@ that reserved delimiter are rejected to preserve source/hash identity. Nested
 expansion shares the whole scan's file/byte budgets and has a depth limit;
 unsupported compression and budget exclusions remain visible.
 
+Archive file counts are limited to 200 per skill directory, identified by its
+`SKILL.md`, including that file and its descendants. The nearest skill directory
+owns each file. Shared plugin/package files outside skill directories have a
+separate 200-file allowance. Seven skills can therefore contain 1,400 skill files
+plus shared plugin metadata; the upload is not capped at 200 combined files.
+ZIP-based `.plugin` uploads are recognized by content. The same grouping applies
+inside inspected nested archives. A separate 10,000-entry shared file budget,
+64 MiB expanded-byte budget, 32 MiB upload limit and nesting limits still bound
+the whole scan. File counts do not reset the shared byte or nesting budgets.
+Expanded reference archives retain their containing skill's quota unless they
+declare a distinct skill root. Office document internals keep their separate
+Office extraction budgets rather than consuming the skill's file allowance.
+
 ## What the result contains
 
 What is and is not detected, by threat type: [coverage.md](coverage.md).
