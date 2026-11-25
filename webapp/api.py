@@ -51,6 +51,7 @@ from webapp.research_news import news_client
 from webapp.vendor_requirements import attach_vendor_check
 from skill_sandbox.package_formats import bounded_data, RUNTIMES
 from skill_sandbox.nested_archives import ArchiveFileLimitError
+from skill_sandbox.org_policy import policy_preflight, MAX_POLICY_CHARS
 
 from webapp.scan_jobs import ScanJobs
 from webapp.scan_feedback import submit_feedback, submit_scan_error
@@ -648,6 +649,20 @@ async def skill_scan_job(job_id: str):
         status_code=202 if job["status"] == "running" else 200, content=job, headers=headers))
 
 
+@app.post("/api/skills/policy/validate")
+async def validate_organization_policy(request: Request):
+    # Read a bounded text body, not a file upload or executable policy language.
+    raw = bytearray()
+    async for chunk in request.stream():
+        if len(raw) + len(chunk) > MAX_POLICY_CHARS:
+            return JSONResponse(status_code=413, headers={"Cache-Control": "no-store"},
+                                content={"status": "invalid", "errors": [{"path": "", "message": "Policy exceeds the 128 KiB limit."}], "warnings": []})
+        raw.extend(chunk)
+    result = await run_in_threadpool(policy_preflight, bytes(raw))
+    return JSONResponse(status_code=422 if result["status"] == "invalid" else 200,
+                        headers={"Cache-Control": "no-store"}, content=result)
+
+
 @app.post("/api/skills/scan")
 async def scan_skill_file(request: Request, file: UploadFile = File(...), target_runtime: str = Form("auto"),
                           governance_evidence: str = Form("{}"), org_policy: str = Form(""),
@@ -667,6 +682,13 @@ async def scan_skill_file(request: Request, file: UploadFile = File(...), target
     if not file.filename:
         await file.close()
         return failure(400, "Missing filename")
+    policy_check = await run_in_threadpool(policy_preflight, org_policy)
+    if policy_check["status"] == "invalid":
+        await file.close()
+        return JSONResponse(status_code=422, headers={"X-Scan-Request-ID": request_id, "Cache-Control": "no-store"},
+                            content={"detail": {"message": "Policy needs correction before scanning. No package analysis was started.",
+                                                "stage": "policy validation", "request_id": request_id,
+                                                "errors": policy_check["errors"]}, "policy_validation": policy_check})
     if not SKILL_SCAN_SLOT.acquire(blocking=False):
         await file.close()
         return failure(429, "Another package scan is running. Retry after it finishes.", "admission")

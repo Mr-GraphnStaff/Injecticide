@@ -80,14 +80,14 @@ def test_oversized_and_deeply_nested_policies_are_bounded():
     assert evaluate_policy(nested, result())["status"] == "invalid"
 
 
-def test_unknown_finding_suggests_closest_real_id():
+def test_unknown_finding_suggests_curated_equivalent_only():
     evaluation = evaluate_policy(policy(rule("R3", when={"finding": "secret_in_file"})), result())
     assert evaluation["status"] == "invalid"
     assert "Rule R3: unknown finding 'secret_in_file'; did you mean 'hardcoded_secret'?" in messages(evaluation)
     assert evaluation["errors"][0]["suggestion"] == "hardcoded_secret"
     assert evaluation["errors"][0]["path"] == "rules[0].when.finding"
     typo = evaluate_policy(policy(rule(when={"finding": "hardcoded_secrt"})), result())
-    assert typo["errors"][0]["suggestion"] == "hardcoded_secret"
+    assert typo["errors"][0]["suggestion"] is None
 
 
 def test_secret_exfiltration_used_for_presence_warns_and_suggests_hardcoded_secret():

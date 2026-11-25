@@ -14,7 +14,7 @@ from pathlib import Path
 import subprocess
 from datetime import date
 
-SCANNER_VERSION = "0.19.2"
+SCANNER_VERSION = "0.19.3"
 
 try:
     from .package_formats import bounded_data

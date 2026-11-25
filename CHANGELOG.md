@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.19.3 - 2026-11-25
+
+- Validate organization policies with the server before package upload; show
+  errors in the editor and reject invalid direct API scans before analysis.
+- Add supported requirement buttons and a script-presence policy condition that
+  covers uninvoked script files and observed embedded scripts, including nested
+  archives. Preserve technical findings and report separate organization blocks.
+- Correct template editing guidance and remove the fictional verification claim.
+  Replace unrelated fuzzy finding suggestions with reviewed correction guidance.
+
 ## 0.19.2 - 2026-11-25
 
 - Apply archive file limits per skill instead of rejecting multi-skill plugins

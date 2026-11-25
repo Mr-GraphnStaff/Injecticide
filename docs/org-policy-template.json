@@ -1,5 +1,5 @@
 {
-  "_comment": "Injecticide organisation AI policy template (injecticide-org-policy/v1). Keys that start with '_' are comments and are ignored by the validator. Replace every value with your organisation's own text. The organisation below is fictional.",
+  "_comment": "Injecticide organization policy template. Edit your organization, policy text, sources and chosen effects. Keep schema, condition keys and supported condition values as documented; do not replace every value. The organization below is fictional. Use the requirement buttons in Injecticide for common rules, and validate the policy before scanning.",
   "schema": "injecticide-org-policy/v1",
   "_schema": "Must be exactly injecticide-org-policy/v1.",
   "organization": "Example Widgets Ltd (fictional)",
@@ -30,7 +30,9 @@
       "source": "AIUP",
       "section": "4.2",
       "requirement": "Skills must not contain passwords, API keys or tokens.",
-      "when": {"finding": "hardcoded_secret"},
+      "when": {
+        "finding": "hardcoded_secret"
+      },
       "effect": "block",
       "enforcement": "mandatory",
       "approver": "Information Security",
@@ -42,10 +44,26 @@
       "source": "DPS",
       "section": "3.1",
       "requirement": "Skills that carry personal data need approval from the data protection officer.",
-      "when": {"any": [
-        {"data_class": ["personal_email", "ssn", "date_of_birth", "home_address", "health"]},
-        {"finding": ["pii_ssn", "pii_date_of_birth", "phi_patient_record"]}
-      ]},
+      "when": {
+        "any": [
+          {
+            "data_class": [
+              "personal_email",
+              "ssn",
+              "date_of_birth",
+              "home_address",
+              "health"
+            ]
+          },
+          {
+            "finding": [
+              "pii_ssn",
+              "pii_date_of_birth",
+              "phi_patient_record"
+            ]
+          }
+        ]
+      },
       "effect": "require_approval",
       "enforcement": "mandatory",
       "approver": "Data Protection Officer",
@@ -57,7 +75,14 @@
       "source": "AIUP",
       "section": "5.1",
       "requirement": "Skills may only contact services on the approved list.",
-      "when": {"external_origin": {"outside": ["*.examplewidgets.test", "api.approved-vendor.test"]}},
+      "when": {
+        "external_origin": {
+          "outside": [
+            "*.examplewidgets.test",
+            "api.approved-vendor.test"
+          ]
+        }
+      },
       "effect": "warn",
       "enforcement": "advisory",
       "rationale": "Unlisted destinations have not had a supplier review."
@@ -67,11 +92,24 @@
       "title": "Scripts are reviewed before use",
       "source": "AIUP",
       "section": "6.3",
-      "requirement": "Skills that run code or install packages need an engineering review.",
-      "when": {"capability": "code_execution"},
+      "requirement": "Packaged scripts, detected code execution and runtime package installation need an engineering review. Script presence alone requires review, even if the script is not invoked.",
+      "when": {
+        "any": [
+          {
+            "packaged_script": true
+          },
+          {
+            "capability": "code_execution"
+          },
+          {
+            "finding": "runtime_dependency_install"
+          }
+        ]
+      },
       "effect": "require_approval",
       "enforcement": "mandatory",
-      "approver": "Engineering review board"
+      "approver": "Engineering review board",
+      "_comment": "packaged_script matches script presence even without execution. code_execution matches detected execution capability. Use effect block for a no-scripts requirement."
     },
     {
       "id": "R5",
@@ -79,7 +117,11 @@
       "source": "AIUP",
       "section": "2.4",
       "requirement": "Every skill names an accountable owner in its metadata.",
-      "when": {"frontmatter_missing": ["owner"]},
+      "when": {
+        "frontmatter_missing": [
+          "owner"
+        ]
+      },
       "effect": "warn",
       "enforcement": "advisory"
     },
@@ -89,7 +131,14 @@
       "source": "DPS",
       "section": "3.4",
       "requirement": "Business contact details of staff may be used for internal routing.",
-      "when": {"finding": {"ids": ["contact_directory"], "include_info": true}},
+      "when": {
+        "finding": {
+          "ids": [
+            "contact_directory"
+          ],
+          "include_info": true
+        }
+      },
       "effect": "allow",
       "enforcement": "mandatory",
       "rationale": "Business contact data is covered by the staff privacy notice."
@@ -105,6 +154,6 @@
     }
   ],
   "verification_notes": [
-    "Compiled from AIUP 2.1 and DPS 4.0. Rules R1 to R6 were checked against the source text by the policy owner."
+    "Example only. Verify the mapping to your actual policy and record requirements the scanner cannot assess in not_statically_checkable."
   ]
 }

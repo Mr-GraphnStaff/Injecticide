@@ -18,7 +18,29 @@ evaluates it against the finished scan result and reports the outcome in
   advice or a compliance certificate.
 
 A ready-to-edit template is in [`org-policy-template.json`](org-policy-template.json).
-It uses a fictional organisation. Replace every value with your own.
+
+The scan form offers **Add: No packaged scripts** and **Add: No stored credentials**
+to create supported blocking rules without choosing detector identifiers. These
+buttons append rules; review the organization, source and requirement text before
+sharing the resulting policy. The JSON editor supports other documented conditions.
+
+Loading a file, leaving the editor, or choosing **Validate policy** checks the
+policy against the same server validator used by scans. **Scan** validates again
+before uploading the selected package. Invalid policies are shown beside the
+editor; the file remains selected and no package analysis starts. Direct API scan
+requests with invalid policies receive HTTP 422. Empty policy remains optional.
+Validation confirms format and supported conditions, not policy authority, legal
+correctness or that every requirement is statically checkable. Unsupported rules
+are never silently removed or replaced.
+
+`POST /api/skills/policy/validate` accepts UTF-8 policy JSON as a text body, up to
+128 KiB, and returns `status`, `errors`, `warnings` and the input `sha256`. It
+does not accept or scan a package, retain a policy, or acquire the scan slot.
+Valid/empty policies return HTTP 200, invalid policies 422, oversized bodies 413.
+Keep the schema, keys and supported condition identifiers intact when editing
+the template. Edit organization text, source citations, requirements and effects.
+It uses a fictional organization. Replace the organization and source text with
+your own; preserve the documented schema and supported condition identifiers.
 
 ## Supplying a policy
 
@@ -116,6 +138,7 @@ wherever a list of values is shown; a list matches if **any** value matches.
 |---|---|---|
 | `finding` | finding id(s), or `{"ids": [...], "include_info": true}` | The scan has an **actionable** finding (tier `review` or `block`) with one of the ids. Informational findings (tier `info`) only count with `include_info: true`. Format findings from `package_analysis.format_findings` also count: severity `error` as actionable, `warning` as informational. |
 | `capability` | capability name(s) | The skill shows the capability, from `governance_profile.policy_capabilities` or `behavioral_summary.required_capabilities`. Valid names: `code_execution`, `credential_handling`, `enterprise_access`, `file_write`, `network`, `read_only`, `regulated_data`, `state_persistence`, `html_generation`, `external_content_embedding`, `auto_open`. |
+| `packaged_script` | `true` | Matches script presence independently of invocation or finding severity. Uses inventoried script-language extensions, observed interpreter shebangs, recognized Python source and embedded script blocks/browser script evidence. Matching paths are reported even when scripts are harmless or uninvoked. Includes inspected nested archive descendants. |
 | `data_class` | data class name(s) | A database column was classified with the class (`files[i].database_profile` tables → columns → `data_classes`), or a finding implies it: `contact_directory` → `business_contact_email`, `pii_ssn` → `ssn`, `pii_date_of_birth` → `date_of_birth`, `phi_*` → `health`, `hardcoded_secret`/`literal_credential_declaration` → `credential`. Any tier counts here, because presence of data is the question. Valid classes: `business_contact_email`, `work_phone`, `person_name`, `job_title`, `department`, `manager_reference`, `employee_id`, `personal_email`, `ssn`, `date_of_birth`, `home_address`, `financial`, `health`, `credential`, `free_text`. |
 | `external_origin` | host pattern(s), or `{"outside": [patterns]}` | The package references a web host (from `package_analysis.relationship_graph.external_references` and, when present, web systems in `process_diagram.overview.external_systems`) that matches a pattern; with `outside`, a host that matches **none** of the patterns (an allow-list). Patterns are exact host names, or `*.domain` to match any subdomain of `domain` (`*.example.test` matches `api.example.test`, not `example.test` itself). No other wildcard is supported. |
 | `connector_mentioned` | connector name(s) | The name appears (case-insensitive substring) in a SKILL.md frontmatter `compatibility` or `allowed-tools` value, or in a tool/MCP system label in the architecture overview. |
