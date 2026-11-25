@@ -1953,11 +1953,53 @@ function ArchitectureViews({ result, onOpenFile, onAddToPlayground, buildInfo })
     </section>;
 }
 
-const ORG_POLICY_MAX_CHARS = 262144;
+const ORG_POLICY_MAX_CHARS = 131072;
 const ORG_POLICY_DOC_URL = 'https://github.com/Mr-GraphnStaff/Injecticide/blob/master/docs/org-policy.md';
+const ORG_POLICY_REQUIREMENTS = [
+    {id: 'no_scripts', title: 'No packaged scripts', when: {packaged_script: true},
+        requirement: 'Packaged script files and observed embedded scripts are prohibited, whether invoked or not.'},
+    {id: 'no_credentials', title: 'No stored credentials', when: {finding: 'hardcoded_secret'},
+        requirement: 'Packages must not contain stored passwords, API keys or tokens detected by the scanner.'},
+];
+
+function addOrgPolicyRequirement(text, choice) {
+    const policy = text.trim() ? JSON.parse(text) : {
+        schema: 'injecticide-org-policy/v1', organization: 'Your organization',
+        policy_name: 'Organization AI policy', compiled_date: new Date().toISOString().slice(0, 10),
+        sources: [], rules: [], not_statically_checkable: [], verification_notes: [],
+    };
+    if (!policy || Array.isArray(policy) || typeof policy !== 'object' || !Array.isArray(policy.rules) || !Array.isArray(policy.sources)) {
+        throw new Error('Use a policy object with sources and rules arrays before adding a requirement.');
+    }
+    const sourceTitle = 'Requirements entered in Injecticide; authority not independently verified';
+    let source = policy.sources.find(item => item?.title === sourceTitle);
+    if (!source) {
+        let index = 1;
+        while (policy.sources.some(item => item?.id === `USER_INPUT_${index}`)) index++;
+        source = {id: `USER_INPUT_${index}`, title: sourceTitle};
+        policy.sources.push(source);
+    }
+    let index = 1;
+    while (policy.rules.some(item => item?.id === `${choice.id}_${index}`)) index++;
+    policy.rules.push({id: `${choice.id}_${index}`, title: choice.title, source: source.id,
+        requirement: choice.requirement, when: choice.when, effect: 'block', enforcement: 'mandatory'});
+    return JSON.stringify(policy, null, 2);
+}
+
+async function checkOrgPolicy(text, signal) {
+    const response = await fetch('/api/skills/policy/validate', {
+        method: 'POST', headers: {'Content-Type': 'text/plain;charset=UTF-8'}, body: text, signal,
+    });
+    const result = await response.json();
+    if (![200, 413, 422].includes(response.status) || !['valid', 'invalid', 'none'].includes(result.status)) {
+        throw new Error('Policy validation is unavailable. Retry validation before scanning.');
+    }
+    return result;
+}
 
 function orgPolicyProblem(text) {
     if (!text.trim()) return '';
+    if (new TextEncoder().encode(text).length > ORG_POLICY_MAX_CHARS) return 'The policy exceeds the 128 KiB limit.';
     try {
         const parsed = JSON.parse(text);
         return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? '' : 'The policy must be a JSON object ({ ... }).';
@@ -1997,6 +2039,10 @@ function App({ onBack, onNavigate, buildInfo }) {
     const [skillRuntime, setSkillRuntime] = useState('auto');
     const [orgPolicy, setOrgPolicy] = useState('');
     const [orgPolicyNotice, setOrgPolicyNotice] = useState('');
+    const [orgPolicyValidation, setOrgPolicyValidation] = useState({status: 'none', errors: [], warnings: []});
+    const orgPolicyCheck = useRef({generation: 0, controller: null});
+    const orgPolicyInput = useRef(null);
+    const orgPolicyDetails = useRef(null);
     const [skillReaderPath, setSkillReaderPath] = useState(null);
     const [skillScanResult, setSkillScanResult] = useState(null);
     const [processPlayground, setProcessPlayground] = useState(null);
@@ -2365,9 +2411,45 @@ function App({ onBack, onNavigate, buildInfo }) {
     };
 
     const updateOrgPolicy = (text) => {
+        orgPolicyCheck.current.generation++;
+        orgPolicyCheck.current.controller?.abort();
         setOrgPolicy(text);
-        setOrgPolicyNotice(orgPolicyProblem(text));
+        setOrgPolicyNotice('');
+        setOrgPolicyValidation({status: text.trim() ? 'unchecked' : 'none', errors: [], warnings: []});
         resetSkillScanState();
+    };
+
+    useEffect(() => () => orgPolicyCheck.current.controller?.abort(), []);
+
+    const validateOrgPolicy = async (text = orgPolicy) => {
+        const generation = ++orgPolicyCheck.current.generation;
+        orgPolicyCheck.current.controller?.abort();
+        const controller = new AbortController();
+        orgPolicyCheck.current.controller = controller;
+        setOrgPolicyValidation({status: 'checking', errors: [], warnings: []});
+        setOrgPolicyNotice('');
+        try {
+            const problem = orgPolicyProblem(text);
+            if (problem) throw new Error(problem);
+            const validation = await checkOrgPolicy(text, controller.signal);
+            if (orgPolicyCheck.current.generation !== generation || controller.signal.aborted) return;
+            setOrgPolicyValidation(validation);
+            setOrgPolicyNotice(validation.status === 'invalid' ? `Policy needs correction (${asArray(validation.errors).length} problems). No package scan has started.` : '');
+        } catch (error) {
+            if (orgPolicyCheck.current.generation !== generation || controller.signal.aborted) return;
+            setOrgPolicyValidation({status: 'unavailable', errors: [], warnings: []});
+            setOrgPolicyNotice(error.message || 'Could not validate this policy. Retry before scanning.');
+        }
+    };
+
+    const addPolicyRequirement = (choice) => {
+        try {
+            const text = addOrgPolicyRequirement(orgPolicy, choice);
+            updateOrgPolicy(text);
+            validateOrgPolicy(text);
+        } catch (error) {
+            setOrgPolicyNotice(error.message || 'Fix the policy JSON before adding a requirement.');
+        }
     };
 
     const handleOrgPolicyFile = async (event) => {
@@ -2379,7 +2461,9 @@ function App({ onBack, onNavigate, buildInfo }) {
             return;
         }
         try {
-            updateOrgPolicy(await file.text());
+            const text = await file.text();
+            updateOrgPolicy(text);
+            validateOrgPolicy(text);
         } catch (error) {
             setOrgPolicyNotice('The policy file could not be read. Paste its contents instead.');
         }
@@ -2430,6 +2514,8 @@ function App({ onBack, onNavigate, buildInfo }) {
         if (policyProblem) {
             setOrgPolicyNotice(policyProblem);
             setSkillScanError(`Scan not started. ${policyProblem.replace(/\.?$/, '.')} Fix the organization policy or remove it to scan without one.`);
+            if (orgPolicyDetails.current) orgPolicyDetails.current.open = true;
+            orgPolicyInput.current?.focus();
             return;
         }
 
@@ -2445,6 +2531,22 @@ function App({ onBack, onNavigate, buildInfo }) {
         }, SKILL_SCAN_TIMEOUT_MS);
 
         try {
+            if (orgPolicy.trim()) {
+                pending.stage = 'policy validation';
+                const validation = await checkOrgPolicy(orgPolicy, pending.controller.signal);
+                if (skillScanRequest.current !== pending || pending.controller.signal.aborted) return;
+                setOrgPolicyValidation(validation);
+                if (validation.status !== 'valid') {
+                    setOrgPolicyNotice(`Policy needs correction (${asArray(validation.errors).length} problems). No package scan has started.`);
+                    requestAnimationFrame(() => {
+                        if (orgPolicyDetails.current) orgPolicyDetails.current.open = true;
+                        orgPolicyInput.current?.focus();
+                    });
+                    throw new Error('Policy could not be applied. Correct the listed policy problems before scanning.');
+                }
+                setOrgPolicyNotice('');
+            }
+            pending.stage = 'upload or connection';
             const formData = new FormData();
             formData.append('target_runtime', skillRuntime);
             formData.append('background', 'true');
@@ -2752,20 +2854,31 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         <select id="skill-runtime" name="target_runtime" value={skillRuntime} disabled={isScanningSkill} onChange={e => { setSkillRuntime(e.target.value); resetSkillScanState(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2">
                                             {['auto', 'generic', 'claude-code', 'claude-upload', 'openai', 'openai-mcp-import', 'copilot', 'gemini', 'cursor', 'cascade', 'kiro', 'openclaw'].map(runtime => <option key={runtime} value={runtime}>{runtime === 'auto' ? 'Detect format automatically' : runtime === 'openai-mcp-import' ? 'OpenAI MCP skill import' : runtime}</option>)}
                                         </select>
-                                        <details className="org-policy-input">
+                                        <details className="org-policy-input" ref={orgPolicyDetails}>
                                             <summary>Organization AI policy (optional){orgPolicy.trim() ? (orgPolicyNotice ? ' · needs fixing' : ' · policy loaded') : ''}</summary>
                                             <p id="org-policy-help" className="org-policy-help"><strong>What is this?</strong> Your organization's own rules for AI skills, written as JSON. For example: block skills that write to outside systems, or require approval when personal data is present. Injecticide checks this scan against each rule and lists which rules are triggered and which need a human check. Leave it empty to scan without a policy.</p>
+                                            <fieldset disabled={isScanningSkill} aria-describedby="policy-requirements-help">
+                                                <legend>Add an organization requirement</legend>
+                                                <p id="policy-requirements-help">Choose a requirement to add a supported blocking rule. Existing rules stay in your policy. Edit the organization and source details to match your policy.</p>
+                                                {ORG_POLICY_REQUIREMENTS.map(choice => <button key={choice.id} type="button" onClick={() => addPolicyRequirement(choice)} className="text-sm text-blue-300 underline mr-3">Add: {choice.title}</button>)}
+                                                <p className="org-policy-help">“No packaged scripts” checks script extensions, observed shebangs, Python source and embedded scripts, even when not invoked. Unreadable content and runtime behavior remain coverage limits.</p>
+                                            </fieldset>
                                             <p className="org-policy-links">
                                                 <a href="/static/org-policy-template.json" download>Download template</a>
                                                 <a href={ORG_POLICY_DOC_URL} target="_blank" rel="noopener noreferrer">Policy format guide (opens GitHub in a new tab)</a>
                                             </p>
                                             <label htmlFor="org-policy" className="block mt-2">Policy JSON</label>
-                                            <textarea id="org-policy" name="org_policy" rows={5} maxLength={ORG_POLICY_MAX_CHARS} value={orgPolicy} disabled={isScanningSkill} aria-describedby="org-policy-help org-policy-status" aria-invalid={orgPolicyNotice ? true : undefined} spellCheck={false} onChange={e => updateOrgPolicy(e.target.value)} className="w-full bg-gray-900 border border-gray-600 rounded p-2 font-mono text-xs" />
+                                            <textarea id="org-policy" ref={orgPolicyInput} name="org_policy" rows={5} maxLength={ORG_POLICY_MAX_CHARS} value={orgPolicy} disabled={isScanningSkill} aria-describedby="org-policy-help org-policy-status org-policy-problems" aria-invalid={orgPolicyNotice ? true : undefined} spellCheck={false} onChange={e => updateOrgPolicy(e.target.value)} onBlur={() => { if (orgPolicy.trim() && orgPolicyValidation.status === 'unchecked') validateOrgPolicy(); }} className="w-full bg-gray-900 border border-gray-600 rounded p-2 font-mono text-xs" />
                                             <label htmlFor="org-policy-file" className="block mt-2">Or load a policy file (.json)</label>
                                             <input type="file" id="org-policy-file" accept=".json,application/json" ref={orgPolicyFileInput} disabled={isScanningSkill} onChange={handleOrgPolicyFile} className="w-full text-sm text-gray-300" />
                                             <p id="org-policy-status" className={orgPolicyNotice ? 'org-policy-error' : 'org-policy-status'} role={orgPolicyNotice ? 'alert' : 'status'}>
-                                                {orgPolicyNotice || (orgPolicy.trim() ? 'Policy ready. It will be checked with the next scan.' : 'No policy: the scan runs without organization rules.')}
+                                                {orgPolicyNotice || (orgPolicyValidation.status === 'checking' ? 'Checking policy format and supported conditions…' : orgPolicyValidation.status === 'valid' ? 'Policy validated by the server. Rules are evaluated during the scan; this does not verify policy authority or complete coverage.' : orgPolicy.trim() ? 'Policy loaded; validation is needed before scanning.' : 'No policy: the scan runs without organization rules.')}
                                             </p>
+                                            <div id="org-policy-problems">
+                                                {asArray(orgPolicyValidation.errors).length > 0 && <ul>{orgPolicyValidation.errors.map((problem, index) => <li key={index}><strong>{problem.path || 'Policy'}:</strong> {problem.message}</li>)}</ul>}
+                                                {asArray(orgPolicyValidation.warnings).length > 0 && <ul>{orgPolicyValidation.warnings.map((problem, index) => <li key={index}>Warning: {problem.message}</li>)}</ul>}
+                                            </div>
+                                            <button type="button" disabled={isScanningSkill || orgPolicyValidation.status === 'checking' || !orgPolicy.trim()} onClick={() => validateOrgPolicy()} className="text-sm text-blue-300 underline">Validate policy</button>
                                             {skillScanResult?.policy_evaluation?.status === 'invalid' && <p className="org-policy-error" role="alert">The server did not apply this policy ({asArray(skillScanResult.policy_evaluation.errors).length} problems). See Policy results in the report.</p>}
                                             {orgPolicy && <button type="button" className="text-sm text-gray-300 underline" disabled={isScanningSkill} onClick={() => updateOrgPolicy('')}>Remove policy</button>}
                                         </details>

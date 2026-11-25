@@ -51,7 +51,7 @@ EFFECTS = ("block", "require_approval", "warn", "allow")
 ENFORCEMENTS = ("mandatory", "advisory")
 RISK_LEVELS = ("low", "medium", "high")
 COVERAGE_VALUES = ("partial", "opaque")
-CONDITION_KEYS = ("finding", "capability", "data_class", "external_origin", "connector_mentioned",
+CONDITION_KEYS = ("finding", "capability", "data_class", "external_origin", "connector_mentioned", "packaged_script",
                   "frontmatter_missing", "risk_at_least", "coverage", "all", "any")
 
 TOP_REQUIRED = ("schema", "organization", "policy_name", "compiled_date", "sources", "rules")
@@ -99,6 +99,7 @@ CONTRACT_FINDING_IDS = frozenset({"database_not_cleared", "opaque_database", "em
 # Plain-language names people use for a finding, mapped to the real id. Used
 # only to suggest a correction; the policy must still name the real id.
 FINDING_ALIASES = {
+    "instruction_override_phrase": "prompt_override", "unicode_concealment": "unicode_deception",
     "secret_in_file": "hardcoded_secret", "secret_present": "hardcoded_secret", "hardcoded_credential": "hardcoded_secret",
     "hardcoded_password": "hardcoded_secret", "api_key": "hardcoded_secret", "api_key_in_file": "hardcoded_secret",
     "credential_in_file": "hardcoded_secret", "embedded_secret": "hardcoded_secret", "secret": "hardcoded_secret",
@@ -106,6 +107,13 @@ FINDING_ALIASES = {
     "system_prompt_leak": "system_exfiltration", "email_address": "pii_email_address", "email": "pii_email_address",
     "phone_number": "pii_phone_number", "phone": "pii_phone_number", "ssn": "pii_ssn",
     "disguised_script": "executable_packaged_as_document", "shell_exec": "subprocess_spawn",
+}
+UNSUPPORTED_FINDING_HELP = {
+    "bare_script_file": 'For a no-scripts requirement, use the condition {"packaged_script": true}; it checks presence, not maliciousness or execution.',
+    "file_length_exceeded": "There is no policy condition for a custom file-length limit. Record this requirement in not_statically_checkable until a supported check exists.",
+    "unbounded_construct": "This is not a defined scanner finding. State the concrete requirement and record any unassessed runtime requirement in not_statically_checkable.",
+    "unpinned_dependency": "Unpinned dependencies and runtime installation are different requirements. Do not substitute runtime_dependency_install; record unsupported version-pinning requirements in not_statically_checkable.",
+    "runtime_install": "If the requirement concerns runtime dependency installation, review the supported finding runtime_dependency_install before changing this rule.",
 }
 SECRET_DISCLOSURE_WARNING = (
     "'secret_exfiltration' means an instruction asking the model to disclose or send secrets. It does not fire "
@@ -314,9 +322,11 @@ def _validate_condition(node, path, label, report, budget, depth=0):
         bad = False
         for item in ids:
             if item not in known:
-                close = FINDING_ALIASES.get(item.casefold()) or _closest(item, known)
+                # Similar spelling does not establish equivalent policy meaning.
+                close = FINDING_ALIASES.get(item.casefold())
+                help_text = UNSUPPORTED_FINDING_HELP.get(item.casefold(), "Choose a supported condition from the policy guide; no rule was substituted.")
                 report.error(here_ids, f"{label}: unknown finding '{item}'" + (f"; did you mean '{close}'?" if close else
-                             ". Use a finding id the scanner emits (see docs/org-policy.md)."), close)
+                             ". " + help_text), close)
                 bad = True
         if "secret_exfiltration" in ids and "hardcoded_secret" not in ids:
             report.warn(here_ids, f"{label}: {SECRET_DISCLOSURE_WARNING}", "hardcoded_secret")
@@ -330,8 +340,10 @@ def _validate_condition(node, path, label, report, budget, depth=0):
         for item in values:
             if item not in allowed:
                 close = _closest(item, allowed)
+                help_text = (" Connector labels belong in connector_mentioned, which checks observed mentions; it does not establish connector permissions."
+                             if key == "capability" and item in {"m365_connector", "mcp_server"} else "")
                 report.error(here, f"{label}: unknown {key.replace('_', ' ')} '{item}'" + (f"; did you mean '{close}'?" if close else
-                             f". Valid values: {', '.join(allowed)}."), close)
+                             f". Valid values: {', '.join(allowed)}.") + help_text, close)
                 bad = True
         return None if bad else {key: values}
     if key == "external_origin":
@@ -351,6 +363,11 @@ def _validate_condition(node, path, label, report, budget, depth=0):
             else:
                 patterns.append(pattern)
         return None if bad else {"external_origin": {"mode": mode, "patterns": patterns}}
+    if key == "packaged_script":
+        if value is not True:
+            report.error(here, f"{label}: packaged_script must be true (matches script presence, even when not invoked).")
+            return None
+        return {key: True}
     if key == "connector_mentioned":
         values = _string_list(value, here, label, key, report)
         return None if values is None else {key: [item.strip().casefold() for item in values]}
@@ -535,7 +552,7 @@ def parse_policy(raw):
             return None, hashlib.sha256(bytes(raw)).hexdigest(), [{"path": "", "message": "Policy: the policy file must be UTF-8 text.", "suggestion": None}]
     if isinstance(raw, str):
         digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()
-        if len(raw) > MAX_POLICY_CHARS:
+        if len(raw.encode("utf-8")) > MAX_POLICY_CHARS:
             return None, digest, [{"path": "", "message": f"Policy: the policy exceeds the {MAX_POLICY_CHARS // 1024} KiB size limit.", "suggestion": None}]
         try:
             return bounded_data(raw.lstrip("﻿")), digest, []
@@ -554,6 +571,18 @@ def parse_policy(raw):
 
 def is_empty_policy(raw):
     return raw is None or (isinstance(raw, (str, bytes, bytearray)) and not raw.strip())
+
+
+def policy_preflight(raw):
+    """Use the scan's validator without scanning files or evaluating requirements."""
+    if is_empty_policy(raw):
+        return {"status": "none", "errors": [], "warnings": [], "sha256": None}
+    parsed, digest, errors = parse_policy(raw)
+    warnings = []
+    if not errors:
+        _, errors, warnings = validate_policy(parsed)
+    return {"status": "invalid" if errors else "valid", "errors": errors,
+            "warnings": warnings, "sha256": digest}
 
 
 # --------------------------------------------------------------------------
@@ -590,6 +619,31 @@ class _Facts:
     """Read-only view of the finished scan result. Absent keys are tolerated."""
 
     def __init__(self, result, text_sources=None):
+        # Fixed script-language extensions; binaries and compiled source are not
+        # implicitly scripts. Also use observed shebangs and embedded script evidence.
+        script_suffixes = {".py", ".pyw", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx",
+                           ".sh", ".bash", ".zsh", ".fish", ".ps1", ".psm1", ".bat", ".cmd",
+                           ".rb", ".pl", ".php", ".lua", ".r", ".groovy", ".vbs", ".wsf", ".sql"}
+        self.scripts = {}
+        for entry in result.get("files") or []:
+            if not isinstance(entry, dict) or not isinstance(entry.get("path"), str):
+                continue
+            path = entry["path"]
+            content = entry.get("content_analysis") or {}
+            suffix = PurePosixPath(path).suffix.casefold()
+            signals = []
+            if suffix in script_suffixes:
+                signals.append("script_extension:" + suffix)
+            if "interpreter_shebang" in (content.get("evidence") or []):
+                signals.append("script_shebang")
+            if content.get("language") == "python":
+                signals.append("python_source")
+            script_languages = {"python", "javascript", "typescript", "shell", "powershell", "batch", "ruby", "perl", "php", "lua", "r", "groovy", "vbscript", "sql"}
+            if (any(block.get("language") in script_languages for block in (content.get("embedded_blocks") or []) if isinstance(block, dict))
+                    or content.get("language") == "browser_script"):
+                signals.append("embedded_script")
+            if signals:
+                self.scripts[path] = signals
         self.findings = []  # (path, finding dict, actionable)
         for entry in result.get("files") or []:
             if not isinstance(entry, dict):
@@ -717,6 +771,10 @@ def _evaluate(node, facts):
                 evidence.append({"path": path, "finding_id": finding_id, "count": 1})
                 if finding is not None:
                     matched.append(finding)
+    elif key == "packaged_script":
+        for path, signals in sorted(facts.scripts.items()):
+            evidence.append({"path": path, "finding_id": None, "count": 1,
+                             "signal": "packaged_script", "observations": signals})
     elif key == "capability":
         for capability in value:
             if capability not in facts.capabilities:

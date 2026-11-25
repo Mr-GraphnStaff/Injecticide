@@ -215,7 +215,11 @@ def test_scan_api_forwards_org_policy_and_returns_policy_and_fix_summary():
     assert payload["evidence_input"] == {"status": "none", "reasons": []}
 
 
-def test_scan_api_invalid_org_policy_is_reported_not_rejected():
+def test_scan_api_invalid_org_policy_is_rejected_before_analysis(monkeypatch):
+    import webapp.api as api_module
+    def unexpected_scan(*args, **kwargs):
+        raise AssertionError("Invalid policy must not start package analysis")
+    monkeypatch.setattr(api_module, "_execute_skill_scan", unexpected_scan)
     client = TestClient(app)
 
     response = client.post(
@@ -224,8 +228,8 @@ def test_scan_api_invalid_org_policy_is_reported_not_rejected():
         data={"org_policy": _org_policy_text("secret_in_file")},
     )
 
-    assert response.status_code == 200
-    evaluation = response.json()["policy_evaluation"]
+    assert response.status_code == 422
+    evaluation = response.json()["policy_validation"]
     assert evaluation["status"] == "invalid"
     assert evaluation["errors"][0]["suggestion"] == "hardcoded_secret"
 

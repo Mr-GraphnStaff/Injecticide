@@ -330,6 +330,10 @@
 .file-link:hover { color:#e6fff4; }
 .file-link:focus-visible, .fix-files-toggle:focus-visible, .arch-area-card:focus-visible, .file-reader-list button:focus-visible, .file-reader-scope button:focus-visible, .reader-path:focus-visible { outline:3px solid #ffc966; outline-offset:2px; }
 .org-policy-input summary { cursor:pointer; font-weight:600; min-height:28px; }
+.org-policy-input fieldset { min-width:0; margin:.8rem 0; padding:.75rem; border:1px solid var(--home-border); border-radius:.5rem; }
+.org-policy-input legend { padding:0 .3rem; font-weight:600; }
+.org-policy-input fieldset button { display:block; max-width:100%; margin:.5rem 0; white-space:normal; text-align:start; }
+.org-policy-input #org-policy-problems { overflow-wrap:anywhere; font-size:.85rem; }
 .org-policy-input label { display:block; margin-top:.5rem; }
 .org-policy-input textarea, .org-policy-input input[type=file] { display:block; width:100%; max-width:100%; }
 .org-policy-help { font-size:.85rem; line-height:1.55; color:#cfe2da; margin:.5rem 0; }

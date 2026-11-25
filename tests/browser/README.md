@@ -1,5 +1,14 @@
 # Skill scan browser regression
 
+`policy_authoring.cjs` exercises requirement buttons, all nine unsupported names
+from the reported failure, validation outages, stale responses, error focus and
+retention of the selected file. It uses a real local API at
+`INJECTICIDE_TEST_URL` (default `http://127.0.0.1:8247`) and a synthetic plugin
+containing an uninvoked print-only Python file. Start the candidate API with the
+managed launcher, local model/sandbox URLs unset and feedback disabled. It checks
+the separate organization block and saves a 390px screenshot. Both API and
+browser must run inside the managed working run; stop the API after testing.
+
 `skill_process_diagram.cjs` exercises the source-linked diagram UI with a
 synthetic report, including keyboard use, narrow layouts, literal hostile labels,
 exports, new separate playground drafts, saved/unsaved map preservation and
