@@ -50,6 +50,9 @@ def actionable_ids(result):
     return {f["id"] for entry in result["files"] for f in entry["findings"] if f.get("severity")!="info"}
 
 def test_shared_contract_and_oracle_are_packaged_identically():
+    from research_mcp.correction_store import SCANNER_VERSION as approved_version
+    from skill_sandbox.package_evidence import SCANNER_VERSION as scanner_version
+    assert approved_version == scanner_version
     assert (ROOT/"skill_sandbox/correction_rules.py").read_bytes()==(ROOT/"research_mcp/correction_rules.py").read_bytes()
     assert (ROOT/"skill_sandbox/rules/correction_cases.json").read_bytes()==(ROOT/"research_mcp/rules/correction_cases.json").read_bytes()
 
