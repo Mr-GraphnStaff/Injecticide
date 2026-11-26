@@ -7098,6 +7098,747 @@
         "reason": "Locally approved deterministic gate passed",
         "updated": "2026-11-25T03:29:37+00:00"
       }
+    },
+    {
+      "sequence": 1359,
+      "id": "obsession-05f2e945660a11c6d8c4c16a6bd9233a92c6bd00d839c9f767f33bf0095cea2f",
+      "sha256": "05f2e945660a11c6d8c4c16a6bd9233a92c6bd00d839c9f767f33bf0095cea2f",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "How to create custom skills | Claude Help Center Skip to main content API docs Release notes How to get support English Français Deutsch Bahasa Indonesia Italiano 日本語 한국어 Português Pусский 简体中文 Español 繁體中文 English Search ⌘ K Claude Pro, Max, and Ultra plans Team and Enterprise plans Identity management (SSO, JIT, SCIM) Claude Cowork Claude Code Claude Desktop Claude Mobile apps Claude API and Console Connectors Claude in Chrome Claude for Education Privacy and legal Safeguards Amazon Bedrock All Collections Claude Features and capabilities How to create custom skills How to create custom skills Updated over 3 weeks ago Copy for LLM Skills are available for users on Free, Pro, Max, Ultra, Team, and Enterprise plans. This feature requires code execution to be enabled . Skills are also available in beta for Claude Code users and for all API users using the code execution tool. Custom skills let you enhance Claude with specialized knowledge and workflows specific to your organization or personal work style. This article explains how to create, structure, and test your own skills. Skills can be as simple as a few lines of instructions or as complex as multi-file packages with executable code. The best skills: Solve a specific, repeatable task Have clear instructions that Claude can follow Include examples when helpful Define when they should be used Are focused on one workflow rather than trying to do everything Record a skill Recording a skill is available on Pro, Max, Ultra, and Team plans, in Cowork in Claude for Mac. It isn't available in chat, on Windows, or on Free and Enterprise plans. Instead of writing a skill by hand, you can record yourself doing a task and let Claude build the skill from what it observes. You send Claude a video of your screen, clicks, typing, and voice, and Claude proposes a skill for you to review before you save it. Before you record Update to the latest version of Claude for Mac. Grant the macOS permissions Claude asks for the first time",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "1c1241be965c9dcb194731094f1ac2fc1ce635d5694ca01e8d577c11de71e7e8",
+          "source_id": "requirements-claude-upload",
+          "source_sha256": "feec8a870050e56031b38430f8eb372321a89c668290011fdb437491b68a2d01",
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+        },
+        "provenance": {
+          "final_url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills",
+          "previous_sha256": "1c1241be965c9dcb194731094f1ac2fc1ce635d5694ca01e8d577c11de71e7e8",
+          "retrieved": "2026-11-25T19:00:42+00:00",
+          "snapshot_id": 5069,
+          "source_id": "requirements-claude-upload",
+          "source_sha256": "feec8a870050e56031b38430f8eb372321a89c668290011fdb437491b68a2d01",
+          "url": "https://support.claude.com/en/articles/12512198-how-to-create-custom-skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1282,
+      "id": "obsession-0a8659dc53aef8f24a3e5894d92276fc4cd4bbb0c50806c42fd46a76a6c851cb",
+      "sha256": "0a8659dc53aef8f24a3e5894d92276fc4cd4bbb0c50806c42fd46a76a6c851cb",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Agent Plugins Specification | Agent Plugins Skip to content Agent Plugins Specification Search... ⌘ K Agent Plugins Compatible Clients For Plugin Authors Build an Agent Plugin Plugin manifest Skills MCP servers Client extensions For Client Implementers Implement an Agent Plugins client Loading and discovery MCP runtime Client conformance checklist Reference Agent Plugins Specification JSON Schemas Brand assets Agent Plugins Specification Agent Plugins Specification The complete normative contract for portable Agent Plugin packages and conformant clients. Spec Version: 1.0.0 Status: Published This document defines the canonical Agent Plugins Specification v1.0.0 for packaging reusable components that extend AI agents into distributable plugins. Table of contents Status and version Conformance language Terminology Plugin package model Manifest Component discovery Component types Client extensions Environment variables and placeholder expansion Versioning Client conformance Non-normative material Appendix A: Conformance Checklist Design Decisions 1. Status and version This specification defines version 1.0.0 of the Agent Plugins format. Clients and plugin packages claiming conformance to Agent Plugins v1 MUST implement or follow the requirements in this document. 1.1 Governance model Governance for the Agent Plugins project is defined separately from the portable package format in the Technical Charter . 2. Conformance language In the normative sections of this document, the key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL are to be interpreted as described in RFC 2119 and RFC 8174 when, and only when, they appear in all capitals. Appendix A and Design Decisions are non-normative. All other sections are normative. 3. Terminology Term Meaning Description Plugin Package unit A self-contained directory with a manifest and optional components. Plugin root Filesystem root The top-level directory of a plugin package. Manifest Metadata do",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "af22a07d6ecd31004b49752d055428fb37bed90ba82659d48384a4ab5c38b94d",
+          "source_id": "agent-plugins",
+          "source_sha256": "5a9c062c85021778929f4dbee2dd128cb645747cb20187bfea37ab4310efa5e3",
+          "url": "https://agent-plugins.org/specification"
+        },
+        "provenance": {
+          "final_url": "https://agent-plugins.org/specification",
+          "previous_sha256": "af22a07d6ecd31004b49752d055428fb37bed90ba82659d48384a4ab5c38b94d",
+          "retrieved": "2026-11-25T11:46:10+00:00",
+          "snapshot_id": 4992,
+          "source_id": "agent-plugins",
+          "source_sha256": "5a9c062c85021778929f4dbee2dd128cb645747cb20187bfea37ab4310efa5e3",
+          "url": "https://agent-plugins.org/specification"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:54+00:00"
+      }
+    },
+    {
+      "sequence": 1332,
+      "id": "obsession-266dd5a3425611c2114312356ac73b03fc18ec95bf8c76c14a61ac5a63be00ee",
+      "sha256": "266dd5a3425611c2114312356ac73b03fc18ec95bf8c76c14a61ac5a63be00ee",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugins for GitHub Copilot - GitHub Docs Skip to main content Skip to content GitHub Docs Search or ask Copilot / Menu Collapse sidebar Expand sidebar Home GitHub Copilot Concepts Customizations Plugins GitHub Copilot Get started About Copilot Where to use Copilot Copilot on GitHub.com Copilot in your IDE Copilot CLI quickstart Copilot app quickstart Copilot SDK quickstart Plans Enterprise and Copilot billing Best practices Enterprise AI governance Concepts Copilot surfaces GitHub Copilot app Copilot CLI Copilot on GitHub.com and Mobile Copilot in IDEs Agent capabilities About agents GitHub Copilot agents Third-party coding agents Agent apps Choosing and delegating agent work AI tools Agent management Copilot integrations Delegate and parallelize work Getting a second opinion Researching with agents Agent-powered workflows and operations Code review About automations Rationale, confidence, and approvals Dynamic workflows Agentic Workflows Copilot CLI in Actions About remote control Autopilot Tool search Browser use Computer use Image generation Prompting and context Prompt engineering Context management Custom instructions Copilot Memory Copilot Dreaming Prompt files Repository indexing Spaces Customizations Comparing customizations Agent skills Assisted permissions Custom agents MCP Connectors Hooks Extensions Plugins LSP servers Models Overview Copilot Fusion Auto model selection Bring your own key Utility models Base and LTS models Billing and usage Organizations and enterprises Billing Seats and billing cycles Budgets Individuals Billing Usage limits Copilot usage metrics All articles Copilot usage metrics Security, governance, and network settings Content exclusion Session data Local sandboxing Understanding local sandboxing Cloud sandboxes Risks and mitigations Network settings Enterprise Policies Governance controls Default availability FedRAMP models New features and models MCP management Plugin standards OpenTelemetry Copilot-only enterprises How-tos Copilo",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "ec2822f2da14fe0f25ae434804a6e464b195916904d0131e767df591c4b945db",
+          "source_id": "copilot",
+          "source_sha256": "554d79a1cdfec3b1dfbbd3b235a6419caa549f3f3a2befeae146e16033caac94",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "provenance": {
+          "final_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "previous_sha256": "ec2822f2da14fe0f25ae434804a6e464b195916904d0131e767df591c4b945db",
+          "retrieved": "2026-11-25T17:48:47+00:00",
+          "snapshot_id": 5042,
+          "source_id": "copilot",
+          "source_sha256": "554d79a1cdfec3b1dfbbd3b235a6419caa549f3f3a2befeae146e16033caac94",
+          "url": "https://docs.github.com/en/copilot/concepts/agents/about-plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1281,
+      "id": "obsession-29d0eb4e39a8fbdcfb567d6471dcc63e31c7ef12b72a83e77a377a5350d02ace",
+      "sha256": "29d0eb4e39a8fbdcfb567d6471dcc63e31c7ef12b72a83e77a377a5350d02ace",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Specification - Agent Skills Documentation Index Fetch the complete documentation index at: /llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Agent Skills now has an official Discord server . See the announcement for details. Agent Skills home page Agent Skills Search... ⌘ K Ask Assistant ⌘ I agentskills/agentskills agentskills/agentskills Search... Navigation Specification Overview Specification Client Showcase For skill creators Quickstart Best practices Optimizing descriptions Evaluating skills Using scripts For client implementors Adding skills support On this page Back to top Directory structure SKILL.md format Frontmatter name field description field license field compatibility field metadata field allowed-tools field Body content Optional directories scripts/ references/ assets/ Progressive disclosure File references Validation Specification Copy page Copy page The complete format specification for Agent Skills. Copy page Copy page Directory structure A skill is a directory containing, at minimum, a SKILL.md file: skill-name/ ├── SKILL.md # Required: metadata + instructions ├── scripts/ # Optional: executable code ├── references/ # Optional: documentation ├── assets/ # Optional: templates, resources └── ... # Any additional files or directories SKILL.md format The SKILL.md file must contain YAML frontmatter followed by Markdown content. Frontmatter Field Required Constraints name Yes Max 64 characters. Lowercase letters, numbers, and hyphens only. Must not start or end with a hyphen. description Yes Max 1024 characters. Non-empty. Describes what the skill does and when to use it. license No License name or reference to a bundled license file. compatibility No Max 500 characters. Indicates environment requirements (intended product, system packages, network access, etc.). metadata No Arbitrary key-value mapping for additional metadata (a ma",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "1c788199fbdd73b0ead350e10d5dbe421582a47c3214634f5d43c7f7b8db3529",
+          "source_id": "agent-skills",
+          "source_sha256": "a847e95eb5f6b02e2afb6c2c331d4c0f06698b476629506d2e44d1722937c227",
+          "url": "https://agentskills.io/specification"
+        },
+        "provenance": {
+          "final_url": "https://agentskills.io/specification",
+          "previous_sha256": "1c788199fbdd73b0ead350e10d5dbe421582a47c3214634f5d43c7f7b8db3529",
+          "retrieved": "2026-11-25T11:46:09+00:00",
+          "snapshot_id": 4991,
+          "source_id": "agent-skills",
+          "source_sha256": "a847e95eb5f6b02e2afb6c2c331d4c0f06698b476629506d2e44d1722937c227",
+          "url": "https://agentskills.io/specification"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:54+00:00"
+      }
+    },
+    {
+      "sequence": 1342,
+      "id": "obsession-3555ccd3e1b9df1c3ad9c26a285508665fe3e5747b9c2db1a27a03be52f858aa",
+      "sha256": "3555ccd3e1b9df1c3ad9c26a285508665fe3e5747b9c2db1a27a03be52f858aa",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugins for GitHub Copilot - GitHub Docs Skip to main content Skip to content GitHub Docs Search or ask Copilot / Menu Collapse sidebar Expand sidebar Home GitHub Copilot Concepts Customizations Plugins GitHub Copilot Get started About Copilot Where to use Copilot Copilot on GitHub.com Copilot in your IDE Copilot CLI quickstart Copilot app quickstart Copilot SDK quickstart Plans Enterprise and Copilot billing Best practices Enterprise AI governance Concepts Copilot surfaces GitHub Copilot app Copilot CLI Copilot on GitHub.com and Mobile Copilot in IDEs Agent capabilities About agents GitHub Copilot agents Third-party coding agents Agent apps Choosing and delegating agent work AI tools Agent management Copilot integrations Delegate and parallelize work Getting a second opinion Researching with agents Agent-powered workflows and operations Code review About automations Rationale, confidence, and approvals Dynamic workflows Agentic Workflows Copilot CLI in Actions About remote control Autopilot Tool search Browser use Computer use Image generation Prompting and context Prompt engineering Context management Custom instructions Copilot Memory Copilot Dreaming Prompt files Repository indexing Spaces Customizations Comparing customizations Agent skills Assisted permissions Custom agents MCP Connectors Hooks Extensions Plugins LSP servers Models Overview Copilot Fusion Auto model selection Bring your own key Utility models Base and LTS models Billing and usage Organizations and enterprises Billing Seats and billing cycles Budgets Individuals Billing Usage limits Copilot usage metrics All articles Copilot usage metrics Security, governance, and network settings Content exclusion Session data Local sandboxing Understanding local sandboxing Cloud sandboxes Risks and mitigations Network settings Enterprise Policies Governance controls Default availability FedRAMP models New features and models MCP management Plugin standards OpenTelemetry Copilot-only enterprises How-tos Copilo",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "ec2822f2da14fe0f25ae434804a6e464b195916904d0131e767df591c4b945db",
+          "source_id": "requirements-copilot",
+          "source_sha256": "554d79a1cdfec3b1dfbbd3b235a6419caa549f3f3a2befeae146e16033caac94",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "provenance": {
+          "final_url": "https://docs.github.com/en/copilot/concepts/customizations/plugins",
+          "previous_sha256": "ec2822f2da14fe0f25ae434804a6e464b195916904d0131e767df591c4b945db",
+          "retrieved": "2026-11-25T17:49:23+00:00",
+          "snapshot_id": 5052,
+          "source_id": "requirements-copilot",
+          "source_sha256": "554d79a1cdfec3b1dfbbd3b235a6419caa549f3f3a2befeae146e16033caac94",
+          "url": "https://docs.github.com/en/copilot/concepts/customizations/plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1348,
+      "id": "obsession-3d4c337fa3db7617ea6e85b91d7448487207d486b9bf2790807d2ea7645e956b",
+      "sha256": "3d4c337fa3db7617ea6e85b91d7448487207d486b9bf2790807d2ea7645e956b",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugin manifest reference - Claude Code Docs Documentation Index Fetch the complete documentation index at: /docs/llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Claude Code Docs home page English Search... ⌘ K Ask Assistant ⌘ I Claude Developer Platform Open Claude Code Open Claude Code Search... Navigation Reference Plugin manifest reference Getting started Build with Claude Code Plugins Administration Configuration Reference Agent SDK Resources Plugins Overview Use plugins Install and manage plugins Anthropic's marketplaces Code intelligence Security and trust Create plugins Create a plugin Add components Dependencies Test plugins with evals Publish a plugin Measure cost and usage Recommend from your CLI Mods Overview Create a mod Build Test and troubleshoot Reference Run a marketplace Create a marketplace Host a marketplace Recommend plugins Manage plugins for your organization Manage plugins for your organization Manage mods for your organization Troubleshooting Troubleshooting Loading reference Reference Manifest reference Marketplace reference Plugin commands On this page Back to top Manifest file Unrecognized fields Validate the manifest Fields name displayName version metadata Directory listing fields defaultEnabled dependencies Component path forms Path-only fields commands hooks mcpServers lspServers monitors Path rules Containment and existence How each key combines with its default location User configuration Limit a field to fixed options Where values are stored Reference a saved value Fields that run through a shell Channels Environment variables Where each variable resolves Quoting and path separators Standard layout Marketplace entries and the manifest How entry fields combine with plugin.json Metadata precedence Next steps Reference Plugin manifest reference Copy page Copy page Reference for plugin.json: fields with types and d",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "02b44d9823b5ba51e6cdaa3b78098d506a72e2fa94f81cff5f9e1f943c8c8376",
+          "source_id": "claude-code",
+          "source_sha256": "9171503c276abd1857fab079842da61da6a69d6637f7912aac48b7f4c9f67235",
+          "url": "https://code.claude.com/docs/en/plugins/manifest-reference"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/plugins/manifest-reference",
+          "previous_sha256": "02b44d9823b5ba51e6cdaa3b78098d506a72e2fa94f81cff5f9e1f943c8c8376",
+          "retrieved": "2026-11-25T18:59:43+00:00",
+          "snapshot_id": 5058,
+          "source_id": "claude-code",
+          "source_sha256": "9171503c276abd1857fab079842da61da6a69d6637f7912aac48b7f4c9f67235",
+          "url": "https://code.claude.com/docs/en/plugins-reference"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1346,
+      "id": "obsession-48cc52ab95f2643ffd9e677562b03393b10fd80f7f6fbcfe370a5f381059d693",
+      "sha256": "48cc52ab95f2643ffd9e677562b03393b10fd80f7f6fbcfe370a5f381059d693",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Build skills | ChatGPT Learn For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT API Dashboard Try ChatGPT Language Loading languages… Theme Theme Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Agent Access Allow verified ChatGPT browser visits to your website Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Features Configuration Developers Security Administration Use Cases Resources Search the docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6.2 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background mode Streaming WebSocket mode Mid-turn steering Multi-a",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "a9b7606a563b0d8139395d9c74fa44b9e10a66a0c71bfc4ffd878556e5a65a75",
+          "source_id": "openai-codex",
+          "source_sha256": "47f12bc1015cea45f866d7c7a5fd99753dad8e044ccbd294df04aee8e6be675a",
+          "url": "https://learn.chatgpt.com/docs/build-skills"
+        },
+        "provenance": {
+          "final_url": "https://learn.chatgpt.com/docs/build-skills",
+          "previous_sha256": "a9b7606a563b0d8139395d9c74fa44b9e10a66a0c71bfc4ffd878556e5a65a75",
+          "retrieved": "2026-11-25T18:59:29+00:00",
+          "snapshot_id": 5056,
+          "source_id": "openai-codex",
+          "source_sha256": "47f12bc1015cea45f866d7c7a5fd99753dad8e044ccbd294df04aee8e6be675a",
+          "url": "https://learn.chatgpt.com/docs/build-skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1304,
+      "id": "obsession-50cc4a40df3b9a98b23d96d1a13126f8b78e150d77b9f12867070b815bff5e16",
+      "sha256": "50cc4a40df3b9a98b23d96d1a13126f8b78e150d77b9f12867070b815bff5e16",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "> ## Documentation Index\n> Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Extend Claude with skills\n\n> Create, manage, and share skills to extend Claude's capabilities in Claude Code. Includes custom commands and bundled skills.\n\nSkills extend what Claude can do. Create a `SKILL.md` file with instructions, and Claude adds it to its toolkit. Claude uses skills when relevant, or you can invoke one directly with `/skill-name`.\n\nCreate a skill when you keep pasting the same instructions, checklist, or multi-step procedure into chat, or when a section of CLAUDE.md has grown into a procedure rather than a fact. Unlike CLAUDE.md content, a skill's body loads only when it's used, so long reference material costs almost nothing until you need it.\n\n> [!NOTE]\n>\n> For built-in commands like `/help` and `/compact`, and bundled skills like `/debug` and `/code-review`, see the [commands reference](https://code.claude.com/docs/en/commands.md).\n>\n> **Custom commands have been merged into skills.** Your existing `.claude/commands/` files keep working. Claude can invoke them without you typing the command. Edit a command to stop Claude from invoking it on its own, or convert a command that needs more than one file to a skill:\n>\n> * **Stop Claude from invoking a command on its own**: add [`disable-model-invocation: true`](#control-who-invokes-a-skill) to the command file's [frontmatter](#frontmatter-reference)\n> * **Add [supporting files](#add-supporting-files) such as scripts**: convert the command to a skill. For example, move `.claude/commands/deploy.md` to `.claude/skills/deploy/SKILL.md`. The [folder name becomes the command](#how-a-skill-gets-its-command-name), so you still type `/deploy`.\n\nClaude Code skills follow the [Agent Skills](https://agentskills.io) open standard, which works across multiple AI tools. Claude Code extends the standard with additional features lik",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "78e1b49913a55380e65a9293bed3a0ae67b3c90ee43d5eef2a1b55a4c4f72de5",
+          "source_id": "requirements-claude-code",
+          "source_sha256": "3de6c6acc4b9a446307c112a90fe40a8739b1d28796595952cd146f37483509d",
+          "url": "https://code.claude.com/docs/en/skills.md"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/skills.md",
+          "previous_sha256": "78e1b49913a55380e65a9293bed3a0ae67b3c90ee43d5eef2a1b55a4c4f72de5",
+          "retrieved": "2026-11-25T11:47:08+00:00",
+          "snapshot_id": 5014,
+          "source_id": "requirements-claude-code",
+          "source_sha256": "3de6c6acc4b9a446307c112a90fe40a8739b1d28796595952cd146f37483509d",
+          "url": "https://code.claude.com/docs/en/skills.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:54+00:00"
+      }
+    },
+    {
+      "sequence": 1349,
+      "id": "obsession-733f030717f21485074a70f3ea13cfef0b6e7bd895848d162d871de52207f5a0",
+      "sha256": "733f030717f21485074a70f3ea13cfef0b6e7bd895848d162d871de52207f5a0",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Skills for enterprise - Claude Platform Docs Claude Platform Docs Messages Managed Agents Admin Resources  Best practices Models & pricing SDKs, CLI, and libraries Claude API skill Release notes  API reference  English   Console Log in   Search ⌘ K Ctrl K First steps Intro to Claude Get your API key Quickstart Authentication Building with Claude Features overview Using the Messages API Stop reasons and fallback Refusals and fallback Fallback credit Text watermark Model capabilities Task budgets (beta) Fast mode Structured outputs Citations Streaming Messages Batch processing Search results Streaming refusals Multilingual support Embeddings Effort Thinking Tools Overview How tool use works Tutorial: Build a tool-using agent Define tools Handle tool calls Parallel tool use Tool runner (SDK) Strict tool use Server tools Web search tool Web fetch tool Code execution tool Advisor tool Tool search tool Memory tool Bash tool Text editor tool Browser and computer use (SDK) Computer use tool Browser use tool Troubleshooting Tool infrastructure Tool reference Manage tool context Tool combinations Tool use with prompt caching Programmatic tool calling Fine-grained tool streaming Context management Context windows Context editing Prompt caching Message threads Mid-conversation messages Build an orchestration mode Cache diagnostics Token counting Compaction Working with files Files API PDF support Images and vision Skills Overview Quickstart Best practices Skills for enterprise Skills in the API MCP Remote MCP servers MCP connector MCP tunnels OpenTelemetry Overview Get Anthropic SDK spans Get Claude API spans Claude on cloud platforms Amazon Bedrock (mantle) Amazon Bedrock (runtime) Claude Platform on AWS Microsoft Foundry Google Cloud  Console Messages  Skills Skills for enterprise  Copy page  Governance, security review, evaluation, and organizational guidance for deploying Agent Skills at enterprise scale.  Copy page  This guide is for enterprise admins and arch",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "af4520a1052d240f0738e7c1d00e876c22e8261670b5c86f938a16a76aea71d5",
+          "source_id": "claude-platform",
+          "source_sha256": "3ec661769d916db3772307d1321e886d0f618a084c8943146f8aa905fa5325ff",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise"
+        },
+        "provenance": {
+          "final_url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise",
+          "previous_sha256": "af4520a1052d240f0738e7c1d00e876c22e8261670b5c86f938a16a76aea71d5",
+          "retrieved": "2026-11-25T18:59:45+00:00",
+          "snapshot_id": 5059,
+          "source_id": "claude-platform",
+          "source_sha256": "3ec661769d916db3772307d1321e886d0f618a084c8943146f8aa905fa5325ff",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1334,
+      "id": "obsession-790bf88ae073eca1d51a1c979a9b9764541a5406a30529e881bbd6d2e594f0c3",
+      "sha256": "790bf88ae073eca1d51a1c979a9b9764541a5406a30529e881bbd6d2e594f0c3",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Powers - Features - Docs - Kiro Skip to main content Get Started Installation Authentication Your first project Models Overview Available models Reasoning effort AWS GovCloud (US) models Features How Kiro works Local command sandbox ACP integrations Specs Steering Hooks MCP Permissions Custom agents Workflows Agent Skills Powers Install powers Create powers Cloud sessions Memory Compaction Kiroignore Checkpoints and rewind Built-in tools Configuration scopes IDE 1.x What's new in 1.0 Setup & First Run Remote development Editor Chat Experimental Troubleshooting 0.x reference Kiro extensions Overview VS Code CLI Setup & First Run Choose an agent harness Terminal UI Chat Fullscreen mode Voice mode Headless mode ACP Auto complete Experimental Troubleshooting Upgrade from CLI 2.x 2.x reference Crew Quick start Installation Kiro Crew LTS Running 24/7 Bots Chat Agent Capabilities Features Interfaces Apps System & storage Configuration Security Troubleshooting Web Setup & First Run Identity Center Connect your repositories Working with the agent Autonomous mode Schedule Configuration Sync Sandbox Mobile Overview Setup & First Run Working with sessions Settings Commands and Reference CLI commands Slash commands Built-in tools Exit codes Settings Billing Overview Managing your subscription Upgrading your plan Downgrading your plan Cancelling your plan Purchasing add-on credits Managing your payments Managing usage notifications Managing your taxes Contacting billing support Deleting your account Related questions Enterprise Concepts Onboarding quickstart Connecting your identity provider Deployment options Subscribe your team Manage subscriptions Credit pooling Governance Enterprise Management (preview) Monitor and track Settings Referrals Managed updates TLS inspection compatibility Billing Support IAM Supported regions AWS GovCloud (US) Privacy and Security Overview Data protection Code references Compliance validation Infrastructure security IAM permissions Firewalls, prox",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "89a30f37784b12591c7fccd5d513fb116c68c1b4ad93c1370c5a64b18f00fb92",
+          "source_id": "kiro",
+          "source_sha256": "9dbbe92f3a89771fd5cc98459843ea3816424825e21c9ae19aa5182debc88702",
+          "url": "https://kiro.dev/docs/powers/"
+        },
+        "provenance": {
+          "final_url": "https://kiro.dev/docs/powers/",
+          "previous_sha256": "89a30f37784b12591c7fccd5d513fb116c68c1b4ad93c1370c5a64b18f00fb92",
+          "retrieved": "2026-11-25T17:48:51+00:00",
+          "snapshot_id": 5044,
+          "source_id": "kiro",
+          "source_sha256": "9dbbe92f3a89771fd5cc98459843ea3816424825e21c9ae19aa5182debc88702",
+          "url": "https://kiro.dev/docs/powers/"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1368,
+      "id": "obsession-7d6f55cb1381260d6d5b904d6c022d24726457866cff84dea9764708f13a3567",
+      "sha256": "7d6f55cb1381260d6d5b904d6c022d24726457866cff84dea9764708f13a3567",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugins Reference | Cursor Docs Skip to main content Cursor Logo Docs API Learn Help Search docs... ⌘K Sign in Download Command Palette Search for a command to run... Get Started Welcome Quickstart Models & Pricing Changelog Release Notes Agent Overview Agents Window Projects Agent Review Planning Prompting Voice Chat Debugging Design Mode Tools Security Customize Overview Plugins Rules Skills Subagents Hooks MCP Cloud Agents Overview Setup Builds Apps Capabilities Best Practices Choose Where Cloud Agents Run Automations Bugbot Security Review Vulnerability Remediation PR Routing & Approval Rollouts Mobile Security Self-Hosted Machines Settings API Origin Overview CLI Create a repository Mirror GitHub Clone, Push & Pull CloneKit in CI Pull requests Code Tours Browse & Search Agents and Automations Apps Settings Access Policies Integrations Slack Microsoft Teams Jira Linear Notion GitHub GitLab Azure DevOps Bitbucket JetBrains Xcode Tailscale Deeplinks SDK TypeScript Python Bridge Changelog Agent SDK Getting started Integrations Extensions Guides Templates Reference CLI Overview Installation Capabilities Changelog Shell Mode ACP Headless / CI Reference Security Overview API Keys & Service Tokens Session Management Network Controls OAuth Applications Teams & Enterprise Teams Enterprise Get Started Plugins reference Reference documentation for building, structuring, and submitting Cursor plugins. Plugins package rules, skills, agents, commands, MCP servers, and hooks into distributable bundles that work in the Cursor IDE. If you're starting from scratch, use the plugin template repository . Supported plugin formats Cursor loads plugins in two formats, identified by their manifest location: Format Manifest location Components Agent Plugins (open standard) plugin.json at the plugin root Skills, MCP servers Cursor Plugins .cursor-plugin/plugin.json Skills, MCP servers, rules, agents, commands, hooks, variables A plugin that conforms to the Agent Plugins specification load",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "daa641b162bdb614b099b1f3026c413d856452981a16338fa3a8f884361a6eca",
+          "source_id": "cursor",
+          "source_sha256": "045f6dfa9f1c7cd3602def0390d52d40b946a6cb940052c9bcca46fb26a74b48",
+          "url": "https://prod.cursor.com/docs/reference/plugins"
+        },
+        "provenance": {
+          "final_url": "https://prod.cursor.com/docs/reference/plugins",
+          "previous_sha256": "daa641b162bdb614b099b1f3026c413d856452981a16338fa3a8f884361a6eca",
+          "retrieved": "2026-11-25T19:01:08+00:00",
+          "snapshot_id": 5078,
+          "source_id": "cursor",
+          "source_sha256": "045f6dfa9f1c7cd3602def0390d52d40b946a6cb940052c9bcca46fb26a74b48",
+          "url": "https://prod.cursor.com/docs/reference/plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1284,
+      "id": "obsession-92eaadd40cee76d028d754b863514a3703ab7c5d2cf9df7f9bd3b7d744195b19",
+      "sha256": "92eaadd40cee76d028d754b863514a3703ab7c5d2cf9df7f9bd3b7d744195b19",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "# Configuration Reference\n\n> For the complete documentation index, see [llms.txt](https://learn.chatgpt.com/llms.txt). Markdown versions of documentation pages are available by appending `.md` to the page URL.\n\nUse this page as a searchable reference for Codex configuration files. For conceptual guidance and examples, start with [Config basics](https://learn.chatgpt.com/docs/config-file/config-basic) and [Advanced Config](https://learn.chatgpt.com/docs/config-file/config-advanced).\n\n<a id=\"settings-for-synced-chatgpt-work\"></a>\n\n## Settings for Local computer access with Work Cloud\n\nWith Local computer access with Work Cloud enabled, OpenAI's cloud coordinates the task while supported tools run in the cloud or on a connected computer. Requirements set limits; configuration values provide defaults.\n\nUse the policy API to manage Global settings. To manage Local or Codex Cloud settings, use the Agent Security UI. Existing Global API workflows remain available after migration. Test your scripts and Terraform integrations, and confirm that policy assignments and ordering are unchanged. Support for a `requirements.toml` field does not by itself establish API compatibility.\n\n| Setting or setting family                                           | Scope in Local computer access with Work Cloud                                                                                   | Guidance                                                                                                                                                                                                                                                                                                                                                                                                                                            |\n| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "f3f61ddf9ca6948a06d04b0075f32ac61bda8c3296c565c1891638dca70a1fe2",
+          "source_id": "openai-codex",
+          "source_sha256": "72e59e992e3858fbaf064d6522e517561c268aac8e929659205005d6f0b021c0",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "provenance": {
+          "final_url": "https://learn.chatgpt.com/docs/config-file/config-reference.md",
+          "previous_sha256": "f3f61ddf9ca6948a06d04b0075f32ac61bda8c3296c565c1891638dca70a1fe2",
+          "retrieved": "2026-11-25T11:46:14+00:00",
+          "snapshot_id": 4994,
+          "source_id": "openai-codex",
+          "source_sha256": "72e59e992e3858fbaf064d6522e517561c268aac8e929659205005d6f0b021c0",
+          "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:54+00:00"
+      }
+    },
+    {
+      "sequence": 1345,
+      "id": "obsession-b273bbfbdb8c5878c7a02ce4fff6cd9af9f1db0d898ee96b7463639cbec1a898",
+      "sha256": "b273bbfbdb8c5878c7a02ce4fff6cd9af9f1db0d898ee96b7463639cbec1a898",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Package your plugin – Plugins | OpenAI Developers For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT API Dashboard Try ChatGPT Language Loading languages… Theme Theme Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Agent Access Allow verified ChatGPT browser visits to your website Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Plugins Sign in with ChatGPT Commerce Agent Access Ads Workspace Agents User Docs Search the ChatGPT docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6.2 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background mode Streaming WebSock",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "cf1d162d3d481075994521bba6347284841bbe07f691a53fd9defd40c806b930",
+          "source_id": "openai-plugins",
+          "source_sha256": "819f1987297ecea85a228c5861fd3e4a2aeb5f6c7f6e257556656944ff42bf82",
+          "url": "https://developers.openai.com/plugins/build/plugins"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/build/plugins",
+          "previous_sha256": "cf1d162d3d481075994521bba6347284841bbe07f691a53fd9defd40c806b930",
+          "retrieved": "2026-11-25T18:59:27+00:00",
+          "snapshot_id": 5055,
+          "source_id": "openai-plugins",
+          "source_sha256": "819f1987297ecea85a228c5861fd3e4a2aeb5f6c7f6e257556656944ff42bf82",
+          "url": "https://developers.openai.com/plugins/build/plugins"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1367,
+      "id": "obsession-bc446e20703921294e1f00b7841e4a07a97fb678e7a626b5e8cca62a6fb6d0c1",
+      "sha256": "bc446e20703921294e1f00b7841e4a07a97fb678e7a626b5e8cca62a6fb6d0c1",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Settings files and precedence - Claude Code Docs Documentation Index Fetch the complete documentation index at: /docs/llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Claude Code Docs home page English Search... ⌘ K Ask Assistant ⌘ I Claude Developer Platform Open Claude Code Open Claude Code Search... Navigation Settings Settings files and precedence Getting started Build with Claude Code Plugins Administration Configuration Reference Agent SDK Resources Settings Settings files and precedence All settings Example settings files Permissions and sandboxing Permissions Permission modes Auto mode classifier charges Bash sandbox Sandbox environments Environments Cloud environments Self-hosted environments Model and responses Model configuration Speed up responses with fast mode Escalate hard decisions with the advisor tool Code Mode Output styles Interface Terminal configuration Fullscreen rendering Screen reader mode Voice dictation Customize status line Customize keyboard shortcuts On this page Back to top Settings files and who they affect Compare the scope of each settings file Find or create your settings files Share settings with your team Keep personal settings out of a repository Where Claude Code keeps the local file in a git repository Check what your organization enforces Change a setting Use the /config menu Edit a settings file Change a setting for one session When edits take effect Confirm what loaded Fix a broken settings file Broken settings in a -p run Settings precedence Lists merge instead of overriding Precedence examples Team settings override personal settings Organization settings override everything The command line overrides your files for one session A flag or environment variable sets the same thing Troubleshoot a setting that doesn’t apply A value you set is ignored A change you made in Claude Code is lost in new sessions ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "a1a7845f6f712be1e3c382afa1b7427a05a9a9e0a4459ed4bc295cf0d488618c",
+          "source_id": "claude-code",
+          "source_sha256": "942d9eff5eae533d490a2fb4ebf84360310301f6eb875e2f4f799a5fad50c0c8",
+          "url": "https://code.claude.com/docs/en/settings"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/settings",
+          "previous_sha256": "a1a7845f6f712be1e3c382afa1b7427a05a9a9e0a4459ed4bc295cf0d488618c",
+          "retrieved": "2026-11-25T19:01:08+00:00",
+          "snapshot_id": 5077,
+          "source_id": "claude-code",
+          "source_sha256": "942d9eff5eae533d490a2fb4ebf84360310301f6eb875e2f4f799a5fad50c0c8",
+          "url": "https://code.claude.com/docs/en/settings"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1365,
+      "id": "obsession-d5237263158ad28b7db9c9eb7571a17b38706f635f2104639fc13bc552e3bb9e",
+      "sha256": "d5237263158ad28b7db9c9eb7571a17b38706f635f2104639fc13bc552e3bb9e",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Build skills – Plugins | OpenAI Developers For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT API Dashboard Try ChatGPT Language Loading languages… Theme Theme Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Agent Access Allow verified ChatGPT browser visits to your website Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Plugins Sign in with ChatGPT Commerce Agent Access Ads Workspace Agents User Docs Search the ChatGPT docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6.2 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background mode Streaming WebSocket mode",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "33c14617e125447b8c79bcba551f98856069e28c69ceb60404c811998b61bef2",
+          "source_id": "openai-plugins",
+          "source_sha256": "c5816f6f18b48a3d8d2ddc7238ee9feda0b7acc909560ee507999a69c6eb82cf",
+          "url": "https://developers.openai.com/plugins/build/skills"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/build/skills",
+          "previous_sha256": "33c14617e125447b8c79bcba551f98856069e28c69ceb60404c811998b61bef2",
+          "retrieved": "2026-11-25T19:01:06+00:00",
+          "snapshot_id": 5075,
+          "source_id": "openai-plugins",
+          "source_sha256": "c5816f6f18b48a3d8d2ddc7238ee9feda0b7acc909560ee507999a69c6eb82cf",
+          "url": "https://developers.openai.com/plugins/build/skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1372,
+      "id": "obsession-d5ce3a76befcf174377b560d108625ade591f82df78b51b701aca15e9fe64edf",
+      "sha256": "d5ce3a76befcf174377b560d108625ade591f82df78b51b701aca15e9fe64edf",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Plugin UI changelog – Plugins | OpenAI Developers For the complete documentation index, see llms.txt . Markdown versions of documentation pages are available by appending .md to the page URL. ChatGPT API Dashboard Try ChatGPT Language Loading languages… Theme Theme Home API Overview Get started with the OpenAI API Models Explore models and compare capabilities Agents Build persistent agents on hosted infrastructure Tools Connect models to tools and data Audio & voice Build speech and realtime voice experiences Production Deploy and scale your API integrations API reference Explore endpoints, parameters, and responses ChatGPT Plugins Extend ChatGPT and Codex Sign in with ChatGPT Apps powered by your user's ChatGPT plan Commerce Build commerce flows in ChatGPT Agent Access Allow verified ChatGPT browser visits to your website Ads Publish and measure ads in ChatGPT Workspace Agents Trigger published ChatGPT workspace agents ChatGPT + Codex user docs Guides and product docs for ChatGPT and Codex Use cases Example workflows and tasks teams can take on with ChatGPT or Codex Docs Use cases Training Resources Resources Showcase Demo apps to get inspired Blog Learnings and experiences from developers Cookbook Notebook examples for building with OpenAI models Learn Docs, videos, and demo apps for building with OpenAI Community Programs, meetups, and support for builders Overview Plugins Sign in with ChatGPT Commerce Agent Access Ads Workspace Agents User Docs Search the ChatGPT docs Search docs Suggested responses create reasoning_effort realtime prompt caching Primary navigation API ChatGPT Docs Use cases Training Resources Resources Search docs Suggested responses create reasoning_effort realtime prompt caching Overview Models Agents Tools Audio & voice Production API reference Docs Overview Home Get started Quickstart Using GPT-6.2 Key concepts API credits for ChatGPT subscribers Core concepts Responses API Decisions API Conversation state Background mode Streaming WebSock",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "08e5bc56f7c6bad6872ef076b2730956c5d2cd8c72d48236ccc950e3235dbce4",
+          "source_id": "openai-plugins",
+          "source_sha256": "4736e7aa33f98132779701d48ea0a28e462ee83b5798f87af760439e523ea917",
+          "url": "https://developers.openai.com/plugins/changelog"
+        },
+        "provenance": {
+          "final_url": "https://developers.openai.com/plugins/changelog",
+          "previous_sha256": "08e5bc56f7c6bad6872ef076b2730956c5d2cd8c72d48236ccc950e3235dbce4",
+          "retrieved": "2026-11-25T19:01:44+00:00",
+          "snapshot_id": 5082,
+          "source_id": "openai-plugins",
+          "source_sha256": "4736e7aa33f98132779701d48ea0a28e462ee83b5798f87af760439e523ea917",
+          "url": "https://developers.openai.com/plugins/changelog"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1330,
+      "id": "obsession-dd0d47b51df3b18182bc2659c68cd5991f4e050c7fc2047d30123ab4e0fa487b",
+      "sha256": "dd0d47b51df3b18182bc2659c68cd5991f4e050c7fc2047d30123ab4e0fa487b",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Extend Claude with skills - Claude Code Docs Documentation Index Fetch the complete documentation index at: /docs/llms.txt Use this file to discover all available pages before exploring further. Skip to main content Assistant Responses are generated using AI and may contain mistakes. Claude Code Docs home page English Search... ⌘ K Ask Assistant ⌘ I Claude Developer Platform Open Claude Code Open Claude Code Search... Navigation Skills Extend Claude with skills Getting started Build with Claude Code Plugins Administration Configuration Reference Agent SDK Resources Agents and parallel work Overview Create custom subagents Agent view Run agent teams Cross-session messaging Dynamic workflows Isolate sessions with worktrees MCP Quickstart Reference Skills Extend Claude with skills Artifacts Share session output as artifacts Automation Automate with hooks Push external events to Claude Run prompts on a schedule Goals Programmatic usage Launch sessions from links Guides Monorepos and large repos Troubleshooting Troubleshoot installation and login Troubleshoot performance and stability Debug configuration Error reference On this page Back to top Bundled skills Check your setup with /doctor Run and verify your app Run your checks before each commit Work on Claude API projects Getting started Create your first skill Choose where skills load Load skills in monorepos and subdirectories Load skills from a directory outside the project Run a same-named skill from an added directory Resolve skills that share a name Use skills in Cowork and cloud sessions Skills synced from claude.ai Where synced skills load When a synced skill name matches another command Names reserved for synced skills How Claude Code handles the frontmatter of a synced skill How Claude Code handles the body of a synced skill Skills from MCP servers Skill features that don’t apply Edit a skill during a session Remove a skill Configure skills Types of skill content Frontmatter reference Using skill frontmatter ",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "5ad5e649a64affc2f63af4a3684d477a5bffe0096fb6049f4054c4ffa02a0357",
+          "source_id": "claude-code",
+          "source_sha256": "07b632ace99f020d3ce2dc8be6cf8e8a990cf3405329a14d1021ba0ce72c410a",
+          "url": "https://code.claude.com/docs/en/skills"
+        },
+        "provenance": {
+          "final_url": "https://code.claude.com/docs/en/skills",
+          "previous_sha256": "5ad5e649a64affc2f63af4a3684d477a5bffe0096fb6049f4054c4ffa02a0357",
+          "retrieved": "2026-11-25T17:48:40+00:00",
+          "snapshot_id": 5040,
+          "source_id": "claude-code",
+          "source_sha256": "07b632ace99f020d3ce2dc8be6cf8e8a990cf3405329a14d1021ba0ce72c410a",
+          "url": "https://code.claude.com/docs/en/skills"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1351,
+      "id": "obsession-e166ef49b817192681221faa295a399192e939747565818c74442a2d22526650",
+      "sha256": "e166ef49b817192681221faa295a399192e939747565818c74442a2d22526650",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Agent Skills - Features - Docs - Kiro Skip to main content Get Started Installation Authentication Your first project Models Overview Available models Reasoning effort AWS GovCloud (US) models Features How Kiro works Local command sandbox ACP integrations Specs Steering Hooks MCP Permissions Custom agents Workflows Agent Skills Powers Cloud sessions Memory Compaction Kiroignore Checkpoints and rewind Built-in tools Configuration scopes IDE 1.x What's new in 1.0 Setup & First Run Remote development Editor Chat Experimental Troubleshooting 0.x reference Kiro extensions Overview VS Code CLI Setup & First Run Choose an agent harness Terminal UI Chat Fullscreen mode Voice mode Headless mode ACP Auto complete Experimental Troubleshooting Upgrade from CLI 2.x 2.x reference Crew Quick start Installation Kiro Crew LTS Running 24/7 Bots Chat Agent Capabilities Features Interfaces Apps System & storage Configuration Security Troubleshooting Web Setup & First Run Identity Center Connect your repositories Working with the agent Autonomous mode Schedule Configuration Sync Sandbox Mobile Overview Setup & First Run Working with sessions Settings Commands and Reference CLI commands Slash commands Built-in tools Exit codes Settings Billing Overview Managing your subscription Upgrading your plan Downgrading your plan Cancelling your plan Purchasing add-on credits Managing your payments Managing usage notifications Managing your taxes Contacting billing support Deleting your account Related questions Enterprise Concepts Onboarding quickstart Connecting your identity provider Deployment options Subscribe your team Manage subscriptions Credit pooling Governance Enterprise Management (preview) Monitor and track Settings Referrals Managed updates TLS inspection compatibility Billing Support IAM Supported regions AWS GovCloud (US) Privacy and Security Overview Data protection Code references Compliance validation Infrastructure security IAM permissions Firewalls, proxies, and data perimeter",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "78b3ccfa14bc2dad26fa70e189a745eb12281fed38ddb3b66c80f970bf37b336",
+          "source_id": "kiro",
+          "source_sha256": "6f721306742fa552e502437d648b472dea437cd9d58c234c674b6760ae778c45",
+          "url": "https://kiro.dev/docs/skills/"
+        },
+        "provenance": {
+          "final_url": "https://kiro.dev/docs/skills/",
+          "previous_sha256": "78b3ccfa14bc2dad26fa70e189a745eb12281fed38ddb3b66c80f970bf37b336",
+          "retrieved": "2026-11-25T18:59:53+00:00",
+          "snapshot_id": 5061,
+          "source_id": "kiro",
+          "source_sha256": "6f721306742fa552e502437d648b472dea437cd9d58c234c674b6760ae778c45",
+          "url": "https://kiro.dev/docs/skills/"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
+    },
+    {
+      "sequence": 1350,
+      "id": "obsession-fd805f7aa072c0159bafba3395472d0a346bd1ad09dc794d58acfc0cd54fa0b1",
+      "sha256": "fd805f7aa072c0159bafba3395472d0a346bd1ad09dc794d58acfc0cd54fa0b1",
+      "payload": {
+        "evidence": {
+          "authority": "local_policy_only",
+          "excerpt": "Security and Privacy Hardening | Cursor Docs Skip to main content Cursor Logo Docs API Learn Help Search docs... ⌘K Sign in Download Command Palette Search for a command to run... Get Started Welcome Quickstart Models & Pricing Changelog Release Notes Agent Overview Agents Window Projects Agent Review Planning Prompting Voice Chat Debugging Design Mode Tools Security Customize Overview Plugins Rules Skills Subagents Hooks MCP Cloud Agents Overview Setup Builds Apps Capabilities Best Practices Choose Where Cloud Agents Run Automations Bugbot Security Review Vulnerability Remediation PR Routing & Approval Rollouts Mobile Security Self-Hosted Machines Settings API Origin Overview CLI Create a repository Mirror GitHub Clone, Push & Pull CloneKit in CI Pull requests Code Tours Browse & Search Agents and Automations Apps Settings Access Policies Integrations Slack Microsoft Teams Jira Linear Notion GitHub GitLab Azure DevOps Bitbucket JetBrains Xcode Tailscale Deeplinks SDK TypeScript Python Bridge Changelog Agent SDK Getting started Integrations Extensions Guides Templates Reference CLI Overview Installation Capabilities Changelog Shell Mode ACP Headless / CI Reference Security Overview API Keys & Service Tokens Session Management Network Controls OAuth Applications Teams & Enterprise Teams Enterprise Overview Admin Setup Guide Organizations Organization Groups Identity & Access Privacy & Data Governance Network Configuration Tenancy Restriction Private Connectivity Endpoint Security LLM Safety & Controls Models & Integrations Cyber Safeguards Pooled Usage Compliance & Monitoring OpenTelemetry Export HIPAA BAA Deployment Patterns Service Accounts Billing Groups Security and Privacy Hardening Cursor Blame Teams & Enterprise Security and Privacy Hardening Harden your Cursor deployment with these security and privacy controls. Each control has a recommendation and a link to the doc where you configure it. Shared responsibility Cursor and your team share responsibility for a",
+          "fetch_verified": true,
+          "semantic_verification": "not_established"
+        },
+        "gate": "auto",
+        "kind": "reference_update",
+        "policy_sha256": "f8c7212684e310ff1feedc38f01a2fa30db675fe18c477341775535c3b637904",
+        "priority": "high",
+        "proposal": {
+          "change_type": "source_content_changed",
+          "previous_sha256": "4ff6995baa3afbbc3961937754a73ac910b5b31a20fdfb20d250579a0993f02a",
+          "source_id": "cursor",
+          "source_sha256": "f3e480ecb57cf8b9da7fa36e19344240816bae219013626d5324650ded4b581a",
+          "url": "https://prod.cursor.com/docs/enterprise/security-hardening"
+        },
+        "provenance": {
+          "final_url": "https://prod.cursor.com/docs/enterprise/security-hardening",
+          "previous_sha256": "4ff6995baa3afbbc3961937754a73ac910b5b31a20fdfb20d250579a0993f02a",
+          "retrieved": "2026-11-25T18:59:51+00:00",
+          "snapshot_id": 5060,
+          "source_id": "cursor",
+          "source_sha256": "f3e480ecb57cf8b9da7fa36e19344240816bae219013626d5324650ded4b581a",
+          "url": "https://prod.cursor.com/docs/enterprise/security-hardening"
+        },
+        "schema_version": 1
+      },
+      "decision": {
+        "state": "auto_approved",
+        "reason": "Locally approved deterministic gate passed",
+        "updated": "2026-11-26T03:29:55+00:00"
+      }
     }
   ]
 }
