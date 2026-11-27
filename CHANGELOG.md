@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.19.4 - 2026-11-27
+
+- Explain Claude Code plugin anatomy in scan reports and exports: component
+  ownership, declared triggers, custom paths, inactive defaults and server
+  replacement. Identify manifest-less layout candidates without claiming load
+  success or compatibility with other hosts.
+- Inspect resolved custom component configurations and assess declared
+  instructions actively, including reference-folder sources. Keep display limits
+  separate from instruction analysis and disclose incomplete discovery.
+
 ## 0.19.3 - 2026-11-25
 
 - Validate organization policies with the server before package upload; show

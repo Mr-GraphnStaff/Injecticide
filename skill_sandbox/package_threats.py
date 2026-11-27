@@ -350,6 +350,7 @@ def inspect_threats(records, texts, analysis):
     for source, data in analysis["configurations"].items():
         package = next((p for p in analysis["packages"] if p["manifest"] == source), None)
         root = package["root"] if package else posixpath.dirname(source)
+        root = analysis.get("configuration_roots", {}).get(source, root)
         if root == ".":
             root = ""
         walk(data, source, root)

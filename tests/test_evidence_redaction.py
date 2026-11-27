@@ -113,6 +113,6 @@ def test_scanner_engine_identity_is_stable_and_independent_of_uploaded_text():
     first = scanner_metadata()
     release = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8"))
     assert first["scanner_version"] == release["project"]["version"]
-    assert first["adapter_version"] == "2026-10-29"
+    assert first["adapter_version"] == "2026-11-27"
     assert len(first["engine_source_sha256"]) == 64
     assert first["engine_source_sha256"] == scanner_metadata()["engine_source_sha256"]

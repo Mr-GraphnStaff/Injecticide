@@ -697,6 +697,31 @@ function formatOrganizationPolicyMarkdown(scanResult, buildInfo) {
     return lines.join('\n');
 }
 
+const PLUGIN_PART_LABELS = {skills:'Skills', commands:'Commands (legacy)', agents:'Subagents', hooks:'Lifecycle hooks',
+    mcpServers:'MCP servers', lspServers:'Language servers', outputStyles:'Output styles', workflows:'Workflows',
+    monitors:'Background monitors', themes:'Themes', bin:'Executable candidates', evals:'Evaluations', channels:'Message channels'};
+
+function formatPluginAnatomyMarkdown(anatomy, detailed) {
+    if (!anatomy?.plugins?.length) return [];
+    const literal = value => String(value ?? '').replace(/\s*\r?\n\s*/g, ' ').slice(0, 2000).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/[\\`*_{}\[\]()#!|]/g, '\\$&');
+    const lines = ['## Plugin anatomy', '', literal(anatomy.scope), '',
+        `Inventory: ${literal(anatomy.status)} · ${anatomy.component_count} component observations · ${anatomy.omitted_components || 0} omitted components · ${anatomy.omitted_plugins || 0} omitted plugins.`, ''];
+    anatomy.plugins.forEach(plugin => {
+        lines.push(`### ${literal(plugin.name || 'Plugin layout candidate')} · ${literal(plugin.root)}`, '',
+            `Recognition: ${literal(plugin.recognition)}. Manifest: ${literal(plugin.manifest || 'not supplied')}. Version: ${literal(plugin.version || 'not supplied')}.`, '');
+        asArray(plugin.observations).forEach(note => lines.push(`- ${literal(note)}`));
+        const rows = asArray(plugin.components);
+        rows.slice(0, detailed ? rows.length : 5).forEach(row => lines.push(
+            `- ${literal(PLUGIN_PART_LABELS[row.kind] || row.kind)}${row.name ? ` (${literal(row.name)})` : ''} · ${literal(row.state)} · ${literal(row.path || 'inline declaration')}`,
+            `  - Role: ${literal(row.role)}. Trigger: ${literal(row.activation)}. Execution: ${literal(row.execution)}.${row.reason ? ` Limit: ${literal(row.reason)}.` : ''}`));
+        if (!detailed && rows.length > 5) lines.push(`- ${rows.length - 5} more component observations in the detailed report.`);
+        asArray(plugin.configuration_fields).forEach(field => lines.push(`- Configuration field ${literal(field.name)}: ${literal(field.type)}; sensitive: ${field.sensitive === true}. Values are not included.`));
+        lines.push('');
+    });
+    asArray(anatomy.limits).forEach(limit => lines.push(`- Limit: ${literal(limit)}`));
+    return [...lines, ''];
+}
+
 function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary') {
     const lines = [];
     const push = (...rows) => lines.push(...rows);
@@ -741,6 +766,8 @@ function formatSkillScanMarkdown(scanResult, buildInfo, reportDepth = 'summary')
         });
         push('');
     }
+
+    push(...formatPluginAnatomyMarkdown(scanResult.package_analysis?.plugin_anatomy, detailed));
 
     // 2. Policy results
     push('## Policy results', '');
@@ -1404,6 +1431,40 @@ function SkillFindingList({ findings, artifactRole, depth }) {
             <ScanPageControls page={page} total={findings.length} size={SKILL_FINDINGS_PER_PAGE} onChange={setPage} label="Finding pages" />
         </>
     );
+}
+
+function PluginAnatomy({ anatomy, onOpenFile }) {
+    const [selected, setSelected] = useState(0);
+    const [page, setPage] = useState(0);
+    const plugins = asArray(anatomy?.plugins);
+    if (!plugins.length) return null;
+    const plugin = plugins[Math.min(selected, plugins.length - 1)];
+    const rows = asArray(plugin.components);
+    return <section className="plugin-anatomy" aria-labelledby="plugin-anatomy-title" data-plugin-anatomy="true">
+        <h3 id="plugin-anatomy-title">Plugin anatomy</h3>
+        <p>A plugin bundles instructions, event handlers, tool connections and optional programs under one installed identity. These parts have different triggers and review needs.</p>
+        <p>{anatomy.scope}</p>
+        <p>Discovery: <strong>{evidenceLabel(anatomy.analysis_status || anatomy.status)}</strong> · {anatomy.component_count} component observations{anatomy.omitted_components > 0 ? ` · ${anatomy.omitted_components} display rows omitted` : ''}{anatomy.omitted_plugins > 0 ? ` · ${anatomy.omitted_plugins} plugins omitted` : ''}</p>
+        <p className="reader-meta">Claude Code component model · sources reviewed {anatomy.reviewed_on}. Claude.ai and Cowork have different component support.</p>
+        {plugins.length > 1 && <><label htmlFor="plugin-anatomy-selection">Plugin to inspect</label><select id="plugin-anatomy-selection" value={selected} onChange={event => {setSelected(Number(event.target.value)); setPage(0);}}>{plugins.map((item, index) => <option key={index} value={index}>{item.name || 'Layout candidate'} · {item.root}</option>)}</select></>}
+        <h4>{plugin.name || 'Plugin layout candidate'}{plugin.version ? ` · ${plugin.version}` : ''}</h4>
+        <p>Root: <code>{plugin.root}</code> · {evidenceLabel(plugin.recognition)}</p>
+        {plugin.manifest && <p>Manifest: <button type="button" className="file-link" onClick={() => onOpenFile(plugin.manifest)}>{plugin.manifest}</button></p>}
+        <ul>{asArray(plugin.observations).map((note,index) => <li key={index}>{note}</li>)}</ul>
+        <p>{Object.entries(plugin.counts || {}).map(([kind,count]) => `${PLUGIN_PART_LABELS[kind] || kind}: ${count}`).join(' · ')}</p>
+        <ScanPageControls page={page} total={rows.length} size={10} onChange={setPage} label="Plugin component pages" />
+        <ol className="plugin-component-list" start={page * 10 + 1}>
+            {rows.slice(page * 10,page * 10 + 10).map((row,index) => <li key={index} data-plugin-component="true">
+                <h4>{PLUGIN_PART_LABELS[row.kind] || row.kind}{row.name ? ` · ${row.name}` : ''}</h4>
+                <dl><div><dt>State</dt><dd>{evidenceLabel(row.state)}{row.discovery ? ` · ${evidenceLabel(row.discovery)}` : ''}</dd></div>
+                    <div><dt>Source</dt><dd>{row.path ? <button type="button" className="file-link" onClick={() => onOpenFile(row.path)}>{row.path}</button> : 'Inline or unresolved declaration'}</dd></div>
+                    <div><dt>Purpose</dt><dd>{evidenceLabel(row.role)}</dd></div><div><dt>When used</dt><dd>{row.activation}</dd></div>
+                    {row.reason && <div><dt>Limit</dt><dd>{evidenceLabel(row.reason)}</dd></div>}</dl>
+            </li>)}
+        </ol>
+        {plugin.configuration_fields?.length > 0 && <p>Configuration requested: {plugin.configuration_fields.map(field => `${field.name} (${field.type}${field.sensitive ? ', sensitive' : ''})`).join(' · ')}. Values are not included.</p>}
+        <details><summary>What this inventory does not establish</summary><ul>{asArray(anatomy.limits).map((limit,index) => <li key={index}>{limit}</li>)}</ul></details>
+    </section>;
 }
 
 function PackageScanOverview({ result }) {
@@ -2883,7 +2944,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                             {orgPolicy && <button type="button" className="text-sm text-gray-300 underline" disabled={isScanningSkill} onClick={() => updateOrgPolicy('')}>Remove policy</button>}
                                         </details>
                                         <label htmlFor="skill-upload-file" className="block text-sm font-medium text-gray-300">
-                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload SKILL.md, .skill, or .zip (up to 32 MiB)
+                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload a skill, plugin or reference package (up to 32 MiB)
                                         </label>
                                         <input
                                             type="file"
@@ -3036,6 +3097,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                         overview: <>
                                     <WhatToFix fixSummary={skillScanResult.fix_summary} onOpenFile={openReaderFile} />
                                     <PolicyResults evaluation={skillScanResult.policy_evaluation} onOpenFile={openReaderFile} />
+                                    <PluginAnatomy anatomy={skillScanResult.package_analysis?.plugin_anatomy} onOpenFile={openReaderFile} />
                                     <EvidenceInputNotice input={skillScanResult.evidence_input} />
                                     {(() => {
                                         const assessment = summarizeAssessment(skillScanResult);

@@ -14,7 +14,7 @@ from pathlib import Path
 import subprocess
 from datetime import date
 
-SCANNER_VERSION = "0.19.3"
+SCANNER_VERSION = "0.19.4"
 
 try:
     from .package_formats import bounded_data
@@ -199,7 +199,7 @@ def scanner_metadata():
                          "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                          "freshness": "unknown" if age is None or age < 0 else "stale" if age > 90 else "current",
                          "age_days": age})
-    return {"scanner_version": SCANNER_VERSION, "adapter_version": "2026-10-29", "catalogs": catalogs,
+    return {"scanner_version": SCANNER_VERSION, "adapter_version": "2026-11-27", "catalogs": catalogs,
             "engine_source_sha256": engine_digest.hexdigest(),
             "engine_fingerprint_scope": "Sorted scanner Python modules, shipped rule catalogs and validator manifest; excludes uploaded content.",
             "update_policy": "reviewed_application_release_and_gated_correction_packs", "automatic_research_activation": False,

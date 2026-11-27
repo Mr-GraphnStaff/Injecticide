@@ -91,7 +91,11 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
         record.setdefault("creator_mitigation", creator_mitigation(record["path"], None))
         if record.get("skipped"):
             record["analysis_coverage"]["extraction"]["reason"] = record.get("reason", "Not extracted")
-    analysis = inspect_formats(entries, texts, target_runtime)
+    analysis = inspect_formats(records, texts, target_runtime, filename=result.get("filename", ""))
+    instruction_paths = set(analysis.pop("instruction_paths"))
+    for source in text_sources:
+        if source["path"] in instruction_paths:
+            source["artifact_role"] = "active"
     threats = inspect_threats(entries, texts, analysis)
     effects = analyze_package_effects(text_sources, records)
     effect_findings = effects.pop("findings_by_path")
@@ -100,8 +104,8 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
     for entry in entries:
         path = entry["path"]
         content = entry.get("content_analysis", {})
-        if path in threats["invoked_paths"] or content.get("code_like"):
-            entry["effective_artifact_role"] = "execution_component"
+        if path in threats["invoked_paths"] or content.get("code_like") or path in instruction_paths:
+            entry["effective_artifact_role"] = "instruction_component" if path in instruction_paths and not content.get("code_like") and path not in threats["invoked_paths"] else "execution_component"
             entry["required_component"] = True
             if rescan and path in texts:
                 supplemental = [f for f in entry["findings"] if f.get("subject") in {"package_component", "creator_reading_convention", "asset_structure"}]
@@ -165,6 +169,11 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
                                                              "other_languages": "not_assessed", "completeness": "not_established"},
                                    "scope": "Uploaded text cannot set the source channel. This is a static policy scenario, not authenticated runtime provenance."}
     coverage = coverage_report(records)
+    anatomy = analysis["plugin_anatomy"]
+    coverage["plugin_anatomy"] = {"status": anatomy["analysis_status"], "display_status": anatomy["status"],
+                                  "omitted_components": anatomy["omitted_components"], "omitted_plugins": anatomy["omitted_plugins"]}
+    if anatomy["analysis_status"] == "partial":
+        coverage["status"] = "partial"
     coverage["package_effects"] = {"status": effects["status"], "limits": effects["limits"], "scope": effects["coverage"]["scope"]}
     if effects["status"] == "partial":
         coverage["status"] = "partial"
@@ -173,6 +182,7 @@ def enrich_result(result, text_sources, upload_bytes, target_runtime="auto", sup
     hash_value = hashlib.sha256(upload_bytes).hexdigest()
     evidence = evidence_profile(records, texts, analysis, hash_value, supplied_evidence, extraction_root)
     analysis.pop("configurations")
+    analysis.pop("configuration_roots", None)
     # Raw configurations and parsed frontmatter can contain credentials. Do not return them.
     for skill in analysis["skills"]:
         skill.pop("frontmatter", None)
