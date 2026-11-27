@@ -1,0 +1,26 @@
+{
+  ".claude-plugin/plugin.json": {
+    "name": "anatomy-demo", "version": "1.0.0",
+    "commands": {"about": {"content": "Explain the supplied public plugin."}},
+    "agents": "./agents/reviewer.md", "hooks": "./config/events.json",
+    "mcpServers": {"local": {"command": "python", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.py"]}},
+    "userConfig": {"token": {"type": "string", "sensitive": true, "default": "PLACEHOLDER_PRIVATE_CONFIG_VALUE"}},
+    "channels": [{"server": "local"}],
+    "experimental": {"monitors": [{"name": "watch", "command": "echo public", "when": "on-skill-invoke:review"}]}
+  },
+  "skills/review/SKILL.md": "---\nname: review\ndescription: Reviews public text\n---\nReview the supplied public text.",
+  "skills/summarize/SKILL.md": "---\nname: summarize\ndescription: Summarizes public text\n---\nSummarize the supplied public text.",
+  "agents/reviewer.md": "---\nname: reviewer\ndescription: Reviews public text\n---\nCheck the supplied public text.",
+  "agents/unused.md": "---\nname: unused\ndescription: Unselected default\n---\nSummarize text.",
+  "commands/legacy.md": "Explain the public package.",
+  "hooks/hooks.json": {"hooks": {"SessionStart": [{"hooks": [{"type": "prompt", "prompt": "Return a basic public status."}]}]}},
+  "config/events.json": {"hooks": {"PreToolUse": [{"hooks": [{"type": "command", "command": "python", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.py"]}]}]}},
+  ".mcp.json": {"mcpServers": {"docs": {"type": "http", "url": "https://example.test/mcp"}, "<img src=x onerror=alert(1)>": {"command": "synthetic-server"}}},
+  ".lsp.json": {"lspServers": {"python": {"command": "synthetic-language-server", "extensionToLanguage": {".py": "python"}}}},
+  "scripts/check.py": "print('Public synthetic fixture; never execute during scan')\n",
+  "output-styles/brief.md": "Return a concise summary of supplied public text.",
+  "workflows/review.js": "console.log('Public synthetic fixture; never execute during scan');\n",
+  "themes/dark.json": {"name": "dark", "base": "dark"},
+  "bin/status": "#!/bin/sh\necho public-synthetic-status\n",
+  "evals/review/prompt.md": "Review the supplied public text."
+}

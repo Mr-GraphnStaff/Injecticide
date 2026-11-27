@@ -330,6 +330,16 @@
 .file-link:hover { color:#e6fff4; }
 .file-link:focus-visible, .fix-files-toggle:focus-visible, .arch-area-card:focus-visible, .file-reader-list button:focus-visible, .file-reader-scope button:focus-visible, .reader-path:focus-visible { outline:3px solid #ffc966; outline-offset:2px; }
 .org-policy-input summary { cursor:pointer; font-weight:600; min-height:28px; }
+.plugin-anatomy { margin-block:1rem; padding:1rem; border:1px solid var(--home-border); border-radius:.75rem; background:#0d2a21; min-width:0; overflow-wrap:anywhere; }
+.plugin-anatomy h3 { font-size:1.25rem; font-weight:750; }
+.plugin-anatomy h4 { font-weight:650; margin-block:.5rem; }
+.plugin-component-list { display:grid; gap:.75rem; padding-inline-start:1.5rem; }
+.plugin-component-list > li { padding:.65rem; border:1px solid #31534c; border-radius:.4rem; }
+.plugin-component-list dl > div { display:grid; grid-template-columns:6.5rem minmax(0,1fr); gap:.5rem; }
+.plugin-component-list dt { color:var(--home-muted); }
+.plugin-component-list dd { margin:0; min-width:0; }
+.plugin-anatomy select { max-width:100%; }
+@media(max-width:550px) { .plugin-component-list dl > div { grid-template-columns:minmax(0,1fr); gap:0; margin-block:.4rem; } }
 .org-policy-input fieldset { min-width:0; margin:.8rem 0; padding:.75rem; border:1px solid var(--home-border); border-radius:.5rem; }
 .org-policy-input legend { padding:0 .3rem; font-weight:600; }
 .org-policy-input fieldset button { display:block; max-width:100%; margin:.5rem 0; white-space:normal; text-align:start; }

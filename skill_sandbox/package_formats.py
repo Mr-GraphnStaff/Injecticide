@@ -172,7 +172,7 @@ def _schema_findings(data, kind, path):
     return issues
 
 
-def inspect_formats(records, texts, target_runtime="auto"):
+def inspect_formats(records, texts, target_runtime="auto", filename=""):
     if target_runtime not in RUNTIMES:
         raise ValueError("Unsupported target runtime")
     profiles, packages, issues, components, skills = [], [], [], [], []
@@ -324,8 +324,313 @@ def inspect_formats(records, texts, target_runtime="auto"):
             issues.append({"id": "multiple_manifest_profiles", "path": package["manifest"], "detail": "Multiple package manifests share a root; runtime precedence requires review", "severity": "warning"})
     kinds = {p["kind"] for p in packages}
     kind = "mixed_package" if len(kinds) > 1 else next(iter(kinds), "skill" if skills else "instruction_file" if texts else "unknown")
+    anatomy, configuration_roots, instruction_paths = plugin_anatomy(records, texts, config_data, packages, target_runtime, filename)
     return {"artifact_kind": kind, "packages": packages, "format_profiles": profiles,
             "runtime_targets": [{"runtime": r, "evidence": "structural_indicator_not_publisher_identity"} for r in sorted(indicators)],
             "target_runtime": target_runtime, "publisher_provenance": "unverified", "format_findings": issues[:100],
             "validation_scope": "explicit_portable_contracts_and_local_parse_safety; vendor_acceptance_checked_separately", "skills": skills,
-            "components": components[:500], "configurations": config_data}
+            "components": components[:500], "configurations": config_data,
+            "plugin_anatomy": anatomy, "configuration_roots": configuration_roots,
+            "instruction_paths": instruction_paths}
+
+
+# Claude Code component discovery profile, reviewed 2026-11-27 against:
+# https://code.claude.com/docs/en/plugins/manifest-reference
+# https://code.claude.com/docs/en/plugins/components
+# This inventories static declarations. It neither loads a plugin nor establishes
+# Claude.ai/Cowork support, permissions, successful execution, or publisher trust.
+PLUGIN_COMPONENTS = {
+    "skills": ("skills", "add", "instructions", "Task matching or explicit skill invocation"),
+    "commands": ("commands", "replace", "instructions", "Explicit namespaced command invocation"),
+    "agents": ("agents", "replace", "instructions", "Subagent delegation"),
+    "outputStyles": ("output-styles", "replace", "instructions", "Output style selection"),
+    "workflows": ("workflows", "replace", "workflow_code", "Workflow invocation; runtime behavior not verified"),
+    "themes": ("themes", "replace", "appearance", "Theme selection"),
+    "hooks": ("hooks/hooks.json", "merge", "event_handlers", "Declared lifecycle event"),
+    "mcpServers": (".mcp.json", "merge", "tool_server", "Host starts/connects to server; tools invoked separately"),
+    "lspServers": (".lsp.json", "merge", "local_process", "Host starts a language server"),
+    "monitors": ("monitors/monitors.json", "replace", "background_process", "Session start or declared skill trigger"),
+    "bin": ("bin", "default", "executable_candidate", "Explicit tool command; executable permissions not established"),
+    "evals": ("evals", "replace", "evaluation", "Separate evaluation run; not executed by Injecticide"),
+}
+
+
+def plugin_anatomy(records, texts, configs, packages, target_runtime="auto", filename=""):
+    """Explain bounded, virtual-path component ownership without reading disk paths.
+
+    Resolved configuration objects join the existing threat inspection input;
+    raw commands, prompts, user-config defaults and credentials never enter this
+    anatomy projection. Nested archives and nested plugins own their own files.
+    """
+    paths = {row["path"] for row in records if isinstance(row.get("path"), str)}
+    marker = ".claude-plugin/plugin.json"
+    manifests = {path[:-len(marker)].rstrip("/"): path for path in paths
+                 if path == marker or path.endswith("/" + marker)}
+    roots = set(manifests)
+    explicit = target_runtime == "claude-code" or filename.lower().endswith(".plugin")
+    if explicit:
+        for path in paths:
+            if PurePosixPath(path).name == "SKILL.md" and not any(part in {"skills", "references", "examples", "fixtures"} for part in path.split("/")[:-1]):
+                parent = str(PurePosixPath(path).parent)
+                roots.add("" if parent == "." else parent)
+    for path in sorted(paths):
+        parts = path.split("/")
+        for index, part in enumerate(parts[:-1]):
+            if part in {"skills", "commands", "agents", "hooks", "output-styles", "workflows", "themes", "monitors", "bin"}:
+                candidate = "/".join(parts[:index])
+                # A reference example is not evidence of an installed plugin.
+                if explicit and not any(p in {"references", "examples", "fixtures", ".claude-plugin"} for p in parts[:index]):
+                    roots.add(candidate)
+                break
+        if parts[-1] in {".mcp.json", ".lsp.json"} and explicit:
+            roots.add("/".join(parts[:-1]))
+    foreign_roots = {item["root"] if item["root"] != "." else "" for item in packages
+                     if item["profile"] not in {"claude-plugin", "legacy-or-unknown-plugin"}}
+    roots = {value for value in roots if value in manifests or not any(
+        not other or value == other or value.startswith(other + "/") for other in foreign_roots)}
+    roots = {value for value in roots if value in manifests or not any(
+        other != value and (not other or value.startswith(other + "/")) for other in roots)}
+    roots = sorted(roots, key=lambda value: (len(value), value))
+    omitted_roots = max(0, len(roots) - 32)
+    all_roots, roots = sorted(set(roots) | foreign_roots), roots[:32]
+    report = {"schema": "injecticide-plugin-anatomy/v1", "profile": "claude-code",
+              "reviewed_on": "2026-11-27", "status": "not_applicable", "plugins": [],
+              "component_count": 0, "omitted_components": 0, "omitted_plugins": omitted_roots,
+              "sources": ["https://code.claude.com/docs/en/plugins/manifest-reference",
+                          "https://code.claude.com/docs/en/plugins/components"],
+              "scope": "Static plugin layout and declared activation. Nothing was installed, started or invoked. Other hosts may support different components.",
+              "limits": ["Component load success, permissions, executable bits and publisher identity are unverified.",
+                         "Marketplace-provided overrides and runtime settings were not supplied; inferred discovery can differ.",
+                         "All supplied files remain security-inspected, including defaults the manifest does not select."]}
+    configuration_roots = {}
+    instruction_paths = set()
+    input_partial = False
+
+    def owned(path, root):
+        prefix = root + "/" if root else ""
+        if not path.startswith(prefix) or "!/" in path[len(prefix):]:
+            return False
+        return not any(other != root and (not root or other.startswith(prefix))
+                       and path.startswith(other + "/") for other in all_roots)
+
+    for root in roots:
+        manifest = manifests.get(root)
+        data = configs.get(manifest, {})
+        plugin = {"root": root or ".", "manifest": manifest,
+                  "recognition": "manifest_observed" if manifest else "layout_candidate",
+                  "name": data.get("name")[:200] if isinstance(data.get("name"), str) else None,
+                  "version": data.get("version")[:100] if isinstance(data.get("version"), str) else None,
+                  "components": [], "observations": [], "counts": {}, "configuration_fields": []}
+        report["plugins"].append(plugin)
+        local = sorted(path for path in paths if owned(path, root))
+        prefix = root + "/" if root else ""
+        experiment = data.get("experimental") if isinstance(data.get("experimental"), dict) else {}
+        if manifest and manifest not in configs:
+            plugin["observations"].append("Manifest could not be parsed; default layout observations do not establish host loading.")
+            input_partial = True
+        if not manifest:
+            plugin["observations"].append("Manifest absent: layout is a candidate. The installed name may come from the directory or marketplace.")
+        if any(path.startswith(prefix + ".claude-plugin/") and path != manifest for path in local):
+            plugin["observations"].append("Files beyond plugin.json occur inside .claude-plugin/. Component defaults belong at the plugin root.")
+
+        def add(kind, path, state="observed", **extra):
+            nonlocal input_partial
+            instruction = kind in {"skills", "commands", "agents", "outputStyles"} or extra.get("role") == "instructions"
+            if state == "observed" and instruction and path not in texts:
+                state = "unresolved"
+                extra["reason"] = "instruction_content_not_assessed"
+            if state == "unresolved":
+                input_partial = True
+            if state == "observed" and instruction and path in texts:
+                instruction_paths.add(path)
+            report["component_count"] += 1
+            plugin["counts"][kind] = plugin["counts"].get(kind, 0) + 1
+            if report["component_count"] > 500:
+                report["omitted_components"] += 1
+                return None
+            _, _, role, activation = PLUGIN_COMPONENTS.get(kind, (None, None, "configuration", "Configuration supplied by user"))
+            row = {"kind": kind, "path": path, "state": state, "role": role,
+                   "activation": activation, "execution": "not_observed", **extra}
+            plugin["components"].append(row)
+            return row
+
+        def resolve(raw):
+            if not isinstance(raw, str) or len(raw) > 1024:
+                return None, "unsupported_path_form"
+            if "${" in raw or "\\" in raw:
+                return None, "variable_or_platform_path_unresolved"
+            if raw != "." and not raw.startswith("./") or ".." in raw.split("/"):
+                return None, "path_not_contained"
+            relative = raw[2:] if raw.startswith("./") else ""
+            path = prefix + relative.rstrip("/")
+            if path and not owned(path + "/" if path not in paths else path, root):
+                return None, "different_plugin_or_archive_owner"
+            return path.rstrip("/"), None
+
+        def parsed(path):
+            nonlocal input_partial
+            if path not in paths:
+                return None
+            if path not in configs:
+                try:
+                    value = bounded_data(texts[path])
+                    if not isinstance(value, (dict, list)):
+                        raise ValueError("Expected configuration object or monitor array")
+                    configs[path] = {"monitors": value} if isinstance(value, list) else value
+                except (ValueError, KeyError):
+                    input_partial = True
+                    return None
+            configuration_roots[path] = root
+            return configs[path]
+
+        def bounded(items, label):
+            nonlocal input_partial
+            if len(items) > 100:
+                input_partial = True
+                plugin["observations"].append(f"{label}: {len(items) - 100} entries omitted by the 100-entry inspection limit.")
+            return items[:100]
+
+        for kind, (default, behavior, _, _) in PLUGIN_COMPONENTS.items():
+            declared = experiment.get(kind) if kind in {"themes", "monitors", "evals"} else data.get(kind)
+            supplied = kind in (experiment if kind in {"themes", "monitors", "evals"} else data)
+            if kind == "bin":
+                declared, supplied = None, False
+            if kind in {"themes", "monitors"} and supplied and kind in data:
+                plugin["observations"].append(f"Both experimental.{kind} and legacy {kind} are declared; combined precedence was not established.")
+                input_partial = True
+            if kind in {"themes", "monitors"} and not supplied and kind in data:
+                declared, supplied = data[kind], True
+            selector_key = "experimental." + kind if kind in {"themes", "monitors", "evals"} else kind
+            defaults = [prefix + default]
+            selectors = [] if supplied and behavior == "replace" else [(value, "default") for value in defaults]
+            if supplied:
+                values = declared if isinstance(declared, list) and kind != "monitors" else [declared]
+                if kind == "evals" and isinstance(declared, list):
+                    values = declared[:1]
+                    if len(declared) > 1:
+                        plugin["observations"].append("experimental.evals uses only the first declared directory.")
+                if len(values) > 100:
+                    input_partial = True
+                    plugin["observations"].append(f"{selector_key}: more than 100 declarations; remaining declarations not assessed.")
+                for value in values[:100]:
+                    if isinstance(value, str) and value.startswith("https://") and kind == "mcpServers":
+                        add(kind, manifest, "unresolved", origin="remote_bundle", declared_by=manifest,
+                            reason="Remote bundle not fetched; its contents and endpoint were not assessed.")
+                    elif isinstance(value, str):
+                        if kind == "evals" and not value.startswith(("./", "/")):
+                            value = "./" + value
+                        path, reason = resolve(value)
+                        if not reason and ((kind == "agents" and not path.endswith(".md")) or (kind == "skills" and path in paths)):
+                            reason = "component_requires_file" if kind == "agents" else "skills_requires_directory"
+                        if reason:
+                            add(kind, manifest, "unresolved", reason=reason, declared_by=manifest)
+                            input_partial = True
+                        else:
+                            selectors.append((path, "manifest"))
+                    elif kind in {"commands", "hooks", "mcpServers", "lspServers", "monitors"}:
+                        selectors.append((value, "inline"))
+                    else:
+                        add(kind, manifest, "unresolved", reason="unsupported_declaration_form", declared_by=manifest)
+                        input_partial = True
+            if supplied and behavior == "replace":
+                default_paths = [p for p in local if p == prefix + default or p.startswith(prefix + default + "/")]
+                selected_paths = [p for p, _ in selectors if isinstance(p, str)]
+                for path in default_paths:
+                    if not any(path == p or path.startswith(p + "/") for p in selected_paths):
+                        add(kind, path, "ignored_default", discovery="default_replaced_by_manifest", declared_by=manifest)
+            merged = {}
+            for selector, discovery in selectors:
+                if kind in {"hooks", "mcpServers", "lspServers", "monitors"}:
+                    source = manifest if discovery == "inline" else selector
+                    value = selector if discovery == "inline" else parsed(selector)
+                    if value is None:
+                        if discovery != "default" or selector in paths:
+                            add(kind, source, "unresolved", reason="configuration_missing_or_unreadable", declared_by=manifest)
+                        continue
+                    if kind == "hooks":
+                        events = value.get("hooks", {}) if discovery != "inline" and isinstance(value, dict) else value
+                        if not isinstance(events, dict):
+                            add(kind, source, "unresolved", reason="unsupported_hook_shape")
+                            input_partial = True
+                            continue
+                        for event, groups in bounded(list(events.items()), "hook events"):
+                            if not isinstance(groups, list):
+                                add(kind, source, "unresolved", reason="unsupported_hook_groups")
+                                continue
+                            for group in bounded(groups, "hook groups"):
+                                if not isinstance(group, dict) or not isinstance(group.get("hooks"), list):
+                                    add(kind, source, "unresolved", reason="unsupported_hook_group")
+                                    continue
+                                for handler in bounded(group["hooks"], "hook handlers"):
+                                    handler_type = handler.get("type") if isinstance(handler, dict) else None
+                                    add(kind, source, "observed" if handler_type in {"command", "http", "mcp_tool", "prompt", "agent"} else "unresolved", discovery=discovery, name=str(event)[:100],
+                                        activation="Lifecycle event: " + str(event)[:100],
+                                        handler_type=handler_type if handler_type in {"command", "http", "mcp_tool", "prompt", "agent"} else "unknown",
+                                        role="local_process" if handler_type == "command" else "remote_request" if handler_type == "http" else "instructions" if handler_type in {"prompt", "agent"} else "tool_invocation")
+                    else:
+                        entries = value.get("monitors", []) if kind == "monitors" and isinstance(value, dict) else value.get(kind, value) if isinstance(value, dict) else value
+                        items = list(enumerate(entries)) if isinstance(entries, list) else list(entries.items()) if isinstance(entries, dict) else []
+                        if len(items) > 100:
+                            input_partial = True
+                        for name, config in bounded(items, kind):
+                            if not isinstance(config, dict):
+                                add(kind, source, "unresolved", reason="unsupported_configuration_shape")
+                                continue
+                            identity = str(config.get("name", name)) if kind == "monitors" else str(name)
+                            trigger = config.get("when", "always")
+                            trigger = trigger if trigger == "always" or isinstance(trigger, str) and re.fullmatch(r"on-skill-invoke:[A-Za-z0-9_-]{1,64}", trigger) else "unrecognized_trigger"
+                            role = "local_process" if config.get("command") else "remote_endpoint" if config.get("url") else "unresolved_server"
+                            row = add(kind, source, name=identity[:128], discovery=discovery, declared_by=manifest,
+                                      role="background_process" if kind == "monitors" else role,
+                                      activation=trigger if kind == "monitors" else PLUGIN_COMPONENTS[kind][3])
+                            if kind in {"mcpServers", "lspServers"} and row:
+                                if identity in merged:
+                                    merged[identity]["state"] = "superseded_declaration"
+                                merged[identity] = row
+                elif kind == "commands" and isinstance(selector, dict):
+                    for name, config in bounded(list(selector.items()), "inline commands"):
+                        if not isinstance(config, dict):
+                            add(kind, manifest, "unresolved", reason="unsupported_command_shape")
+                        elif isinstance(config.get("content"), str) and "source" not in config:
+                            add(kind, manifest, name=str(name)[:128], discovery="inline", declared_by=manifest)
+                        elif isinstance(config.get("source"), str) and "content" not in config:
+                            path, reason = resolve(config["source"])
+                            add(kind, path if path in paths else manifest, "unresolved" if reason or path not in paths else "observed",
+                                name=str(name)[:128], discovery="manifest", declared_by=manifest,
+                                reason=reason or ("source_not_supplied" if path not in paths else None))
+                        else:
+                            add(kind, manifest, "unresolved", reason="command_needs_exactly_one_source_or_content")
+                elif isinstance(selector, str):
+                    candidates = [p for p in local if not selector or p == selector or p.startswith(selector + "/")]
+                    if kind == "skills":
+                        candidates = [p for p in candidates if PurePosixPath(p).name == "SKILL.md" and len(p[len(selector):].strip("/").split("/")) <= 2]
+                    elif kind in {"agents", "commands", "outputStyles"}:
+                        candidates = [p for p in candidates if p.endswith(".md")]
+                    elif kind == "workflows":
+                        candidates = [p for p in candidates if p.endswith(".js")]
+                    elif kind == "themes":
+                        candidates = [p for p in candidates if p.endswith(".json")]
+                    if kind == "skills" and discovery == "default" and not candidates and not supplied and not any(p.startswith(prefix + "skills/") for p in local) and prefix + "SKILL.md" in local:
+                        candidates = [prefix + "SKILL.md"]
+                    if not candidates and discovery != "default":
+                        add(kind, manifest, "unresolved", reason="declared_path_not_supplied_or_wrong_type", declared_by=manifest)
+                    for path in candidates:
+                        if not any(row["kind"] == kind and row["path"] == path and row["state"] == "observed" for row in plugin["components"]):
+                            add(kind, path, discovery=discovery, declared_by=manifest)
+                    if kind == "bin" and candidates:
+                        plugin["observations"].append("Top-level bin/ is a Claude Code executable surface. Reviewed vendor docs say Claude.ai and Cowork do not install plugins containing it; host acceptance was not tested.")
+        options = data.get("userConfig", {})
+        if isinstance(options, dict):
+            for name, option in bounded(list(options.items()), "user configuration"):
+                if isinstance(option, dict):
+                    plugin["configuration_fields"].append({"name": str(name)[:128], "sensitive": option.get("sensitive") is True,
+                        "type": option.get("type") if option.get("type") in {"string", "number", "boolean", "file", "directory"} else "unknown"})
+        channels = data.get("channels", [])
+        if isinstance(channels, list):
+            for channel in bounded(channels, "channels"):
+                if isinstance(channel, dict):
+                    add("channels", manifest, name=str(channel.get("server", "unspecified"))[:128],
+                        role="message_channel", activation="External messages through a declared MCP server")
+    report["status"] = "partial" if omitted_roots or report["omitted_components"] or input_partial else "observed" if roots else "not_applicable"
+    report["analysis_status"] = "partial" if omitted_roots or input_partial else "observed" if roots else "not_applicable"
+    return report, configuration_roots, sorted(instruction_paths)

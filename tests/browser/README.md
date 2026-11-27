@@ -1,5 +1,12 @@
 # Skill scan browser regression
 
+`plugin_anatomy.cjs` scans the synthetic multi-component fixture through the real
+local API and checks component roles, inactive defaults, pagination, literal
+hostile labels, keyboard source navigation, detailed/JSON exports and a 390px
+layout. Like `policy_authoring.cjs`, it expects the managed candidate API at
+`INJECTICIDE_TEST_URL` (default `http://127.0.0.1:8247`), with feedback disabled
+and model/sandbox URLs unset. The fixture's hooks and programs are never run.
+
 `policy_authoring.cjs` exercises requirement buttons, all nine unsupported names
 from the reported failure, validation outages, stale responses, error focus and
 retention of the selected file. It uses a real local API at
