@@ -2944,7 +2944,7 @@ function App({ onBack, onNavigate, buildInfo }) {
                                             {orgPolicy && <button type="button" className="text-sm text-gray-300 underline" disabled={isScanningSkill} onClick={() => updateOrgPolicy('')}>Remove policy</button>}
                                         </details>
                                         <label htmlFor="skill-upload-file" className="block text-sm font-medium text-gray-300">
-                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload SKILL.md, .skill, or .zip (up to 32 MiB)
+                                            <i className="fas fa-file-zipper mr-1 text-blue-300"></i>Upload a skill, plugin or reference package (up to 32 MiB)
                                         </label>
                                         <input
                                             type="file"
